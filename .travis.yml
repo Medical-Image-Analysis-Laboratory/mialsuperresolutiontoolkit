@@ -14,8 +14,8 @@ addons:
       - cmake
 script:
   # Link gcc-4.8 and g++-4.8 to their standard commands
-  - ln -s /usr/bin/gcc-4.8 /usr/local/bin/gcc
-  - ln -s /usr/bin/g++-4.8 /usr/local/bin/g++
+  - sudo ln -s /usr/bin/gcc-4.8 /usr/local/bin/gcc
+  - sudo ln -s /usr/bin/g++-4.8 /usr/local/bin/g++
   # Export CC and CXX to tell cmake which compiler to use
   - export CC=/usr/bin/gcc-4.8
   - export CXX=/usr/bin/g++-4.8
