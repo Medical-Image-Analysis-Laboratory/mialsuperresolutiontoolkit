@@ -10,10 +10,10 @@ INCLUDE_DIRECTORIES(${ANN_INCLUDE_DIR})
 # INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Maths)
 
 
-ADD_EXECUTABLE(mialsrtkTVDenoising mialtkTVDenoising.cxx)
+ADD_EXECUTABLE(mialsrtkTVDenoising mialsrtkTVDenoising.cxx)
 TARGET_LINK_LIBRARIES(mialsrtkTVDenoising  ${ITK_LIBRARIES})
 
-ADD_EXECUTABLE(mialsrtkGaussianDenoising mialtkGaussianDenoising.cxx)
+ADD_EXECUTABLE(mialsrtkGaussianDenoising mialsrtkGaussianDenoising.cxx)
 TARGET_LINK_LIBRARIES(mialsrtkGaussianDenoising  ${ITK_LIBRARIES})
 
 
