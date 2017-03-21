@@ -20,6 +20,9 @@ addons:
       - libvtk5.8
       - libvtk5.8-qt4
       - tcl-vtk
+      - libvtk-java
+      - python-vtk
+      - python-vtkgdcm
       - libncurses5 
       - libncurses5-dev
       - libann-dev
