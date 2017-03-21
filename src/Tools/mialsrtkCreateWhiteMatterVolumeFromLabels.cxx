@@ -152,15 +152,15 @@ int main( int argc, char *argv[] )
         typedef ImageType::RegionType               RegionType;
         typedef std::vector< RegionType >           RegionArrayType;
         
-        typedef btk::SliceBySliceTransformBase< double, Dimension > TransformBaseType;
-        typedef btk::SliceBySliceTransform< double, Dimension > TransformType;
-        typedef TransformType::Pointer                          TransformPointer;
+        //typedef btk::SliceBySliceTransformBase< double, Dimension > TransformBaseType;
+        //typedef btk::SliceBySliceTransform< double, Dimension > TransformType;
+        //typedef TransformType::Pointer                          TransformPointer;
 
         typedef itk::ImageFileReader< ImageType >   ImageReaderType;
         typedef itk::ImageFileWriter< ImageMaskType >   MaskWriterType;
 
-        typedef itk::TransformFileReader     TransformReaderType;
-        typedef TransformReaderType::TransformListType * TransformListType;
+        //typedef itk::TransformFileReader     TransformReaderType;
+        //typedef TransformReaderType::TransformListType * TransformListType;
 
         // Rigid 3D transform definition (typically for reconstructions in adults)
         //typedef btk::Euler3DTransform< double > Rigid3DTransformType;
