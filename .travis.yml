@@ -24,6 +24,11 @@ addons:
       - libvtkgdcm2-dev 
       - libgdcm-tools
       - libvtkgdcm-tools
+      
+#before_script:
+#  - mkdir build
+#  - cd build
+#  - cmake ../src
 script:
   # Link gcc-4.8 and g++-4.8 to their standard commands
   - sudo ln -s /usr/bin/gcc-4.8 /usr/local/bin/gcc
@@ -34,4 +39,7 @@ script:
   # Check versions of gcc, g++ and cmake
   - gcc -v && g++ -v && cmake --version
   # Run your build commands next
-  - mkdir build && cd build && cmake --build
+  - mkdir build
+  - cd build
+  - cmake ../src
+  - make
