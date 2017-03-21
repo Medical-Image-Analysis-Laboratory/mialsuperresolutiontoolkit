@@ -156,7 +156,7 @@ add_subdirectory(Denoising)
 # add_subdirectory(IntensityNormalization)
 # add_subdirectory(BrainLocalizationExtraction)
 # add_subdirectory(Reconstruction)
-# add_subdirectory(Tools)
+add_subdirectory(Tools)
 
 #add_subdirectory(Test)
 # add_subdirectory(CRKit/Segmentation)
