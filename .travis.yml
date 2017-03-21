@@ -17,13 +17,16 @@ addons:
       - libinsighttoolkit4-dev
       - libvtk5-dev
       - libvtk5-qt4-dev
+      - libvtk5.10
+      - libvtk5.10-qt4
+      - tcl-vtk
       - libncurses5 
       - libncurses5-dev
       - libann-dev
-      - libgdcm2-dev
-      - libvtkgdcm2-dev 
-      - libgdcm-tools
-      - libvtkgdcm-tools
+      #- libgdcm2-dev
+      #- libvtkgdcm2-dev 
+      #- libgdcm-tools
+      #- libvtkgdcm-tools
       
 #before_script:
 #  - mkdir build
