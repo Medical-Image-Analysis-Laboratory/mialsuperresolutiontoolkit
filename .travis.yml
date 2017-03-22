@@ -33,7 +33,6 @@ matrix:
             #- libvtkgdcm2-dev 
             #- libgdcm-tools
             #- libvtkgdcm-tools
-
     - dist: xenial
       sudo: required
       addons:
