@@ -2,7 +2,9 @@ language:
   - cpp
 compiler:
   - gcc
-
+dist:
+  - trusty
+  - xenial
 matrix:
   include:
     - dist: trusty
