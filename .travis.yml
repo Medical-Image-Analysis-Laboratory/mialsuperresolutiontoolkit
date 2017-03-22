@@ -1,14 +1,11 @@
-language:
-  - cpp
-compiler:
-  - gcc
-dist:
-  - trusty
-  - xenial
+language: cpp
+dist: trusty
 matrix:
   include:
-    - dist: trusty
+    - #dist: trusty
       sudo: required
+      compiler:
+        - gcc
       addons:
         apt:
           sources:
@@ -37,6 +34,8 @@ matrix:
             #- libvtkgdcm-tools
     - dist: xenial
       sudo: required
+      compiler:
+        - gcc
       addons:
         apt:
           sources:
