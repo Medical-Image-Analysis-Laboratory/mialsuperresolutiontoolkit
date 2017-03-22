@@ -1,36 +1,67 @@
-dist: trusty
-sudo: required
-language:
-  - cpp
-compiler:
-  - gcc
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - gcc-4.8
-      - g++-4.8
-      - cmake
-      - libtclap-dev
-      - libinsighttoolkit4.5
-      - libinsighttoolkit4-dev
-      - libvtk5-dev
-      - libvtk5-qt4-dev
-      - libvtk5.8
-      - libvtk5.8-qt4
-      - tcl-vtk
-      - libvtk-java
-      - python-vtk
-      - python-vtkgdcm
-      - libncurses5 
-      - libncurses5-dev
-      - libann-dev
-      #- libgdcm2-dev
-      #- libvtkgdcm2-dev 
-      #- libgdcm-tools
-      #- libvtkgdcm-tools
-      
+matrix:
+  include:
+    - dist: trusty
+      sudo: required
+      language:
+        - cpp
+      compiler:
+        - gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-4.8
+            - g++-4.8
+            - cmake
+            - libtclap-dev
+            - libinsighttoolkit4.5
+            - libinsighttoolkit4-dev
+            - libvtk5-dev
+            - libvtk5-qt4-dev
+            - libvtk5.8
+            - libvtk5.8-qt4
+            - tcl-vtk
+            - libvtk-java
+            - python-vtk
+            - python-vtkgdcm
+            - libncurses5 
+            - libncurses5-dev
+            - libann-dev
+            #- libgdcm2-dev
+            #- libvtkgdcm2-dev 
+            #- libgdcm-tools
+            #- libvtkgdcm-tools
+
+    - dist: xenial
+      sudo: required
+      language:
+        - cpp
+      compiler:
+        - gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-4.8
+            - g++-4.8
+            - cmake
+            - libtclap-dev
+            - libinsighttoolkit4.9
+            - libinsighttoolkit4-dev
+            - libvtk5-dev
+            - libvtk5-qt4-dev
+            - libvtk5.10
+            - libvtk5.10-qt4
+            - tcl-vtk
+            - libvtk-java
+            - python-vtk
+            - python-vtkgdcm
+            - libncurses5 
+            - libncurses5-dev
+            - libann-dev
+            
 #before_script:
 #  - mkdir build
 #  - cd build
