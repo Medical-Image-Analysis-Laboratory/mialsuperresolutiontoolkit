@@ -1,11 +1,12 @@
+language:
+  - cpp
+compiler:
+  - gcc
+
 matrix:
   include:
     - dist: trusty
       sudo: required
-      language:
-        - cpp
-      compiler:
-        - gcc
       addons:
         apt:
           sources:
@@ -35,10 +36,6 @@ matrix:
 
     - dist: xenial
       sudo: required
-      language:
-        - cpp
-      compiler:
-        - gcc
       addons:
         apt:
           sources:
