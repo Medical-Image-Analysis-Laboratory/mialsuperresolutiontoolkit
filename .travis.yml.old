@@ -1,0 +1,79 @@
+language: cpp
+dist: trusty
+matrix:
+  include:
+    - #dist: trusty
+      sudo: required
+      compiler:
+        - gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-4.8
+            - g++-4.8
+            - cmake
+            - libtclap-dev
+            - libinsighttoolkit4.5
+            - libinsighttoolkit4-dev
+            - libvtk5-dev
+            - libvtk5-qt4-dev
+            - libvtk5.8
+            - libvtk5.8-qt4
+            - tcl-vtk
+            - libvtk-java
+            - python-vtk
+            - python-vtkgdcm
+            - libncurses5 
+            - libncurses5-dev
+            - libann-dev
+            #- libgdcm2-dev
+            #- libvtkgdcm2-dev 
+            #- libgdcm-tools
+            #- libvtkgdcm-tools
+    - dist: xenial
+      sudo: required
+      compiler:
+        - gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-4.8
+            - g++-4.8
+            - cmake
+            - libtclap-dev
+            - libinsighttoolkit4.9
+            - libinsighttoolkit4-dev
+            - libvtk5-dev
+            - libvtk5-qt4-dev
+            - libvtk5.10
+            - libvtk5.10-qt4
+            - tcl-vtk
+            - libvtk-java
+            - python-vtk
+            - python-vtkgdcm
+            - libncurses5 
+            - libncurses5-dev
+            - libann-dev
+            
+#before_script:
+#  - mkdir build
+#  - cd build
+#  - cmake ../src
+script:
+  # Link gcc-4.8 and g++-4.8 to their standard commands
+  - sudo ln -s /usr/bin/gcc-4.8 /usr/local/bin/gcc
+  - sudo ln -s /usr/bin/g++-4.8 /usr/local/bin/g++
+  # Export CC and CXX to tell cmake which compiler to use
+  - export CC=/usr/bin/gcc-4.8
+  - export CXX=/usr/bin/g++-4.8
+  # Check versions of gcc, g++ and cmake
+  - gcc -v && g++ -v && cmake --version
+  # Run your build commands next
+  - mkdir build
+  - cd build
+  - cmake ../src
+  - make
