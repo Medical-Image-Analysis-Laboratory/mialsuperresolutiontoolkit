@@ -32,5 +32,5 @@ RUN mkdir /opt/mialsrtk-build && cd /opt/mialsrtk-build \
 WORKDIR /opt/mialsrtk-build/mialsuperresolutiontoolkit/build
 
 RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/opt ../src \ 
-&& make -j2 
+&& make -j2 && make install && cd ..
 #&& make install && make clean && cd .. && rm -rf build
