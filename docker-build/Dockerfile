@@ -1,5 +1,6 @@
 FROM ubuntu:14.04
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && add-apt-repository ppa:ubuntu-toolchain-r/test && apt-get update && apt-get -y install apt-fast \
+&& apt-fast install -y \
 	build-essential \
 	gcc-4.8 \
         g++-4.8 \
@@ -17,4 +18,17 @@ RUN apt-get update && apt-get install -y \
         python-vtkgdcm \
         libncurses5  \
         libncurses5-dev \
-  	libann-dev
+  	libann-dev \
+&& apt-get clean
+
+# # Git clone the repo from MIALSRTK official repository on GitHub. #
+RUN mkdir /opt/mialsrtk-build && cd /opt/mialsrtk-build \ 
+&& git clone https://github.com/sebastientourbier/mialsuperresolutiontoolkit.git \
+&& cd mialsuperresolutiontoolkit \ 
+&& git checkout master && mkdir build
+
+WORKDIR /opt/mialsrtk-build/mialsuperresolutiontoolkit/build
+
+RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/opt ../src \ 
+&& make -j2 
+#&& make install && make clean && cd .. && rm -rf build
