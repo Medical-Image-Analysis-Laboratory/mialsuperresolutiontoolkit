@@ -1,6 +1,5 @@
 FROM ubuntu:14.04
-RUN apt-get update && add-apt-repository ppa:ubuntu-toolchain-r/test && apt-get update && apt-get -y install apt-fast \
-&& apt-fast install -y \
+RUN apt-get update && apt-get install -y \
 	build-essential \
 	gcc-4.8 \
         g++-4.8 \
