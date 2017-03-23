@@ -1,5 +1,5 @@
 FROM ubuntu:14.04
-RUN apt-get update && apt-add-repository ppa:saiarcot895/myppa -y && apt-get update && sudo apt-get -y install apt-fast \
+RUN apt-get update && apt-add-repository ppa:saiarcot895/myppa -y && apt-get update && apt-get -y install apt-fast \
 && apt-fast install -y \
 	build-essential \
 	gcc-4.8 \
