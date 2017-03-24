@@ -153,6 +153,7 @@ message(STATUS USE_OMP=${USE_OMP})
 # )
 
 add_subdirectory(Denoising)
+add_subdirectory(Evaluation)
 # add_subdirectory(IntensityNormalization)
 # add_subdirectory(BrainLocalizationExtraction)
 # add_subdirectory(Reconstruction)
