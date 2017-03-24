@@ -37,7 +37,7 @@
 #define __SliceBySliceTransform_txx
 
 #include "itkNumericTraits.h"
-#include "btkSliceBySliceTransform.h"
+#include "mialsrtkSliceBySliceTransform.h"
 #include "vnl/algo/vnl_matrix_inverse.h"
 
 
