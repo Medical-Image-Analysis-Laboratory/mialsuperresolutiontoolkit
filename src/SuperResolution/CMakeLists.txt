@@ -28,14 +28,14 @@ INCLUDE_DIRECTORIES(
 )
 
 
-ADD_EXECUTABLE(mialtkTVSuperResolution mialtkTVSuperResolution.cxx)
-TARGET_LINK_LIBRARIES(mialtkTVSuperResolution ${ITK_LIBRARIES})
+ADD_EXECUTABLE(mialsrtkTVSuperResolution mialsrtkTVSuperResolution.cxx)
+TARGET_LINK_LIBRARIES(mialsrtkTVSuperResolution ${ITK_LIBRARIES})
 
-ADD_EXECUTABLE(mialtkRobustTVSuperResolutionWithGMM mialtkRobustTVSuperResolutionWithGMM.cxx)
-TARGET_LINK_LIBRARIES(mialtkRobustTVSuperResolutionWithGMM ${ITK_LIBRARIES})
+ADD_EXECUTABLE(mialsrtkRobustTVSuperResolutionWithGMM mialsrtkRobustTVSuperResolutionWithGMM.cxx)
+TARGET_LINK_LIBRARIES(mialsrtkRobustTVSuperResolutionWithGMM ${ITK_LIBRARIES})
 
 
 INSTALL(TARGETS
-		mialtkTVSuperResolution
-                mialtkRobustTVSuperResolutionWithGMM
+		mialsrtkTVSuperResolution
+                mialsrtkRobustTVSuperResolutionWithGMM
         DESTINATION bin)
