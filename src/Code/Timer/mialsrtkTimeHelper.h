@@ -18,8 +18,8 @@
 
 ==========================================================================*/
 
-#ifndef MIALTK_TIME_HELPER_H
-#define MIALTK_TIME_HELPER_H
+#ifndef mialsrtk_TIME_HELPER_H
+#define mialsrtk_TIME_HELPER_H
 
 /* Std includes*/
 #include <string>
@@ -46,7 +46,7 @@
     #endif
 #endif
 
-namespace mialtk {
+namespace mialsrtk {
 
 
 double getTime(void)
@@ -104,7 +104,7 @@ std::string getRealCurrentDate()
 #endif
 }
 
-} // namespace mialtk
+} // namespace mialsrtk
 
 
-#endif // MIALTK_TIME_HELPER_H
+#endif // mialsrtk_TIME_HELPER_H

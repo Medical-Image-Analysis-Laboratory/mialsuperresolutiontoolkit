@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-namespace mialtk
+namespace mialsrtk
 {
 
 template<class TValue, class TIndex>
