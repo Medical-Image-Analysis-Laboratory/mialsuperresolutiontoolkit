@@ -34,7 +34,7 @@ std::string int2str(int a)
     return temp.str();
 };
 
-double mialtkMean(std::vector<float> &data)
+double mialsrtkMean(std::vector<float> &data)
 {
     double sum=0.0;
     int counter=0;
@@ -54,9 +54,9 @@ double mialtkMean(std::vector<float> &data)
         return 0.0;
 };
 
-double mialtkVariance(std::vector<float> &data)
+double mialsrtkVariance(std::vector<float> &data)
 {
-    double mean = mialtkMean(data);
+    double mean = mialsrtkMean(data);
     double sum=0.0;
     int counter=0;
 
@@ -76,7 +76,7 @@ double mialtkVariance(std::vector<float> &data)
         return 0.0;
 };
 
-double mialtkMedian(std::vector<double> data)
+double mialsrtkMedian(std::vector<double> data)
 {
     double median = 0.0;
     std::size_t n = data.size() / 2;
@@ -89,7 +89,7 @@ double mialtkMedian(std::vector<double> data)
 /**
  * Return the entropy as computed in Matlab (E=-sum(p * log(p)))
  */
-double mialtkEntropy(std::vector<double> data, int nbins, double min, double max)
+double mialsrtkEntropy(std::vector<double> data, int nbins, double min, double max)
 {
     double entropy = 0.0;
     std::size_t n = data.size();
@@ -137,7 +137,7 @@ double mialtkEntropy(std::vector<double> data, int nbins, double min, double max
 /**
  * Return the entropy as computed in Aksoy et al. 2012 (E=-sum(Ip/Itotal * ln(Ip/Itotal)))
  */
-double mialtkEntropy2(std::vector<double> data)
+double mialsrtkEntropy2(std::vector<double> data)
 {
     double entropy = 0.0;
 
@@ -170,7 +170,7 @@ double mialtkEntropy2(std::vector<double> data)
 /**
  * Return the entropy as computed in McGee 2000 (E=-sum(Abs(Ip))/Itotal * ln(Abs(Ip)/Itotal)))
  */
-double mialtkEntropy3(std::vector<double> data)
+double mialsrtkEntropy3(std::vector<double> data)
 {
     double entropy = 0.0;
 
@@ -199,15 +199,15 @@ double mialtkEntropy3(std::vector<double> data)
     return entropy;
 };
 
-double mialtkNormalizedCorrelationCoef(std::vector<float> &target, std::vector<float> &temp)
+double mialsrtkNormalizedCorrelationCoef(std::vector<float> &target, std::vector<float> &temp)
 {
     double normCorrCoef = 0.0;
 
-    double meanTarget = mialtkMean(target);
-    double meanTemplate = mialtkMean(temp);
+    double meanTarget = mialsrtkMean(target);
+    double meanTemplate = mialsrtkMean(temp);
 
-    double stdTarget = sqrt(mialtkVariance(target));
-    double stdTemplate = sqrt(mialtkVariance(temp));
+    double stdTarget = sqrt(mialsrtkVariance(target));
+    double stdTemplate = sqrt(mialsrtkVariance(temp));
 
     floatIter targetIt;
     floatIter templateIt;
@@ -238,7 +238,7 @@ double mialtkNormalizedCorrelationCoef(std::vector<float> &target, std::vector<f
 /**
  * Return the SNR between the current image reconstructed x and a given reference image x_ref. x_ref is typically a ground truth image
  */
-double mialtkComputeSNR(const vnl_vector<float>& x_ref, const vnl_vector<float>& x , float level = 0.0)
+double mialsrtkComputeSNR(const vnl_vector<float>& x_ref, const vnl_vector<float>& x , float level = 0.0)
 {
     //Compute Var(x)
     double mean = 0.0;
@@ -293,7 +293,7 @@ double mialtkComputeSNR(const vnl_vector<float>& x_ref, const vnl_vector<float>&
 /**
  * Return the PSNR between the current image reconstructed x and a given reference image x_ref. x_ref is typically a ground truth image
  */
-double mialtkComputePSNR(const vnl_vector<float>& x_ref, const vnl_vector<float>& x , float level = 0.0)
+double mialsrtkComputePSNR(const vnl_vector<float>& x_ref, const vnl_vector<float>& x , float level = 0.0)
 {
     double dyn = 0.0;
     double mse = 0.0;
@@ -334,7 +334,7 @@ double mialtkComputePSNR(const vnl_vector<float>& x_ref, const vnl_vector<float>
 /**
  * Return the MSE between the current image reconstructed x and a given reference image x_ref. x_ref is typically a ground truth image
  */
-double mialtkComputeMSE(const vnl_vector<float>& x_ref, const vnl_vector<float>& x , float level = 0.0)
+double mialsrtkComputeMSE(const vnl_vector<float>& x_ref, const vnl_vector<float>& x , float level = 0.0)
 {
     //Compute MSE between reference image x and current image m_x
     double mse = 0.0;
@@ -361,7 +361,7 @@ double mialtkComputeMSE(const vnl_vector<float>& x_ref, const vnl_vector<float>&
 /**
  * Return the Mean Absolute Error (MAE) between the current image reconstructed x and a given reference image x_ref. x_ref is typically a ground truth image
  */
-double mialtkComputeMAE(const vnl_vector<float>& x_ref, const vnl_vector<float>& x , float level = 0.0)
+double mialsrtkComputeMAE(const vnl_vector<float>& x_ref, const vnl_vector<float>& x , float level = 0.0)
 {
     //Compute MAE  between reference image x and current image m_x
     double mae = 0.0;
@@ -388,7 +388,7 @@ double mialtkComputeMAE(const vnl_vector<float>& x_ref, const vnl_vector<float>&
 /**
  * Return the Mean Absolute Error (MAE) between the current image reconstructed x and a given reference image x_ref. x_ref is typically a ground truth image
  */
-float mialtkComputeMAE(vnl_vector<float>& x_ref, vnl_vector<float>& x , float level = 0.0)
+float mialsrtkComputeMAE(vnl_vector<float>& x_ref, vnl_vector<float>& x , float level = 0.0)
 {
     //Compute MAE  between reference image x and current image m_x
     float mae = 0.0;
@@ -416,7 +416,7 @@ float mialtkComputeMAE(vnl_vector<float>& x_ref, vnl_vector<float>& x , float le
 /**
  * Return the Normalized Mutual Information (NMI) between the current image reconstructed y and a given reference image x. x is typically a ground truth image
  */
-float mialtkComputeNMI(vnl_vector<float> x,  vnl_vector<float> y , float nbins = 32)
+float mialsrtkComputeNMI(vnl_vector<float> x,  vnl_vector<float> y , float nbins = 32)
 {
     //Rescale x and y between 0 and binSize-1
     x = ((x - x.min_value())/x.max_value()) * (nbins-1.0);
@@ -508,7 +508,7 @@ float mialtkComputeNMI(vnl_vector<float> x,  vnl_vector<float> y , float nbins =
 /**
  * Return the Entropy of the squared differences between the current image reconstructed y and a given reference image x. x is typically a ground truth image
  */
-float mialtkComputeESD(vnl_vector<float> x,  vnl_vector<float> y , float nbins = 32)
+float mialsrtkComputeESD(vnl_vector<float> x,  vnl_vector<float> y , float nbins = 32)
 {
     vnl_vector<float> diff;
     diff.set_size(x.size());
@@ -558,7 +558,7 @@ float mialtkComputeESD(vnl_vector<float> x,  vnl_vector<float> y , float nbins =
 /**
  * Return the Normalized Cross Correlation coefficient between the current image reconstructed y and a given reference image x. x is typically a ground truth image
  */
-float mialtkComputeNCC(vnl_vector<float> &x,  vnl_vector<float> &y, float thresh = 1e-1)
+float mialsrtkComputeNCC(vnl_vector<float> &x,  vnl_vector<float> &y, float thresh = 1e-1)
 {
     /*
     vnl_vector<float>::iterator itX;
