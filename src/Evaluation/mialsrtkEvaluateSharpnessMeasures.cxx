@@ -27,7 +27,7 @@ Author: Sebastien Tourbier
 
 #include "vcl_algorithm.h"
 
-#include "mialtkMaths.h"
+#include "mialsrtkMaths.h"
 #include "itkGradientMagnitudeImageFilter.h"
 #include "itkImageRegionConstIteratorWithIndex.h"
 

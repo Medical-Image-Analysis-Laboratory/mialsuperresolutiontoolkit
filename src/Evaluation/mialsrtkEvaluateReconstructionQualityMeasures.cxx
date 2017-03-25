@@ -29,8 +29,8 @@ Author: Sebastien Tourbier
 
 #include "vcl_algorithm.h"
 
-/* MIALTK */
-#include "mialtkMaths.h"
+/* mialsrtk */
+#include "mialsrtkMaths.h"
 
 /* VTK */
 #include <vtkVersion.h>
@@ -240,8 +240,8 @@ int main( int argc, char * argv [] )
         for( unsigned int i = 0 ; i < numberOfImages ; i++)
         {
             std::cout << "Processing image # " << int2str(i) << " : " << std::endl;
-            mseValues[i] = mialtkComputeMSE( ref , ims[i] , level );
-            psnrValues[i] = mialtkComputePSNR( ref , ims[i] , level );
+            mseValues[i] = mialsrtkComputeMSE( ref , ims[i] , level );
+            psnrValues[i] = mialsrtkComputePSNR( ref , ims[i] , level );
 
             rmseValues[i] = std::sqrt( mseValues[i] );
             nrmseValues[i] = rmseValues[i] / refDynRange;

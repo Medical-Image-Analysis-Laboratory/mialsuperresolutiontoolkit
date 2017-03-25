@@ -2,7 +2,7 @@
 
   Program :   High resolution Fetal and Pediatric MRI reconstruction
   Module  :   Compute image median CNR
-  File    :   mialtkComputeImageMedianCNR.cxx
+  File    :   mialsrtkComputeImageMedianCNR.cxx
   Language:   C++
   Version :   $Revision: 1.0 $
 
@@ -41,7 +41,7 @@
 #include "itkLabelImageToLabelMapFilter.h"
 #include "itkLabelMapMaskImageFilter.h"
 
-#include "mialtkMaths.h"
+#include "mialsrtkMaths.h"
 
 
 int main( int argc, char * argv[] )
@@ -200,8 +200,8 @@ int main( int argc, char * argv[] )
     }
 
     //Compute median value for label1 and label2
-    double median1 = mialtkMedian(vLabel1);
-    double median2 = mialtkMedian(vLabel2);
+    double median1 = mialsrtkMedian(vLabel1);
+    double median2 = mialsrtkMedian(vLabel2);
     std::cout << "Label 1 median : " << median1 << std::endl;
     std::cout << "Label 2 median : " << median2 << std::endl;
 
@@ -217,8 +217,8 @@ int main( int argc, char * argv[] )
            *it2 = abs(*it2 - median2);
     }
 
-    double mad1 = mialtkMedian(vLabel1);
-    double mad2 = mialtkMedian(vLabel2);
+    double mad1 = mialsrtkMedian(vLabel1);
+    double mad2 = mialsrtkMedian(vLabel2);
     std::cout << "Label 1 MAD : " << mad1 << std::endl;
     std::cout << "Label 2 MAD : " << mad2 << std::endl;
 
