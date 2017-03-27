@@ -29,13 +29,17 @@ TARGET_LINK_LIBRARIES(mialsrtkFourierTransform ${ITK_LIBRARIES})
 ADD_EXECUTABLE(mialsrtkMaskImage mialsrtkMaskImage.cxx)
 TARGET_LINK_LIBRARIES(mialsrtkMaskImage ${ITK_LIBRARIES})
 
+ADD_EXECUTABLE(mialsrtkOrientImage mialsrtkOrientImage.cxx)
+TARGET_LINK_LIBRARIES(mialsrtkOrientImage ${ITK_LIBRARIES})
+
 
 INSTALL(TARGETS 
-				mialsrtkCreateImageWithHalo
-				mialsrtkCreateWhiteMatterVolumeFromLabels
-				mialsrtkCropImageUsingMask				
-				mialsrtkCropImageUsingMask
-				mialsrtkFourierTransform
-				mialsrtkMaskImage
+		mialsrtkCreateImageWithHalo
+		mialsrtkCreateWhiteMatterVolumeFromLabels
+		mialsrtkCropImageUsingMask				
+		mialsrtkCropImageUsingMask
+		mialsrtkFourierTransform
+		mialsrtkMaskImage
+		mialsrtkOrientImage
         DESTINATION bin)
 

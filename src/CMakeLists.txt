@@ -145,7 +145,7 @@ message(STATUS USE_OMP=${USE_OMP})
 #   CMAKE_ARGS ${BTK_CMAKE_ARGS}
 # )
 
-# add_subdirectory(BrainLocalizationExtraction)
+add_subdirectory(BrainLocalizationExtraction)
 add_subdirectory(Denoising)
 add_subdirectory(Evaluation)
 add_subdirectory(IntensityStandardization)

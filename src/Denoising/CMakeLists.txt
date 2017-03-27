@@ -3,12 +3,14 @@ INCLUDE_REGULAR_EXPRESSION("^.*$")
 
 INCLUDE_DIRECTORIES(${TCLAP_DIRECTORY})
 INCLUDE_DIRECTORIES(${ANN_INCLUDE_DIR})
-# INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Reconstruction)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/BTK)
 # INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Transformations)
 # INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Maths)
 # INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Registration)
 # INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Maths)
 
+ADD_EXECUTABLE(btkNLMDenoising btkNLMDenoising.cxx)
+TARGET_LINK_LIBRARIES(btkNLMDenoising  ${ITK_LIBRARIES})
 
 ADD_EXECUTABLE(mialsrtkTVDenoising mialsrtkTVDenoising.cxx)
 TARGET_LINK_LIBRARIES(mialsrtkTVDenoising  ${ITK_LIBRARIES})
@@ -16,8 +18,8 @@ TARGET_LINK_LIBRARIES(mialsrtkTVDenoising  ${ITK_LIBRARIES})
 ADD_EXECUTABLE(mialsrtkGaussianDenoising mialsrtkGaussianDenoising.cxx)
 TARGET_LINK_LIBRARIES(mialsrtkGaussianDenoising  ${ITK_LIBRARIES})
 
-
 INSTALL(TARGETS 
+		btkNLMDenoising
 		mialsrtkGaussianDenoising
                 mialsrtkTVDenoising
         DESTINATION 
