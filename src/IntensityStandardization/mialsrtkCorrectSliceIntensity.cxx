@@ -172,7 +172,7 @@ int main( int argc, char * argv [] )
     typedef float MeasurementValueType;
     typedef int RankValType;
     typedef vnl_vector<int> IndexVectorType;
-    typedef mialtk::vnl_index_sort<MeasurementValueType, RankValType> IndexSortType;
+    typedef mialsrtk::vnl_index_sort<MeasurementValueType, RankValType> IndexSortType;
 
     IndexSortType indexXSort;
     vnl_vector<float> sortedXVals;

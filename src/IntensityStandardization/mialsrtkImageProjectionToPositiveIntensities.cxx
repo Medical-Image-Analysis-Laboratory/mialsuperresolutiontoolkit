@@ -22,8 +22,8 @@
 #include "itkImageDuplicator.h"
 #include "itkImageRegionIterator.h"
 
-/* MIALTK includes */
-#include "mialtkMaths.h"
+/* mialsrtk includes */
+#include "mialsrtkMaths.h"
 
 int main( int argc, char *argv[] )
 {
