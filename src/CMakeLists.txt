@@ -87,10 +87,7 @@ FIND_PROGRAM(GIT_EXECUTABLE
   DOC "Git command line client"
 )
 
-
-
 #---- Operations -----------------------------------------------------------------------
-
 
 # Uninstall command
 configure_file(
@@ -103,7 +100,6 @@ add_custom_target(mialtk_uninstall
 
 #set(BTK_INSTALL_DIR ${BTK_DIR}/../bin)
 #set(BTK_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${BTK_INSTALL_DIR})
-
 
 # Executables
 #add_subdirectory( External )
@@ -120,8 +116,6 @@ message(STATUS USE_OMP=${USE_OMP})
 #message(STATUS BTK_CMAKE_ARGS=${BTK_CMAKE_ARGS})
 #message(STATUS GIT_EXECUTABLE=${GIT_EXECUTABLE})
 
-# include(ExternalProject)
-
 # SET(BTK_CMAKE_ARGS
 #   -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
 #   -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
@@ -137,7 +131,6 @@ message(STATUS USE_OMP=${USE_OMP})
 #   -DBUILD_TESTING:BOOL=OFF
 #   -DBUILD_DOCUMENTATION:BOOL=OFF
 #   -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-
 # )
 
 # ExternalProject_Add(fbrain
@@ -151,7 +144,6 @@ message(STATUS USE_OMP=${USE_OMP})
 #   INSTALL_COMMAND ""
 #   CMAKE_ARGS ${BTK_CMAKE_ARGS}
 # )
-
 
 # add_subdirectory(BrainLocalizationExtraction)
 add_subdirectory(Denoising)
@@ -172,5 +164,3 @@ add_subdirectory(Tools)
 # add_subdirectory(CRKit/STAPLE)
 # add_subdirectory(CRKit/Registration)
 #add_subdirectory(Code)
-
-
