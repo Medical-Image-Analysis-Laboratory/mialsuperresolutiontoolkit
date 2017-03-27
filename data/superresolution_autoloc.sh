@@ -1,7 +1,7 @@
 #! Script: Brain image reconstruction / Brain superresolution image using BTK
 # Run with log saved: sh reconstruction.sh > reconstruction_original_images.log 
 #Tune the number of cores used by the OpenMP library for multi-threading purposes
-export OMP_NUM_THREADS=8
+export OMP_NUM_THREADS=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)   
 
 PATIENT=$(basename "$PWD")
 GA=30
@@ -59,23 +59,14 @@ echo "OMP # of cores set to ${OMP_NUM_THREADS}!"
 echo
 
 
-export MIALSRTK_PREFIX=/home/tourbier/Desktop/externalmialtoolkit/bin
-export SLICER_DIR=/home/tourbier/Softwares/Slicer-4.4.0-linux-amd64/lib/Slicer-4.4/cli-modules
-export ATLAS_DIR=/media/Shared_Data_/MyStudies/Atlas
+
 
 #export DIR_PREFIX=$(dirname "$0")
 #export DIR_PREFIX=$(dirname "$DIR_PREFIX")
 #DIR_PREFIX=/media/MYPASSPORT2/Professional/CRL/06-BrainExtraction6_rad1
 
-export MIALSRTK_DIR="${MIALSRTK_PREFIX}"
-export MIALSRTK_UTILITIES=$MIALSRTK_DIR/Utilities
-export MIALSRTK_APPLICATIONS=$MIALSRTK_DIR/Applications
-export MIALSRTK_CRKIT=$MIALSRTK_DIR/CRKit
-printf "MIALSRTK_DIR=${MIALSRTK_DIR} \n"
-
-BTK_HOME=${MIALSRTK_PREFIX}/External/fbrain-build
-export BTK_UTILITIES=$BTK_HOME/Utilities
-export BTK_APPLICATIONS=$BTK_HOME/Applications
+export BIN_DIR="/usr/local/bin"
+printf "BIN_DIR=${BIN_DIR} \n"
 
 PATIENT_DIR="$(dirname "$0")"
 echo "Scan list file : ${1}"
@@ -121,7 +112,7 @@ echo
 VOLS=0
 while read -r line
 do
-	((VOLS = VOLS + 1))
+	VOLS=$((VOLS+1))
 done < "$SCANS"
 
 echo 
@@ -133,12 +124,14 @@ echo "-----------------------------------------------"
 echo
 
 ##Iteration of motion estimation / reconstruction / brain mask refinement
-for (( ITER=$START_ITER; ITER<=$MAX_ITER; ITER++ ))
+ITER="${START_ITER}"
+#for (( ITER=$START_ITER; ITER<=$MAX_ITER; ITER++ ))
+while [ "$ITER" -le "$MAX_ITER" ]
 do
 	echo "Performing iteration # ${ITER}"
 
-	cmdIntensity="$MIALSRTK_UTILITIES/mialtkIntensityStandardization"
-	cmdIntensityNLM="$MIALSRTK_UTILITIES/mialtkIntensityStandardization"
+	cmdIntensity="mialsrtkIntensityStandardization"
+	cmdIntensityNLM="mialsrtkIntensityStandardization"
 
 	if [ "$ITER" -eq "1" ];
 	then
@@ -152,27 +145,27 @@ do
 			echo "Process stack $stack with $orientation orientation..."
 
 		    #Reorient the image
-			$MIALSRTK_UTILITIES/mialtkOrientImage -i $BRAIN_LOC/${stack}_Final.nii.gz -o $RESULTS/${stack}_Final_reo_iteration_${ITER}.nii.gz -O "$orientation"
-			$MIALSRTK_UTILITIES/mialtkOrientImage -i $BRAIN_LOC/${stack}_Final_brain_mask${maskType}.nii.gz -o $RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz -O "$orientation"
+			mialsrtkOrientImage -i $BRAIN_LOC/${stack}.nii.gz -o $RESULTS/${stack}_reo_iteration_${ITER}.nii.gz -O "$orientation"
+			mialsrtkOrientImage -i $BRAIN_LOC/${stack}_brain_mask${maskType}.nii.gz -o $RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz -O "$orientation"
 
 			#denoising on reoriented images
 			weight="0.1"
-			$BTK_APPLICATIONS/btkNLMDenoising -i "$RESULTS/${stack}_Final_reo_iteration_${ITER}.nii.gz" -o "$RESULTS/${stack}_Final_nlm_reo_iteration_${ITER}.nii.gz" -b $weight
+			btkNLMDenoising -i "$RESULTS/${stack}_reo_iteration_${ITER}.nii.gz" -o "$RESULTS/${stack}_nlm_reo_iteration_${ITER}.nii.gz" -b $weight
 
 			#Make slice intensities uniform in the stack
-			$MIALSRTK_UTILITIES/mialtkCorrectSliceIntensity "$RESULTS/${stack}_Final_nlm_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_nlm_uni_reo_iteration_${ITER}.nii.gz"
-			$MIALSRTK_UTILITIES/mialtkCorrectSliceIntensity "$RESULTS/${stack}_Final_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_uni_reo_iteration_${ITER}.nii.gz"
+			mialsrtkCorrectSliceIntensity "$RESULTS/${stack}_nlm_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_nlm_uni_reo_iteration_${ITER}.nii.gz"
+			mialsrtkCorrectSliceIntensity "$RESULTS/${stack}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_uni_reo_iteration_${ITER}.nii.gz"
 
 			#bias field correction slice by slice
-			$MIALSRTK_UTILITIES/mialtkSliceBySliceN4BiasFieldCorrection "$RESULTS/${stack}_Final_nlm_uni_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_nlm_n4bias.nii.gz"
-			$MIALSRTK_UTILITIES/mialtkSliceBySliceCorrectBiasField "$RESULTS/${stack}_Final_uni_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_nlm_n4bias.nii.gz" "$RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}.nii.gz"
+			mialsrtkSliceBySliceN4BiasFieldCorrection "$RESULTS/${stack}_nlm_uni_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_nlm_n4bias.nii.gz"
+			mialsrtkSliceBySliceCorrectBiasField "$RESULTS/${stack}_uni_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_nlm_n4bias.nii.gz" "$RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz"
 
-			$MIALSRTK_UTILITIES/mialtkCorrectSliceIntensity "$RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz"
-			$MIALSRTK_UTILITIES/mialtkCorrectSliceIntensity "$RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}.nii.gz"
+			mialsrtkCorrectSliceIntensity "$RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz"
+			mialsrtkCorrectSliceIntensity "$RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz"
 
 			#Intensity rescaling cmd preparation
-			cmdIntensityNLM="$cmdIntensityNLM -i $RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz"
-			cmdIntensity="$cmdIntensity -i $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}.nii.gz"
+			cmdIntensityNLM="$cmdIntensityNLM -i $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz"
+			cmdIntensity="$cmdIntensity -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz"
 		done < "$SCANS"
 
 		echo "$cmdIntensity"
@@ -185,27 +178,27 @@ do
 			stack=$1
 
 			#Make slice intensities uniform in the stack
-			$MIALSRTK_UTILITIES/mialtkCorrectSliceIntensity "$RESULTS/${stack}_Final_nlm_reo_iteration_1.nii.gz" "$RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_nlm_uni_reo_iteration_${ITER}.nii.gz"
-			$MIALSRTK_UTILITIES/mialtkCorrectSliceIntensity "$RESULTS/${stack}_Final_reo_iteration_1.nii.gz" "$RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_Final_uni_reo_iteration_${ITER}.nii.gz"
+			mialsrtkCorrectSliceIntensity "$RESULTS/${stack}_nlm_reo_iteration_1.nii.gz" "$RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_nlm_uni_reo_iteration_${ITER}.nii.gz"
+			mialsrtkCorrectSliceIntensity "$RESULTS/${stack}_reo_iteration_1.nii.gz" "$RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_uni_reo_iteration_${ITER}.nii.gz"
 
-			cmdCorrectBiasField="$MIALSRTK_UTILITIES/mialtkCorrectBiasFieldWithMotionApplied -i $RESULTS/${stack}_Final_nlm_uni_reo_iteration_${ITER}.nii.gz"
-			cmdCorrectBiasField="$cmdCorrectBiasField -m $RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
-			cmdCorrectBiasField="$cmdCorrectBiasField -o $RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz"
+			cmdCorrectBiasField="mialsrtkCorrectBiasFieldWithMotionApplied -i $RESULTS/${stack}_nlm_uni_reo_iteration_${ITER}.nii.gz"
+			cmdCorrectBiasField="$cmdCorrectBiasField -m $RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
+			cmdCorrectBiasField="$cmdCorrectBiasField -o $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz"
 			cmdCorrectBiasField="$cmdCorrectBiasField --input-bias-field $RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${ITER}_gbcorrfield.nii.gz"
-			cmdCorrectBiasField="$cmdCorrectBiasField --output-bias-field $RESULTS/${stack}_Final_nlm_n4bias_iteration_${ITER}.nii.gz" 
-			cmdCorrectBiasField="$cmdCorrectBiasField -t $RESULTS/${stack}_Final_transform_${VOLS}V_${LAST_ITER}.txt"
+			cmdCorrectBiasField="$cmdCorrectBiasField --output-bias-field $RESULTS/${stack}_nlm_n4bias_iteration_${ITER}.nii.gz" 
+			cmdCorrectBiasField="$cmdCorrectBiasField -t $RESULTS/${stack}_transform_${VOLS}V_${LAST_ITER}.txt"
 			eval "$cmdCorrectBiasField"
 
-			cmdCorrectBiasField="$MIALSRTK_UTILITIES/mialtkCorrectBiasFieldWithMotionApplied -i $RESULTS/${stack}_Final_uni_reo_iteration_${ITER}.nii.gz"
-			cmdCorrectBiasField="$cmdCorrectBiasField -m $RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
-			cmdCorrectBiasField="$cmdCorrectBiasField -o $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}.nii.gz"
+			cmdCorrectBiasField="mialsrtkCorrectBiasFieldWithMotionApplied -i $RESULTS/${stack}_uni_reo_iteration_${ITER}.nii.gz"
+			cmdCorrectBiasField="$cmdCorrectBiasField -m $RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
+			cmdCorrectBiasField="$cmdCorrectBiasField -o $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz"
 			cmdCorrectBiasField="$cmdCorrectBiasField --input-bias-field $RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${ITER}_gbcorrfield.nii.gz"
-			cmdCorrectBiasField="$cmdCorrectBiasField --output-bias-field $RESULTS/${stack}_Final_n4bias_iteration_${ITER}.nii.gz" 
-			cmdCorrectBiasField="$cmdCorrectBiasField -t $RESULTS/${stack}_Final_transform_${VOLS}V_${LAST_ITER}.txt"
+			cmdCorrectBiasField="$cmdCorrectBiasField --output-bias-field $RESULTS/${stack}_n4bias_iteration_${ITER}.nii.gz" 
+			cmdCorrectBiasField="$cmdCorrectBiasField -t $RESULTS/${stack}_transform_${VOLS}V_${LAST_ITER}.txt"
 			eval "$cmdCorrectBiasField"
 
-			cmdIntensityNLM="$cmdIntensityNLM -i $RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz"
-			cmdIntensity="$cmdIntensity -i $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}.nii.gz"
+			cmdIntensityNLM="$cmdIntensityNLM -i $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz"
+			cmdIntensity="$cmdIntensity -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz"
 			
 		done < "$SCANS"
 
@@ -217,18 +210,18 @@ do
 	eval "$cmdIntensity"
 
 	#histogram normalization - need to change the brain mask name expected according to the one used (full auto/localization and rigid extraction/localization only/manual)
-	python ${PATIENT_DIR}/mialtkHistogramNormalizationNLM.py -i "${RESULTS}" -m "${RESULTS}" -t "${maskType}" -o "${RESULTS}" -I "${ITER}"
-	python ${PATIENT_DIR}/mialtkHistogramNormalization.py -i "${RESULTS}" -m "${RESULTS}" -t "${maskType}" -o "${RESULTS}" -I "${ITER}"
+	python ${BIN_DIR}/mialsrtkHistogramNormalization.py -i "${RESULTS}" -m "${RESULTS}" -t "${maskType}" -o "${RESULTS}" -I "${ITER}"-S "nlm_uni_bcorr_reo"
+	python ${BIN_DIR}/mialsrtkHistogramNormalization.py -i "${RESULTS}" -m "${RESULTS}" -t "${maskType}" -o "${RESULTS}" -I "${ITER}" -S "uni_bcorr_reo"
 
-	cmdIntensity="$MIALSRTK_UTILITIES/mialtkIntensityStandardization"
-	cmdIntensityNLM="$MIALSRTK_UTILITIES/mialtkIntensityStandardization"
+	cmdIntensity="mialsrtkIntensityStandardization"
+	cmdIntensityNLM="mialsrtkIntensityStandardization"
 	while read -r line
 	do
 		set -- $line
 		stack=$1
 		#Intensity rescaling cmd preparation
-		cmdIntensityNLM="$cmdIntensityNLM -i $RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz -o $RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
-		cmdIntensity="$cmdIntensity -i $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz -o $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
+		cmdIntensityNLM="$cmdIntensityNLM -i $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz -o $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
+		cmdIntensity="$cmdIntensity -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz -o $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
 	done < "$SCANS"
 
 	#Intensity rescaling
@@ -237,25 +230,25 @@ do
 
 	echo "Initialize the super-resolution image using initial masks - Iteration ${ITER}..."
 
-	cmdImageRECON="$MIALSRTK_APPLICATIONS/mialtkImageReconstruction --mask"
-	cmdSuperResolution="$MIALSRTK_APPLICATIONS/mialtkTVSuperResolutionWithImplicitGradientDescent"
-	#cmdRobustSuperResolution="$MIALSRTK_APPLICATIONS/mialtkRobustTVSuperResolutionWithGMM"
+	cmdImageRECON="$MIALSRTK_APPLICATIONS/mialsrtkImageReconstruction --mask"
+	cmdSuperResolution="$MIALSRTK_APPLICATIONS/mialsrtkTVSuperResolutionWithImplicitGradientDescent"
+	#cmdRobustSuperResolution="$MIALSRTK_APPLICATIONS/mialsrtkRobustTVSuperResolutionWithGMM"
 
 	#Preparation for (1) motion estimation and SDI reconstruction and (2) super-resolution reconstruction
 	while read -r line
 	do
 		set -- $line
 		stack=$1
-		$MIALSRTK_UTILITIES/mialtkMaskImage -i "$RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz" -m $RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz -o "$RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
+		mialsrtkMaskImage -i "$RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz" -m $RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz -o "$RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
 
-		cmdImageRECON="$cmdImageRECON -i $RESULTS/${stack}_Final_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
-		cmdImageRECON="$cmdImageRECON -m $RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
-		cmdImageRECON="$cmdImageRECON -t $RESULTS/${stack}_Final_transform_${VOLS}V_${ITER}.txt"
+		cmdImageRECON="$cmdImageRECON -i $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
+		cmdImageRECON="$cmdImageRECON -m $RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
+		cmdImageRECON="$cmdImageRECON -t $RESULTS/${stack}_transform_${VOLS}V_${ITER}.txt"
 
-		cmdSuperResolution="$cmdSuperResolution -i $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
-		cmdSuperResolution="$cmdSuperResolution -m $RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
-		cmdSuperResolution="$cmdSuperResolution -t $RESULTS/${stack}_Final_transform_${VOLS}V_${ITER}.txt"
-		#cmdRobustSuperResolution="$cmdRobustSuperResolution -i $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz -m $RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz -t $RESULTS/${stack}_Final_transform_${VOLS}V_${ITER}.txt"
+		cmdSuperResolution="$cmdSuperResolution -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
+		cmdSuperResolution="$cmdSuperResolution -m $RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
+		cmdSuperResolution="$cmdSuperResolution -t $RESULTS/${stack}_transform_${VOLS}V_${ITER}.txt"
+		#cmdRobustSuperResolution="$cmdRobustSuperResolution -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz -m $RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz -t $RESULTS/${stack}_transform_${VOLS}V_${ITER}.txt"
 	done < "$SCANS"
 
 	#Run motion estimation and SDI reconstruction
@@ -298,15 +291,15 @@ do
 	echo
 
 	#Preparation for brain mask refinement
-	cmdRefineMasks="$MIALSRTK_UTILITIES/mialtkRefineHRMaskByIntersection --use-staple --radius-dilation ${RAD_DILATION}"
+	cmdRefineMasks="mialsrtkRefineHRMaskByIntersection --use-staple --radius-dilation ${RAD_DILATION}"
 	while read -r line
 	do
 		set -- $line
 		stack=$1
-		cmdRefineMasks="$cmdRefineMasks -i $RESULTS/${stack}_Final_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
-		cmdRefineMasks="$cmdRefineMasks -m $RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
-		cmdRefineMasks="$cmdRefineMasks -t $RESULTS/${stack}_Final_transform_${VOLS}V_${ITER}.txt"
-		cmdRefineMasks="$cmdRefineMasks -O $RESULTS/${stack}_Final_brain_mask${maskType}_reo_iteration_${NEXT_ITER}.nii.gz"
+		cmdRefineMasks="$cmdRefineMasks -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
+		cmdRefineMasks="$cmdRefineMasks -m $RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${ITER}.nii.gz"
+		cmdRefineMasks="$cmdRefineMasks -t $RESULTS/${stack}_transform_${VOLS}V_${ITER}.txt"
+		cmdRefineMasks="$cmdRefineMasks -O $RESULTS/${stack}_brain_mask${maskType}_reo_iteration_${NEXT_ITER}.nii.gz"
 	done < "$SCANS"
 
 	#Brain mask refinement
@@ -315,17 +308,18 @@ do
 	eval "$cmdRefineMasks"
 
 	#Bias field refinement
-	$MIALSRTK_UTILITIES/mialtkN4BiasFieldCorrection "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${ITER}.nii.gz" "$RESULTS/SDI_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${ITER}_brain_mask.nii.gz" "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${NEXT_ITER}_gbcorr.nii.gz" "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${NEXT_ITER}_gbcorrfield.nii.gz"
+	mialsrtkN4BiasFieldCorrection "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${ITER}.nii.gz" "$RESULTS/SDI_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${ITER}_brain_mask.nii.gz" "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${NEXT_ITER}_gbcorr.nii.gz" "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${NEXT_ITER}_gbcorrfield.nii.gz"
 
 	#Brain masking of the reconstructed image
 
-	$MIALSRTK_UTILITIES/mialtkMaskImage -i "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${ITER}.nii.gz" -m "$RESULTS/SDI_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${ITER}_brain_mask.nii.gz" -o "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${ITER}_masked.nii.gz"
+	mialsrtkMaskImage -i "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${ITER}.nii.gz" -m "$RESULTS/SDI_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${ITER}_brain_mask.nii.gz" -o "$RESULTS/SRTV_${PATIENT}_${VOLS}V_lambda_${LAMBDA_TV}_deltat_${DELTA_T}_loops_${LOOPS}_rad${RAD_DILATION}_it${ITER}_masked.nii.gz"
 
 	echo
 	echo "##########################################################################################################################"
 	echo
 
 	LAST_ITER="$ITER"
+	ITER=$((ITER+1))
 
 done
 

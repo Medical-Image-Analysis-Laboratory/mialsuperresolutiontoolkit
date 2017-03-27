@@ -1,5 +1,3 @@
-rsagittal1_lr sagittal
-rAxial1_lr axial
-rcoronal1_lr coronal
-rsagittal2_lr sagittal
-rsagittal3_lr sagittal
+axial1_lr axial
+coronal1_lr coronal
+sagittal1_lr sagittal

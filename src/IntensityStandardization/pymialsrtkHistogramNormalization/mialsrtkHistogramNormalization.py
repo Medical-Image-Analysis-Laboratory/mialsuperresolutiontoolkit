@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse, getopt, sys
 
 #import scipy.interpolate
@@ -183,7 +185,7 @@ def computeMeanMapImageLandmarks(list_landmarks):
 
 
 def main(image_directory,mask_directory,output_directory,iteration):
-    image_paths= sorted(glob.glob(image_directory+"/*_lr_uni_bcorr_reo_iteration_"+iteration+".nii.gz"))
+    image_paths= sorted(glob.glob(image_directory+"/*_lr_"+suffix+"_iteration_"+iteration+".nii.gz"))
     mask_paths=sorted(glob.glob(mask_directory+"/*_lr_brain_mask"+str(args.mask_type)+"_reo_iteration_"+iteration+".nii.gz"))
     if(len(image_paths)!=len(mask_paths)):
         print 'Loading failed: Number of images and masks are different (# images = '+str(len(image_paths))+' \ # masks = '+str(len(mask_paths))+')'
@@ -282,7 +284,7 @@ parser.add_argument('-i','--input_dir',help='Input directory')
 parser.add_argument('-m','--mask_dir',help='Mask directory')
 parser.add_argument('-t','--mask_type',help='Mask type: could be "", SSMMI_CompositeVersor2DBSplineNCC, SSMMI_VersorOnlyNCC or MAN')
 parser.add_argument('-o','--output_dir',help='Output directory')
-parser.add_argument('-S','--suffix',help='Suffix of image filename, such as filename ended by *_Final_${suffix}_iteration_${iteration}.nii.gz, where ${iteration} is given by input flag -I or --iteration. suffix="_uni_bcorr_reo" (not denoised images) or suffix="_nlm_uni_bcorr_reo" (denoised images)')
+parser.add_argument('-S','--suffix',help='Suffix of image filename, such as filename ended by *_Final_${suffix}_iteration_${iteration}.nii.gz, where ${iteration} is given by input flag -I or --iteration. suffix="uni_bcorr_reo" (not denoised images) or suffix="nlm_uni_bcorr_reo" (denoised images)')
 parser.add_argument('-I','--iteration',help='Reconstruction iteration, needed to load the corresponding input images being histogram equalized')
 
 args = parser.parse_args()
