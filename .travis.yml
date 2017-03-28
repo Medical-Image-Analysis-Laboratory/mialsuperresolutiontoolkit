@@ -47,5 +47,5 @@ script:
   # Run your build commands next
   - mkdir build
   - cd build
-  - cmake ../src
+  - cmake ../src -DUSE_OMP:BOOL=ON
   - make
