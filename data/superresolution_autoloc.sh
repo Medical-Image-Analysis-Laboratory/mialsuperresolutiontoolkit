@@ -210,7 +210,7 @@ do
 	eval "$cmdIntensity"
 
 	#histogram normalization - need to change the brain mask name expected according to the one used (full auto/localization and rigid extraction/localization only/manual)
-	python ${BIN_DIR}/mialsrtkHistogramNormalization.py -i "${RESULTS}" -m "${RESULTS}" -t "${maskType}" -o "${RESULTS}" -I "${ITER}"-S "nlm_uni_bcorr_reo"
+	python ${BIN_DIR}/mialsrtkHistogramNormalization.py -i "${RESULTS}" -m "${RESULTS}" -t "${maskType}" -o "${RESULTS}" -I "${ITER}" -S "nlm_uni_bcorr_reo"
 	python ${BIN_DIR}/mialsrtkHistogramNormalization.py -i "${RESULTS}" -m "${RESULTS}" -t "${maskType}" -o "${RESULTS}" -I "${ITER}" -S "uni_bcorr_reo"
 
 	cmdIntensity="mialsrtkIntensityStandardization"
@@ -230,8 +230,8 @@ do
 
 	echo "Initialize the super-resolution image using initial masks - Iteration ${ITER}..."
 
-	cmdImageRECON="$MIALSRTK_APPLICATIONS/mialsrtkImageReconstruction --mask"
-	cmdSuperResolution="$MIALSRTK_APPLICATIONS/mialsrtkTVSuperResolutionWithImplicitGradientDescent"
+	cmdImageRECON="mialsrtkImageReconstruction --mask"
+	cmdSuperResolution="mialsrtkTVSuperResolution"
 	#cmdRobustSuperResolution="$MIALSRTK_APPLICATIONS/mialsrtkRobustTVSuperResolutionWithGMM"
 
 	#Preparation for (1) motion estimation and SDI reconstruction and (2) super-resolution reconstruction
