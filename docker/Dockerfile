@@ -21,6 +21,11 @@ RUN apt-get update && apt-get install software-properties-common -y && apt-add-r
         libncurses5  \
         libncurses5-dev \
   	libann-dev \
+	python-qt4 \
+	python-nibabel \
+	python-numpy \
+	python-scipy \
+	python-matplotlib \
 && apt-get clean
 
 # # Git clone the repo from MIALSRTK official repository on GitHub. #
