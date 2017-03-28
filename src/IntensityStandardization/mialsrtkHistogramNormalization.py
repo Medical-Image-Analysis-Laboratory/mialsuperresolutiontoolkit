@@ -184,7 +184,7 @@ def computeMeanMapImageLandmarks(list_landmarks):
     return mean_landmarks
 
 
-def main(image_directory,mask_directory,output_directory,iteration):
+def main(image_directory,mask_directory,output_directory,suffix,iteration):
     image_paths= sorted(glob.glob(image_directory+"/*_lr_"+suffix+"_iteration_"+iteration+".nii.gz"))
     mask_paths=sorted(glob.glob(mask_directory+"/*_lr_brain_mask"+str(args.mask_type)+"_reo_iteration_"+iteration+".nii.gz"))
     if(len(image_paths)!=len(mask_paths)):
@@ -303,7 +303,7 @@ if (args.input_dir!=None and args.mask_dir!=None and args.output_dir!=None and a
     print 'Output directory: '+str(args.output_dir)
     print 'Image file suffix: '+str(args.suffix)
     print 'Reconstruction iteration: '+str(args.iteration)
-    main(str(args.input_dir),str(args.mask_dir),str(args.output_dir),str(args.iteration))
+    main(str(args.input_dir),str(args.mask_dir),str(args.output_dir),str(args.suffix),str(args.iteration))
 else:
     print("Usage: %s -i input_directory -m mask_directory -t mask_type -o output_directory -S image_file_suffix -I iteration" % sys.argv[0])
     sys.exit(2)
