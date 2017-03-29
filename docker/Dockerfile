@@ -3,7 +3,7 @@ MAINTAINER sebastientourbier
 RUN apt-get update && apt-get install software-properties-common -y && apt-add-repository ppa:saiarcot895/myppa -y && apt-get update && apt-get -y install apt-fast \
 && apt-fast install -y \
 	build-essential \
-	x11-apps
+	x11-apps \
 	git \
 	gcc-4.8 \
         g++-4.8 \
