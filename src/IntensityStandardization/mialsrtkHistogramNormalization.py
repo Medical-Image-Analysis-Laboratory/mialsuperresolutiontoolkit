@@ -5,7 +5,7 @@ import argparse, getopt, sys
 #import scipy.interpolate
 
 import numpy as np
-from matplotlib import pyplot
+#from matplotlib import pyplot
 import glob
 import nibabel as nib
 import scipy.ndimage
@@ -55,9 +55,9 @@ def displayHistogram(image,image_name,loffset,roffset):
     bins = np.round(np.arange(loffset,np.max(image)-roffset,40))
     histo, bins = np.histogram(image, bins=bins) 
     bins_center = 0.5*(bins[1:] + bins[:-1])
-    pyplot.plot(bins_center,histo,alpha=0.5)
-    #pyplot.hist(fit(np.random.uniform(x[0],x[-1],len(image))),bins=y)
-    #pyplot.hist(image,bins,histtype='step',alpha=0.5,label=image_name)
+    #pyplot.plot(bins_center,histo,alpha=0.5)
+    ##pyplot.hist(fit(np.random.uniform(x[0],x[-1],len(image))),bins=y)
+    ##pyplot.hist(image,bins,histtype='step',alpha=0.5,label=image_name)
     return 1
 
 def extractImageLandmarks(image):
@@ -132,7 +132,7 @@ def mapImage(image,lmap_mean,list_landmarks,s1,s2,p1,p2):
     image_out=image.copy().astype('float')
     tmp=image.copy().astype('float')
     index=0
-    #pyplot.figure(2)
+    ##pyplot.figure(2)
     #pdb.set_trace()
     while index < len(lmap_mean)+1:
         if index ==0:
@@ -141,7 +141,7 @@ def mapImage(image,lmap_mean,list_landmarks,s1,s2,p1,p2):
             coefs=np.polyfit(x,y,1)
             mask=np.logical_and(image > 0, image <= list_landmarks[index])
             image_out[mask]=coefs[0]*image[mask]+coefs[1]
-            #pyplot.plot(x,y,marker='o', linestyle='--');
+            ##pyplot.plot(x,y,marker='o', linestyle='--');
         else:
             if index==(len(lmap_mean)):
                 x=np.array([int(list_landmarks[index-1]),int(p2)])
@@ -149,16 +149,16 @@ def mapImage(image,lmap_mean,list_landmarks,s1,s2,p1,p2):
                 coefs=np.polyfit(x,y,1)
                 mask=image>list_landmarks[index-1]
                 image_out[mask]=coefs[0]*image[mask]+coefs[1]
-                #pyplot.plot(x,y,marker='o', linestyle='--');
+                ##pyplot.plot(x,y,marker='o', linestyle='--');
             else:
                 x=np.array([int(list_landmarks[index-1]),int(list_landmarks[index])])
                 y=np.array([int(lmap_mean[str(index-1)]),int(lmap_mean[str(index)])])
                 coefs=np.polyfit(x,y,1)
                 mask=np.logical_and(image>list_landmarks[index-1], image<=list_landmarks[index])
                 image_out[mask]=coefs[0]*image[mask]+coefs[1]
-                #pyplot.plot(x,y,marker='o', linestyle='--');
+                ##pyplot.plot(x,y,marker='o', linestyle='--');
         index+=1
-    #pyplot.show()
+    ##pyplot.show()
     return image_out
 
 def computeMeanMapImageLandmarks(list_landmarks):
@@ -196,8 +196,8 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
     list_landmarks=[]
    
     s1=1
-    pyplot.figure(1)
-    pyplot.subplot(211)
+    #pyplot.figure(1)
+    #pyplot.subplot(211)
     index=0
     while index<len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
@@ -210,10 +210,10 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
         list_landmarks.append(extractImageLandmarks(maskedImage))
         index+=1
 
-    pyplot.legend()
-    pyplot.xlabel('Intensity')
-    pyplot.ylabel('# of voxels')
-    pyplot.title('Histograms: Overview before normalization')
+    #pyplot.legend()
+    #pyplot.xlabel('Intensity')
+    #pyplot.ylabel('# of voxels')
+    #pyplot.title('Histograms: Overview before normalization')
     list_landmarks,dS = trainImageLandmarks(list_landmarks)
 
     s2 = np.ceil(dS - s1)
@@ -224,8 +224,8 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
     mean_landmarks = computeMeanMapImageLandmarks(list_landmarks_mapped)
 
     index = 0
-    pyplot.figure(1)
-    pyplot.subplot(212)
+    #pyplot.figure(1)
+    #pyplot.subplot(212)
     while index<len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
         print 'Map image '+image_name
@@ -246,12 +246,12 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
         print 'Save normalized image '+str(image_name)+ ' as '+str(new_image_name) + '(one 2 one mapping :'+str(o2o)+')'
         nib.save(new_image,new_image_name)
         index+=1
-    pyplot.legend()
-    pyplot.xlabel('Intensity')
-    pyplot.ylabel('# of voxels')
-    pyplot.title('Histograms: Overview after normalization')
+    #pyplot.legend()
+    #pyplot.xlabel('Intensity')
+    #pyplot.ylabel('# of voxels')
+    #pyplot.title('Histograms: Overview after normalization')
     ## To be uncommented to display plot before/after histogram normalizatiopn
-    #pyplot.show()
+    ##pyplot.show()
 
 # Read command line args
 # try:
