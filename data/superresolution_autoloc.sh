@@ -65,7 +65,7 @@ echo
 #export DIR_PREFIX=$(dirname "$DIR_PREFIX")
 #DIR_PREFIX=/media/MYPASSPORT2/Professional/CRL/06-BrainExtraction6_rad1
 
-export BIN_DIR="/usr/local/bin"
+#export BIN_DIR="/usr/local/bin"
 printf "BIN_DIR=${BIN_DIR} \n"
 
 PATIENT_DIR="$(dirname "$0")"
