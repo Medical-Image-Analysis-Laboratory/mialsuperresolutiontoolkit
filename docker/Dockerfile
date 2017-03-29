@@ -3,6 +3,7 @@ MAINTAINER sebastientourbier
 RUN apt-get update && apt-get install software-properties-common -y && apt-add-repository ppa:saiarcot895/myppa -y && apt-get update && apt-get -y install apt-fast \
 && apt-fast install -y \
 	build-essential \
+	x11-apps
 	git \
 	gcc-4.8 \
         g++-4.8 \
@@ -40,4 +41,5 @@ RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_
 && make -j2 && sudo make install && cd .. 
 
 ENV BIN_DIR "/usr/local/bin" 
+ENV DISPLAY :0
 #&& make install && make clean && cd .. && rm -rf build
