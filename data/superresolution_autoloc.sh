@@ -279,7 +279,7 @@ do
 	#eval "$cmdRobustSuperResolution"
 
 	NEXT_ITER=${ITER}
-	((NEXT_ITER = NEXT_ITER + 1))
+	NEXT_ITER=$((NEXT_ITER+1))
 
 	echo "##########################################################################################################################"
 	echo
