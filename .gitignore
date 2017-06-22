@@ -9,6 +9,11 @@
 *.*~
 *.save
 
+# Generated testing images #
+############################
+superresolution.nii.gz
+superresolution_masked.nii.gz
+
 # LATEX #
 #########
 *.tex.backup
