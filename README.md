@@ -1,6 +1,6 @@
 ![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
 
-# 1) Instructions for use of installation-free Docker image #
+# I) Instructions for use of installation-free Docker image #
 # Tested on Ubuntu 16.04 #
 
 ## Docker installation
@@ -107,9 +107,9 @@ cd /fetaldata
 sh superresolution_autoloc.sh listScansRECONauto.txt
 
 ```
-# 2) For developers/contributors
+# II) For developers/contributors
 
-# 2.1) Installation of MIALSRTK and dependencies on Ubuntu 16.04 LTS 
+# 1) Installation of MIALSRTK and dependencies on Ubuntu 16.04 LTS 
 
 ## Dependencies (Compilers: gcc/g++ 4.8 / ITK 4.9 / VTK 6.2 / CMake-gui 3.5.1/ TCLAP 1.2.1 / ANN 1.1.2)
 
@@ -242,7 +242,7 @@ make -j8
 git config --global user.name "Your git username"
 git config --global user.email "Your email "
 ```
-# 2.2) Installation of MIALSRTK and dependencies on MAC OSX 10.9.2 #
+# 2) Installation of MIALSRTK and dependencies on MAC OSX 10.9.2 #
 
 ## System prerequisites ##
 
