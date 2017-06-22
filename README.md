@@ -6,10 +6,14 @@ The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consis
 
 * Sébastien Tourbier (sebastientourbier)
 
+---
+
 # I) Instructions for use of installation-free Docker image #
 
-Tested on Ubuntu 16.04 #
+```
+Note: tested on Ubuntu 16.04
 
+```
 ## Docker installation
 Install Docker, with apt-get
 
@@ -114,7 +118,11 @@ cd /fetaldata
 sh superresolution_autoloc.sh listScansRECONauto.txt
 
 ```
+---
+
 # II) For developers/contributors
+
+---
 
 # 1) Installation of MIALSRTK and dependencies on Ubuntu 16.04 LTS 
 
@@ -249,6 +257,8 @@ make -j8
 git config --global user.name "Your git username"
 git config --global user.email "Your email "
 ```
+---
+
 # 2) Installation of MIALSRTK and dependencies on MAC OSX 10.9.2 #
 
 ## System prerequisites ##
