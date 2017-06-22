@@ -1,7 +1,9 @@
 ![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
 
-# Instructions for use of installation-free Docker image (tested on Ubuntu 16.04)#
+# Instructions for use of installation-free Docker image #
+# Tested on Ubuntu 16.04 #
 
+## Docker installation
 Install Docker, with apt-get
 
 ```
