@@ -109,7 +109,7 @@ sh superresolution_autoloc.sh listScansRECONauto.txt
 ```
 # For developers/contributors
 
-#Installation of MIALSRTK and dependencies on Ubuntu 16.04 LTS 
+# Installation of MIALSRTK and dependencies on Ubuntu 16.04 LTS 
 
 ## Dependencies (Compilers: gcc/g++ 4.8 / ITK 4.9 / VTK 6.2 / CMake-gui 3.5.1/ TCLAP 1.2.1 / ANN 1.1.2)
 
