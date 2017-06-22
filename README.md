@@ -136,7 +136,7 @@ sudo apt-get install libgdcm2-dev libvtkgdcm2-dev libgdcm-tools libvtkgdcm-tools
 cd YOUR_DIR
 
 ```
-2) Clone mialtk from the github repository:
+2) Clone MIALSRTK from the github repository:
 
 ```
 #!bash
@@ -160,7 +160,7 @@ cd mialsuperresolutiontoolkit
 mkdir build
 
 ```
-5) Configure MIALTK using CMake gui with the following flags:   
+5) Configure MIALSRTK using CMake gui with the following flags:   
 
 ```
 #!cmake
@@ -539,20 +539,20 @@ make -j8
 cd YOUR_DIR
 
 ```
-2) Clone mialtk from the bitbucket repository:
+2) Clone MIALSRTK from the github repository:
 
 ```
 #!bash
 
-git clone https://sebastientourbier@bitbucket.org/sebastientourbier/mialtoolkit.git
+git clone git@github.com:sebastientourbier/mialsuperresolutiontoolkit.git
 
 ```
-3) Go into mialtk local git repo:
+3) Go into MIALSRTK local git repo:
 
 ```
 #!bash
 
-cd externalmialtoolkit
+cd mialsuperresolutiontoolkit
 
 ```
 4) Create a build folder
@@ -563,7 +563,7 @@ cd externalmialtoolkit
 mkdir build
 
 ```
-5) Configure MIALTK using CMake gui with the following flags:          
+5) Configure MIALSRTK using CMake gui with the following flags:          
 
 ```
 #!cmake
@@ -624,7 +624,8 @@ mkdir build
  CMAKE_USE_RELATIVE_PATHS         OFF                                                         
  CMAKE_VERBOSE_MAKEFILE           OFF                                                         
  GIT_EXECUTABLE                   /usr/bin/git                                                
- ITK_DIR                          /usr/local/lib/cmake/ITK-4.5                                
+ ITK_DIR                          /usr/local/lib/cmake/ITK-4.5
+ PYTHON                           /usr/bin/python
  TCLAP_DIRECTORY                  /usr/local/Cellar/tclap/1.2.1/include                       
  USE_OMP                          OFF                                                         
  USE_SYSTEM_BTK                   OFF
