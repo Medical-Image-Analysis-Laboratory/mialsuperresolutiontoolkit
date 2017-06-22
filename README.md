@@ -2,7 +2,7 @@
 
 # Credits #
 
--Sébastien Tourbier (sebastientourbier)
+* Sébastien Tourbier (sebastientourbier)
 
 # I) Instructions for use of installation-free Docker image #
 # Tested on Ubuntu 16.04 #
