@@ -7,7 +7,8 @@ The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consis
 * Sébastien Tourbier (sebastientourbier)
 
 # I) Instructions for use of installation-free Docker image #
-# Tested on Ubuntu 16.04 #
+
+Tested on Ubuntu 16.04 #
 
 ## Docker installation
 Install Docker, with apt-get
