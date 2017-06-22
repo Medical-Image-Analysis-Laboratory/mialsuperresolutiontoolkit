@@ -1,5 +1,7 @@
 ![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
 
+The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consists of a set of C++ image processing tools necessary to perform motion-robust super-resolution fetal MRI reconstruction. This toolkit includes all algorithms and methods for brain extraction, intensity standardization, motion estimation and super-resolution developed in the context of my PhD. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading.
+
 # Credits #
 
 * Sébastien Tourbier (sebastientourbier)
