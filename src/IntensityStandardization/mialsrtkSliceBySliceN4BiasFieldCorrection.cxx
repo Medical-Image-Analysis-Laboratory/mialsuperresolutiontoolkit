@@ -1,10 +1,14 @@
 /*=========================================================================
 
-Program: N4 MRI Bias Field Correction
+Program: Independent slice by slice N4 MRI Bias Field Correction
 Language: C++
 Date: $Date: 2012-28-12 14:00:00 +0100 (Fri, 28 Dec 2012) $
 Version: $Revision: 1 $
 Author: $Sebastien Tourbier$
+
+Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 ==========================================================================*/
 
