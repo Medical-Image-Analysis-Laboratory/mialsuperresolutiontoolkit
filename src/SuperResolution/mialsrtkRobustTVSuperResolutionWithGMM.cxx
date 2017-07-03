@@ -1,27 +1,16 @@
-/*==========================================================================
 
-  © Université de Lausanne (UNIL) & Centre Hospitalier Universitaire de Lausanne (CHUV) - Centre d'Imagerie BioMédicale
-    Harvard Medical School & Boston Children's Hospital - Computational Radiology Laboratory
+/*=========================================================================
 
-  Date: 08/04/2015
-  Author(s): Sebastien Tourbier (sebastien.tourbier@unil.ch)
+Program: Performs segmentation-driven super-resolution image reconstruction
+Language: C++
+Date: $Date: 2016-30-09 $
+Version: $Revision: 1 $
+Author: $Sebastien Tourbier$
 
-  As a counterpart to the access to the source code, users are provided only
-  with a limited warranty  and the software's author,  the holder of the
-  economic rights,  and the successive licensors  have only  limited
-  liability.
-
-  In this respect, the user's attention is drawn to the risks associated
-  with loading,  using,  modifying and/or developing or reproducing the
-  software by the user in light of its specific status of free software,
-  that may mean  that it is complicated to manipulate,  and  that  also
-  therefore means  that it is reserved for developers  and  experienced
-  professionals having in-depth computer knowledge. Users are therefore
-  encouraged to load and test the software's suitability as regards their
-  requirements in conditions enabling the security of their systems and/or
-  data to be ensured and,  more generally, to use and operate it in the
-  same conditions as regards security.
-
+Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  
 ==========================================================================*/
 
 #if defined(_MSC_VER)
