@@ -7,6 +7,10 @@ Date: $Date$
 Version: 1.0
 Author: Sebastien Tourbier
 
+Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
 =========================================================================*/
 /* Standard includes */
 #include <tclap/CmdLine.h>
