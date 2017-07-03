@@ -1,10 +1,11 @@
-/*=========================================================================
+/*==========================================================================
+  © 
 
-Program: 2D Brain Segmentation with Geodesic Active Contours (header)
-Language: C++
-Date: $Date: 2013-08-22 $
-Version: $Revision: 1.4 $
-Author: $Sebastien Tourbier$
+  Program: 2D Brain Segmentation with Geodesic Active Contours (header)
+  Language: C++
+  Date: $Date: 2013-08-22 $
+  Version: $Revision: 1.4 $
+  Author: $Sebastien Tourbier$
 
 ==========================================================================*/
 #ifndef STKSEGMENTATIONWEIGHTEDFUSION_H
