@@ -1,3 +1,9 @@
+/*==========================================================================
+  © 
+  Date: 01/05/2015
+  Author(s): Sebastien Tourbier (sebastien.tourbier@unil.ch)
+==========================================================================*/
+
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
