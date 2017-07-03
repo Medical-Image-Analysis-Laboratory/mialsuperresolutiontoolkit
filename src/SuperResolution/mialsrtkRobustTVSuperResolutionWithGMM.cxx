@@ -1,10 +1,7 @@
 
 /*=========================================================================
 
-Program: Performs segmentation-driven super-resolution image reconstruction
-Language: C++
-Date: $Date: 2016-30-09 $
-Version: $Revision: 1 $
+Program: Performs robust, segmentation-driven, Total-Variation-regularized super-resolution image reconstruction.
 Author: $Sebastien Tourbier$
 
 Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
