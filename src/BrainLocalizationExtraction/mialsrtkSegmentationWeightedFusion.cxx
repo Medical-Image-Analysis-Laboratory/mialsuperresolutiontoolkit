@@ -1,10 +1,11 @@
-/*=========================================================================
+/*==========================================================================
+  © 
 
-Program: Combine multiple masks in one unique mask (using: majoriting voting, global weighting or, local weighting)
-Language: C++
-Date: $Date: 2013-08-22 $
-Version: $Revision: 1.4 $
-Author: $Sebastien Tourbier$
+  Program: Combine multiple masks in one unique mask (using: majoriting voting, global weighting or, local weighting)
+  Language: C++
+  Date: $Date: 2013-08-22 $
+  Version: $Revision: 1.4 $
+  Author: $Sebastien Tourbier$
 
 ==========================================================================*/
 #include "mialsrtkSegmentationWeightedFusion.h"
