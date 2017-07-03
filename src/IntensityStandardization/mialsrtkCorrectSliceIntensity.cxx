@@ -1,11 +1,15 @@
 /*=========================================================================
 
-Program: Image Masking
+Program: Mean slice intensity correctiom
 Language: C++
 Date: $Date: 2012-28-12 $
 Version: $Revision: 1 $
 Author: $Sebastien Tourbier$
 
+Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+     
 ==========================================================================*/
 
 
