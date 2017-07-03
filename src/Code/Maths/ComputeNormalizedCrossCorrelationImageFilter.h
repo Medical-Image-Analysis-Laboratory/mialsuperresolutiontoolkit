@@ -1,3 +1,10 @@
+/*=========================================================================
+
+Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  
+==========================================================================*/
 #ifndef _ITK_ComputeNormalizedCrossCorrelation_H_
 #define _ITK_ComputeNormalizedCrossCorrelation_H_
 
