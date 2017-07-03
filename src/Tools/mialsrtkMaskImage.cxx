@@ -1,10 +1,11 @@
-/*=========================================================================
-
-Program: Apply mask to input image and return the output masked image
-Language: C++
-Date: $Date: 2015-05-07 $
-Version: $Revision: 1.0 $
-Author: $Sebastien Tourbier$
+/*==========================================================================
+  © 
+  
+  Program: Apply mask to input image and return the output masked image
+  Language: C++
+  Date: $Date: 2015-05-07 $
+  Version: $Revision: 1.0 $
+  Author: $Sebastien Tourbier$
 
 ==========================================================================*/
 #if defined(_MSC_VER)
