@@ -1,11 +1,16 @@
-/*==========================================================================
+/*=========================================================================
+Program: Project all negative intensities in the input image to zero
 
-  © Université de Lausanne (UNIL) & Centre Hospitalier Universitaire de Lausanne (CHUV) - Centre d'Imagerie BioMédicale
+Language: C++
+Date: $Date: 2012-28-12 $
+Version: $Revision: 1 $
+Author: $Sebastien Tourbier$
 
-  Date: 22/05/14
-  Author(s): Sebastien Tourbier (sebastien.tourbier@unil.ch)
-
-  ==========================================================================*/
+Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+     
+==========================================================================*/
 
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
