@@ -17,7 +17,7 @@ algorithm for super-resolution in fetal brain MRI with adaptive regularization.,
 (2015) 584-597. doi:10.1016/j.neuroimage.2015.06.018
 
 
-# Author #
+# Credits #
 
 * Sébastien Tourbier (sebastientourbier)
 
