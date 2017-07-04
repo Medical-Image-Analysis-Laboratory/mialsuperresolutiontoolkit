@@ -30,7 +30,7 @@ Note: tested on Ubuntu 16.04
 
 ```
 ## Docker installation
-Download and Install Docker from [Website](https://www.docker.com/get-docker) (PC,MACOSX,...) OR with apt-get (Ubuntu):
+Download and Install Docker from [Website](https://www.docker.com/get-docker) (PC,MAC,LINUX) OR with apt-get (Ubuntu):
 
 ```
 #!bash
