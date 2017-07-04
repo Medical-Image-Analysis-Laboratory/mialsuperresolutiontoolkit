@@ -4,7 +4,7 @@ The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consis
 
 Copyright © 2016-2017 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
 
-This software is distributed under the open-source license Modified BSD.
+This software is distributed under the open-source BSD 3-Clause License. See LICENSE file for details.
 
 * Please acknowledge this software in any work reporting results using MIALSRTK by citing the following articles:
 
