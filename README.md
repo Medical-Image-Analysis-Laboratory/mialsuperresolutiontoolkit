@@ -9,12 +9,12 @@ This software is distributed under the open-source license Modified BSD.
 * Please acknowledge this software in any work reporting results using MIALSRTK by citing the following articles:
 
 [1] S. Tourbier, C. Velasco-Annis, V. Taimouri, P. Hagmann, R. Meuli, S. K. Warfield, M. B. Cuadra,
-A. Gholipour, Automated template-based brain localization and extraction for fetal brain MRI
-reconstruction, Neuroimage (2017) In Press. doi:10.1016/j.neuroimage.2017.04.004
+A. Gholipour, *Automated template-based brain localization and extraction for fetal brain MRI
+reconstruction*, Neuroimage (2017) In Press. [DOI](https://doi.org/10.1016/j.neuroimage.2017.04.004)
 
-[2] S. Tourbier, X. Bresson, P. Hagmann, R. Meuli, M. B. Cuadra, An efficient total variation
-algorithm for super-resolution in fetal brain MRI with adaptive regularization., Neuroimage 118
-(2015) 584-597. doi:10.1016/j.neuroimage.2015.06.018
+[2] S. Tourbier, X. Bresson, P. Hagmann, R. Meuli, M. B. Cuadra, *An efficient total variation
+algorithm for super-resolution in fetal brain MRI with adaptive regularization*, Neuroimage 118
+(2015) 584-597. [DOI](https://doi.org/10.1016/j.neuroimage.2015.06.018)
 
 # Credits #
 
