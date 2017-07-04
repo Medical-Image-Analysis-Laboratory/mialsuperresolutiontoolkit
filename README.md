@@ -23,7 +23,7 @@ algorithm for super-resolution in fetal brain MRI with adaptive regularization*,
 ---
 
 
-# I) Instructions for use of installation-free Docker image #
+# I) Instructions for using installation-free Docker image #
 
 ```
 Note: tested on Ubuntu 16.04
