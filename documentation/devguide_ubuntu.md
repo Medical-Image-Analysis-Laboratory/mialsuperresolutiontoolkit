@@ -1,8 +1,10 @@
-# ![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
+![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
 
 Copyright © 2016-2017 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
+
 ---
-# Installation of MIALSRTK and dependencies on Ubuntu 16.04 LTS 
+
+# Installation of MIALSRTK and dependencies on Ubuntu 16.04 LTS # 
 
 ## Dependencies (Compilers: gcc/g++ 4.8 / ITK 4.9 / VTK 6.2 / CMake-gui 3.5.1/ TCLAP 1.2.1 / ANN 1.1.2)
 
