@@ -2,8 +2,6 @@
 
 Copyright © 2016-2017 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
 
-This software is distributed under the open-source BSD 3-Clause License. See LICENSE file for details.
-
 # Instructions for running Docker image #
 
 ```
