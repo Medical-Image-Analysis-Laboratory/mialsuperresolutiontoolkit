@@ -22,8 +22,8 @@ algorithm for super-resolution in fetal brain MRI with adaptive regularization*,
 
 # Documentation #
 
-* FOR USERS: [How to run Docker image](documentation/userguide_docker.md)
-* FOR DEVELOPERS/CONTRIBUTORS: [Installation instructions on Ubuntu](documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](documentation/devguide_mac.md)
+* FOR USERS: [How to run Docker image](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/userguide_docker.md)
+* FOR DEVELOPERS/CONTRIBUTORS: [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
 * [Doxygen source code documentation](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
 
 # Credits #
