@@ -1,9 +1,8 @@
-# ![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
+![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
 
 Copyright © 2016-2017 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
 
-This software is distributed under the open-source BSD 3-Clause License. See LICENSE file for details.
-
+---
 
 # Installation of MIALSRTK and dependencies on MAC OSX 10.9.2 #
 
