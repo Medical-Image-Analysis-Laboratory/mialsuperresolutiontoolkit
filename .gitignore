@@ -53,6 +53,23 @@ ehthumbs.db
 Icon?
 Thumbs.db
 
+# python cache #
+################
+__pycache__/**/*
+__pycache__
+*.pyc
+
+# python distribution #
+#######################
+build/**/*
+build
+dist/**/*
+dist
+pysrtk.egg-info/**/*
+pysrtk.egg-info
+.eggs/**/*
+.eggs
+
 # QtCreator generated files #
 #############################
 CMakeLists.txt.user*

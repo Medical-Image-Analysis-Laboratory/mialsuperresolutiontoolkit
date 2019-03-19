@@ -1,0 +1,20 @@
+name: supermri-env
+
+channels:
+- conda-forge
+- defaults
+
+dependencies:
+- python=3.7.2
+- pip=19.0.3
+- git-annex=7.20190219
+- nibabel=2.3.3
+- nipype=1.1.8
+- traitsui=6.0.0
+
+- pip:
+    - apptools==4.4.0
+    - datalad[full]==0.11.3
+    - datalad-revolution==0.6.0
+    - datalad-container==0.2.1
+    - datalad_neuroimaging==0.2.0
