@@ -13,6 +13,7 @@ dependencies:
 - traitsui=6.0.0
 
 - pip:
+    - duecredits==0.7.0
     - apptools==4.4.0
     - datalad[full]==0.11.3
     - datalad-revolution==0.6.0

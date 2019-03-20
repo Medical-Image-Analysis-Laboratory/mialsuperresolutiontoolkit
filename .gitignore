@@ -26,6 +26,10 @@ superresolution_masked.nii.gz
 *.blg
 *.out
 
+# Crash log #
+############
+*.pklz
+
 # Packages #
 ############
 # it's better to unpack these files and commit the raw source
