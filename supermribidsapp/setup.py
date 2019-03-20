@@ -7,8 +7,8 @@ import sys
 from glob import glob
 if os.path.exists('MANIFEST'): os.remove('MANIFEST')
 
-packages=["pysrtk","pysrtk.interfaces",
-          "pysrtk.workflows"]
+packages=["mialsrtk","mialsrtk.interfaces","mialsrtk.stages",
+          "mialsrtk.workflows"]
 
 ################################################################################
 # For some commands, use setuptools
@@ -27,7 +27,7 @@ if not 'extra_setuptools_args' in globals():
 def main(**extra_args):
     from distutils.core import setup
     from pysrtk.info import __version__
-    setup(name='pysrtk',
+    setup(name='mialsrtk',
           version=__version__,
           description='Py(thon) Super Resolution Toolkit',
           long_description="""Py(thon) Super Resolution Toolkit consists of a set of python nipype interfaces to the C++ image processing tools of the MIAL Super Resolution Toolkit necessary to perform motion-robust super-resolution fetal MRI reconstruction. """,
