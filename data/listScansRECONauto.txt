@@ -1,3 +1,0 @@
-axial1_lr axial
-coronal1_lr coronal
-sagittal1_lr sagittal

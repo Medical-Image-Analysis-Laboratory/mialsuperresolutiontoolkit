@@ -30,16 +30,21 @@ RUN apt-get update && apt-get install software-properties-common -y && apt-add-r
 && apt-get clean
 
 # # Git clone the repo from MIALSRTK official repository on GitHub. #
-RUN mkdir /opt/mialsrtk-build && cd /opt/mialsrtk-build \ 
-&& git clone https://github.com/sebastientourbier/mialsuperresolutiontoolkit.git \
-&& cd mialsuperresolutiontoolkit \ 
-&& git checkout master && mkdir build
+# RUN mkdir /opt/mialsrtk-build && cd /opt/mialsrtk-build \ 
+# && git clone https://github.com/sebastientourbier/mialsuperresolutiontoolkit.git \
+# && cd mialsuperresolutiontoolkit \ 
+# && git checkout master && mkdir build
+WORKDIR /opt/mialsuperresolutiontoolkit
+ADD . /opt/mialsuperresolutiontoolkit
+RUN mkdir build
+WORKDIR /opt/mialsuperresolutiontoolkit/build
 
-WORKDIR /opt/mialsrtk-build/mialsuperresolutiontoolkit/build
-
-RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_OMP:BOOL=ON ../src \ 
-&& make -j2 && sudo make install && cd .. 
+RUN cd /opt/mialsuperresolutiontoolkit/build \
+    && cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_OMP:BOOL=ON ../src \ 
+    && make -j2 && sudo make install && cd .. 
 
 ENV BIN_DIR "/usr/local/bin" 
 ENV DISPLAY :0
 #&& make install && make clean && cd .. && rm -rf build
+
+#ENTRYPOINT ["/fetaldata/code/superresolution_batch.sh"]

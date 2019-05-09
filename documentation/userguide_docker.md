@@ -114,6 +114,16 @@ cd /fetaldata
 sh superresolution_autoloc.sh listScansRECONauto.txt
 
 ```
+
+## To build the docker image 
+
+1) Clone the github repository of mialsrtk to your <INSTALLATION DIRECTORY>
+```console
+$ cd <INSTALLATION DIRECTORY>
+$ git clone https://github.com/sebastientourbier/mialsuperresolutiontoolkit.git
+$ cd mialsuperresolutiontoolkit
+$ (sudo) docker build --rm (--no-cache) -f docker/Dockerfile -t sebastientourbier/mialsuperresolutiontoolkit:<YourTag> .
+```
 ---
 
 
