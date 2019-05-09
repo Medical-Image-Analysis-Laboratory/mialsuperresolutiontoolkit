@@ -71,3 +71,7 @@ bin
 bin-dbg
 Bin
 RECON
+
+# Data derivatives  #
+#####################
+data/derivatives/mialsrtk*
