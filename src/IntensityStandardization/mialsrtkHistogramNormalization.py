@@ -184,9 +184,12 @@ def computeMeanMapImageLandmarks(list_landmarks):
     return mean_landmarks
 
 
-def main(image_directory,mask_directory,output_directory,suffix,iteration):
-    image_paths= sorted(glob.glob(image_directory+"/*_lr_"+suffix+"_iteration_"+iteration+".nii.gz"))
-    mask_paths=sorted(glob.glob(mask_directory+"/*_lr_brain_mask"+str(args.mask_type)+"_reo_iteration_"+iteration+".nii.gz"))
+def main(images,masks,outputs):
+    
+    image_paths= sorted(images)
+    mask_paths=sorted(masks)
+    output_paths = sorted(outputs)
+
     if(len(image_paths)!=len(mask_paths)):
         print 'Loading failed: Number of images and masks are different (# images = '+str(len(image_paths))+' \ # masks = '+str(len(mask_paths))+')'
         return
@@ -242,9 +245,8 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
         displayHistogram(maskedImageMapped,image_name,1,0)
         o2o=verifyOne2OneMapping(s1,s2,list_landmarks[index],mean_landmarks)
         new_image = nib.Nifti1Image(np.reshape(maskedImageMapped,np.array([dimY,dimX,dimZ])),image.get_affine(),header=image.get_header())
-        new_image_name = str(output_directory)+"/"+str(image_name)+'_histnorm.nii.gz'
-        print 'Save normalized image '+str(image_name)+ ' as '+str(new_image_name) + '(one 2 one mapping :'+str(o2o)+')'
-        nib.save(new_image,new_image_name)
+        print 'Save normalized image '+str(image_name)+ ' as '+str(output_paths[index]) + '(one 2 one mapping :'+str(o2o)+')'
+        nib.save(new_image,output_paths[index])
         index+=1
     #pyplot.legend()
     #pyplot.xlabel('Intensity')
@@ -253,57 +255,49 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
     ## To be uncommented to display plot before/after histogram normalizatiopn
     ##pyplot.show()
 
-# Read command line args
-# try:
-#     myopts, args = getopt.getopt(sys.argv[1:],'i:h:o', ['input_directory=','mask_directory=','output_directory'])
-# except getopt.GetoptError, err:
-#     print str(err)
-#     sys.exit(2)
-
-# for opt, arg in myopts:
-#     if opt in ('-i','--input_directory'):
-#         image_directory=arg
-#         print image_directory
-#     if opt in ('-h','--mask_directory'):
-#         mask_directory=arg
-#         print mask_directory
-#     if opt in ('-o','--output_directory'):
-#         output_directory=arg
-#         print output_directory
-#     else:
-#          print("Usage: %s -i input_directory -m mask_directory -o output_directory" % sys.argv[0])
-#          sys.exit(2)
-         
-# main(image_directory,mask_directory,output_directory)
-
-# #directory='/Users/sebastientourbier/Desktop/F019/'
-# #directory='/media/Shared_Data/MyStudies/PrereconstructionPipeline/Data/'
+# Parse command line args
 
 parser = argparse.ArgumentParser(description='Intensity histogram normalization based on percentiles')
-parser.add_argument('-i','--input_dir',help='Input directory')
-parser.add_argument('-m','--mask_dir',help='Mask directory')
-parser.add_argument('-t','--mask_type',help='Mask type: could be "", SSMMI_CompositeVersor2DBSplineNCC, SSMMI_VersorOnlyNCC or MAN')
-parser.add_argument('-o','--output_dir',help='Output directory')
-parser.add_argument('-S','--suffix',help='Suffix of image filename, such as filename ended by *_Final_${suffix}_iteration_${iteration}.nii.gz, where ${iteration} is given by input flag -I or --iteration. suffix="uni_bcorr_reo" (not denoised images) or suffix="nlm_uni_bcorr_reo" (denoised images)')
-parser.add_argument('-I','--iteration',help='Reconstruction iteration, needed to load the corresponding input images being histogram equalized')
+parser.add_argument('-i','--input', required=True, action='append', help='Input image(s)')
+parser.add_argument('-m','--mask', required=True, action='append', help='Input mask(s)')
+parser.add_argument('-o','--output', required=True, action='append', help='Output normalized image(s)')
 
 args = parser.parse_args()
 
-print args.input_dir!=None
-print args.mask_dir!=None
-print args.mask_type!=None
-print args.output_dir!=None
-print args.suffix!=None
-print args.iteration!=None
+print(len(args.input)>0)
+print(len(args.mask)>0)
+print(len(args.output)>0)
+print('Inputs: {}'.format(args.input))
+print('Masks: {}'.format(args.mask))
+print('Outputs: {}'.format(args.output))
 
-if (args.input_dir!=None and args.mask_dir!=None and args.output_dir!=None and args.mask_type!=None and args.suffix!=None and args.iteration!=None):
-    print 'Input directory: '+str(args.input_dir)
-    print 'Mask directory: '+str(args.mask_dir)
-    print 'Mask type: '+str(args.mask_type)
-    print 'Output directory: '+str(args.output_dir)
-    print 'Image file suffix: '+str(args.suffix)
-    print 'Reconstruction iteration: '+str(args.iteration)
-    main(str(args.input_dir),str(args.mask_dir),str(args.output_dir),str(args.suffix),str(args.iteration))
-else:
-    print("Usage: %s -i input_directory -m mask_directory -t mask_type -o output_directory -S image_file_suffix -I iteration" % sys.argv[0])
+if len(args.input)==0:
+    print("Error: No input images provided")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
     sys.exit(2)
+
+if len(args.mask)==0:
+    print("Error: No masks provided")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    sys.exit(2)
+
+if len(args.output)==0:
+    print("Error: No output provided")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    sys.exit(2)
+
+if (len(args.input)!=len(args.mask)):
+    print("Error: Number of inputs and masks are not equal")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    sys.exit(2)
+
+if (len(args.input)!=len(args.output)):
+    print("Error: Number of inputs and outputs are not equal")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    sys.exit(2)
+
+
+print('Inputs: {}'.format(args.input))
+print('Masks: {}'.format(args.mask))
+print('Outputs: {}'.format(args.output))
+main(args.input,args.mask,args.output)
