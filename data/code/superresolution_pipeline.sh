@@ -300,7 +300,7 @@ FINAL_OUTPUT_DIR="$(dirname "$RESULTS")/anat"
 echo "Copy final outputs to ${FINAL_OUTPUT_DIR}"
 cp "$RESULTS/SDI_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${FINAL_OUTPUT_DIR}/${PATIENT}_rec-SDI_T2w.nii.gz"
 cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${FINAL_OUTPUT_DIR}/${PATIENT}_rec-SR_T2w.nii.gz"
-cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}_masked.nii.gz" "${FINAL_OUTPUT_DIR}/${PATIENT}_desc-masked_rec-SR_T2w.nii.gz"
+cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}_masked.nii.gz" "${FINAL_OUTPUT_DIR}/${PATIENT}_rec-SR_desc-masked_T2w.nii.gz"
 
 echo
 echo "##########################################################################################################################"

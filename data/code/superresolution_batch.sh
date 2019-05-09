@@ -69,4 +69,6 @@ while read -r line
               -t sebastientourbier/mialsuperresolutiontoolkit:v1.1.0 \
               "/fetaldata/code/${SCANS_LIST}"
 
+
+
 done < "$1"
