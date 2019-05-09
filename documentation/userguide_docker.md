@@ -71,12 +71,14 @@ sudo docker run -it sebastientourbier/mialsuperresolutiontoolkit
 ```
 ## For testing
 
-1) Go to data folder
+A sample dataset is provided along with the code in the data/ folder and available in the docker image. This dataset is structured following the [Brain Imaging Data Structure (BIDS) standard](https://bids-specification.readthedocs.io/en/stable/).
+
+1) Go to data/code folder
 
 ```
 #!bash
 
-cd ../data/
+cd ../data/code
 
 ```
 2) Run super-resolution pipeline
@@ -84,36 +86,39 @@ cd ../data/
 ```
 #!bash
 
-sh superresolution_autoloc.sh listScansRECONauto.txt
+sh superresolution_batch.sh sub-01_run-01_scans.txt
 
 ```
 ## For your own data
 
-1) Prepare your local volume to be mounted on docker
+1) Prepare your local volume (dataset root directory) to be mounted on docker. The dataset should be structured following the Brain Imaging Data Structure standard. The input dataset is required to be in valid [Brain Imaging Data Structure (BIDS)]() format, and it must include at least one T2w image with anisotropic resolution per acquisition direction. We highly recommend that you (1) start with the sample dataset, (2) update it with your data, and (3) validate your dataset with the free, [online BIDS Validator](http://bids-standard.github.io/bids-validator/).
 
-2) Run the docker image with local volume (/home/localadmin/Desktop/Jakab) mounted (as /fetaldata) 
+2) Then, you can run the docker image in two different ways:
 
-```
-#!bash
+	1) Single subject processing 
 
-sudo docker run -v /home/localadmin/Desktop/Jakab:/fetaldata -it sebastientourbier/mialsuperresolutiontoolkit
+	To perform the superresolution pipeline on sub-01, run the docker image with local volume (/home/localadmin/Desktop/Jakab) mounted (as /fetaldata) 
 
-```
-3) Go to mounted volume
+	```console
+	$ PATIENT='sub-01'
+	$docker run --rm -u $(id -u):$(id -g) \
+	              -v <Local/Path/to/your/BIDSdataset>:/fetaldata \
+	              --entrypoint /fetaldata/code/superresolution_pipeline.sh \
+	              --env PATIENT="$PATIENT" \
+	              --env DELTA_T="0.01" \
+	              --env LAMBDA_TV="0.75"\
+	              --env PATIENT_DIR="/fetaldata/${PATIENT}" \
+	              --env PATIENT_MASK_DIR="/fetaldata/derivatives/manual_masks/${PATIENT}/anat" \
+	              --env RESULTS="/fetaldata/derivatives/mialsrtk/${PATIENT}/tmp" \
+	              -t sebastientourbier/mialsuperresolutiontoolkit:v1.1.0 \
+	              "/fetaldata/code/sub-01_run-01_scans.txt"
 
-```
-#!bash
+	```
 
-cd /fetaldata
+	2) Batch processing
 
-```
-4) Run super-resolution pipeline
+	A script called `superresolution_batch.sh`, a text file called `batch_list.txt`, and a text file called `sub-01_run-01_scans.txt` are provided in the sample dataset. The script `superresolution_batch.sh` takes the `batch_list.txt` text file as input, where each line is corresponding to a specific run for which the first element is the subject name (sub-01), the second element is the regularization weight lambda, the third element is the optimization time step, and the fourth element is the name of the text used to list the scans without any extension (for instance sub-01_run-01_scans). Each line of the list of scans `sub-01_run-01_scans.txt` corresponds to the description of one input scan for which the first element is the name of the scan without any extension (for instance sub-01_run-01_T2w) and the second element is the scan orientation (possible values are {axial, coronal, sagittal})
 
-```
-#!bash
-sh superresolution_autoloc.sh listScansRECONauto.txt
-
-```
 
 ## To build the docker image 
 
