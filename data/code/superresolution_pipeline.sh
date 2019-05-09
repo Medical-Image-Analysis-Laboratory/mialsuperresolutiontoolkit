@@ -133,7 +133,7 @@ do
 			cmdIntensityNLM="$cmdIntensityNLM -i $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz"
 			cmdIntensity="$cmdIntensity -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz"
 			cmdHistogramNormalization="$cmdHistogramNormalization -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}.nii.gz -m  $RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
-			cmdHistogramNormalizationNLM="$cmdHistogramNormalization -i $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz -m  $RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
+			cmdHistogramNormalizationNLM="$cmdHistogramNormalizationNLM -i $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}.nii.gz -m  $RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz -o $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
 
 		done < "$SCANS"
 
