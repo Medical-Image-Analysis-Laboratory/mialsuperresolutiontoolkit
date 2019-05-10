@@ -4,4 +4,3 @@ sub-01_run-3_T2w sagittal
 sub-01_run-4_T2w coronal
 sub-01_run-5_T2w sagittal
 sub-01_run-6_T2w sagittal
-

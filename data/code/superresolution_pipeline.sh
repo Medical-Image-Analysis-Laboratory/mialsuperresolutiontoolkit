@@ -122,8 +122,11 @@ do
 			echo "Process stack $stack with $orientation orientation..."
 
 		    #Reorient the image
-			mialsrtkOrientImage -i ${PATIENT_DIR}/${stack}.nii.gz -o $RESULTS/${stack}_reo_iteration_${ITER}.nii.gz -O "$orientation"
-			mialsrtkOrientImage -i ${PATIENT_MASK_DIR}/${stack}_desc-brain_mask.nii.gz -o $RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz -O "$orientation"
+			#mialsrtkOrientImage -i ${PATIENT_DIR}/${stack}.nii.gz -o $RESULTS/${stack}_reo_iteration_${ITER}.nii.gz -O "$orientation"
+			#mialsrtkOrientImage -i ${PATIENT_MASK_DIR}/${stack}_desc-brain_mask.nii.gz -o $RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz -O "$orientation"
+
+			cp "${PATIENT_DIR}/${stack}.nii.gz" "$RESULTS/${stack}_reo_iteration_${ITER}.nii.gz"
+			cp "${PATIENT_MASK_DIR}/${stack}_desc-brain_mask.nii.gz" "$RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz"
 
 			#denoising on reoriented images
 			weight="0.1"

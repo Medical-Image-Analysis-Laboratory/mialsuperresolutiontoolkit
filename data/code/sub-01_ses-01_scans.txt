@@ -1,4 +1,3 @@
 sub-01_run-1_T2w axial
 sub-01_run-2_T2w coronal
 sub-01_run-3_T2w sagittal
-
