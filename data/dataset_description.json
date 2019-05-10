@@ -1,0 +1,6 @@
+{
+    "BIDSVersion": "1.2.0",
+    "License": "CCO",
+    "Name": "MIALSRTK sample fetal BIDS dataset",
+    "ReferencesAndLinks": [""]
+}

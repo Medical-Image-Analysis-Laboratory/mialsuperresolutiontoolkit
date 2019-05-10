@@ -1,0 +1,16 @@
+{
+	"age": {
+        "Description": "Gestational age",
+        "Units": "weeks"
+    },
+  
+    "sex": {
+        "Description": "sex of the fetus",
+        "Levels": {
+            "m": "male",
+            "f": "female",
+			"na": "not attributed"
+        }
+    }
+}
+

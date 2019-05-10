@@ -1,0 +1,10 @@
+This sample BIDS dataset contains a set of three orthogonal MRI 
+with anisotropic resolution (1x1x2mm^3) of the fetal brain of subject "sub-01"
+acquired with a fast multi-slice sequence.
+
+Manually drawn brain masks can be found in derivatives/manual_masks/sub-01/anat folder
+
+The text file listing the scans used by the supperresolution_pipeline.sh script 
+can be found in code/ as sub-01_ses-01_scans.txt
+
+- Sebastien Tourbier (May 10, 2019)
