@@ -1,6 +1,10 @@
 #!/bin/sh
 # usage:
-# sh generic_script_to_run_superresolution.sh /path/to/batch_list.txt
+# sh superresolution_batch.sh /path/to/batch_list.txt v1.0.0
+# 
+# Author: Sebastien Tourbier
+# 
+###################################################################
 
 # Get the directory where the script is stored,
 # which is supposed to be in the code folder of the dataset root directory)
@@ -13,31 +17,55 @@ DATASET_DIR="$(dirname "${SCRIPT_DIR}")"
 
 echo "Dataset directory : $DATASET_DIR"
 
+VERSION_TAG=$2
+
 #from each line of the subject_parameters.txt given as input
 while read -r line
   do
-  #Extract PATIENT, LAMBDA_TV and DELTA_T and the scan list sub-01_run-01_scans.txt
+  #Extract PATIENT, LAMBDA_TV and DELTA_T and the scan list sub-01_ses-01_scans.txt
 	set -- $line
 	PATIENT=$1
-	LAMBDA_TV=$2
-  DELTA_T=$3
-  SCANS_LIST="${PATIENT}_${4}.txt"
+	LAMBDA_TV=$3
+  DELTA_T=$4
+  RECON_SESSION=$2
+  SCANS_LIST="${PATIENT}_${RECON_SESSION}_scans.txt"
 
   echo "> Process subject ${PATIENT} with lambda_tv = ${LAMBDA_TV} and delta_t = ${DELTA_T}"
 
   PATIENT_DIR="$DATASET_DIR/${PATIENT}"
   echo "  ... Subject directory : ${PATIENT_DIR}"
 
+  # Get the number of scans in the list
+  # Can be used to differentiate output folders
+  # i.e. line RESULTS="derivatives/mialsrtk/$PATIENT/${RECON_SESSION}" would become
+  # RESULTS="derivatives/mialsrtk_scans-${VOLS}/$PATIENT/${RECON_SESSION}"
+
+  VOLS=0
+  while read -r line
+  do
+    VOLS=$((VOLS+1))
+  done < "${DATASET_DIR}/code/${SCANS_LIST}"
+
+  echo "  ... Number of scans : ${VOLS}"
+  echo
+
   # Create the output directory for results (if not existing). 
   # run-XX is used to identify different list of scans:
-  # sub-01_run-01_scans.txt, sub-01_run-02_scans.txt, ..., sub-01_run-XX_scans.txt
-  # here I am just using sub-01_run-01_scans.txt but you can think as I am looping over 
-  # the different calls while reading the batch_list.txt file, 
-  # you could  similarly loop over different list of scans.
-  # The final superesolution is saved in derivatives/mialsrtk_tv-${LAMBDA_TV}_dt-${DELTA_T}_run-01/$PATIENT/anat folder
+  # sub-01_ses-01_scans.txt, sub-01_ses-02_scans.txt, ..., sub-01_ses-XX_scans.txt
+  # The final superesolution is saved in derivatives/mialsrtk/$PATIENT/ses-XX/anat folder
   # All intermediate outputs are saved in a tmp folder (see below). 
+   
+  if [ ! -d "${DATASET_DIR}/derivatives/mialsrtk" ]; then
+    mkdir -p "${DATASET_DIR}/derivatives/mialsrtk";
+    echo "    * Folder ${DATASET_DIR}/derivatives/mialsrtk created"
+  fi
+
+  if [ ! -f "${DATASET_DIR}/derivatives/mialsrtk/dataset_description.json" ];
+  then
+    sh ${DATASET_DIR}/code/create_dataset_description_json.sh "${DATASET_DIR}/derivatives/mialsrtk/dataset_description.json" "$VERSION_TAG"
+  fi
   
-  RESULTS="derivatives/mialsrtk_tv-${LAMBDA_TV}_dt-${DELTA_T}_run-01/$PATIENT"
+  RESULTS="derivatives/mialsrtk/$PATIENT/${RECON_SESSION}"
   echo "  ... Reconstruction tmp directory: ${DATASET_DIR}/${RESULTS}"
   if [ ! -d "${DATASET_DIR}/${RESULTS}" ]; then
     mkdir -p "${DATASET_DIR}/${RESULTS}";
@@ -50,6 +78,10 @@ while read -r line
   if [ ! -d "${DATASET_DIR}/${RESULTS}/anat" ]; then
     mkdir -p "${DATASET_DIR}/${RESULTS}/anat";
     echo "    * Folder ${DATASET_DIR}/${RESULTS}/anat created"
+  fi
+  if [ ! -d "${DATASET_DIR}/${RESULTS}/xfm" ]; then
+    mkdir -p "${DATASET_DIR}/${RESULTS}/xfm";
+    echo "    * Folder ${DATASET_DIR}/${RESULTS}/xfm created"
   fi
 
   PATIENT_MASK_DIR="derivatives/manual_masks/$PATIENT"
@@ -65,8 +97,8 @@ while read -r line
               --env LAMBDA_TV="$LAMBDA_TV "\
               --env PATIENT_DIR="/fetaldata/${PATIENT}" \
               --env PATIENT_MASK_DIR="/fetaldata/${PATIENT_MASK_DIR}/anat" \
-              --env RESULTS="/fetaldata/${RESULTS}/tmp" \
-              -t sebastientourbier/mialsuperresolutiontoolkit:v1.1.0 \
+              --env RESULTS="/fetaldata/${RESULTS}" \
+              -t sebastientourbier/mialsuperresolutiontoolkit:"$VERSION_TAG" \
               "/fetaldata/code/${SCANS_LIST}"
 
 

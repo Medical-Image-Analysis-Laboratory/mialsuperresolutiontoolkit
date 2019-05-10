@@ -1,8 +1,19 @@
 #!/bin/sh
-#! Script: Brain image reconstruction / Brain superresolution image using BTK
-# Run with log saved: sh reconstruction.sh > reconstruction_original_images.log 
+#
+# Script: Superresolution pipeline for fetal brain MRI
+#
+# Usage: Run with log saved: sh superresolution_pipeline.sh list_of_scans.txt > reconstruction_original_images.log 
+# 
+# Author: Sebastien Tourbier
+# 
+########################################################################################################################
+
 #Tune the number of cores used by the OpenMP library for multi-threading purposes
 export OMP_NUM_THREADS=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)   
+
+ANAT_DIR=$RESULTS/anat
+XFM_DIR=$RESULTS/xfm
+RESULTS=$RESULTS/tmp
 
 echo 
 echo "-----------------------------------------------"
@@ -295,12 +306,62 @@ do
 	ITER=$((ITER+1))
 
 done
+LAST_ITER=1
 
-FINAL_OUTPUT_DIR="$(dirname "$RESULTS")/anat"
-echo "Copy final outputs to ${FINAL_OUTPUT_DIR}"
-cp "$RESULTS/SDI_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${FINAL_OUTPUT_DIR}/${PATIENT}_rec-SDI_T2w.nii.gz"
-cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${FINAL_OUTPUT_DIR}/${PATIENT}_rec-SR_T2w.nii.gz"
-cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}_masked.nii.gz" "${FINAL_OUTPUT_DIR}/${PATIENT}_rec-SR_desc-masked_T2w.nii.gz"
+
+# Extract absolute path of the folder containing the scripts (i.e. /fetaldata/code)
+CODE_DIR="$(dirname "$0")"
+CODE_DIR="$(readlink -f $CODE_DIR)"
+
+echo "Dataset code directory: ${CODE_DIR}"
+
+# Move the preprocessed input scans to anat and their associated slice-to-volume transform and 
+# create their respective json file (BIDS Common Derivatives RC1)
+
+SOURCES=""
+while read -r line
+do
+	set -- $line
+	stack=$1
+
+	# Copy and rename the transform and the image
+	cp "$RESULTS/${stack}_transform_${VOLS}V_${LAST_ITER}.txt" "${XFM_DIR}/${stack}_from-orig_to-SDI_mode-image_xfm.txt"
+	cp "$RESULTS/${stack}_uni_bcorr_reo_iteration_${LAST_ITER}_histnorm.nii.gz" "${ANAT_DIR}/${stack}_preproc.nii.gz"
+
+	# Create the BIDS json sidecar
+	sh ${CODE_DIR}/create_scan_preproc_json.sh "${ANAT_DIR}/${stack}_preproc.json" "${PATIENT_DIR}/${stack}.nii.gz" 
+
+	SOURCES="${SOURCES} \"${ANAT_DIR}/${stack}_preproc.nii.gz\", \"${XFM_DIR}/${stack}_from-orig_to-SDI_mode-image_xfm.txt\" ,"
+
+done < "$SCANS"
+
+# Move the reconstructed images to anat and create the json file (BIDS Common Derivatives RC1)
+
+ANAT_DIR="$(dirname "$RESULTS")/anat"
+echo "Copy final outputs to ${ANAT_DIR}"
+cp "$RESULTS/SDI_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${ANAT_DIR}/${PATIENT}_rec-SDI_T2w.nii.gz"
+cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${ANAT_DIR}/${PATIENT}_rec-SR_T2w.nii.gz"
+cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}_masked.nii.gz" "${ANAT_DIR}/${PATIENT}_rec-SR_desc-masked_T2w.nii.gz"
+
+
+# Create the json file for the super-resolution images
+OUTPUT_JSON="${ANAT_DIR}/${PATIENT}_rec-SR.json"
+(
+cat <<EOF
+{
+	"Description": "Isotropic high-resolution image reconstructed using the Total-Variation Super-Resolution algorithm provided by MIALSRTK",
+    "Sources": [${SOURCES}],
+    "CustomMetaData": {
+    	"Number of scans used":   $VOLS,
+		"TV regularization weight lambda": ${LAMBDA_TV},
+		"Optimization time step":   ${DELTA_T},
+		"Primal/dual loops": $LOOPS,
+		"Number of pipeline iterations" : ${LAST_ITER}
+	}
+}
+
+EOF
+) > $OUTPUT_JSON
 
 echo
 echo "##########################################################################################################################"
