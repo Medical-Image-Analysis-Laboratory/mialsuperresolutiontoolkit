@@ -1,23 +1,26 @@
 #!/bin/sh
 # usage:
-# sh superresolution_batch.sh /path/to/batch_list.txt v1.0.0
+# sh superresolution_batch.sh /path/to/batch_list.txt
 # 
 # Author: Sebastien Tourbier
 # 
 ###################################################################
 
+# Use the latest stable release version of the docker image
+VERSION_TAG="v1.0.0"
+
 # Get the directory where the script is stored,
 # which is supposed to be in the code folder of the dataset root directory)
+# and get absolute path
 SCRIPT_DIR="$(dirname "$0")"
-
-#Get absolute path
 SCRIPT_DIR="$(readlink -f $SCRIPT_DIR)"
 
+# Get BIDS dataset root directory
 DATASET_DIR="$(dirname "${SCRIPT_DIR}")"
 
-echo "Dataset directory : $DATASET_DIR"
+echo "Dataset root directory : $DATASET_DIR"
 
-VERSION_TAG=$2
+
 
 #from each line of the subject_parameters.txt given as input
 while read -r line
