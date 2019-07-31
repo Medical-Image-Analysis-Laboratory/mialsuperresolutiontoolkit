@@ -4,6 +4,8 @@
 #
 # Usage: Run with log saved: sh superresolution_pipeline.sh list_of_scans.txt > reconstruction_original_images.log 
 # 
+# Note: $PATIENT $RECON_SESSION $DELTA_T $LAMBDA_TV $PATIENT_DIR $PATIENT_MASK_DIR and $RESULTS are supposed to be defined before calling the script
+# 
 # Author: Sebastien Tourbier
 # 
 ########################################################################################################################
@@ -116,7 +118,9 @@ do
 		while read -r line
 		do
 			set -- $line
-			stack=$1
+			run=$1
+			orig_stack="${PATIENT}_${run}_T2w"
+			stack="${PATIENT}_${RECON_SESSION}_${run}_T2w"
 			orientation=$2
 
 			echo "Process stack $stack with $orientation orientation..."
@@ -125,8 +129,8 @@ do
 			#mialsrtkOrientImage -i ${PATIENT_DIR}/${stack}.nii.gz -o $RESULTS/${stack}_reo_iteration_${ITER}.nii.gz -O "$orientation"
 			#mialsrtkOrientImage -i ${PATIENT_MASK_DIR}/${stack}_desc-brain_mask.nii.gz -o $RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz -O "$orientation"
 
-			cp "${PATIENT_DIR}/${stack}.nii.gz" "$RESULTS/${stack}_reo_iteration_${ITER}.nii.gz"
-			cp "${PATIENT_MASK_DIR}/${stack}_desc-brain_mask.nii.gz" "$RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz"
+			cp "${PATIENT_DIR}/${orig_stack}.nii.gz" "$RESULTS/${stack}_reo_iteration_${ITER}.nii.gz"
+			cp "${PATIENT_MASK_DIR}/${orig_stack}_desc-brain_mask.nii.gz" "$RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz"
 
 			#denoising on reoriented images
 			weight="0.1"
@@ -158,7 +162,8 @@ do
 		while read -r line
 		do
 			set -- $line
-			stack=$1
+			run=$1
+			stack="${PATIENT}_${RECON_SESSION}_${run}_T2w"
 
 			#Make slice intensities uniform in the stack
 			mialsrtkCorrectSliceIntensity "$RESULTS/${stack}_nlm_reo_iteration_1.nii.gz" "$RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz" "$RESULTS/${stack}_nlm_uni_reo_iteration_${ITER}.nii.gz"
@@ -204,7 +209,8 @@ do
 	while read -r line
 	do
 		set -- $line
-		stack=$1
+		run=$1
+		stack="${PATIENT}_${RECON_SESSION}_${run}_T2w"
 		#Intensity rescaling cmd preparation
 		cmdIntensityNLM="$cmdIntensityNLM -i $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz -o $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
 		cmdIntensity="$cmdIntensity -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz -o $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
@@ -224,7 +230,8 @@ do
 	while read -r line
 	do
 		set -- $line
-		stack=$1
+		run=$1
+		stack="${PATIENT}_${RECON_SESSION}_${run}_T2w"
 		mialsrtkMaskImage -i "$RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz" -m $RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz -o "$RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
 
 		cmdImageRECON="$cmdImageRECON -i $RESULTS/${stack}_nlm_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
@@ -282,7 +289,8 @@ do
 	while read -r line
 	do
 		set -- $line
-		stack=$1
+		run=$1
+		stack="${PATIENT}_${RECON_SESSION}_${run}_T2w"
 		cmdRefineMasks="$cmdRefineMasks -i $RESULTS/${stack}_uni_bcorr_reo_iteration_${ITER}_histnorm.nii.gz"
 		cmdRefineMasks="$cmdRefineMasks -m $RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz"
 		cmdRefineMasks="$cmdRefineMasks -t $RESULTS/${stack}_transform_${VOLS}V_${ITER}.txt"
@@ -309,7 +317,7 @@ do
 	ITER=$((ITER+1))
 
 done
-LAST_ITER=1
+#LAST_ITER=1
 
 
 # Extract absolute path of the folder containing the scripts (i.e. /fetaldata/code)
@@ -325,15 +333,19 @@ SOURCES=""
 while read -r line
 do
 	set -- $line
-	stack=$1
+	run=$1
+	orig_stack="${PATIENT}_${run}_T2w"
+	stack="${PATIENT}_${RECON_SESSION}_${run}_T2w"
 
-	# Copy and rename the transform and the image
+	# Copy and rename the transform, the image, and the brain mask
 	cp "$RESULTS/${stack}_transform_${VOLS}V_${LAST_ITER}.txt" "${XFM_DIR}/${stack}_from-orig_to-SDI_mode-image_xfm.txt"
 	cp "$RESULTS/${stack}_uni_bcorr_reo_iteration_${LAST_ITER}_histnorm.nii.gz" "${ANAT_DIR}/${stack}_preproc.nii.gz"
-
-	# Create the BIDS json sidecar
+	cp "$RESULTS/${stack}_desc-brain_mask_reo_iteration_${ITER}.nii.gz" "${ANAT_DIR}/${stack}_desc-brain_mask.nii.gz"
+		
+	# Create the BIDS json sidecar (image) and copy/rename BIDS json sidecar of manual mask
 	sh ${CODE_DIR}/create_scan_preproc_json.sh "${ANAT_DIR}/${stack}_preproc.json" "${PATIENT_DIR}/${stack}.nii.gz" 
-
+	cp "${PATIENT_MASK_DIR}/${orig_stack}_desc-brain_mask.nii.gz" "${ANAT_DIR}/${stack}_desc-brain_mask.json"
+	
 	SOURCES="${SOURCES} \"${ANAT_DIR}/${stack}_preproc.nii.gz\", \"${XFM_DIR}/${stack}_from-orig_to-SDI_mode-image_xfm.txt\" ,"
 
 done < "$SCANS"
@@ -342,13 +354,13 @@ done < "$SCANS"
 
 ANAT_DIR="$(dirname "$RESULTS")/anat"
 echo "Copy final outputs to ${ANAT_DIR}"
-cp "$RESULTS/SDI_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${ANAT_DIR}/${PATIENT}_rec-SDI_T2w.nii.gz"
-cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${ANAT_DIR}/${PATIENT}_rec-SR_T2w.nii.gz"
-cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}_masked.nii.gz" "${ANAT_DIR}/${PATIENT}_rec-SR_desc-masked_T2w.nii.gz"
+cp "$RESULTS/SDI_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${ANAT_DIR}/${PATIENT}_${RECON_SESSION}_rec-SDI_T2w.nii.gz"
+cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}.nii.gz" "${ANAT_DIR}/${PATIENT}_${RECON_SESSION}_rec-SR_T2w.nii.gz"
+cp "$RESULTS/SRTV_${PATIENT}_${VOLS}V_rad${RAD_DILATION}_it${LAST_ITER}_masked.nii.gz" "${ANAT_DIR}/${PATIENT}_${RECON_SESSION}_rec-SR_desc-masked_T2w.nii.gz"
 
 
 # Create the json file for the super-resolution images
-OUTPUT_JSON="${ANAT_DIR}/${PATIENT}_rec-SR.json"
+OUTPUT_JSON="${ANAT_DIR}/${PATIENT}_${RECON_SESSION}_rec-SR.json"
 (
 cat <<EOF
 {
