@@ -7,7 +7,7 @@
 ###################################################################
 
 # Use the latest stable release version of the docker image
-VERSION_TAG="v1.0.0"
+VERSION_TAG="v1.1.0"
 
 # Get the directory where the script is stored,
 # which is supposed to be in the code folder of the dataset root directory)
