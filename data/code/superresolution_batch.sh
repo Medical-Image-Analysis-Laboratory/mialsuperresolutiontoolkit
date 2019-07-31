@@ -96,9 +96,10 @@ while read -r line
               -v $DATASET_DIR:/fetaldata \
               --entrypoint /fetaldata/code/superresolution_pipeline.sh \
               --env PATIENT="$PATIENT" \
+			        --env RECON_SESSION="${RECON_SESSION}" \
               --env DELTA_T="$DELTA_T" \
               --env LAMBDA_TV="$LAMBDA_TV "\
-              --env PATIENT_DIR="/fetaldata/${PATIENT}" \
+              --env PATIENT_DIR="/fetaldata/${PATIENT}/anat" \
               --env PATIENT_MASK_DIR="/fetaldata/${PATIENT_MASK_DIR}/anat" \
               --env RESULTS="/fetaldata/${RESULTS}" \
               -t sebastientourbier/mialsuperresolutiontoolkit:"$VERSION_TAG" \
