@@ -13,7 +13,15 @@ VERSION_TAG="v1.1.0"
 # which is supposed to be in the code folder of the dataset root directory)
 # and get absolute path
 SCRIPT_DIR="$(dirname "$0")"
-SCRIPT_DIR="$(readlink -f $SCRIPT_DIR)"
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+  # Linux
+  echo "INFO: Linux OS detected!"
+  SCRIPT_DIR="$(readlink -f $SCRIPT_DIR)"
+elif [[ "$OSTYPE" == "darwin" ]]; then
+  # MacOSX
+  echo "INFO: MacOSX detected!"
+fi
 
 # Get BIDS dataset root directory
 DATASET_DIR="$(dirname "${SCRIPT_DIR}")"
