@@ -9,6 +9,10 @@
 *.*~
 *.save
 
+# ipython notebooks checkpoints #
+#################################
+*.ipynb_checkpoints
+
 # Generated testing images #
 ############################
 superresolution.nii.gz
