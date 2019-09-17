@@ -1,0 +1,18 @@
+name: pymialsrtk-env
+
+channels:
+- conda-forge
+- defaults
+
+dependencies:
+- python=3.7.2
+- pip=19.0.3
+- git-annex=7.20190219
+- nibabel=2.3.3
+- nipype=1.2.0
+- traitsui=6.0.0
+
+- pip:
+    - duecredit==0.7.0
+    - apptools==4.4.0
+    - niworkflows==0.10.2
