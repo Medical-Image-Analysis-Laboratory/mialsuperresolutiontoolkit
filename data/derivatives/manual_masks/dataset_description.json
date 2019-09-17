@@ -1,5 +1,7 @@
 {
     "PipelineDescription": {
        	"Name": "Manually-drawn brain masks"
-   	}
+   	},
+   	"Name": "Manually-drawn brain masks",
+   	"BIDSVersion": "1.2.0"
 }
