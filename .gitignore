@@ -9,9 +9,10 @@
 *.*~
 *.save
 
-# ipython notebooks checkpoints #
+# python #
 #################################
 *.ipynb_checkpoints
+*__pycache__
 
 # Generated testing images #
 ############################
