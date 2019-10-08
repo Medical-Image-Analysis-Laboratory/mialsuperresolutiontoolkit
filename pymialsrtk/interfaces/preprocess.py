@@ -19,6 +19,14 @@ from nipype.interfaces.base import traits, isdefined, CommandLine, CommandLineIn
 
 from pymialsrtk.interfaces.utils import run
 
+
+
+ 
+# 
+## NLM denoising  
+# 
+ 
+
 class BtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     in_file = File(desc='Input image',mandatory=True)
@@ -82,6 +90,72 @@ class MultipleBtkNLMDenoising(BaseInterface):
             for input_image in self.inputs.input_images:
                 ax = BtkNLMDenoising(bids_dir = self.inputs.bids_dir, in_file = input_image, out_postfix=self.inputs.out_postfix, weight = self.inputs.weight)
                 ax.run()
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
+        return outputs
+
+
+ 
+# 
+## Slice intensity correction 
+# 
+ 
+class MialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
+    bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
+    in_file = File(desc='Input image',mandatory=True)
+    in_mask = File(desc='Input mask',mandatory=False)
+    out_postfix = traits.Str("_csi", usedefault=True)
+
+class MialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
+    out_file = File(desc='Corrected slice intensities')
+
+    
+    
+class MialsrtkCorrectSliceIntensity(BaseInterface):
+    input_spec = MialsrtkCorrectSliceIntensityInputSpec
+    output_spec = MialsrtkCorrectSliceIntensityOutputSpec
+    
+    def _run_interface(self, runtime): 
+        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
+        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+
+        cmd = 'mialsrtkCorrectSliceIntensity "{}" "{}" "{}"'.format(self.inputs.in_file,self.inputs.in_mask,out_file)
+        
+        try:
+            print('... cmd: {}'.format(cmd))
+            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+        except:
+            print('Failed')
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
+        outputs['out_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+        return outputs
+    
+    
+    
+class MultipleMialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
+    bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
+    input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory = True))
+    input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory = False))
+    out_postfix = traits.Str("_csi", usedefault=True)
+    
+class MultipleMialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
+    output_images = OutputMultiPath(File())
+
+class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
+    input_spec = MultipleMialsrtkCorrectSliceIntensityInputSpec
+    output_spec = MultipleMialsrtkCorrectSliceIntensityOutputSpec
+
+    def _run_interface(self, runtime):
+        for input_image, input_mask in zip(self.inputs.input_images,self.inputs.input_masks):
+            ax = MialsrtkCorrectSliceIntensity(bids_dir = self.inputs.bids_dir, in_file = input_image, in_mask = input_mask, out_postfix=self.inputs.out_postfix)
+            ax.run()
         return runtime
 
     def _list_outputs(self):
