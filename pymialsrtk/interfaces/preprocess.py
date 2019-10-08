@@ -162,3 +162,76 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
         return outputs
+
+
+
+# 
+## Slice by slice N4 bias field correction 
+# 
+
+class MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
+    bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
+    in_file = File(desc='Input image',mandatory=True)
+    in_mask = File(desc='Input mask',mandatory=True)
+    out_im_postfix = traits.Str("_sliceN4corr", usedefault=True)
+    out_fld_postfix = traits.Str("_sliceN4field", usedefault=True)
+
+class MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
+    out_im_file = File(desc='Corrected slice by slice from N4 bias field')
+    out_fld_file = File(desc='slice by slice N4 bias field')
+
+    
+    
+class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
+    input_spec = MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec
+    output_spec = MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec
+    
+    def _run_interface(self, runtime): 
+        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
+        out_im_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
+        out_fld_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_fld_postfix, ext)))
+
+        cmd = 'mialsrtkSliceBySliceN4BiasFieldCorrection "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file, out_fld_file)
+        
+        try:
+            print('... cmd: {}'.format(cmd))
+            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+        except:
+            print('Failed')
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
+        outputs['out_im_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
+        outputs['out_fld_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_fld_postfix, ext)))
+        return outputs
+    
+    
+    
+class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
+    bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
+    input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory = True))
+    input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory = True))
+    out_im_postfix = traits.Str("_sliceN4corr", usedefault=True)
+    out_fld_postfix = traits.Str("_sliceN4field", usedefault=True) 
+    
+class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
+    output_images = OutputMultiPath(File())
+    output_fields = OutputMultiPath(File())
+
+class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
+    input_spec = MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec
+    output_spec = MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec
+
+    def _run_interface(self, runtime):
+        for input_image, input_mask in zip(self.inputs.input_images,self.inputs.input_masks):
+            ax = MialsrtkSliceBySliceN4BiasFieldCorrection(bids_dir = self.inputs.bids_dir, in_file = input_image, in_mask = input_mask, out_im_postfix=self.inputs.out_im_postfix, out_fld_postfix=self.inputs.out_fld_postfix)
+            ax.run()
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_images'] = glob(os.path.abspath("*_sliceN4corr.nii.gz"))
+        outputs['output_fields'] = glob(os.path.abspath("*_sliceN4field.nii.gz"))
+        return outputs
