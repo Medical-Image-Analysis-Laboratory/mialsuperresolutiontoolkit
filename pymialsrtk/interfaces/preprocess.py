@@ -235,3 +235,68 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
         outputs['output_images'] = glob(os.path.abspath("*_sliceN4corr.nii.gz"))
         outputs['output_fields'] = glob(os.path.abspath("*_sliceN4field.nii.gz"))
         return outputs
+
+
+
+# 
+## Intensity standardization 
+# 
+
+class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
+    bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
+    in_file = File(desc='Input image',mandatory=True)
+    out_postfix = traits.Str("_ist", usedefault=True)
+
+class MialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
+    out_file = File(desc='Intensities standardized')
+
+    
+    
+class MialsrtkIntensityStandardization(BaseInterface):
+    input_spec = MialsrtkIntensityStandardizationInputSpec
+    output_spec = MialsrtkIntensityStandardizationOutputSpec
+    
+    def _run_interface(self, runtime): 
+        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
+        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+
+        cmd = 'mialsrtkIntensityStandardization --input "{}" --output "{}"'.format(self.inputs.in_file, out_file)
+        
+        try:
+            print('... cmd: {}'.format(cmd))
+            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+        except:
+            print('Failed')
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
+        outputs['out_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+        return outputs
+    
+    
+    
+class MultipleMialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
+    bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
+    input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory = True))
+    out_postfix = traits.Str("_ist", usedefault=True)
+    
+class MultipleMialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
+    output_images = OutputMultiPath(File())
+
+class MultipleMialsrtkIntensityStandardization(BaseInterface):
+    input_spec = MultipleMialsrtkIntensityStandardizationInputSpec
+    output_spec = MultipleMialsrtkIntensityStandardizationOutputSpec
+
+    def _run_interface(self, runtime):
+        for input_image in self.inputs.input_images:
+            print("input_image", input_image)
+            ax = MialsrtkIntensityStandardization(bids_dir = self.inputs.bids_dir, in_file = input_image, out_postfix=self.inputs.out_postfix)
+            ax.run()
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
+        return outputs
