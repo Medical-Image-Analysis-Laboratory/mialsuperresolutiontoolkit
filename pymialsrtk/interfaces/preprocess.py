@@ -246,6 +246,7 @@ class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     in_file = File(desc='Input image',mandatory=True)
     out_postfix = traits.Str("_ist", usedefault=True)
+    in_max = traits.Float(usedefault=False)
 
 class MialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
     out_file = File(desc='Intensities standardized')
@@ -260,7 +261,10 @@ class MialsrtkIntensityStandardization(BaseInterface):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
 
-        cmd = 'mialsrtkIntensityStandardization --input "{}" --output "{}"'.format(self.inputs.in_file, out_file)
+        if self.inputs.in_max:
+            cmd = 'mialsrtkIntensityStandardization --input "{}" --output "{}" --max "{}"'.format(self.inputs.in_file, out_file,self.inputs.in_max)
+        else:
+            cmd = 'mialsrtkIntensityStandardization --input "{}" --output "{}"'.format(self.inputs.in_file, out_file)
         
         try:
             print('... cmd: {}'.format(cmd))
@@ -281,6 +285,7 @@ class MultipleMialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory = True))
     out_postfix = traits.Str("_ist", usedefault=True)
+    in_max = traits.Float(usedefault=False)
     
 class MultipleMialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
@@ -292,7 +297,11 @@ class MultipleMialsrtkIntensityStandardization(BaseInterface):
     def _run_interface(self, runtime):
         for input_image in self.inputs.input_images:
             print("input_image", input_image)
-            ax = MialsrtkIntensityStandardization(bids_dir = self.inputs.bids_dir, in_file = input_image, out_postfix=self.inputs.out_postfix)
+            
+            if self.inputs.in_max:
+                ax = MialsrtkIntensityStandardization(bids_dir = self.inputs.bids_dir, in_file = input_image, out_postfix=self.inputs.out_postfix, in_max=self.inputs.in_max)
+            else:
+                ax = MialsrtkIntensityStandardization(bids_dir = self.inputs.bids_dir, in_file = input_image, out_postfix=self.inputs.out_postfix)
             ax.run()
         return runtime
 
