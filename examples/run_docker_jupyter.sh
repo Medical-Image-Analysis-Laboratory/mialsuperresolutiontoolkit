@@ -1,7 +1,7 @@
 #!/usr/bin/sh
 
-mialsrtk_dir="/Users/sebastientourbier/Softwares/mialsuperresolutiontoolkit"
-data_dir="/Users/sebastientourbier/Softwares/mialsuperresolutiontoolkit/data"
+mialsrtk_dir="/home/hkebiri/mialsuperresolutiontoolkit"
+data_dir="/home/hkebiri/mialsuperresolutiontoolkit/data"
 
 port=8888
 
@@ -15,3 +15,4 @@ cmd="$cmd -p ${port}:${port}"
 cmd="$cmd -t sebastientourbier/mialsuperresolutiontoolkit-jupyter:${version}"
 
 eval $cmd
+
