@@ -44,8 +44,10 @@ class BtkNLMDenoising(BaseInterface):
     
     def _run_interface(self, runtime): 
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        out_file = os.path.join(self.inputs.bids_dir, ''.join((name, self.inputs.out_postfix, ext)))
+        #out_file = os.path.join(self.inputs.bids_dir, ''.join((name, self.inputs.out_postfix, ext)))
+        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
         print('out_file: {}'.format(out_file))
+
 
         if self.inputs.in_mask:
             cmd = 'btkNLMDenoising -i "{}" -m "{}" -o "{}" -b {}'.format(self.inputs.in_file,self.inputs.in_mask,out_file,self.inputs.weight)
@@ -82,7 +84,7 @@ class MultipleBtkNLMDenoising(BaseInterface):
     output_spec = MultipleBtkNLMDenoisingOutputSpec
 
     def _run_interface(self, runtime):
-        if len(self.inputs.input_images)>0:
+        if len(self.inputs.input_masks)>0:
             for input_image, input_mask in zip(self.inputs.input_images,self.inputs.input_masks):
                 ax = BtkNLMDenoising(bids_dir = self.inputs.bids_dir, in_file = input_image, in_mask = input_mask, out_postfix=self.inputs.out_postfix, weight = self.inputs.weight)
                 ax.run()
