@@ -40,7 +40,7 @@ class BtkNLMDenoisingOutputSpec(TraitedSpec):
 class BtkNLMDenoising(BaseInterface):
 
     input_spec = BtkNLMDenoisingInputSpec
-    output_spec = BtkNLMDenoisingOutputSpec
+    output_spec = BtkNLMDenoisingOutputSpec 
     
     def _run_interface(self, runtime): 
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
@@ -290,7 +290,6 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSp
     
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
-    output_fields = OutputMultiPath(File())
 
 class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     input_spec = MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec
@@ -329,19 +328,15 @@ class MialsrtkIntensityStandardization(BaseInterface):
     output_spec = MialsrtkIntensityStandardizationOutputSpec
 
     def _run_interface(self, runtime):
-        lst_in = []
-        lst_out = []
+
+        cmd = 'mialsrtkIntensityStandardization'
         for input_image in self.inputs.input_images:
             _, name, ext = split_filename(os.path.abspath(input_image))
             out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
-
-            lst_in.append(input_image)
-            lst_out.append(out_file)
+            cmd = cmd + ' --input "{}" --output "{}"'.format(input_image, out_file)
 
         if self.inputs.in_max:
-            cmd = 'mialsrtkIntensityStandardization --input "{}" --output "{}" --max "{}"'.format(','.join(lst_in), ','.join(lst_out), self.inputs.in_max)
-        else:
-            cmd = 'mialsrtkIntensityStandardization --input "{}" --output "{}"'.format(','.join(lst_in), ','.join(lst_out))
+            cmd = cmd + ' --max "{}"'.format(self.inputs.in_max)
         
         try:
             print('... cmd: {}'.format(cmd))
@@ -353,5 +348,180 @@ class MialsrtkIntensityStandardization(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
+        outputs['output_images'] = glob(os.path.abspath("*_ist.nii.gz"))
+        return outputs
+
+
+
+# 
+## Histogram normalization 
+# 
+
+
+class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
+    bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
+    input_images = InputMultiPath(File(desc='files to be HistNorm', mandatory = True))
+    input_masks = InputMultiPath(File(desc='mask of files to be HistNorm', mandatory = False))
+    out_postfix = traits.Str("_HistNorm", usedefault=True)
+    
+class MialsrtkHistogramNormalizationOutputSpec(TraitedSpec):
+    output_images = OutputMultiPath(File())
+
+class MialsrtkHistogramNormalization(BaseInterface):
+    input_spec = MialsrtkHistogramNormalizationInputSpec
+    output_spec = MialsrtkHistogramNormalizationOutputSpec
+
+    def _run_interface(self, runtime):
+
+    	cmd = 'python /usr/local/bin/mialsrtkHistogramNormalization.py '
+
+    	for in_file, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
+    		_, name, ext = split_filename(os.path.abspath(in_file))
+    		out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+    		cmd = cmd + ' -i "{}" -o "{}" -m "{}" '.format(in_file, out_file, in_mask)
+
+    	try:
+    		print('... cmd: {}'.format(cmd))
+    		run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+    	except:
+    		print('Failed')
+
+    	return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_images'] = glob(os.path.abspath("*_HistNorm.nii.gz"))
+        return outputs
+
+
+
+
+# 
+## Image Reconstruction
+# 
+
+class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
+    bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
+    
+    in_roi = traits.Enum(None, "all", "box", "mask", mandatory = True, default='mask', usedefault=True)
+    # in_deblurring = traits.Bool(False, usedefault=True)
+    # in_reg = traits.Bool(True, usedefault=True)
+    # in_3d = traits.Bool(False, usedefault=True)
+    
+    # in_margin = traits.Float(usedefault=False)
+    # in_epsilon = traits.Float(usedefault=False)
+    # in_iter = traits.Int(usedefault=False)
+    
+    # in_combinedMasks = traits.Str(usedefault=False) ## ?? TODO
+    # # in_reference = File(desc='Reference image') # , mandatory=True)
+
+    # in_imresampled = InputMultiPath(File(desc='')) # , mandatory = True))
+    # in_imroi = InputMultiPath(File(desc='')) # , mandatory = True))
+    
+
+    input_masks = InputMultiPath(File(desc='')) # , mandatory = True))
+    input_images = InputMultiPath(File(desc='')) # , mandatory = True))
+
+    out_sr_postfix = traits.Str("_sr", usedefault=True)
+    out_transf_postfix = traits.Str("_transf", usedefault=True)
+    stacksOrder = traits.List(mandatory=False)
+    
+    
+class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
+    output_sr = File()
+    output_transforms = OutputMultiPath(File(desc='SDI')) 
+
+class MialsrtkImageReconstruction(BaseInterface):
+    input_spec = MialsrtkImageReconstructionInputSpec
+    output_spec = MialsrtkImageReconstructionOutputSpec
+
+    def _run_interface(self, runtime):
+        
+        print("input_image", self.inputs.input_images)
+        print("in roi", self.inputs.in_roi)
+        print("input_masks", self.inputs.input_masks)
+
+        params = []
+        params.append(''.join(["--", self.inputs.in_roi]))
+        # if self.inputs.in_deblurring:
+        #     params.append("--deblurring")
+
+        # if not self.inputs.in_reg:
+        #     params.append("--noreg")
+
+        # if self.inputs.in_3d:
+        #     params.append("--3D")
+
+        # if self.inputs.in_margin:
+        #     params.append("--margin")
+        #     params.append(str(self.inputs.in_margin))
+
+        # if self.inputs.in_epsilon:
+        #     params.append("--epsilon")
+        #     params.append(str(self.inputs.in_epsilon))
+
+        # if self.inputs.in_iter:
+        #     params.append("--iter")
+        #     params.append(str(self.inputs.in_iter))
+
+        # if self.inputs.in_combinedMasks:
+        #     params.append("--combinedMasks")
+        #     params.append(str(self.inputs.in_combinedMasks))
+
+        # if self.inputs.in_reference:
+        #     params.append("--reference")
+        #     params.append(str(self.inputs.in_reference))
+
+    #if self.inputs.in_roi == "mask":
+        for in_file, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
+            _, name, ext = split_filename(os.path.abspath(in_file))
+            transf_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_transf_postfix, '.txt')))
+
+            params.append("--input")
+            params.append(in_file)
+
+            params.append("--transform")
+            params.append(transf_file)
+
+            params.append("-m")
+            params.append(in_mask)
+
+        _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
+        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, '_desc-SDI_', self.inputs.out_sr_postfix, ext)))
+        params.append("--output")
+        params.append(out_file)
+
+
+        # if self.inputs.in_imresampled:
+        #     for ir in self.inputs.in_imresampled:
+        #         params.append("--ir")
+        #         params.append(ir)
+
+        # if self.inputs.in_imroi:
+        #     for roi in self.inputs.in_imroi:
+        #         params.append("--roi")
+        #         params.append(roi)
+
+        
+
+        
+        cmd = ["mialsrtkImageReconstruction"] 
+        cmd += params
+        
+#         cmd = ["mialsrtkImageReconstruction", "--help"]
+        
+        try:
+            print('... cmd: {}'.format(cmd))
+            cmd = ' '.join(cmd)
+            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+        except:
+            print('Failed')
+        return runtime
+            
+        
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_transforms'] = glob(os.path.abspath("*.txt"))
+        _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
+        outputs['output_sr'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, '_desc-SDI_', self.inputs.out_sr_postfix, ext)))
         return outputs
