@@ -815,7 +815,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['-r', self.inputs.input_sdi]
         cmd += ['-o', out_file]
 
-        cmd += ['--debluring', str(self.inputs.deblurring)]
+        if self.inputs.deblurring:
+            cmd += ['--debluring']
 
         cmd += ['--bregman-loop', '1']
         cmd += ['--loop', str(10)]
@@ -973,7 +974,7 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
 
         try:
             print('... cmd: {}'.format(cmd))
-            cmd = ''.join(cmd)
+            cmd = ' '.join(cmd)
             run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except:
             print('Failed')
