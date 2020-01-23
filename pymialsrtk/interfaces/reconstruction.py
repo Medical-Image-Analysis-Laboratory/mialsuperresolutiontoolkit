@@ -182,11 +182,9 @@ class MialsrtkImageReconstruction(BaseInterface):
         outputs['output_transforms'] = glob(os.path.abspath("*.txt"))
 
         _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-        #name = name.split('run-')[0]
         
         #outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([str('_'), str(self.inputs.out_sdi_prefix), str(len(self.inputs.stacksOrder)),str('V_rad'), str(int(self.inputs.input_rad_dilatation)), ext])))
         outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_', str(len(self.inputs.stacksOrder)),'V_rad', str(int(self.inputs.input_rad_dilatation)), ext])))
-        #outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((['coucou', str(int(self.inputs.input_rad_dilatation)), ext])))
 
         return outputs
 
@@ -211,6 +209,8 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     out_srtv_postfix = traits.Str("_gbcorr", usedefault=True)
     out_fld_postfix = traits.Str("_gbcorr", usedefault=True)
     stacksOrder = traits.List(mandatory = False)
+
+    sub_ses = traits.Str("x", usedefault=True)
     
 class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     output_sr = File()
@@ -255,9 +255,9 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
 
         _, name, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
-        name.replace('SDI_', self.inputs.out_prefix)
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([name, self.inputs.out_srtv_postfix, ext])))
-
+        name = name.replace('SDI_', self.inputs.out_prefix)
+        # out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([name, self.inputs.out_srtv_postfix, ext])))
+        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_', str(len(self.inputs.stacksOrder)),'V_rad', self.inputs.out_srtv_postfix, ext])))        
 
         cmd += ['-r', self.inputs.input_sdi]
         cmd += ['-o', out_file]
@@ -291,6 +291,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         _, name, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
         name = name.replace('SDI_', self.inputs.out_prefix)
         outputs['output_sr'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([name, self.inputs.out_srtv_postfix, ext])))
+        outputs['output_sr'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_', str(len(self.inputs.stacksOrder)),'V_rad', self.inputs.out_srtv_postfix, ext])))        
         
         return outputs
 
