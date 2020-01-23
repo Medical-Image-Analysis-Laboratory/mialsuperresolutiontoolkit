@@ -126,7 +126,7 @@ class MialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     in_file = File(desc='Input image',mandatory=True)
     in_mask = File(desc='Input mask',mandatory=False)
-    out_postfix = traits.Str("_csi", usedefault=True)
+    out_postfix = traits.Str("", usedefault=True)
 
 class MialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
     out_file = File(desc='Corrected slice intensities')
@@ -162,7 +162,7 @@ class MultipleMialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory = True))
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory = False))
-    out_postfix = traits.Str("_csi", usedefault=True)
+    out_postfix = traits.Str("", usedefault=True)
     stacksOrder = traits.List(madatory=False)
     
 class MultipleMialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
@@ -214,8 +214,8 @@ class MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec)
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     in_file = File(desc='Input image',mandatory=True)
     in_mask = File(desc='Input mask',mandatory=True)
-    out_im_postfix = traits.Str("_sliceN4corr", usedefault=True)
-    out_fld_postfix = traits.Str("_sliceN4field", usedefault=True)
+    out_im_postfix = traits.Str("_bcorr", usedefault=True)
+    out_fld_postfix = traits.Str("_n4bias", usedefault=True)
 
 class MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     out_im_file = File(desc='Corrected slice by slice from N4 bias field')
@@ -230,7 +230,11 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     def _run_interface(self, runtime): 
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_im_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
+        
         out_fld_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_fld_postfix, ext)))
+        if "_uni" in out_fld_file:
+            out_fld_file.replace('_uni','')
+        
 
         cmd = 'mialsrtkSliceBySliceN4BiasFieldCorrection "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file, out_fld_file)
         
@@ -245,7 +249,12 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
         outputs = self._outputs().get()
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         outputs['out_im_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
-        outputs['out_fld_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_fld_postfix, ext)))
+
+
+        out_fld_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_fld_postfix, ext)))
+        if "_uni" in out_fld_file:
+            out_fld_file.replace('_uni','')
+        outputs['out_fld_file'] = out_fld_file
         return outputs
     
     
@@ -254,8 +263,8 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceIn
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory = True))
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory = True))
-    out_im_postfix = traits.Str("_sliceN4corr", usedefault=True)
-    out_fld_postfix = traits.Str("_sliceN4field", usedefault=True) 
+    out_im_postfix = traits.Str("_bcorr", usedefault=True)
+    out_fld_postfix = traits.Str("_n4bias", usedefault=True) 
     stacksOrder = traits.List(madatory=False) 
     
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
@@ -290,8 +299,8 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_images'] = glob(os.path.abspath("*_sliceN4corr.nii.gz"))
-        outputs['output_fields'] = glob(os.path.abspath("*_sliceN4field.nii.gz"))
+        outputs['output_images'] = glob(os.path.abspath(''.join(["*", self.inputs.out_im_postfix, ".nii.gz"])))
+        outputs['output_fields'] = glob(os.path.abspath(''.join(["*", self.inputs.out_fld_postfix, ".nii.gz"])))
         return outputs
 
 
@@ -305,7 +314,7 @@ class MialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
     in_file = File(desc='Input image',mandatory=True)
     in_mask = File(desc='Input mask',mandatory=True)
     in_field = File(desc='Input bias field',mandatory=True)
-    out_im_postfix = traits.Str("_sliceFldCorrected", usedefault=True)
+    out_im_postfix = traits.Str("_bcorr", usedefault=True)
 
 class MialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
     out_im_file = File(desc='Bias field corrected image')
@@ -342,7 +351,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSp
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory = True))
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory = True))
     input_fields = InputMultiPath(File(desc='field to remove', mandatory = True))
-    out_im_postfix = traits.Str("_sliceFldCorrected", usedefault=True)
+    out_im_postfix = traits.Str("_bcorr", usedefault=True)
     stacksOrder = traits.List(mandatory=False)
     
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
@@ -382,7 +391,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_images'] = glob(os.path.abspath("*_sliceFldCorrected.nii.gz"))
+        outputs['output_images'] = glob(os.path.abspath(''.join(["*", self.inputs.out_im_postfix, ".nii.gz"])))
         return outputs
 
 
@@ -395,7 +404,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory = True))
-    out_postfix = traits.Str("_ist", usedefault=True)
+    out_postfix = traits.Str("", usedefault=True)
     in_max = traits.Float(usedefault=False)
     stacksOrder = traits.List(mandatory=False)
     
@@ -427,7 +436,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_images'] = glob(os.path.abspath("*_ist.nii.gz"))
+        outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
         return outputs
 
 
@@ -441,7 +450,7 @@ class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     input_images = InputMultiPath(File(desc='files to be HistNorm', mandatory = True))
     input_masks = InputMultiPath(File(desc='mask of files to be HistNorm', mandatory = False))
-    out_postfix = traits.Str("_HistNorm", usedefault=True)
+    out_postfix = traits.Str("_histnorm", usedefault=True)
     stacksOrder = traits.List(mandatory=False)
     
 class MialsrtkHistogramNormalizationOutputSpec(TraitedSpec):
@@ -490,7 +499,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_images'] = glob(os.path.abspath("*_HistNorm.nii.gz"))
+        outputs['output_images'] = glob(os.path.abspath(''.join(["*", self.inputs.out_postfix, ".nii.gz"])))
         return outputs
 
 
@@ -505,7 +514,7 @@ class MialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     in_file = File(desc='Input image',mandatory=True)
     in_mask = File(desc='Input mask',mandatory=True)
-    out_im_postfix = traits.Str("_masked", usedefault=True)
+    out_im_postfix = traits.Str("", usedefault=True)
 
 class MialsrtkMaskImageOutputSpec(TraitedSpec):
     out_im_file = File(desc='Bias field corrected image')
@@ -541,7 +550,7 @@ class MultipleMialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory = True))
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory = True))
-    out_im_postfix = traits.Str("_masked", usedefault=True)
+    out_im_postfix = traits.Str("", usedefault=True)
     stacksOrder = traits.List(mandatory = False)
     
 class MultipleMialsrtkMaskImageOutputSpec(TraitedSpec):
@@ -576,7 +585,7 @@ class MultipleMialsrtkMaskImage(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_images'] = glob(os.path.abspath("*_masked.nii.gz"))
+        outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
         return outputs
 
 
@@ -591,13 +600,29 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     
     in_roi = traits.Enum(None, "all", "box", "mask", mandatory = True, default='mask', usedefault=True)
+    
+
+    input_masks = InputMultiPath(File(desc='')) # , mandatory = True))
+    input_images = InputMultiPath(File(desc='')) # , mandatory = True))
+
+    input_rad_dilatation = traits.Float(desc='', default=1, usedefault=True) # , mandatory = True))
+
+    sub_ses = traits.Str("x", usedefault=True)
+
+    out_sdi_prefix = traits.Str("SDI_", usedefault=True)
+    out_sdi_postfix = traits.Str("_SDI", usedefault=True)
+
+    out_transf_postfix = traits.Str("_transform", usedefault=True)
+    stacksOrder = traits.List(mandatory=False)
+    
+
+    in_iter = traits.Int(usedefault=False)
     # in_deblurring = traits.Bool(False, usedefault=True)
     # in_reg = traits.Bool(True, usedefault=True)
     # in_3d = traits.Bool(False, usedefault=True)
     
     # in_margin = traits.Float(usedefault=False)
     # in_epsilon = traits.Float(usedefault=False)
-    # in_iter = traits.Int(usedefault=False)
     
     # in_combinedMasks = traits.Str(usedefault=False) ## ?? TODO
     # # in_reference = File(desc='Reference image') # , mandatory=True)
@@ -606,13 +631,6 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     # in_imroi = InputMultiPath(File(desc='')) # , mandatory = True))
     
 
-    input_masks = InputMultiPath(File(desc='')) # , mandatory = True))
-    input_images = InputMultiPath(File(desc='')) # , mandatory = True))
-
-    out_sdi_postfix = traits.Str("_sr", usedefault=True)
-    out_transf_postfix = traits.Str("_transf", usedefault=True)
-    stacksOrder = traits.List(mandatory=False)
-    
     
 class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
     output_sdi = File()
@@ -624,14 +642,8 @@ class MialsrtkImageReconstruction(BaseInterface):
 
     def _run_interface(self, runtime):
         
-        print("input_image", self.inputs.input_images)
-        print("in roi", self.inputs.in_roi)
-        print("input_masks", self.inputs.input_masks)
-
         params = []
         params.append(''.join(["--", self.inputs.in_roi]))
-        print("")
-        print("")
 
         run_nb_images  = []
         for in_file in self.inputs.input_images:
@@ -645,14 +657,11 @@ class MialsrtkImageReconstruction(BaseInterface):
             cut_apr = cut_avt.split('_')[0]
             run_nb_masks.append(int(cut_apr))
 
-
-
         for order in self.inputs.stacksOrder:
             index_img = run_nb_images.index(order)
-            index_mask = run_nb_masks.index(order)
 
             _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[index_img]))
-            transf_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_transf_postfix, '.txt')))
+            transf_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join([name, self.inputs.out_transf_postfix, '_', str(len(self.inputs.stacksOrder)),'V', '.txt']))
 
             params.append("--input")
             params.append(self.inputs.input_images[index_img])
@@ -660,8 +669,35 @@ class MialsrtkImageReconstruction(BaseInterface):
             params.append("--transform")
             params.append(transf_file)
 
-            params.append("-m")
-            params.append(self.inputs.input_masks[index_mask])
+
+            if self.inputs.in_roi == "mask":
+
+                index_mask = run_nb_masks.index(order)
+
+                params.append("-m")
+                params.append(self.inputs.input_masks[index_mask])
+
+
+        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_', str(len(self.inputs.stacksOrder)),'V_rad', str(int(self.inputs.input_rad_dilatation)), ext])))        
+        #out_file = ''.join(list(out_file))
+
+        params.append("--output")
+        params.append(out_file) 
+        
+        if self.inputs.in_iter:
+            params.append("--iter")
+            params.append(str(self.inputs.in_iter))
+
+
+        # if self.inputs.in_imresampled:
+        #     for ir in self.inputs.in_imresampled:
+        #         params.append("--ir")
+        #         params.append(ir)
+
+        # if self.inputs.in_imroi:
+        #     for roi in self.inputs.in_imroi:
+        #         params.append("--roi")
+        #         params.append(roi)
 
 
         # if self.inputs.in_deblurring:
@@ -692,40 +728,7 @@ class MialsrtkImageReconstruction(BaseInterface):
         # if self.inputs.in_reference:
         #     params.append("--reference")
         #     params.append(str(self.inputs.in_reference))
-
-    #if self.inputs.in_roi == "mask":
-
-        # for in_file, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
-        #     _, name, ext = split_filename(os.path.abspath(in_file))
-        #     transf_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_transf_postfix, '.txt')))
-
-        #     params.append("--input")
-        #     params.append(in_file)
-
-        #     params.append("--transform")
-        #     params.append(transf_file)
-
-        #     params.append("-m")
-        #     params.append(in_mask)
-
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, '_desc-SDI_', self.inputs.out_sdi_postfix, ext)))
-        params.append("--output")
-        params.append(out_file)
-
-
-        # if self.inputs.in_imresampled:
-        #     for ir in self.inputs.in_imresampled:
-        #         params.append("--ir")
-        #         params.append(ir)
-
-        # if self.inputs.in_imroi:
-        #     for roi in self.inputs.in_imroi:
-        #         params.append("--roi")
-        #         params.append(roi)
-
         
-
         
         cmd = ["mialsrtkImageReconstruction"] 
         cmd += params
@@ -735,6 +738,9 @@ class MialsrtkImageReconstruction(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
+            print("")
+            print(cmd)
+            print("")
             run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except:
             print('Failed')
@@ -744,8 +750,14 @@ class MialsrtkImageReconstruction(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_transforms'] = glob(os.path.abspath("*.txt"))
+
         _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-        outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, '_desc-SDI_', self.inputs.out_sdi_postfix, ext)))
+        #name = name.split('run-')[0]
+        
+        #outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([str('_'), str(self.inputs.out_sdi_prefix), str(len(self.inputs.stacksOrder)),str('V_rad'), str(int(self.inputs.input_rad_dilatation)), ext])))
+        outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_', str(len(self.inputs.stacksOrder)),'V_rad', str(int(self.inputs.input_rad_dilatation)), ext])))
+        #outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((['coucou', str(int(self.inputs.input_rad_dilatation)), ext])))
+
         return outputs
 
 
@@ -763,8 +775,11 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     input_masks = InputMultiPath(File(desc='mask of files to be SR', mandatory = True))
     input_transforms = InputMultiPath(File(desc='', mandatory = True))
     input_sdi = File(File(desc='', mandatory = True))
-    deblurring = traits.Bool(False)
-    out_postfix = traits.Str("_SR", usedefault=True)
+    deblurring = traits.Bool(False, usedefault=True)
+    
+    out_prefix = traits.Str("SRTV_", usedefault=True)
+    out_srtv_postfix = traits.Str("_gbcorr", usedefault=True)
+    out_fld_postfix = traits.Str("_gbcorr", usedefault=True)
     stacksOrder = traits.List(mandatory = False)
     
 class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
@@ -777,8 +792,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
     def _run_interface(self, runtime):
 
         cmd = ['mialsrtkTVSuperResolution']
-
-
 
         run_nb_images  = []
         for in_file in self.inputs.input_images:
@@ -793,8 +806,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
             run_nb_masks.append(int(cut_apr))
 
         run_nb_transforms  = []
-        for in_mask in self.inputs.input_transforms:
-            cut_avt = in_mask.split('run-')[1]
+        for in_transform in self.inputs.input_transforms:
+            cut_avt = in_transform.split('run-')[1]
             cut_apr = cut_avt.split('_')[0]
             run_nb_transforms.append(int(cut_apr))
 
@@ -809,8 +822,12 @@ class MialsrtkTVSuperResolution(BaseInterface):
             cmd += ['-m', self.inputs.input_masks[index_mask]]
             cmd += ['-t', self.inputs.input_transforms[index_tranform]]
 
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+
+
+        _, name, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
+        name.replace('SDI_', self.inputs.out_prefix)
+        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([name, self.inputs.out_srtv_postfix, ext])))
+
 
         cmd += ['-r', self.inputs.input_sdi]
         cmd += ['-o', out_file]
@@ -841,8 +858,10 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-        outputs['output_sr'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+        _, name, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
+        name.replace('SDI_', self.inputs.out_prefix)
+        outputs['output_sr'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([name, self.inputs.out_srtv_postfix, ext])))
+        
         return outputs
 
 
