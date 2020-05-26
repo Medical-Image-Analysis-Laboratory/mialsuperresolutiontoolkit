@@ -697,8 +697,8 @@ class MialsrtkN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
     input_image = File(desc='files to be HistNorm', mandatory = True)
     input_mask = File(desc='mask of files to be HistNorm', mandatory = False)
 
-    out_im_postfix = traits.Str("_N4corr", usedefault=True)
-    out_fld_postfix = traits.Str("_N4fld", usedefault=True)
+    out_im_postfix = traits.Str("_gbcorr", usedefault=True)
+    out_fld_postfix = traits.Str("_gbcorrfield", usedefault=True)
 
     
 class MialsrtkN4BiasFieldCorrectionOutputSpec(TraitedSpec):
