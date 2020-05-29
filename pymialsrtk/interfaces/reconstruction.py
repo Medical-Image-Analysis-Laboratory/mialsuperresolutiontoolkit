@@ -29,13 +29,13 @@ from pymialsrtk.interfaces.utils import run
 class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     
-    in_roi = traits.Enum(None, "all", "box", "mask", mandatory = True, default='mask', usedefault=True)
+    in_roi = traits.Enum('mask', "all", "box", "mask", mandatory = True, usedefault=True)
     
 
     input_masks = InputMultiPath(File(desc='')) # , mandatory = True))
     input_images = InputMultiPath(File(desc='')) # , mandatory = True))
 
-    input_rad_dilatation = traits.Float(desc='', default=1, usedefault=True) # , mandatory = True))
+    input_rad_dilatation = traits.Float(1.0, usedefault=True) 
 
     sub_ses = traits.Str("x", usedefault=True)
 
@@ -43,10 +43,9 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     out_sdi_postfix = traits.Str("_SDI", usedefault=True)
 
     out_transf_postfix = traits.Str("_transform", usedefault=True)
-    stacksOrder = traits.List(mandatory=False)
+    stacksOrder = traits.List(mandatory=True)
     
-
-    in_iter = traits.Int(usedefault=False)
+    
     # in_deblurring = traits.Bool(False, usedefault=True)
     # in_reg = traits.Bool(True, usedefault=True)
     # in_3d = traits.Bool(False, usedefault=True)
@@ -93,30 +92,32 @@ class MialsrtkImageReconstruction(BaseInterface):
             _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[index_img]))
             transf_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join([name, self.inputs.out_transf_postfix, '_', str(len(self.inputs.stacksOrder)),'V', '.txt']))
 
-            params.append("--input")
+            params.append("-i")
             params.append(self.inputs.input_images[index_img])
-
-            params.append("--transform")
-            params.append(transf_file)
 
 
             if self.inputs.in_roi == "mask":
-
                 index_mask = run_nb_masks.index(order)
 
                 params.append("-m")
                 params.append(self.inputs.input_masks[index_mask])
 
 
+            params.append("-t")
+            params.append(transf_file)
+
+
         out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_', str(len(self.inputs.stacksOrder)),'V_rad', str(int(self.inputs.input_rad_dilatation)), ext])))        
         #out_file = ''.join(list(out_file))
 
-        params.append("--output")
+        params.append("-o")
         params.append(out_file) 
         
-        if self.inputs.in_iter:
-            params.append("--iter")
-            params.append(str(self.inputs.in_iter))
+
+
+        # if self.inputs.in_iter:
+        #     params.append("--iter")
+        #     params.append(str(self.inputs.in_iter))
 
 
         # if self.inputs.in_imresampled:
@@ -196,6 +197,8 @@ class MialsrtkImageReconstruction(BaseInterface):
 ##  Total Variation Super Resolution
 # 
 
+# --bregman-loop 1 --loop ${LOOPS} --iter 50 --step-scale 10 --gamma 10 --deltat ${DELTA_T} --lambda ${LAMBDA_TV} --inner-thresh 0.00001 --outer-thresh 0.000001"
+
     
 class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
@@ -205,10 +208,24 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     input_sdi = File(File(desc='', mandatory = True))
     deblurring = traits.Bool(False, usedefault=True)
     
+
+    in_loop = traits.Int(mandatory=True)
+    in_deltat = traits.Float(mandatory=True)
+    in_lambda = traits.Float(mandatory=True)
+
+
+    in_bregman_loop = traits.Int(1, usedefault=True)
+    in_iter = traits.Int(50, usedefault=True)
+    in_step_scale = traits.Int(10, usedefault=True)
+    in_gamma = traits.Int(10, usedefault=True)
+    in_inner_thresh =  traits.Float(0.00001, usedefault=True)
+    in_outer_thresh = traits.Float( 0.000001, usedefault=True)
+
     out_prefix = traits.Str("SRTV_", usedefault=True)
     stacksOrder = traits.List(mandatory = False)
 
-    input_rad_dilatation = traits.Float(desc='', default=1, usedefault=True) # , mandatory = True))
+    input_rad_dilatation = traits.Float(1.0, usedefault=True) 
+
     sub_ses = traits.Str("x", usedefault=True)
     
 class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
@@ -263,16 +280,16 @@ class MialsrtkTVSuperResolution(BaseInterface):
         if self.inputs.deblurring:
             cmd += ['--debluring']
 
-        cmd += ['--bregman-loop', '1']
-        cmd += ['--loop', str(10)]
-        cmd += ['--deltat', str(0.01)]
-        cmd += ['--lambda', str(0.75)]
+        cmd += ['--loop', str(self.inputs.in_loop)]
+        cmd += ['--deltat', str(self.inputs.in_deltat)]
+        cmd += ['--lambda', str(self.inputs.in_lambda)]
 
-        cmd += ['--iter', '50']
-        cmd += ['--step-scale', '10']
-        cmd += ['--gamma', '50']
-        cmd += ['--inner-thresh', '0.00001']
-        cmd += ['--outer-thresh', '0.000001']
+        cmd += ['--bregman-loop', str(self.inputs.in_bregman_loop)]
+        cmd += ['--iter', str(self.inputs.in_iter)]
+        cmd += ['--step-scale', str(self.inputs.in_step_scale)]
+        cmd += ['--gamma', str(self.inputs.in_gamma)]
+        cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
+        cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
 
 
         try:
