@@ -96,6 +96,8 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
             cmd += ['-O', out_file]
 
         _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
+        run_id = (name.split('run-')[1]).split('_')[0]
+        name = name.replace('_run-'+run_id+'_', '_')
         out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_srmask_postfix, ext)))
 
         cmd += ['-r', self.inputs.input_sr]
@@ -116,7 +118,10 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
+        run_id = (name.split('run-')[1]).split('_')[0]
+        name = name.replace('_run-'+run_id+'_', '_')
         outputs['output_SRmask'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_srmask_postfix, ext)))
+        
         outputs['output_LRmasks'] = glob(os.path.abspath(''.join(["*", self.inputs.out_LRmask_postfix, ext])))
         return outputs
 

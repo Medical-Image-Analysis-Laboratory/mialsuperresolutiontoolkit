@@ -518,7 +518,7 @@ class MialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     out_im_postfix = traits.Str("", usedefault=True)
 
 class MialsrtkMaskImageOutputSpec(TraitedSpec):
-    out_im_file = File(desc='Bias field corrected image')
+    out_im_file = File(desc='Masked image')
 
     
 class MialsrtkMaskImage(BaseInterface):
