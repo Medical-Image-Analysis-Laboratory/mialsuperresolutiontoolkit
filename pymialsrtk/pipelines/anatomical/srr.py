@@ -24,55 +24,53 @@ import pymialsrtk.interfaces.postprocess as postprocess
 #from nipype.interfaces.base import traits, isdefined, CommandLine, CommandLineInputSpec,    TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
 
-# # Todo versioning
-# __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-#                                 'version')).read()
+__version__ = open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), 'version')).read()
 
 
     
 
 ## Node linkage
 ## Node linkage
-def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None, paramTV={}, srID=None):
-#     wf_base_dir = os.path.join("{}".format(output_dir),"superres-mri","sub-{}".format(subject),"nipype")
-    
+def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=None, paramTV={}):
+
     # (default) sr tv parameters
     deltatTV = paramTV["deltatTV"] if "deltatTV" in paramTV.keys() else 0.01
     lambdaTV = paramTV["lambdaTV"] if "lambdaTV" in paramTV.keys() else 0.75
     primal_dual_loops = paramTV["primal_dual_loops"] if "primal_dual_loops" in paramTV.keys() else 10
 
+
+    sub_ses = subject
+    if session is not None:
+        sub_ses = ''.join([sub_ses, '_', session])
+
+
+    wf_base_dir = os.path.join(output_dir,"nipype", subject, "anatomical_pipeline")
+    final_res_dir = os.path.join(bids_dir,'-'.join(["pymialsrtk", __version__]), subject)
     
 
-    if session is None:
-        if srID is None:
-            wf_base_dir = os.path.join(process_dir, subject)
-            process_dir = os.path.join(process_dir, subject)
-        else:
-            wf_base_dir = os.path.join(process_dir, subject, srID)
-            process_dir = os.path.join(process_dir, subject, srID)
-    else:
-        if srID is None:
-            wf_base_dir = os.path.join(process_dir, subject, session)
-            process_dir = os.path.join(process_dir, subject, session)
-        else:
-            wf_base_dir = os.path.join(process_dir, subject, session, srID)
-            process_dir = os.path.join(process_dir, subject, session, srID)
+    if session is not None:
+        wf_base_dir = os.path.join(wf_base_dir, session)
+        final_res_dir = os.path.join(final_res_dir, session)
 
-    if not os.path.exists(process_dir):
-        os.makedirs(process_dir)
+    # #if srID is not None:
+    # wf_base_dir = os.path.join(wf_base_dir, srID)
+
+
+    if not os.path.exists(wf_base_dir):
+        os.makedirs(wf_base_dir)
     print("Process directory: {}".format(wf_base_dir))
 
-    wf = Workflow(name="srr_nipype",base_dir=wf_base_dir)
-    srr_nipype_dir = os.path.join(wf.base_dir, wf.name )
+    wf = Workflow(name=srID,base_dir=wf_base_dir)
+    # srr_nipype_dir = os.path.join(wf.base_dir, wf.name )
     
     
     # Initialization
-    if os.path.isfile(os.path.join(process_dir,"pypeline_"+subject+".log")):
-        os.unlink(os.path.join(process_dir,"pypeline_"+subject+".log"))
-#         open(os.path.join(process_dir,"pypeline.log"), 'a').close()
+    if os.path.isfile(os.path.join(output_dir,"pypeline_"+subject+".log")):
+        os.unlink(os.path.join(output_dir,"pypeline_"+subject+".log"))
+#         open(os.path.join(output_dir,"pypeline.log"), 'a').close()
         
 
-    config.update_config({'logging': {'log_directory': os.path.join(process_dir), 'log_to_file': True},
+    config.update_config({'logging': {'log_directory': os.path.join(output_dir), 'log_to_file': True},
                           'execution': {
                               'remove_unnecessary_outputs': False,
                               'stop_on_first_crash': True,
@@ -95,11 +93,11 @@ def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None,
     dg.inputs.raise_on_empty = False
     dg.inputs.sort_filelist=True
     
-    dg.inputs.field_template = dict(T2ws=os.path.join(subject, 'anat', subject+'*_run-*_T2w.nii.gz'),
-                                   masks=os.path.join('derivatives','manual_masks', subject, 'anat', subject+'*_run-*_*mask.nii.gz'))
-    if not (session is None):
-        dg.inputs.field_template = dict(T2ws=os.path.join( subject, session, 'anat', '_'.join([subject, session, '*run-*', '*T2w.nii.gz'])),
-                                        masks=os.path.join('derivatives','manual_masks', subject, session, 'anat','_'.join([subject, session, '*run-*', '*mask.nii.gz'])))
+    dg.inputs.field_template = dict(T2ws=os.path.join(subject, 'anat', sub_ses+'*_run-*_T2w.nii.gz'),
+                                   masks=os.path.join('derivatives','manual_masks', subject, 'anat', sub_ses+'*_run-*_*mask.nii.gz'))
+    if session is not None:
+        dg.inputs.field_template = dict(T2ws=os.path.join( subject, session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])),
+                                        masks=os.path.join('derivatives','manual_masks', subject, session, 'anat','_'.join([sub_ses, '*run-*', '*mask.nii.gz'])))
     
     
         
@@ -175,9 +173,6 @@ def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None,
     srtkImageReconstruction.inputs.stacksOrder = p_stacksOrder 
 
     
-    sub_ses = subject
-    if session != None:
-        sub_ses = ''.join([sub_ses, '_', session])
     srtkImageReconstruction.inputs.sub_ses = sub_ses
     
     srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(), name='srtkTVSuperResolution')  
@@ -204,10 +199,7 @@ def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None,
 
 
     datasink = Node(DataSink(), name='sinker')
-    output_dir = os.path.join("{}".format(bids_dir),"derivatives","mialsrtk-py", subject)
-    if session is not None:
-        output_dir = os.path.join(output_dir, session)
-    datasink.inputs.base_directory = output_dir
+    datasink.inputs.base_directory = final_res_dir
     
 
     # JSON file SRTV
@@ -223,10 +215,7 @@ def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None,
     dictsink = JSONFileSink(name='jsonsinker')
     dictsink.inputs.in_dict = output_dict
 
-    if srID is None:
-        dictsink.inputs.out_file = os.path.join(output_dir, 'anat', sub_ses+'_rec-SR_T2w.json')
-    else:
-        dictsink.inputs.out_file = os.path.join(output_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.json')  
+    dictsink.inputs.out_file = os.path.join(final_res_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.json')  
     
 
     #
@@ -300,49 +289,27 @@ def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None,
     
     substitutions = []
 
-    if srID is None:
-        for stack in p_stacksOrder:
+
+    for stack in p_stacksOrder:
+    
+        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_preproc.nii.gz')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_preproc.nii.gz') )
         
-            print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_desc-preproc_T2w.nii.gz')
-            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_desc-preproc_T2w.nii.gz') )
-            
-            print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', '    --->     ', sub_ses+'_run-'+str(stack)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
-            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', sub_ses+'_run-'+str(stack)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt') )
-            
-            print( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', '    --->     ', sub_ses+'_run-'+str(stack)+'_desc-LRmask_T2w.nii.gz')
-            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', sub_ses+'_run-'+str(stack)+'_desc-LRmask_T2w.nii.gz') )
-
-            
-        print( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', '    --->     ', sub_ses+'_rec-SDI_T2w.nii.gz')
-        substitutions.append( ( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', sub_ses+'_rec-SDI_T2w.nii.gz') )
-
-        print( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', '    --->     ', sub_ses+'_rec-SR_T2w.nii.gz')
-        substitutions.append( ( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', sub_ses+'_rec-SR_T2w.nii.gz') )
+        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_from-origin_to-SDI_mode-image_xfm.txt') )
         
-        print( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', '    --->     ', sub_ses+'_rec-SR_T2w_desc-brain_mask.nii.gz')
-        substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR_T2w_desc-SRmask.nii.gz') )
+        print( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_desc-LRmask.nii.gz')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_desc-LRmask.nii.gz') )
 
-    else:
-        for stack in p_stacksOrder:
         
-            print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_preproc.nii.gz')
-            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_preproc.nii.gz') )
-            
-            print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
-            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_from-origin_to-SDI_mode-image_xfm.txt') )
-            
-            print( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_desc-LRmask.nii.gz')
-            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_desc-LRmask.nii.gz') )
+    print( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', '    --->     ', sub_ses+'_rec-SDI'+'_id-'+srID+'_T2w.nii.gz')
+    substitutions.append( ( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', sub_ses+'_rec-SDI'+'_id-'+srID+'_T2w.nii.gz') )
 
-            
-        print( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', '    --->     ', sub_ses+'_rec-SDI'+'_id-'+srID+'_T2w.nii.gz')
-        substitutions.append( ( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', sub_ses+'_rec-SDI'+'_id-'+srID+'_T2w.nii.gz') )
-
-        print( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.nii.gz')
-        substitutions.append( ( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.nii.gz') )
-        
-        print( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w_desc-brain_mask.nii.gz')
-        substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w_desc-SRmask.nii.gz') )
+    print( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.nii.gz')
+    substitutions.append( ( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.nii.gz') )
+    
+    print( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w_desc-brain_mask.nii.gz')
+    substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w_desc-SRmask.nii.gz') )
 
     
         
@@ -361,16 +328,17 @@ def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None,
 
 
 
-def main(bids_dir, process_dir, subject, p_stacksOrder, session, paramTV={}, number_of_cores=1, srID=None):
+def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV={}, number_of_cores=1, srID=None):
 
     subject = 'sub-'+subject
     if session is not None:
         session = 'ses-'+session
+
+    if srID is None:
+        srID = "01" 
     
-    if paramTV:
-        wf, dictsink = create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session, paramTV, srID)
-    else:
-        wf, dictsink = create_workflow(bids_dir, process_dir, subject, p_stacksOrder)
+    wf, dictsink = create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session, paramTV)
+    
 
     if(number_of_cores != 1):
         res = wf.run(plugin='MultiProc', plugin_args={'n_procs' : self.number_of_cores})
@@ -379,8 +347,6 @@ def main(bids_dir, process_dir, subject, p_stacksOrder, session, paramTV={}, num
         res = wf.run()
         dictsink.run()
 
-
-        
 
     wf.write_graph()
 
@@ -416,23 +382,20 @@ def get_parser():
 
 if __name__ == '__main__':
 
-    import pwd
     
     bids_dir = os.path.join('/fetaldata')
 
-    import pandas as pd
     
     parser = get_parser()
     args = parser.parse_args()
     
     print(args.param_file)
-    # with open('participants_params.json', 'r') as f:
     with open(args.param_file, 'r') as f:
         participants_params = json.load(f)
         print(participants_params)
     print()
-    exit()
     
+
     if len(args.participant_label) >= 1:
         for sub in args.participant_label:
             
@@ -444,51 +407,28 @@ if __name__ == '__main__':
                     ses = sr_params["session"] if "session" in sr_params.keys() else None
 
                     print('sr_params')
-                    if not "stacksOrder" in sr_params.keys():
+                    if not "stacksOrder" in sr_params.keys() or not "sr-id" in sr_params.keys():
                         print('Do not process subjects %s because of missing parameters.' % sub)
                         continue
 
                     if 'paramTV' in sr_params.keys():
-                        if 'sr-id' in sr_params.keys():
-                            main(bids_dir=args.bids_dir, 
-                                process_dir=args.output_dir, 
-                                subject=sub, 
-                                p_stacksOrder=sr_params['stacksOrder'], 
-                                session=ses, 
-                                paramTV=sr_params['paramTV'], 
-                                srID=sr_params['sr-id'])
-                        else:
-                            main(bids_dir=args.bids_dir, 
-                                process_dir=args.output_dir, 
-                                subject=sub, 
-                                p_stacksOrder=sr_params['stacksOrder'], 
-                                session=ses, 
-                                paramTV=sr_params['paramTV'])
-
+                        main(bids_dir=args.bids_dir, 
+                            output_dir=args.output_dir, 
+                            subject=sub, 
+                            p_stacksOrder=sr_params['stacksOrder'], 
+                            session=ses, 
+                            paramTV=sr_params['paramTV'], 
+                            srID=sr_params['sr-id'])
+                        
                     else:
-                        if 'sr-id' in sr_params.keys(): 
-                            main(bids_dir=args.bids_dir, 
-                                process_dir=args.output_dir, 
-                                subject=sub, 
-                                p_stacksOrder=sr_params['stacksOrder'], 
-                                session=ses, 
-                                srID=sr_params['sr-id'])
-                        else:
-                            main(bids_dir=args.bids_dir, 
-                                process_dir=args.output_dir, 
-                                subject=sub, 
-                                p_stacksOrder=sr_params['stacksOrder'], 
-                                session=ses)
+                        main(bids_dir=args.bids_dir, 
+                            output_dir=args.output_dir, 
+                            subject=sub, 
+                            p_stacksOrder=sr_params['stacksOrder'], 
+                            session=ses, 
+                            srID=sr_params['sr-id'])
+                        
 
-                    # if sr_params['lambdaTV'] in sr_params.keys() and sr_params['deltatTV'] in sr_params.keys():
-                    #     main(bids_dir=args.bids_dir, output_dir=args.output_dir, subject=sub, p_stacksOrder=sr_params['stacksOrder'], session=ses, paramTV=[sr_params['lambdaTV'], sr_params['deltatTV'] ] )
-                    # else:
-                    #     main(bids_dir=args.bids_dir, process_dir=args.output_dir, subject=sub, p_stacksOrder=sr_params['stacksOrder'], session=ses)
-                    # print("++++")
-                
-            
-            
-    # elif len(args.participant_label) == 1:
-    #     main(bids_dir=args.bids_dir, process_dir=args.output_dir, subject=args.participant_label[0])
+
     else:
         print('ERROR: Processing of all dataset not implemented yet\n At least one participant label should be provided')
