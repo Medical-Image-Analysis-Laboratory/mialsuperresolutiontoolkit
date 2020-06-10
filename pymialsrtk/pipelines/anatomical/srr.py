@@ -45,7 +45,7 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
 
 
     wf_base_dir = os.path.join(output_dir,"nipype", subject, "anatomical_pipeline")
-    final_res_dir = os.path.join(bids_dir,'-'.join(["pymialsrtk", __version__]), subject)
+    final_res_dir = os.path.join(output_dir,'-'.join(["pymialsrtk", __version__]), subject)
     
 
     if session is not None:
