@@ -48,15 +48,15 @@ def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None,
             wf_base_dir = os.path.join(process_dir, subject)
             process_dir = os.path.join(process_dir, subject)
         else:
-            wf_base_dir = os.path.join(process_dir, subject, str(srID))
-            process_dir = os.path.join(process_dir, subject, str(srID))
+            wf_base_dir = os.path.join(process_dir, subject, srID)
+            process_dir = os.path.join(process_dir, subject, srID)
     else:
         if srID is None:
             wf_base_dir = os.path.join(process_dir, subject, session)
             process_dir = os.path.join(process_dir, subject, session)
         else:
-            wf_base_dir = os.path.join(process_dir, subject, session, str(srID))
-            process_dir = os.path.join(process_dir, subject, session, str(srID))
+            wf_base_dir = os.path.join(process_dir, subject, session, srID)
+            process_dir = os.path.join(process_dir, subject, session, srID)
 
     if not os.path.exists(process_dir):
         os.makedirs(process_dir)
@@ -226,7 +226,7 @@ def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None,
     if srID is None:
         dictsink.inputs.out_file = os.path.join(output_dir, 'anat', sub_ses+'_rec-SR_T2w.json')
     else:
-        dictsink.inputs.out_file = os.path.join(output_dir, 'anat', sub_ses+'_rec-SR'+'_srID-'+str(int(srID))+'_T2w.json')  
+        dictsink.inputs.out_file = os.path.join(output_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.json')  
     
 
     #
@@ -325,24 +325,24 @@ def create_workflow(bids_dir, process_dir, subject, p_stacksOrder, session=None,
     else:
         for stack in p_stacksOrder:
         
-            print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_srID-'+str(int(srID))+'_T2w_preproc.nii.gz')
-            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_srID-'+str(int(srID))+'_T2w_preproc.nii.gz') )
+            print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_preproc.nii.gz')
+            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_preproc.nii.gz') )
             
-            print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', '    --->     ', sub_ses+'_run-'+str(stack)+'_srID-'+str(int(srID))+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
-            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', sub_ses+'_run-'+str(stack)+'_srID-'+str(int(srID))+'_T2w_from-origin_to-SDI_mode-image_xfm.txt') )
+            print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
+            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_from-origin_to-SDI_mode-image_xfm.txt') )
             
-            print( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', '    --->     ', sub_ses+'_run-'+str(stack)+'_srID-'+str(int(srID))+'_T2w_desc-LRmask.nii.gz')
-            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', sub_ses+'_run-'+str(stack)+'_srID-'+str(int(srID))+'_T2w_desc-LRmask.nii.gz') )
+            print( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_desc-LRmask.nii.gz')
+            substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_desc-LRmask.nii.gz') )
 
             
-        print( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', '    --->     ', sub_ses+'_rec-SDI'+'_srID-'+str(int(srID))+'_T2w.nii.gz')
-        substitutions.append( ( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', sub_ses+'_rec-SDI'+'_srID-'+str(int(srID))+'_T2w.nii.gz') )
+        print( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', '    --->     ', sub_ses+'_rec-SDI'+'_id-'+srID+'_T2w.nii.gz')
+        substitutions.append( ( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', sub_ses+'_rec-SDI'+'_id-'+srID+'_T2w.nii.gz') )
 
-        print( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_srID-'+str(int(srID))+'_T2w.nii.gz')
-        substitutions.append( ( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', sub_ses+'_rec-SR'+'_srID-'+str(int(srID))+'_T2w.nii.gz') )
+        print( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.nii.gz')
+        substitutions.append( ( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.nii.gz') )
         
-        print( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_srID-'+str(int(srID))+'_T2w_desc-brain_mask.nii.gz')
-        substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR'+'_srID-'+str(int(srID))+'_T2w_desc-SRmask.nii.gz') )
+        print( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w_desc-brain_mask.nii.gz')
+        substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w_desc-SRmask.nii.gz') )
 
     
         
@@ -449,14 +449,14 @@ if __name__ == '__main__':
                         continue
 
                     if 'paramTV' in sr_params.keys():
-                        if 'srID' in sr_params.keys():
+                        if 'sr-id' in sr_params.keys():
                             main(bids_dir=args.bids_dir, 
                                 process_dir=args.output_dir, 
                                 subject=sub, 
                                 p_stacksOrder=sr_params['stacksOrder'], 
                                 session=ses, 
                                 paramTV=sr_params['paramTV'], 
-                                srID=sr_params['srID'])
+                                srID=sr_params['sr-id'])
                         else:
                             main(bids_dir=args.bids_dir, 
                                 process_dir=args.output_dir, 
@@ -466,13 +466,13 @@ if __name__ == '__main__':
                                 paramTV=sr_params['paramTV'])
 
                     else:
-                        if 'srID' in sr_params.keys(): 
+                        if 'sr-id' in sr_params.keys(): 
                             main(bids_dir=args.bids_dir, 
                                 process_dir=args.output_dir, 
                                 subject=sub, 
                                 p_stacksOrder=sr_params['stacksOrder'], 
                                 session=ses, 
-                                srID=sr_params['srID'])
+                                srID=sr_params['sr-id'])
                         else:
                             main(bids_dir=args.bids_dir, 
                                 process_dir=args.output_dir, 
