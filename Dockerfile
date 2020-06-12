@@ -57,14 +57,13 @@ RUN mkdir build
 WORKDIR /opt/mialsuperresolutiontoolkit/build
 
 RUN cd /opt/mialsuperresolutiontoolkit/build \
-    && cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_OMP:BOOL=ON ../src \ 
+    && cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_OMP:BOOL=ON ../src \
     && make -j2 && sudo make install && cd .. 
 
 # Make MIALSRTK happy
 ENV BIN_DIR "/usr/local/bin" 
 ENV PATH ${BIN_DIR}:$PATH
 
-ENV BIN_DIR "/usr/local/bin" 
 ENV DISPLAY :0
 
 ARG BUILD_DATE
