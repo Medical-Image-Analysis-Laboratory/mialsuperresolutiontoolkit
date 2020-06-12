@@ -16,3 +16,4 @@ dependencies:
     - duecredit==0.7.0
     - apptools==4.4.0
     - niworkflows==0.10.2
+    - numpy==1.16.4 # numpy 1.18.5 caused error (fix: https://github.com/DeepLabCut/Docker4DeepLabCut2.0/issues/26)
