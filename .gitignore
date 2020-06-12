@@ -80,3 +80,5 @@ RECON
 # Data derivatives  #
 #####################
 data/derivatives/mialsrtk*
+data/derivatives/nipype*
+data/derivatives/pymialsrtk*
