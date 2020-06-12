@@ -296,14 +296,14 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
 
     for stack in p_stacksOrder:
     
-        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_preproc.nii.gz')
-        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_preproc.nii.gz') )
+        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_desc-preproc_T2w.nii.gz')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_desc-preproc_T2w.nii.gz') )
         
         print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
         substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt') )
         
-        print( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_desc-LRmask.nii.gz')
-        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_desc-LRmask.nii.gz') )
+        print( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_desc-brain_mask.nii.gz')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_desc-brain_mask.nii.gz') )
 
         
     print( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', '    --->     ', sub_ses+'_rec-SDI'+'_id-'+str(srID)+'_T2w.nii.gz')
@@ -313,15 +313,15 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
     substitutions.append( ( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w.nii.gz') )
     
     print( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w_desc-brain_mask.nii.gz')
-    substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w_desc-SRmask.nii.gz') )
+    substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w_desc-brain_mask.nii.gz') )
 
     
         
     datasink.inputs.substitutions = substitutions
     
-    wf.connect(srtkMaskImage01, "output_images", datasink, 'preproc')
+    wf.connect(srtkMaskImage01, "output_images", datasink, 'anat')
     wf.connect(srtkImageReconstruction, "output_transforms", datasink, 'xfm')
-    wf.connect(srtkRefineHRMaskByIntersection, "output_LRmasks", datasink, 'postproc')
+    wf.connect(srtkRefineHRMaskByIntersection, "output_LRmasks", datasink, 'anat')
     
     wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat')
     wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
