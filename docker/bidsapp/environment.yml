@@ -11,6 +11,7 @@ dependencies:
 - nibabel=2.3.3
 - nipype=1.2.0
 - traitsui=6.0.0
+- graphviz=2.40.1
 
 - pip:
     - duecredit==0.7.0
