@@ -24,8 +24,8 @@ import pymialsrtk.interfaces.postprocess as postprocess
 #from nipype.interfaces.base import traits, isdefined, CommandLine, CommandLineInputSpec,    TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
 
-__version__ = open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), 'version')).read()
-
+# Get pymialsrtk version
+from pymialsrtk.info import __version__
 
     
 
