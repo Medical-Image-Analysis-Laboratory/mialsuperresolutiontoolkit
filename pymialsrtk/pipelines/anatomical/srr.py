@@ -60,17 +60,21 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
         os.makedirs(wf_base_dir)
     print("Process directory: {}".format(wf_base_dir))
 
-    wf = Workflow(name=srID,base_dir=wf_base_dir)
+    # Workflow name cannot begin with a number (oterhwise ValueError)
+    pipeline_name = "run-{}".format(srID)
+    print(pipeline_name)
+
+    wf = Workflow(name=pipeline_name,base_dir=wf_base_dir)
     # srr_nipype_dir = os.path.join(wf.base_dir, wf.name )
     
     
-    # Initialization
-    if os.path.isfile(os.path.join(output_dir,"pypeline_"+subject+".log")):
-        os.unlink(os.path.join(output_dir,"pypeline_"+subject+".log"))
+    # Initialization (Not sure we can control the name of nipype log)
+    if os.path.isfile(os.path.join(wf_base_dir,"pypeline_"+subject+".log")):
+        os.unlink(os.path.join(wf_base_dir,"pypeline_"+subject+".log"))
 #         open(os.path.join(output_dir,"pypeline.log"), 'a').close()
         
 
-    config.update_config({'logging': {'log_directory': os.path.join(output_dir), 'log_to_file': True},
+    config.update_config({'logging': {'log_directory': os.path.join(wf_base_dir), 'log_to_file': True},
                           'execution': {
                               'remove_unnecessary_outputs': False,
                               'stop_on_first_crash': True,
@@ -215,7 +219,7 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
     dictsink = JSONFileSink(name='jsonsinker')
     dictsink.inputs.in_dict = output_dict
 
-    dictsink.inputs.out_file = os.path.join(final_res_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.json')  
+    dictsink.inputs.out_file = os.path.join(final_res_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w.json')  
     
 
     #
@@ -292,24 +296,24 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
 
     for stack in p_stacksOrder:
     
-        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_preproc.nii.gz')
-        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_preproc.nii.gz') )
+        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_preproc.nii.gz')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_preproc.nii.gz') )
         
-        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
-        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_from-origin_to-SDI_mode-image_xfm.txt') )
+        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt') )
         
-        print( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_desc-LRmask.nii.gz')
-        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+srID+'_T2w_desc-LRmask.nii.gz') )
+        print( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_desc-LRmask.nii.gz')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_desc-LRmask.nii.gz') )
 
         
-    print( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', '    --->     ', sub_ses+'_rec-SDI'+'_id-'+srID+'_T2w.nii.gz')
-    substitutions.append( ( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', sub_ses+'_rec-SDI'+'_id-'+srID+'_T2w.nii.gz') )
+    print( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', '    --->     ', sub_ses+'_rec-SDI'+'_id-'+str(srID)+'_T2w.nii.gz')
+    substitutions.append( ( 'SDI_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1.nii.gz', sub_ses+'_rec-SDI'+'_id-'+str(srID)+'_T2w.nii.gz') )
 
-    print( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.nii.gz')
-    substitutions.append( ( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w.nii.gz') )
+    print( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w.nii.gz')
+    substitutions.append( ( 'SRTV_'+sub_ses+'_'+str(len(p_stacksOrder))+'V_rad1_gbcorr.nii.gz', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w.nii.gz') )
     
-    print( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w_desc-brain_mask.nii.gz')
-    substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR'+'_id-'+srID+'_T2w_desc-SRmask.nii.gz') )
+    print( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w_desc-brain_mask.nii.gz')
+    substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w_desc-SRmask.nii.gz') )
 
     
         
@@ -393,6 +397,7 @@ if __name__ == '__main__':
     with open(args.param_file, 'r') as f:
         participants_params = json.load(f)
         print(participants_params)
+        print(participants_params.keys())
     print()
     
 
@@ -401,6 +406,7 @@ if __name__ == '__main__':
             
             if sub in participants_params.keys():
                 sr_list = participants_params[sub]
+                print(sr_list)
                 
                 for iSr, sr_params in enumerate(sr_list):
                     
