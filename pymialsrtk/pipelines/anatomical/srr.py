@@ -319,9 +319,10 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
         
     datasink.inputs.substitutions = substitutions
     
-    wf.connect(srtkMaskImage01, "output_images", datasink, 'anat')
+    wf.connect(srtkMaskImage01, "output_images", datasink, 'anat.@LRmask')
     wf.connect(srtkImageReconstruction, "output_transforms", datasink, 'xfm')
-    wf.connect(srtkRefineHRMaskByIntersection, "output_LRmasks", datasink, 'anat')
+    ## Do we really need them ?
+    # wf.connect(srtkRefineHRMaskByIntersection, "output_LRmasks", datasink, 'anat')
     
     wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat')
     wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
