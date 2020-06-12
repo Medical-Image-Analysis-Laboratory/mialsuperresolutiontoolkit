@@ -1,6 +1,6 @@
 {
   "01": [
-    { "srID":1,
+    { "sr-id":1,
       "stacksOrder": [1, 3, 5, 5, 4, 6],
       "paramTV": { 
         "lambdaTV": 0.75, 
