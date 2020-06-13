@@ -4,7 +4,7 @@
 Commandline Usage
 ***********************
 
-``MIALSRTK BIDS App`` adopts the :abbr:`BIDS (Brain Imaging Data Structure)` standard for data organization and takes as principal input the path of the dataset that is to be processed. The input dataset is required to be in valid `BIDS` format, and it must include at least one T2w scan with anisotropic resolution per anatomical direction. See :ref:`cmpbids` page that provides links for more information about BIDS and BIDS-Apps as well as an example for dataset organization and naming.
+``MIALSRTK BIDS App`` adopts the :abbr:`BIDS (Brain Imaging Data Structure)` standard for data organization and takes as principal input the path of the dataset that is to be processed. The input dataset is required to be in valid `BIDS` format, and it must include at least one T2w scan with anisotropic resolution per anatomical direction. See :ref:`bids` page that provides links for more information about BIDS and BIDS-Apps as well as an example for dataset organization and naming.
 
 Commandline Arguments
 =============================
@@ -17,7 +17,10 @@ The command to run the ``MIALSRTK BIDS App`` follows the `BIDS-Apps <https://git
 
 .. _config:
 
-The pipeline configuration file adopts a specific schema which is the following:::
+BIDS App configuration file
+-----------------------------
+
+The BIDS App configuration file specified by the input flag ``--param_file`` adopts the following JSON schema::
 
     {
       "01": [
@@ -40,7 +43,7 @@ The pipeline configuration file adopts a specific schema which is the following:
 where:
     * ``stacksOrder`` define the list and order od scans to be used in the reconstruction
 
-    * ``lambdaTV`` (regularization) and ``deltaTV` (optimization time step) are parameters of the TV super-resolution algorithm
+    * ``lambdaTV`` (regularization) and ``deltaTV`` (optimization time step) are parameters of the TV super-resolution algorithm
 
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
@@ -56,7 +59,7 @@ To run the docker image in participant level mode (for one participant):
             -v /media/localadmin/data/ds001/derivatives:/output_dir \\
             sebastientourbier/mialsuperresolutiontoolkit-bidsapp:|release| \\
             /bids_dir /output_dir participant --participant_label 01 \\(--session_label 01 \\)
-          	--param_file /bids_dir/code/participants_params.json \\
+            --param_file /bids_dir/code/participants_params.json \\
             (--number_of_cores 1)
 
 .. note:: The local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process have to be mapped to the folders ``/bids_dir`` and ``/output_dir`` respectively using the ``-v`` docker run option. 

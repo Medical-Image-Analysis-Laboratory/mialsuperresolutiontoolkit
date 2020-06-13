@@ -14,7 +14,7 @@ For more information about BIDS and BIDS-Apps, please consult the `BIDS Website 
 BIDS dataset schema
 =======================
 
-The BIDS App accepts BIDS datasets that adopt the following organization, naming, and file formats:::
+The BIDS App accepts BIDS datasets that adopt the following organization, naming, and file formats::
 
     ds-example/
         
