@@ -151,7 +151,7 @@ jobs:
           name: Clean working directory
           when: always
           command: |
-            sudo chown $(id -un):$(id -gn) -R /tmp/data/ds-sample
+            sudo chown $(id -un):$(id -gn) -R /tmp/src/mialsuperresolutiontoolkit/data
             find /tmp/src/mialsuperresolutiontoolkit/data/derivatives -not -name "*.svg" -not -name "*.html" -not -name "*.rst" \
                 -not -name "*.mat" -not -name "*.gpickle" -not -name "*.lta" -not -name "*.json" -not -name "*.txt" -not -name "*.pklz" -type f -delete
       - store_artifacts:
