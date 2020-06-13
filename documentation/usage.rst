@@ -12,7 +12,7 @@ Commandline Arguments
 The command to run the ``MIALSRTK BIDS App`` follows the `BIDS-Apps <https://github.com/BIDS-Apps>`_ definition standard with an additional option for loading the pipeline configuration file.
 
 .. argparse::
-		:ref: pymialsrtk.pipelines.anatomical.srr.get_parser
+		:ref: pymialsrtk.parser.get_parser
 		:prog: mialsuperresolutiontoolkit-bidsapp
 
 The pipeline configuration file adopts a specific schema which is the following:::
@@ -38,7 +38,7 @@ The pipeline configuration file adopts a specific schema which is the following:
 where:
     * ``stacksOrder`` define the list and order od scans to be used in the reconstruction
 
-    * ``lambdaTV`` (regularization) and ``deltaTV`` (optimization time step) are parameters of the TV super-resolution algorithm
+    * ``lambdaTV`` (regularization) and ``deltaTV` (optimization time step) are parameters of the TV super-resolution algorithm
 
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.

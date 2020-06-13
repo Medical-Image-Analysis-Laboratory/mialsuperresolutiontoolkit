@@ -357,39 +357,13 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV={}, numb
 
 
 
-def get_parser():
-    import argparse
-    p = argparse.ArgumentParser(description='Entrypoint script to the MIALsrtk pipeline')
-    p.add_argument('bids_dir', help='The directory with the input dataset '
-                        'formatted according to the BIDS standard.')
-    p.add_argument('output_dir', help='The directory where the output files '
-                        'should be stored. If you are running group level analysis '
-                        'this folder should be prepopulated with the results of the'
-                        'participant level analysis.')
-    p.add_argument('analysis_level', help='Level of the analysis that will be performed. '
-                        'Only participant is available',
-                        choices=['participant'])
-    p.add_argument('--participant_label', help='The label(s) of the participant(s) that should be analyzed. The label '
-                       'corresponds to sub-<participant_label> from the BIDS spec '
-                       '(so it does not include "sub-"). If this parameter is not '
-                       'provided all subjects should be analyzed. Multiple '
-                       'participants can be specified with a space separated list.',
-                       nargs="+")
-    
-    p.add_argument('--param_file', help='Path to a JSON file containing subjects\' exams ' 
-                       'information and super-resolution total variation parameters.', 
-                       default='/bids_dir/code/participants_param.json', type=str)
-    #p.add_argument('-v', '--version', action='version',
-                        #version='BIDS-App')
-    return p
-
-
 if __name__ == '__main__':
 
     
     bids_dir = os.path.join('/fetaldata')
 
-    
+
+    from pymialsrtk.parser import get_parser
     parser = get_parser()
     args = parser.parse_args()
     
