@@ -353,8 +353,7 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV={}, numb
         res = wf.run()
         dictsink.run()
 
-
-    wf.write_graph()
+    wf.write_graph(dotfilename='graph.dot', graph2use='colored', format='png', simple_form=True)
 
 
 
