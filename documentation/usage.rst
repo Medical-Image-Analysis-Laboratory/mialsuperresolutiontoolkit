@@ -15,6 +15,8 @@ The command to run the ``MIALSRTK BIDS App`` follows the `BIDS-Apps <https://git
 		:ref: pymialsrtk.parser.get_parser
 		:prog: mialsuperresolutiontoolkit-bidsapp
 
+.. _config:
+
 The pipeline configuration file adopts a specific schema which is the following:::
 
     {

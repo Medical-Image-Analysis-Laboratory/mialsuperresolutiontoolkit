@@ -2,21 +2,19 @@
 .. _cmpbids:
 
 *******************************************
-MIALSRTK BIDS App and the BIDS standard
+BIDS and BIDS App standards
 *******************************************
 
-``MIALSRTK BIDS App`` adopts the :abbr:`BIDS (Brain Imaging Data Structure)` standard for data organization and is developed following the BIDS App standard.
-
-This means it can be executed by running the BIDS App container image directly from the terminal or a script (See :ref:`cmdusage` section for more details). 
+``MIALSRTK BIDS App`` adopts the :abbr:`BIDS (Brain Imaging Data Structure)` standard for data organization and is developed following the BIDS App standard. This means that ``MIALSRTK BIDS App`` handles dataset formatted following the BIDS App standard and provides a processing workflow containerized in Docker container image (promoting portability and reproduciblity) that can be run with a set of arguments defined by the BIDS App standard directly from the terminal or a script (See :ref:`cmdusage` section for more details). 
 
 For more information about BIDS and BIDS-Apps, please consult the `BIDS Website <https://bids.neuroimaging.io/>`_, the `Online BIDS Specifications <https://bids-specification.readthedocs.io/en/stable/>`_, and the `BIDSApps Website <https://bids-apps.neuroimaging.io/>`_. `HeuDiConv <https://github.com/nipy/heudiconv>`_ can assist you in converting DICOM brain imaging data to BIDS. A nice tutorial can be found @ `BIDS Tutorial Series: HeuDiConv Walkthrough <http://reproducibility.stanford.edu/bids-tutorial-series-part-2a/>`_ .
 
 .. _bidsexample:
 
-Example BIDS dataset
+BIDS dataset scheme
 =======================
 
-For instance, a BIDS dataset should adopt the following organization, naming, and file formats:::
+The BIDS App accepts BIDS datasets that adopt the following organization, naming, and file formats:::
 
     ds-example/
         
@@ -45,29 +43,7 @@ For instance, a BIDS dataset should adopt the following organization, naming, an
         code/
             participants_params.json
 
-The BIDS App use a specific pipeline configuration file (here `participants_params.json`) which uses the following schema:::
-
-    {
-      "01": [
-        { "sr-id":1,
-          "stacksOrder": [1, 3, 5, 2, 4, 6],
-          "paramTV": { 
-            "lambdaTV": 0.75, 
-            "deltatTV": 0.01 }
-        }]
-      "02": [
-        { "sr-id":1,
-          "stacksOrder": [3, 1, 2, 4],
-          "paramTV": { 
-            "lambdaTV": 0.7, 
-            "deltatTV": 0.01 }
-        }]
-      ...
-    } 
-
-where:
-* `stacksOrder` define the list and order od scans to be used in the reconstruction
-* `lambdaTV` (regularization) and `deltaTV` (optimization time step) are parameters of the TV super-resolution algorithm
+where ``participants_params.json`` is the MIALSRTK BIDS App configuration file, which following a specific schema (See :ref:`config` schema), and which defines multiple processing parameters (such as the ordered list of scans or the weight of regularization).
 
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
