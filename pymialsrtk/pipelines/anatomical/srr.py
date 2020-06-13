@@ -201,9 +201,8 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
     
 
 
-    datasink = Node(DataSink(), name='sinker')
+    datasink = Node(DataSink(), name='data_sinker')
     datasink.inputs.base_directory = final_res_dir
-    
 
     # JSON file SRTV
     output_dict = {}
@@ -215,7 +214,7 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
     output_dict["CustomMetaData"]["Optimization time step"] = deltatTV
     output_dict["CustomMetaData"]["Primal/dual loops"] = primal_dual_loops
 
-    dictsink = JSONFileSink(name='jsonsinker')
+    dictsink = JSONFileSink(name='json_sinker')
     dictsink.inputs.in_dict = output_dict
 
     dictsink.inputs.out_file = os.path.join(final_res_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w.json')  
