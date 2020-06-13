@@ -294,8 +294,11 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
 
     for stack in p_stacksOrder:
     
-        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_desc-preproc_T2w.nii.gz')
-        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_desc-preproc_T2w.nii.gz') )
+        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_desc-preprocSDI_T2w.nii.gz')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_desc-preprocSDI_T2w.nii.gz') )
+
+        print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz', '    --->     ',sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_desc-preprocSR_T2w.nii.gz')
+        substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm.nii.gz', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_desc-preprocSR_T2w.nii.gz') )
         
         print( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', '    --->     ', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
         substitutions.append( ( sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(p_stacksOrder))+'V.txt', sub_ses+'_run-'+str(stack)+'_id-'+str(srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt') )
@@ -317,14 +320,14 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
         
     datasink.inputs.substitutions = substitutions
     
-    wf.connect(srtkMaskImage01, "output_images", datasink, 'anat.@LRmask')
-    wf.connect(srtkImageReconstruction, "output_transforms", datasink, 'xfm')
-    ## Do we really need them ?
-    # wf.connect(srtkRefineHRMaskByIntersection, "output_LRmasks", datasink, 'anat')
+    wf.connect(srtkIntensityStandardization02, "output_images", datasink, 'anat.@LRsPreproc')
+    wf.connect(srtkMaskImage01, "output_images", datasink, 'anat.@LRsDenoised')
+    wf.connect(srtkImageReconstruction, "output_transforms", datasink, 'xfm.@transforms')
+    wf.connect(srtkRefineHRMaskByIntersection, "output_LRmasks", datasink, 'anat.@LRmasks')
     
-    wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat')
+    wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat.@SDI')
     wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
-    wf.connect(srtkRefineHRMaskByIntersection, "output_SRmask", datasink, 'postproc.@SRmask')
+    wf.connect(srtkRefineHRMaskByIntersection, "output_SRmask", datasink, 'anat.@SRmask')
     
     
     return wf, dictsink
