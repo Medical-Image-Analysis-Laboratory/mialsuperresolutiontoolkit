@@ -315,7 +315,6 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
     
     print( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', '    --->     ', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w_desc-brain_mask.nii.gz')
     substitutions.append( ( sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz', sub_ses+'_rec-SR'+'_id-'+str(srID)+'_T2w_desc-brain_mask.nii.gz') )
-
     
         
     datasink.inputs.substitutions = substitutions
