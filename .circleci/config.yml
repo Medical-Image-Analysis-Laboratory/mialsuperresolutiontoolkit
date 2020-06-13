@@ -89,11 +89,11 @@ jobs:
       - checkout:
           path: /home/circleci/src/mialsuperresolutiontoolkit
       - run:
-          name: Check whether build should be skipped
+          name: Check whether test should be skipped
           command: |
-            cd /home/circleci/src/connectomemapper3
-            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?ds-sample\]' )" != "" ]]; then
-              echo "Skipping ds-sample build"
+            cd /home/circleci/src/mialsuperresolutiontoolkit
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?test]' )" != "" ]]; then
+              echo "Skipping test"
               circleci step halt
             fi
       - attach_workspace:
