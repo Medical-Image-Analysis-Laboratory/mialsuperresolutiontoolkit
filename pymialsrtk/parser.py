@@ -5,8 +5,8 @@
 """ MIALSRTK BIDS App Commandline Parser
 """
 
-from info import __version__
-from info import __release_date__
+from pymialsrtk.info import __version__
+from pymialsrtk.info import __release_date__
 
 def get_parser():
     import argparse
