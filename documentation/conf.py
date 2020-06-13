@@ -23,9 +23,14 @@ import time
 
 from recommonmark.parser import CommonMarkParser
 
+# Workaround: https://github.com/readthedocs/recommonmark/issues/177#issuecomment-555553053
+class CustomCommonMarkParser(CommonMarkParser):
+    def visit_document(self, node):
+        pass
+
 # Use Markdown and reStructuredText in the same Sphinx project
 source_parsers = {
-    '.md': CommonMarkParser,
+    '.md': CustomCommonMarkParser,
 }
 source_suffix = ['.rst', '.md']
 
