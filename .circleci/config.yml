@@ -290,14 +290,6 @@ workflows:
             tags:
               only: /.*/
 
-      # - get_data:
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - /docs?\/.*/
-      #       tags:
-      #         only: /.*/
-
       # - build_docs:
       #     requires:
       #       - build
@@ -310,7 +302,6 @@ workflows:
 
       - test:
           requires:
-            - get_data
             # - update_cache
             - build
           filters:
