@@ -61,8 +61,7 @@ def create_workflow(bids_dir, output_dir, subject, p_stacksOrder, srID, session=
     print("Process directory: {}".format(wf_base_dir))
 
     # Workflow name cannot begin with a number (oterhwise ValueError)
-    pipeline_name = "run-{}".format(srID)
-    print(pipeline_name)
+    pipeline_name = "rec{}".format(srID)
 
     wf = Workflow(name=pipeline_name,base_dir=wf_base_dir)
     # srr_nipype_dir = os.path.join(wf.base_dir, wf.name )
