@@ -11,10 +11,12 @@ dependencies:
 - nibabel=2.3.3
 - nipype=1.2.0
 - traitsui=6.0.0
-- graphviz=2.40.1
+- pydotplus=2.0.2
 
 - pip:
     - duecredit==0.7.0
     - apptools==4.4.0
     - niworkflows==0.10.2
+    - graphviz
     - numpy==1.16.4 # numpy 1.18.5 caused error (fix: https://github.com/DeepLabCut/Docker4DeepLabCut2.0/issues/26)
+    
