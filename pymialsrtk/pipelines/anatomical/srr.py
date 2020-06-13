@@ -378,7 +378,7 @@ def get_parser():
     
     p.add_argument('--param_file', help='Path to a JSON file containing subjects\' exams ' 
                        'information and super-resolution total variation parameters.', 
-                       default='/fetaldata/code/participants_param.json', type=str)
+                       default='/bids_dir/code/participants_param.json', type=str)
     #p.add_argument('-v', '--version', action='version',
                         #version='BIDS-App')
     return p
