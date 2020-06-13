@@ -79,10 +79,10 @@ ARG VERSION
 ##############################################################
 LABEL org.label-schema.build-date=$BUILD_DATE
 LABEL org.label-schema.name="MIAL Super-Resolution ToolKit BIDS App"
-LABEL org.label-schema.description="Computing environment of the MIAL Super-Resolution BIDS App based on Ubuntu 14.04."
+LABEL org.label-schema.description="Docker image of the MIAL Super-Resolution BIDS App based on Ubuntu 14.04."
 LABEL org.label-schema.url="https://mialsuperresolutiontoolkit.readthedocs.io"
 LABEL org.label-schema.vcs-ref=$VCS_REF
-LABEL org.label-schema.vcs-url="https://github.com/sebastientourbier/mialsuperresolutiontoolkit"
+LABEL org.label-schema.vcs-url="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit"
 LABEL org.label-schema.version=$VERSION
 LABEL org.label-schema.maintainer="Sebastien Tourbier <sebastien.tourbier@alumni.epfl.ch>"
 LABEL org.label-schema.vendor="Centre Hospitalier Universitaire Vaudois (CHUV), Lausanne, Switzerland"
