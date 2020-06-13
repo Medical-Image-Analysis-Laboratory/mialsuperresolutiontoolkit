@@ -45,7 +45,11 @@ extensions = ['sphinx.ext.autosectionlabel',
               'sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
-              'sphinxarg.ext']
+              'sphinxarg.ext',
+               'nbsphinx']
+
+# Allow errors in notebooks for doc
+nbsphinx_allow_errors = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

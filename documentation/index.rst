@@ -97,10 +97,10 @@ Contents
 .. _user-usecases:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Examples & Tutorials
-
-
+   
+   NLM denoising <notebooks/brainHack.ipynb>
 
 .. _about-docs:
 
