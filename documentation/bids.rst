@@ -11,7 +11,7 @@ For more information about BIDS and BIDS-Apps, please consult the `BIDS Website 
 
 .. _bidsexample:
 
-BIDS dataset scheme
+BIDS dataset schema
 =======================
 
 The BIDS App accepts BIDS datasets that adopt the following organization, naming, and file formats:::
@@ -35,15 +35,18 @@ The BIDS App accepts BIDS datasets that adopt the following organization, naming
 
         sub-<subject_label>/
             anat/
-                sub-<subject_label>_T1w.nii.gz
-                sub-<subject_label>_T1w.json
+                sub-<subject_label>_run-1_T2w.nii.gz
+                sub-<subject_label>_run-1_T2w.json
+                sub-<subject_label>_run-2_T2w.nii.gz
+                sub-<subject_label>_run-2_T2w.json
+                ...
             ...
         ...
 
         code/
             participants_params.json
 
-where ``participants_params.json`` is the MIALSRTK BIDS App configuration file, which following a specific schema (See :ref:`config` schema), and which defines multiple processing parameters (such as the ordered list of scans or the weight of regularization).
+where ``participants_params.json`` is the MIALSRTK BIDS App configuration file, which following a specific schema (See :ref:`config schema <config>`), and which defines multiple processing parameters (such as the ordered list of scans or the weight of regularization).
 
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
