@@ -1,0 +1,26 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "sebastientourbier",
+      "name": "Sébastien Tourbier",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/22279770?v=4",
+      "profile": "https://github.com/sebastientourbier",
+      "contributions": [
+        "design",
+        "test",
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "mialsuperresolutiontoolkit",
+  "projectOwner": "Medical-Image-Analysis-Laboratory",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}

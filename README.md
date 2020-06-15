@@ -1,4 +1,7 @@
 ![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 ---
 
 Copyright © 2016-2017 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
@@ -33,3 +36,22 @@ algorithm for super-resolution in fetal brain MRI with adaptive regularization*,
 # Credits #
 
 * Sébastien Tourbier (sebastientourbier)
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/sebastientourbier"><img src="https://avatars3.githubusercontent.com/u/22279770?v=4" width="100px;" alt=""/><br /><sub><b>Sébastien Tourbier</b></sub></a><br /><a href="#design-sebastientourbier" title="Design">🎨</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
