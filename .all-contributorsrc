@@ -15,6 +15,17 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "hamzake",
+      "name": "hamzake",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/27707790?v=4",
+      "profile": "https://github.com/hamzake",
+      "contributions": [
+        "example",
+        "test",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
