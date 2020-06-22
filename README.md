@@ -39,6 +39,7 @@ algorithm for super-resolution in fetal brain MRI with adaptive regularization*,
 <table>
   <tr>
     <td align="center"><a href="https://github.com/sebastientourbier"><img src="https://avatars3.githubusercontent.com/u/22279770?v=4" width="100px;" alt=""/><br /><sub><b>Sébastien Tourbier</b></sub></a><br /><a href="#design-sebastientourbier" title="Design">🎨</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Code">💻</a></td>
+    <td align="center"><a href="https://twitter.com/xbresson"><img src="https://avatars2.githubusercontent.com/u/22800385?v=4" width="100px;" alt=""/><br /><sub><b>Xavier Bresson</b></sub></a><br /><a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=xbresson" title="Code">💻</a></td>
   </tr>
 </table>
 
