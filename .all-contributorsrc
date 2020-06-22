@@ -40,6 +40,15 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "meribach",
+      "name": "Meritxell Bach",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/2786897?v=4",
+      "profile": "https://github.com/meribach",
+      "contributions": [
+        "fundingFinding"
+      ]
     }
   ],
   "contributorsPerLine": 7,
