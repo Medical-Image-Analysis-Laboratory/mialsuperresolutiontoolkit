@@ -15,6 +15,17 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "pdedumast",
+      "name": "Priscille de Dumast",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/19345763?v=4",
+      "profile": "https://github.com/pdedumast",
+      "contributions": [
+        "example",
+        "test",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
