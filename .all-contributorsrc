@@ -1,0 +1,60 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "sebastientourbier",
+      "name": "Sébastien Tourbier",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/22279770?v=4",
+      "profile": "https://github.com/sebastientourbier",
+      "contributions": [
+        "design",
+        "test",
+        "code",
+        "example",
+        "doc",
+        "review"
+      ]
+    },
+    {
+      "login": "pdedumast",
+      "name": "Priscille de Dumast",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/19345763?v=4",
+      "profile": "https://github.com/pdedumast",
+      "contributions": [
+        "example",
+        "test",
+        "code"
+      ]
+    },
+    {
+      "login": "hamzake",
+      "name": "hamzake",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/27707790?v=4",
+      "profile": "https://github.com/hamzake",
+      "contributions": [
+        "example",
+        "test",
+        "code"
+      ]
+    },
+    {
+      "login": "meribach",
+      "name": "Meritxell Bach",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/2786897?v=4",
+      "profile": "https://github.com/meribach",
+      "contributions": [
+        "fundingFinding"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "mialsuperresolutiontoolkit",
+  "projectOwner": "Medical-Image-Analysis-Laboratory",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}

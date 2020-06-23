@@ -45,10 +45,10 @@ def mean_nonzero(image):
     return mean
 
 def intensityNormalization(image,landmarks):
-    print 'min ='+str(landmarks['p1'])
-    print 'max (99.8%) ='+str(landmarks['p2'])
+    print('min ='+str(landmarks['p1']))
+    print('max (99.8%) =',str(landmarks['p2']))
         #print 'mean ='+str(landmarks['mean'])
-    print 'quartiles [25%,50%,75%] ='+str(landmarks['quartiles'])
+    print('quartiles [25%,50%,75%] ='+str(landmarks['quartiles']))
     return 1
 
 def displayHistogram(image,image_name,loffset,roffset):
@@ -93,7 +93,7 @@ def trainImageLandmarks(list_landmarks):
     ymax=np.max(maxLR)
     ymax_index=maxLR.index(max(maxLR))
     dS = float(ymax*(mup_L[ymax_index]+mup_R[ymax_index]))
-    print 'Ymax  =  '+str(ymax)+'  at position '+str(ymax_index)+'  ,  dS = '+str(dS)+' (=s2 when s1=0)'
+    print('Ymax  =  ', str(ymax)+'  at position '+str(ymax_index)+'  ,  dS = '+str(dS)+' (=s2 when s1=0)')
     return list_landmarks,dS
 
 def mapImageLandmarks(list_landmarks,s1,s2):
@@ -101,13 +101,13 @@ def mapImageLandmarks(list_landmarks,s1,s2):
     index=0
     while index<len(list_landmarks):
         land_index=0
-        print 'Image index: '+str(index)
+        print('Image index:', str(index))
         while land_index<len(list_landmarks[index]['quartiles']):
-            print 'old landmark: '+str(list_landmarks_mapped[index]['quartiles'][land_index])
+            print('old landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
             list_landmarks_mapped[index]['quartiles'][land_index]=s1+float((list_landmarks_mapped[index]['quartiles'][land_index]-list_landmarks_mapped[index]['p1'])/float(list_landmarks_mapped[index]['p2']-list_landmarks_mapped[index]['p1']))*float((s2-s1))
-            print 'new landmark: '+str(list_landmarks_mapped[index]['quartiles'][land_index])
+            print('new landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
             land_index+=1
-        print 'p1, p2 = '+str(list_landmarks_mapped[index]['p1'])+', '+str(list_landmarks_mapped[index]['p2'])
+        print('p1, p2 = ', str(list_landmarks_mapped[index]['p1']), ',', str(list_landmarks_mapped[index]['p2']))
         index+=1
     return list_landmarks_mapped
 
@@ -179,8 +179,8 @@ def computeMeanMapImageLandmarks(list_landmarks):
         mean_landmarks[str(land_index)] = mean_landmarks[str(land_index)] / len(list_landmarks)
         land_index+=1
 
-    print 'Final landmark average : '
-    print mean_landmarks
+    print('Final landmark average : ')
+    print(mean_landmarks)
     return mean_landmarks
 
 
@@ -191,10 +191,10 @@ def main(images,masks,outputs):
     output_paths = sorted(outputs)
 
     if(len(image_paths)!=len(mask_paths)):
-        print 'Loading failed: Number of images and masks are different (# images = '+str(len(image_paths))+' \ # masks = '+str(len(mask_paths))+')'
+        print('Loading failed: Number of images and masks are different (# images = ', str(len(image_paths)), '\\ # masks =', str(len(mask_paths)), ')')
         return
     else:
-        print 'Loading passed: Number of images and masks are equal (# images = '+str(len(image_paths))+' \ # masks = '+str(len(mask_paths))+')'
+        print('Loading passed: Number of images and masks are equal (# images =', str(len(image_paths)), '\\ # masks =', str(len(mask_paths)), ')')
     
     list_landmarks=[]
    
@@ -204,7 +204,7 @@ def main(images,masks,outputs):
     index=0
     while index<len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
-        print 'Process image '+image_name
+        print('Process image', image_name)
         image = nib.load(image_paths[index]).get_data()
         #image = scipy.ndimage.filters.gaussian_filter(image,1.0)
         mask = nib.load(mask_paths[index]).get_data()
@@ -220,7 +220,7 @@ def main(images,masks,outputs):
     list_landmarks,dS = trainImageLandmarks(list_landmarks)
 
     s2 = np.ceil(dS - s1)
-    print 'Standard scale estimated: ['+str(s1)+','+str(s2)+']'
+    print('Standard scale estimated: [', str(s1), ',', str(s2), ']')
 
     list_landmarks_mapped = mapImageLandmarks(list_landmarks,s1,s2)
 
@@ -231,7 +231,7 @@ def main(images,masks,outputs):
     #pyplot.subplot(212)
     while index<len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
-        print 'Map image '+image_name
+        print ('Map image', image_name)
         image = nib.load(image_paths[index])
         image_data = image.get_data()
         mask_data = nib.load(mask_paths[index]).get_data()
@@ -245,7 +245,7 @@ def main(images,masks,outputs):
         displayHistogram(maskedImageMapped,image_name,1,0)
         o2o=verifyOne2OneMapping(s1,s2,list_landmarks[index],mean_landmarks)
         new_image = nib.Nifti1Image(np.reshape(maskedImageMapped,np.array([dimY,dimX,dimZ])),image.get_affine(),header=image.get_header())
-        print 'Save normalized image '+str(image_name)+ ' as '+str(output_paths[index]) + '(one 2 one mapping :'+str(o2o)+')'
+        print('Save normalized image', str(image_name), 'as', str(output_paths[index]), '(one 2 one mapping :', str(o2o), ')')
         nib.save(new_image,output_paths[index])
         index+=1
     #pyplot.legend()

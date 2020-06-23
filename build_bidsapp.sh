@@ -16,7 +16,6 @@ docker build --rm --build-arg BUILD_DATE=$CMP_BUILD_DATE \
 				  --build-arg VERSION=$VERSION \
 				  -t "${MAIN_DOCKER}" . \
 
-
 docker build --no-cache --rm --build-arg BUILD_DATE=$CMP_BUILD_DATE \
                              --build-arg VERSION=$VERSION \
                              --build-arg VCS_REF=$VCS_REF \
