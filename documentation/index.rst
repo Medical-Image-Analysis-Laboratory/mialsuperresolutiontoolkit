@@ -101,6 +101,7 @@ Contents
 
    bids
    usage
+   outputs
 
 .. _user-usecases:
 
