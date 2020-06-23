@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import nibabel
 from glob import glob
