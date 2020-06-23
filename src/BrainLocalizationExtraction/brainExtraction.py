@@ -22,6 +22,11 @@ import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
 
+import scipy.ndimage as snd
+from skimage import morphology
+from scipy.signal import argrelextrema
+
+
 def extractBrain(dataPath, modelCkpt, threshold,out_postfix):
     normalize = "local_max"
     width = 128
@@ -58,7 +63,7 @@ def extractBrain(dataPath, modelCkpt, threshold,out_postfix):
 
         with tf.name_scope('inputs'):
 
-        x = tf.placeholder(tf.float32, [None, width, height, n_channels])        
+           x = tf.placeholder(tf.float32, [None, width, height, n_channels])        
 
         conv1 = conv_2d(x, 32, 3, activation='relu', padding='same', regularizer="L2")
         conv1 = conv_2d(conv1, 32, 3, activation='relu', padding='same', regularizer="L2")
@@ -120,15 +125,185 @@ def extractBrain(dataPath, modelCkpt, threshold,out_postfix):
             pred_ = sess_test.run(pred, feed_dict=feed_dict)
 
             theta = np.percentile(pred_,percentile)
-            pred_bin=np.where(pred_>theta,1,0)
-            pred3d.append(cv2.resize(pred_bin[0,:,:,0].astype('float64'),dsize=(image_data.shape[0], image_data.shape[1]),fx=1/width,fy=1/height,interpolation=cv2.INTER_NEAREST))
-            upsampled = np.swapaxes(np.swapaxes(pred3d,0,2),0,1) #if Orient module applied, no need for this line
-            up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
-            nibabel.save(up_mask, dataPath[:-4]+out_postfix)
-	
+            pred_bin = np.where(pred_>theta,1,0)
+            pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
+        pred3d = post_processing(np.asarray(pred3d))
+        pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3d]
+        pred3d = np.asarray(pred3d)
+        upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
+        up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
+        nibabel.save(up_mask, dataPath.split('.')[0]+out_postfix)
+
+#Post-processing the binarized network output by PGD
+def post_processing(pred_lbl):
+    post_proc = True
+    post_proc_cc = True
+    post_proc_fill_holes = True
+
+    post_proc_closing_minima = True
+    post_proc_opening_maxima = True
+    post_proc_extremity = False
+    stackmodified = True
+
+    crt_stack = pred_lbl.copy()
+    crt_stack_pp = crt_stack.copy()
+
+    if 1:
+
+        distrib = []
+        for iSlc in range(crt_stack.shape[0]):
+            distrib.append(np.sum(crt_stack[iSlc]))
+
+        if post_proc_cc:
+            # print("post_proc_cc")
+            crt_stack_cc = crt_stack.copy()
+            labeled_array, num_features = snd.measurements.label(crt_stack_cc)
+            unique, counts = np.unique(labeled_array, return_counts=True)
+
+            # Try to remove false positives seen as independent connected components #2ndBrain
+            for ind in range(len(unique)):
+                if 5 < counts[ind] and counts[ind] < 300:
+                    wherr = np.where(labeled_array == unique[ind])
+                    for ii in range(len(wherr[0])):
+                        crt_stack_cc[wherr[0][ii], wherr[1][ii], wherr[2][ii]] = 0
+
+            crt_stack_pp = crt_stack_cc.copy()
+
+        if post_proc_fill_holes:
+            # print("post_proc_fill_holes")
+            crt_stack_holes = crt_stack_pp.copy()
+
+            inv_mask = 1 - crt_stack_holes
+            labeled_holes, num_holes = snd.measurements.label(inv_mask)
+            unique, counts = np.unique(labeled_holes, return_counts=True)
+
+            for lbl in unique[2:]:
+                trou = np.where(labeled_holes == lbl)
+                for ind in range(len(trou[0])):
+                    inv_mask[trou[0][ind], trou[1][ind], trou[2][ind]] = 0
+
+            crt_stack_holes = 1 - inv_mask
+            crt_stack_cc = crt_stack_holes.copy()
+            crt_stack_pp = crt_stack_holes.copy()
+
+            distrib_cc = []
+            for iSlc in range(crt_stack_pp.shape[0]):
+                distrib_cc.append(np.sum(crt_stack_pp[iSlc]))
+
+        if post_proc_closing_minima or post_proc_opening_maxima:
+
+            if 0:  # closing GLOBAL
+                crt_stack_closed_minima = crt_stack_pp.copy()
+                crt_stack_closed_minima = morphology.binary_closing(crt_stack_closed_minima)
+                crt_stack_pp = crt_stack_closed_minima.copy()
+
+                distrib_closed = []
+                for iSlc in range(crt_stack_closed_minima.shape[0]):
+                    distrib_closed.append(np.sum(crt_stack_closed_minima[iSlc]))
+
+            if post_proc_closing_minima:
+                # if 0:
+                crt_stack_closed_minima = crt_stack_pp.copy()
+
+                # for local minima
+                local_minima = argrelextrema(np.asarray(distrib_cc), np.less)[0]
+                local_maxima = argrelextrema(np.asarray(distrib_cc), np.greater)[0]
+
+                for iMin in range(len(local_minima)):
+                    for iMax in range(len(local_maxima) - 1):
+                        # print(local_maxima[iMax], "<", local_minima[iMin], "AND", local_minima[iMin], "<", local_maxima[iMax+1], "   ???")
+
+                        # find between which maxima is the minima localized
+                        if local_maxima[iMax] < local_minima[iMin] and local_minima[iMin] < local_maxima[iMax + 1]:
+
+                            # check if diff max-min is large enough to be considered
+                            if distrib_cc[local_maxima[iMax]] - distrib_cc[local_minima[iMin]] > 50 and distrib_cc[
+                                local_maxima[iMax + 1]] - distrib_cc[local_minima[iMin]] > 50:
+                                sub_stack = crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1,
+                                            :, :]
+
+                                # print("We did 3d close.")
+                                sub_stack = morphology.binary_closing(sub_stack)
+                                crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :,
+                                :] = sub_stack
+
+                crt_stack_pp = crt_stack_closed_minima.copy()
+
+                distrib_closed = []
+                for iSlc in range(crt_stack_closed_minima.shape[0]):
+                    distrib_closed.append(np.sum(crt_stack_closed_minima[iSlc]))
+
+            if post_proc_opening_maxima:
+                crt_stack_opened_maxima = crt_stack_pp.copy()
+
+                local = True
+                if local:
+                    local_maxima_n = argrelextrema(np.asarray(distrib_closed), np.greater)[
+                        0]  # default is mode='clip'. Doesn't consider extremity as being an extrema
+
+                    for iMax in range(len(local_maxima_n)):
+
+                        # Check if this local maxima is a "peak"
+                        if distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] - 1] > 50 and distrib[
+                            local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] + 1] > 50:
+
+                            if 0:
+                                print("Ceci est un pic de au moins 50.", distrib[local_maxima_n[iMax]], "en",
+                                      local_maxima_n[iMax])
+                                print("                                bordé de", distrib[local_maxima_n[iMax] - 1],
+                                      "en", local_maxima_n[iMax] - 1)
+                                print("                                et", distrib[local_maxima_n[iMax] + 1], "en",
+                                      local_maxima_n[iMax] + 1)
+                                print("")
+
+                            sub_stack = crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :]
+                            sub_stack = morphology.binary_opening(sub_stack)
+                            crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :] = sub_stack
+                else:
+                    crt_stack_opened_maxima = morphology.binary_opening(crt_stack_opened_maxima)
+
+                crt_stack_pp = crt_stack_opened_maxima.copy()
+
+                distrib_opened = []
+                for iSlc in range(crt_stack_pp.shape[0]):
+                    distrib_opened.append(np.sum(crt_stack_pp[iSlc]))
+
+            if post_proc_extremity:
+
+                crt_stack_extremity = crt_stack_pp.copy()
+
+                # check si y a un maxima sur une extremite
+                maxima_extrema = argrelextrema(np.asarray(distrib_closed), np.greater, mode='wrap')[0]
+                # print("maxima_extrema", maxima_extrema, "     numslices",numslices, "     numslices-1",numslices-1)
+
+                if distrib_opened[0] - distrib_opened[1] > 40:
+                    # print("First slice of ", distrib_opened, " is a maxima")
+                    sub_stack = crt_stack_extremity[0:2, :, :]
+                    sub_stack = morphology.binary_opening(sub_stack)
+                    crt_stack_extremity[0:2, :, :] = sub_stack
+                    # print("On voulait close 1st slices",  sub_stack.shape[0])
+
+                if pred_lbl.shape[0] - 1 in maxima_extrema:
+                    # print(numslices-1, "in maxima_extrema", maxima_extrema )
+
+                    sub_stack = crt_stack_opened_maxima[-2:, :, :]
+                    sub_stack = morphology.binary_opening(sub_stack)
+                    crt_stack_opened_maxima[-2:, :, :] = sub_stack
+
+                    # print("On voulait close last slices",  sub_stack.shape[0])
+
+                crt_stack_pp = crt_stack_extremity.copy()
+
+                distrib_opened_border = []
+                for iSlc in range(crt_stack_pp.shape[0]):
+                    distrib_opened_border.append(np.sum(crt_stack_pp[iSlc]))
+
+    return crt_stack_pp
+
+
 def get_parser():
 	import argparse
-	
+
 	parser = argparse.ArgumentParser(description='Brain extraction based on U-Net convnet')
 	parser.add_argument('-i','--input', required=True, action='append', help='Input image(s)')
 	parser.add_argument('-c','--checkpoint', required=True, action='append', help='Network checkpoint')
