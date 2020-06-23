@@ -20,8 +20,8 @@ This neuroimaging processing pipeline software is developed by the Medical Image
 .. image:: https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?branch=master
   :target: https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit
   :alt: TravisCI Status (C++)
-.. image:: https://circleci.com/gh/connectomicslab/connectomemapper3/tree/master.svg?style=shield
-  :target: https://circleci.com/gh/connectomicslab/connectomemapper3/tree/master
+.. image:: https://circleci.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?style=shield
+  :target: https://app.circleci.com/pipelines/github/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit
   :alt: CircleCI Status (BIDS-App)
 .. image:: https://readthedocs.org/projects/connectome-mapper-3/badge/?version=latest
   :target: https://connectome-mapper-3.readthedocs.io/en/latest/?badge=latest
