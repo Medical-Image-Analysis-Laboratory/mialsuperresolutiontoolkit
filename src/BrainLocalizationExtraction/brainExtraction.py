@@ -17,7 +17,6 @@ from sklearn.feature_extraction import image
 from scipy import ndimage
 import math
 from inspect import signature
-import argparse, getopt
 
 import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
@@ -126,17 +125,24 @@ def extractBrain(dataPath, modelCkpt, threshold,out_postfix):
             upsampled = np.swapaxes(np.swapaxes(pred3d,0,2),0,1) #if Orient module applied, no need for this line
             up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
             nibabel.save(up_mask, dataPath[:-4]+out_postfix)
-
-if __name__ == "__main__":
-
-	# Parse command line args
-
+	
+def get_parser():
+	import argparse
+	
 	parser = argparse.ArgumentParser(description='Brain extraction based on U-Net convnet')
 	parser.add_argument('-i','--input', required=True, action='append', help='Input image(s)')
 	parser.add_argument('-c','--checkpoint', required=True, action='append', help='Network checkpoint')
 	parser.add_argument('-t','--threshold', required=True, action='append', help='Threshold')
 	parser.add_argument('-o','--out_postfix', required=True, action='append', help='Suffix to masked images')
+	
+	return parser
 
+
+if __name__ == "__main__":
+
+	# Parse command line args
+
+	parser = get_parser()
 	args = parser.parse_args()
 
 	# print(len(args.input)>0)
