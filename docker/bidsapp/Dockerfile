@@ -11,6 +11,15 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8 
 
 ##############################################################
+# Create input and output directories of the BIDS App
+##############################################################
+RUN mkdir /bids_dir && \
+    chmod -R 777 /bids_dir
+
+RUN mkdir /output_dir && \
+    chmod -R 777 /output_dir
+
+##############################################################
 # Installation of pyMIALSRTK
 ##############################################################
 WORKDIR /app
@@ -47,15 +56,6 @@ RUN chmod 775 /app/run_srr.sh
 
 # Display all environment variables 
 RUN export
-
-##############################################################
-# Create input and output directories of the BIDS App
-##############################################################
-RUN mkdir /bids_dir && \
-    chmod -R 777 /bids_dir
-
-RUN mkdir /output_dir && \
-    chmod -R 777 /output_dir
 
 ##############################################################
 # Make singularity happy
