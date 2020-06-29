@@ -12,7 +12,9 @@ packages=["pymialsrtk",
           "pymialsrtk.pipelines",
           "pymialsrtk.pipelines.anatomical"]
 
-package_data = {}
+package_data = {"pymialsrtk":
+                ['data/Network_checkpoints/*']
+                }
 
 # package_data = {'cmtklib':
 #                 ['data/parcellation/lausanne2008/*/*.*']
