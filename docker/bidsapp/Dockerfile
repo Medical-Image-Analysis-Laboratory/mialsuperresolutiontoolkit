@@ -41,7 +41,13 @@ RUN cd /opt/mialsuperresolutiontoolkit \
 # Create entrypoint script
 RUN echo '#! /bin/bash \n \
 			$CONDA_ACTIVATE \
-			&& xvfb-run -a python /opt/mialsuperresolutiontoolkit/pymialsrtk/pipelines/anatomical/srr.py $@' > /app/run_srr.sh
+			&& xvfb-run -a python /opt/mialsuperresolutiontoolkit/pymialsrtk/run.py $@' > /app/run_srr.sh
+
+# Create entrypoint script
+RUN echo '#! /bin/bash \n \
+			$CONDA_ACTIVATE \
+			&& xvfb-run -a coverage run /opt/mialsuperresolutiontoolkit/pymialsrtk/run.py $@\
+			&& coverage html -d /bids_dir/code/coverage_html' > /app/run_srr_coverage.sh
 
 ## FOR DEBUG
 # RUN echo '#! /bin/bash \n \
@@ -53,6 +59,7 @@ RUN echo '#! /bin/bash \n \
 # Set the working directory back to /app
 # Acquire script to be executed
 RUN chmod 775 /app/run_srr.sh
+RUN chmod 775 /app/run_srr_coverage.sh
 
 # Display all environment variables 
 RUN export
