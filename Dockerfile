@@ -37,7 +37,7 @@ RUN apt-get update && \
     python-numpy \
     python-scipy \
     python-matplotlib && \
-    curl -sSL https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -o /tmp/miniconda.sh && \
+    curl -sSL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh && \
     bash /tmp/miniconda.sh -bfp /opt/conda && \
     rm -rf /tmp/miniconda.sh && \
     apt-get clean
@@ -52,7 +52,9 @@ RUN groupadd -r -g 1000 mialsrtk && \
     useradd -r -M -u 1000 -g mialsrtk mialsrtk
 
 WORKDIR /opt/mialsuperresolutiontoolkit
+
 ADD . /opt/mialsuperresolutiontoolkit
+
 RUN mkdir build
 WORKDIR /opt/mialsuperresolutiontoolkit/build
 
