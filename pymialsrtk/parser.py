@@ -30,6 +30,9 @@ def get_parser():
     p.add_argument('--param_file', help='Path to a JSON file containing subjects\' exams ' 
                        'information and super-resolution total variation parameters.', 
                        default='/bids_dir/code/participants_param.json', type=str)
+    p.add_argument('--manual', help='Use manual brain masks found in '
+                                    '<output_dir>/manual_masks/ directory',
+                               action='store_true')
     p.add_argument('-v', '--version', action='version',
                         version='BIDS-App MIALSRTK version {}'.format(__version__))
     return p
