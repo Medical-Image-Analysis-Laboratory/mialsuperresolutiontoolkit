@@ -6,19 +6,19 @@ channels:
 - anaconda
 
 dependencies:
-- python=3.6.5
+- python=3.7
 - pip=19.0.3
 - nibabel=3.0.1
-- nipype=1.4.0
+- nipype=1.5.0
 - traits=5.1.2
 - traitsui=6.0.0
 - pydotplus=2.0.2
 
 - pip:
     - coverage==5.1
-    - duecredit==0.7.0
+    - duecredit==0.8.0
     - apptools==4.4.0
-    - niworkflows==0.10.2
+    # - niworkflows==0.10.2
     - graphviz
     - numpy==1.16.4 # numpy 1.18.5 caused error (fix: https://github.com/DeepLabCut/Docker4DeepLabCut2.0/issues/26)
     - tensorflow==1.13.1 # https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.1.0-cp36-cp36m-linux_x86_64.whl # tensorflow==1.15 # tflearn needs tensorflow 1.0+

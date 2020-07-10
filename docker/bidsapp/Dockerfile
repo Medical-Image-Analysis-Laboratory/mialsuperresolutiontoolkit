@@ -41,12 +41,13 @@ RUN cd /opt/mialsuperresolutiontoolkit \
 # Create entrypoint script
 RUN echo '#! /bin/bash \n \
 			$CONDA_ACTIVATE \
-			&& xvfb-run -a python /opt/mialsuperresolutiontoolkit/pymialsrtk/run.py $@' > /app/run_srr.sh
+			&& xvfb-run -a python /opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py $@' > /app/run_srr.sh
 
 # Create entrypoint script
 RUN echo '#! /bin/bash \n \
 			$CONDA_ACTIVATE \
-			&& xvfb-run -a coverage run /opt/mialsuperresolutiontoolkit/pymialsrtk/run.py $@\
+			&& xvfb-run -a coverage run --source=pymialsrtk \
+			/opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py $@\
 			&& coverage html -d /bids_dir/code/coverage_html' > /app/run_srr_coverage.sh
 
 ## FOR DEBUG
