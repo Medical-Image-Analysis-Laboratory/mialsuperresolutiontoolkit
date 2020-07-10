@@ -133,7 +133,8 @@ jobs:
                 -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
                 sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
                 /bids_dir /output_dir participant --participant_label 01 \
-                --param_file /bids_dir/code/participants_params.json 
+                --param_file /bids_dir/code/participants_params.json \
+                --manual 
 
       # - save_cache:
       #    key: ds-sample-derivatives-{{ .Branch }}-{{ epoch }}
