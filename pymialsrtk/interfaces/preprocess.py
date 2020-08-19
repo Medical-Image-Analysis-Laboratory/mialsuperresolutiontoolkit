@@ -13,25 +13,25 @@ from glob import glob
 import math
 import nibabel as nib
 
-
 import cv2
-
 
 from medpy.io import load
 
-from sklearn.feature_extraction import image
-
-from scipy import ndimage
 import scipy.ndimage as snd
 from skimage import morphology
 from scipy.signal import argrelextrema
 
-from inspect import signature
+try:
+    import tensorflow as tf
+except ImportError:
+    print("Tensorflow not available. Can not run brain extraction")
 
-import tensorflow as tf
-import tflearn
-from tflearn.layers.core import input_data, dropout, fully_connected
-from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
+try:
+    import tflearn
+    from tflearn.layers.core import input_data, dropout, fully_connected
+    from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
+except ImportError:
+    print("tflearn not available. Can not run brain extraction")
 
 import numpy as np
 
