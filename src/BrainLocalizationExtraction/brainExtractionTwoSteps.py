@@ -249,8 +249,7 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
             #pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
         pppp = False
         if pppp:
-            pred3d = post_processing(pred3d)
-        pred3dFinal = post_processing(np.asarray(pred3dFinal))
+            pred3dFinal = post_processing(np.asarray(pred3dFinal))
         pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3dFinal]
         pred3d = np.asarray(pred3d)
         upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)

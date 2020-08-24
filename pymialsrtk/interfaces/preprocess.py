@@ -11,7 +11,7 @@ import sys
 from glob import glob
 
 import math
-import nibabel as nib
+import nibabel
 
 import cv2
 
@@ -32,6 +32,8 @@ try:
     from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
 except ImportError:
     print("tflearn not available. Can not run brain extraction")
+
+import tensorflow as tf #added here to debug
 
 import numpy as np
 
@@ -622,15 +624,17 @@ class MultipleMialsrtkMaskImage(BaseInterface):
 
 
 class BrainExtractionInputSpec(BaseInterfaceInputSpec):
-    bids_dir = Directory(desc='Root directory',mandatory=True,exists=True)
+    bids_dir = Directory(desc='Root directory', mandatory=True,exists=True)
     in_file = File(desc='Input image',mandatory=True)
-    in_ckpt = File(desc='Network_checkpoint',mandatory=True)
-    threshold = traits.Float(0.5,desc='Threshold determining cutoff probability (0.5 by default)')
+    in_ckpt_loc = File(desc='Network_checkpoint for localization',mandatory=True)
+    threshold_loc = traits.Float(0.49,desc='Threshold determining cutoff probability (0.49 by default)')
+    in_ckpt_seg = File(desc='Network_checkpoint for segmentation',mandatory=True)
+    threshold_seg = traits.Float(0.5,desc='Threshold determining cutoff probability (0.5 by default)')
     out_postfix = traits.Str("_masked.nii.gz", usedefault=True)
     #out_file = File(mandatory=True, desc= 'Output image')
 
 class BrainExtractionOutputSpec(TraitedSpec):
-    out_file = File(desc='Brain masked image',exists=True)
+    out_file = File(desc='Brain masked image') #,exists=True) #Changed here to False
 
 class BrainExtraction(BaseInterface):
     """
@@ -654,27 +658,32 @@ class BrainExtraction(BaseInterface):
 
     def _run_interface(self, runtime): 
         try:
-            self._extract_brain(self.inputs.in_file,self.inputs.in_ckpt,
-                             self.inputs.threshold,self.inputs.out_postfix)
+            self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
+                             self.inputs.in_ckpt_seg, self.inputs.threshold_seg, self.inputs.out_postfix)
         except Exception as e:
             print('Failed')
             print(e)    
         return runtime
 
-    def _extract_brain(self, dataPath, modelCkpt, threshold, out_postfix):
+    def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg, out_postfix):
+        
+        #Step1: Main part brain localization
         normalize = "local_max"
         width = 128
         height = 128
+        border_x = 15 
+        border_y = 15
         n_channels = 1
 
-        img_nib = nib.load(os.path.join(dataPath))
+        img_nib = nibabel.load(os.path.join(dataPath))
         image_data = img_nib.get_data()
         images = np.zeros((image_data.shape[2], width, height, n_channels))
-        
+        pred3dFinal = np.zeros((image_data.shape[2], width, height, n_channels))
+
         slice_counter = 0
         for ii in range(image_data.shape[2]):
             img_patch = cv2.resize(image_data[:, :, ii], dsize=(width, height), fx=width,
-                                   fy=height)  # , interpolation=cv2.INTER_CUBIC)
+                                   fy=height)
 
             if normalize:
                 if normalize == "local_max":
@@ -689,7 +698,7 @@ class BrainExtraction(BaseInterface):
                 images[slice_counter, :, :, 0] = img_patch
 
             slice_counter += 1
-
+        
         #Tensorflow graph
 
         g = tf.Graph()
@@ -742,31 +751,164 @@ class BrainExtraction(BaseInterface):
 
 
         #Thresholding parameter to binarize predictions
-        percentile = threshold*100
+        percentileLoc = thresholdLoc*100
 
         im = np.zeros((1, width, height, n_channels))
         pred3d = []
-        with tf.Session(graph=g) as sess_test:
+        with tf.Session(graph=g) as sess_test_loc:
             # Restore the model
             tf_saver = tf.train.Saver()
-            tf_saver.restore(sess_test, modelCkpt)
+            tf_saver.restore(sess_test_loc, modelCkptLoc)
 
             for idx in range(images.shape[0]):
 
                 im = np.reshape(images[idx, :, :, :], [1, width, height, n_channels])
 
                 feed_dict = {x: im}
-                pred_ = sess_test.run(pred, feed_dict=feed_dict)
+                pred_ = sess_test_loc.run(pred, feed_dict=feed_dict)
 
-                theta = np.percentile(pred_,percentile)
+                theta = np.percentile(pred_,percentileLoc)
                 pred_bin = np.where(pred_>theta,1,0)
                 pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
-            pred3d = self._post_processing(np.asarray(pred3d))
-            pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3d]
+
+	    #####
+
+            pred3d=np.asarray(pred3d)
+            heights = []
+            widths = []
+            coms_x = []
+            coms_y= []
+
+	    #Apply PPP
+            ppp = True
+            if ppp:
+                pred3d = self._post_processing(pred3d)
+
+            pred3d = [cv2.resize(elem,dsize=(width, height),interpolation=cv2.INTER_NEAREST) for elem in pred3d]
+            pred3d = np.asarray(pred3d)
+            for i in range(np.asarray(pred3d).shape[0]):
+                if np.sum(pred3d[i,:,:])!=0:	  
+                    pred3d[i,:,:] = self._extractLargestCC(pred3d[i,:,:].astype('uint8'))
+                    contours, hierarchy = cv2.findContours(pred3d[i,:,:].astype('uint8'),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                    area = cv2.minAreaRect(np.squeeze(contours))
+                    heights.append(area[1][0])
+                    widths.append(area[1][1])
+                    bbox = cv2.boxPoints(area).astype('int')
+                    coms_x.append(int((np.max(bbox[:,1])+np.min(bbox[:,1]))/2))
+                    coms_y.append(int((np.max(bbox[:,0])+np.min(bbox[:,0]))/2))
+	    #Saving localization points
+            med_x = int(np.median(coms_x))
+            med_y = int(np.median(coms_y))
+            half_max_x = int(np.max(heights)/2)
+            half_max_y = int(np.max(widths)/2)
+            x_beg = med_x-half_max_x-border_x
+            x_end = med_x+half_max_x+border_x
+            y_beg = med_y-half_max_y-border_y
+            y_end = med_y+half_max_y+border_y
+
+        #Step2: Brain segmentation
+        width = 96
+        height = 96
+
+        g = tf.Graph()
+        with g.as_default():
+
+            with tf.name_scope('inputs'):
+
+               x = tf.placeholder(tf.float32, [None, width, height, n_channels])        
+
+            conv1 = conv_2d(x, 32, 3, activation='relu', padding='same', regularizer="L2")
+            conv1 = conv_2d(conv1, 32, 3, activation='relu', padding='same', regularizer="L2")
+            pool1 = max_pool_2d(conv1, 2)
+
+            conv2 = conv_2d(pool1, 64, 3, activation='relu', padding='same', regularizer="L2")
+            conv2 = conv_2d(conv2, 64, 3, activation='relu', padding='same', regularizer="L2")
+            pool2 = max_pool_2d(conv2, 2)
+
+            conv3 = conv_2d(pool2, 128, 3, activation='relu', padding='same', regularizer="L2")
+            conv3 = conv_2d(conv3, 128, 3, activation='relu', padding='same', regularizer="L2")
+            pool3 = max_pool_2d(conv3, 2)
+
+            conv4 = conv_2d(pool3, 256, 3, activation='relu', padding='same', regularizer="L2")
+            conv4 = conv_2d(conv4, 256, 3, activation='relu', padding='same', regularizer="L2")
+            pool4 = max_pool_2d(conv4, 2)
+
+            conv5 = conv_2d(pool4, 512, 3, activation='relu', padding='same', regularizer="L2")
+            conv5 = conv_2d(conv5, 512, 3, activation='relu', padding='same', regularizer="L2")
+
+            up6 = upsample_2d(conv5,2)
+            up6 = tflearn.layers.merge_ops.merge([up6, conv4], 'concat',axis=3)
+            conv6 = conv_2d(up6, 256, 3, activation='relu', padding='same', regularizer="L2")
+            conv6 = conv_2d(conv6, 256, 3, activation='relu', padding='same', regularizer="L2")
+
+            up7 = upsample_2d(conv6,2)
+            up7 = tflearn.layers.merge_ops.merge([up7, conv3],'concat', axis=3)
+            conv7 = conv_2d(up7, 128, 3, activation='relu', padding='same', regularizer="L2")
+            conv7 = conv_2d(conv7, 128, 3, activation='relu', padding='same', regularizer="L2")
+
+            up8 = upsample_2d(conv7,2)
+            up8 = tflearn.layers.merge_ops.merge([up8, conv2],'concat', axis=3)
+            conv8 = conv_2d(up8, 64, 3, activation='relu', padding='same', regularizer="L2")
+            conv8 = conv_2d(conv8, 64, 3, activation='relu', padding='same', regularizer="L2")
+
+            up9 = upsample_2d(conv8,2)
+            up9 = tflearn.layers.merge_ops.merge([up9, conv1],'concat', axis=3)
+            conv9 = conv_2d(up9, 32, 3, activation='relu', padding='same', regularizer="L2")
+            conv9 = conv_2d(conv9, 32, 3, activation='relu', padding='same', regularizer="L2")
+
+            pred = conv_2d(conv9, 2, 1,  activation='linear', padding='valid')
+
+
+        subImages = np.zeros((images.shape[0], width, height))
+        print(images.shape)
+        for ii in range(images.shape[0]):
+            subImages[ii, :, :] = cv2.resize(images[ii, x_beg:x_end, y_beg:y_end,:], dsize=(width, height))
+        print(images.shape)
+        with tf.Session(graph=g) as sess_test_seg:
+        # Restore the model
+            tf_saver = tf.train.Saver()
+            tf_saver.restore(sess_test_seg, modelCkptSeg)
+        
+            for idx in range(images.shape[0]):
+            
+                im = np.reshape(subImages[idx, :, :], [1, width, height, n_channels])
+            
+                feed_dict = {x: im}
+                pred_ = sess_test_seg.run(pred, feed_dict=feed_dict)
+                percentileSeg = thresholdSeg*100
+                theta = np.percentile(pred_,percentileSeg)
+                pred_bin = np.where(pred_>theta,1,0)
+	        #Map predictions to original indices and size
+
+                pred_bin = cv2.resize(pred_bin[0, :, :, 0], dsize=(y_end-y_beg, x_end-x_beg), interpolation=cv2.INTER_NEAREST)
+
+                pred3dFinal[idx, x_beg:x_end, y_beg:y_end,0] = pred_bin.astype('float64')
+                
+                #pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
+            pppp = False
+            if pppp:
+                pred3dFinal = self._post_processing(np.asarray(pred3dFinal))
+            pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3dFinal]
             pred3d = np.asarray(pred3d)
             upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
-            up_mask = nib.Nifti1Image(upsampled,img_nib.affine)
-            nib.save(up_mask, dataPath.split('.')[0]+out_postfix)
+            up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
+            nibabel.save(up_mask, dataPath.split('.')[0]+out_postfix)
+
+    #Funnction returning largest connected component of an object
+    def _extractLargestCC(image):
+        nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=4)
+        sizes = stats[:, -1]
+        max_label = 1
+        if len(sizes)<2: #in case no segmentation
+            return image
+        max_size = sizes[1]
+        for i in range(2, nb_components):
+            if sizes[i] > max_size:
+               max_label = i
+               max_size = sizes[i]
+        largest_cc = np.zeros(output.shape)
+        largest_cc[output == max_label] = 255
+        return largest_cc.astype('uint8')
 
     #Post-processing the binarized network output by PGD
     def _post_processing(self, pred_lbl):
@@ -942,8 +1084,10 @@ class BrainExtraction(BaseInterface):
 class MultipleBrainExtractionInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='Root directory',mandatory=True,exists=True)
     input_images = InputMultiPath(File(desc='MRI Images', mandatory = True))
-    in_ckpt = File(desc='Network_checkpoint',mandatory=True)
-    threshold = traits.Float(0.5,desc='Threshold determining cutoff probability (0.5 by default)')
+    in_ckpt_loc = File(desc='Network_checkpoint for localization',mandatory=True)
+    threshold_loc = traits.Float(0.49,desc='Threshold determining cutoff probability (0.49 by default)')
+    in_ckpt_seg = File(desc='Network_checkpoint for segmentation',mandatory=True)
+    threshold_seg = traits.Float(0.5,desc='Threshold determining cutoff probability (0.5 by default)')
     out_postfix = traits.Str("_masked.nii.gz", usedefault=True)
     
 class MultipleBrainExtractionOutputSpec(TraitedSpec):
@@ -954,10 +1098,10 @@ class MultipleBrainExtraction(BaseInterface):
     output_spec = MultipleBrainExtractionOutputSpec
 
     def _run_interface(self, runtime):
-        #if len(self.inputs.input_images)>0:
-        for input_image in self.inputs.input_images:
-            ax = BrainExtraction(bids_dir = self.inputs.bids_dir, in_file = input_image, in_ckpt= self.inputs.in_ckpt,threshold = self.inputs.threshold, out_postfix=self.inputs.out_postfix)
-            ax.run()
+        if len(self.inputs.input_images)>0: #Uncommented this line
+            for input_image in self.inputs.input_images:
+                ax = BrainExtraction(bids_dir = self.inputs.bids_dir, in_file = input_image, in_ckpt_loc= self.inputs.in_ckpt_loc,threshold_loc = self.inputs.threshold_loc, in_ckpt_seg= self.inputs.in_ckpt_seg,threshold_seg = self.inputs.threshold_seg, out_postfix = self.inputs.out_postfix)
+                ax.run()
         return runtime
 
     def _list_outputs(self):
