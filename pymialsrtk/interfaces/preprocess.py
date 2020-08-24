@@ -33,8 +33,6 @@ try:
 except ImportError:
     print("tflearn not available. Can not run brain extraction")
 
-import tensorflow as tf #added here to debug
-
 import numpy as np
 
 from traits.api import *
