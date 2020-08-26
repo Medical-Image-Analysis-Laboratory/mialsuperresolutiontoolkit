@@ -27,7 +27,7 @@ from skimage import morphology
 from scipy.signal import argrelextrema
 
 
-def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg, out_postfix):
+def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg, bidsDir, out_postfix):
     
     #Step1: Main part brain localization
     normalize = "local_max"
@@ -254,8 +254,9 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
         pred3d = np.asarray(pred3d)
         upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
         up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
-        print(dataPath.split('.')[0]+out_postfix)
-        nibabel.save(up_mask, dataPath.split('.')[0]+out_postfix)
+        _, name, ext = split_filename(os.path.abspath(dataPath))
+        save_file = os.path.join(os.getcwd().replace(bidsDir,'/fetaldata'), ''.join((name, out_postfix, ext)))
+        nibabel.save(up_mask, save_file)
 
 #Funnction returning largest connected component of an object
 def extractLargestCC(image):
