@@ -13,7 +13,8 @@ packages=["pymialsrtk",
           "pymialsrtk.pipelines.anatomical"]
 
 package_data = {"pymialsrtk":
-                ['data/Network_checkpoints/*']
+                ['data/Network_checkpoints/Network_checkpoints_localization/*',
+                'data/Network_checkpoints/Network_checkpoints_segmentation/*']
                 }
 
 # package_data = {'cmtklib':

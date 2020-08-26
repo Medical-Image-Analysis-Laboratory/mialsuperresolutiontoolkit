@@ -661,16 +661,19 @@ class BrainExtraction(BaseInterface):
     input_spec = BrainExtractionInputSpec
     output_spec = BrainExtractionOutputSpec
 
-    def _run_interface(self, runtime): 
+    def _run_interface(self, runtime):
+        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
+        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+
         try:
             self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
-                             self.inputs.in_ckpt_seg, self.inputs.threshold_seg, self.inputs.out_postfix)
+                             self.inputs.in_ckpt_seg, self.inputs.threshold_seg, self.inputs.bids_dir, self.inputs.out_postfix)
         except Exception as e:
             print('Failed')
             print(e)    
         return runtime
 
-    def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg, out_postfix):
+    def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg, bidsDir, out_postfix):
         
         #Step1: Main part brain localization
         normalize = "local_max"
@@ -679,6 +682,7 @@ class BrainExtraction(BaseInterface):
         border_x = 15 
         border_y = 15
         n_channels = 1
+
 
         img_nib = nibabel.load(os.path.join(dataPath))
         image_data = img_nib.get_data()
@@ -865,7 +869,6 @@ class BrainExtraction(BaseInterface):
 
 
         subImages = np.zeros((images.shape[0], width, height))
-        print(images.shape)
         for ii in range(images.shape[0]):
             subImages[ii, :, :] = cv2.resize(images[ii, x_beg:x_end, y_beg:y_end,:], dsize=(width, height))
         print(images.shape)
@@ -890,17 +893,20 @@ class BrainExtraction(BaseInterface):
                 pred3dFinal[idx, x_beg:x_end, y_beg:y_end,0] = pred_bin.astype('float64')
                 
                 #pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
-            pppp = False
+            pppp = True
             if pppp:
                 pred3dFinal = self._post_processing(np.asarray(pred3dFinal))
             pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3dFinal]
             pred3d = np.asarray(pred3d)
             upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
             up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
-            nibabel.save(up_mask, dataPath.split('.')[0]+out_postfix)
+
+            _, name, ext = split_filename(os.path.abspath(dataPath))
+            save_file = os.path.join(os.getcwd().replace(bidsDir,'/fetaldata'), ''.join((name, out_postfix, ext)))
+            nibabel.save(up_mask, save_file)
 
     #Funnction returning largest connected component of an object
-    def _extractLargestCC(image):
+    def _extractLargestCC(self, image):
         nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=4)
         sizes = stats[:, -1]
         max_label = 1

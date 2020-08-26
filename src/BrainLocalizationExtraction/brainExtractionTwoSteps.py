@@ -254,6 +254,7 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
         pred3d = np.asarray(pred3d)
         upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
         up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
+        print(dataPath.split('.')[0]+out_postfix)
         nibabel.save(up_mask, dataPath.split('.')[0]+out_postfix)
 
 #Funnction returning largest connected component of an object
