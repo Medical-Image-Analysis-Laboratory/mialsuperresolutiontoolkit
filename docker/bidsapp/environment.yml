@@ -9,7 +9,7 @@ dependencies:
 - python=3.6.8
 - pip=19.0.3
 - nibabel=3.0.1
-- nipype=1.5.0
+- nipype=1.5.1
 - traits=5.1.2
 - traitsui=6.0.0
 - pydotplus=2.0.2
