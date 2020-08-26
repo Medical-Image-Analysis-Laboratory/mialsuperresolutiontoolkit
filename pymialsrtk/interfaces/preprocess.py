@@ -79,8 +79,9 @@ class BtkNLMDenoising(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-        except:
+        except Exception as e:
             print('Failed')
+            print(e)
         return runtime
 
     def _list_outputs(self):
@@ -170,8 +171,9 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-        except:
+        except Exception as e:
             print('Failed')
+            print(e)
         return runtime
 
     def _list_outputs(self):
@@ -265,8 +267,9 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-        except:
+        except Exception as e:
             print('Failed')
+            print(e)
         return runtime
 
     def _list_outputs(self):
@@ -359,8 +362,9 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-        except:
+        except Exception as e:
             print('Failed')
+            print(e)
         return runtime
 
     def _list_outputs(self):
@@ -454,8 +458,9 @@ class MialsrtkIntensityStandardization(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-        except:
+        except Exception as e:
             print('Failed')
+            print(e)
         return runtime
 
 
@@ -517,8 +522,9 @@ class MialsrtkHistogramNormalization(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-        except:
+        except Exception as e:
             print('Failed')
+            print(e)
 
         return runtime
 
@@ -559,8 +565,9 @@ class MialsrtkMaskImage(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-        except:
+        except Exception as e:
             print('Failed')
+            print(e)
         return runtime
 
     def _list_outputs(self):

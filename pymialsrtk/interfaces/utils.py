@@ -11,6 +11,11 @@ def run(self, command, env={}, cwd=os.getcwd()):
 	import subprocess
 	merged_env = os.environ
 	merged_env.update(env)
+	# Python 3.7
+	# process = subprocess.run(command, shell=True,
+	# 	env=merged_env, cwd=cwd, capture_output=True)
+
+	# Python 3.6 (No capture_output)
 	process = subprocess.run(command, shell=True,
-		env=merged_env, cwd=cwd, capture_output=True)
+		env=merged_env, cwd=cwd)
 	return process
