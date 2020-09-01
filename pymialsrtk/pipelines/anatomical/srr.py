@@ -121,6 +121,8 @@ class AnatomicalPipeline:
                               'monitoring': { 'enabled': True }
                             })
         
+        config.enable_provenance()
+        
         logging.update_logging(config)
         iflogger = logging.getLogger('nipype.interface')
 
