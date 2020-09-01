@@ -128,7 +128,7 @@ jobs:
             ls -la  /tmp/src/mialsuperresolutiontoolkit/data/derivatives
 
             #Execute BIDS App
-            docker run -it --rm \
+            docker run -it --rm --entrypoint /app/run_srr_coverage.sh \
                 -v /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
                 sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
