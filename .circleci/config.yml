@@ -156,6 +156,8 @@ jobs:
             find /tmp/src/mialsuperresolutiontoolkit/data/derivatives -not -name "*.svg" -not -name "*.html" -not -name "*.rst" \
                 -not -name "*.mat" -not -name "*.gpickle" -not -name "*.lta" -not -name "*.json" -not -name "*.txt" -not -name "*.pklz" -type f -delete
       - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/code
+      - store_artifacts:
           path: /tmp/src/mialsuperresolutiontoolkit/data/test
       - store_artifacts:
           path: /tmp/src/mialsuperresolutiontoolkit/data/derivatives
