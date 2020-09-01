@@ -340,6 +340,16 @@ workflows:
             tags:
               only: /.*/
 
+      - codacy-coverage-report:
+          requires:
+            - test
+          filters:
+              branches:
+                ignore:
+                  - /docs?\/.*/
+              tags:
+                only: /.*/
+
       - deploy_docker_release:
           requires:
             - build
