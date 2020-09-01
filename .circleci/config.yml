@@ -116,7 +116,7 @@ jobs:
               pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
               docker images
             fi
-       run:
+      - run:
           name: Create the data/test folder
           no_output_timeout: 1h
           command: |
