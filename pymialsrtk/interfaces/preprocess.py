@@ -672,8 +672,7 @@ class BrainExtraction(BaseInterface):
     output_spec = BrainExtractionOutputSpec
 
     def _run_interface(self, runtime):
-        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-
+        # _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         # out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
         try:
             self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
@@ -964,7 +963,7 @@ class BrainExtraction(BaseInterface):
                 crt_stack_holes = crt_stack_pp.copy()
 
                 inv_mask = 1 - crt_stack_holes
-                labeled_holes, num_holes = snd.measurements.label(inv_mask)
+                labeled_holes, _ = snd.measurements.label(inv_mask)
                 unique, counts = np.unique(labeled_holes, return_counts=True)
 
                 for lbl in unique[2:]:
