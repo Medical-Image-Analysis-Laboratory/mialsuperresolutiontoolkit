@@ -13,24 +13,24 @@ The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consis
 A Docker image is provided to facilitate the deployment and freely available @ [Docker store](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit).  
 
 * Please acknowledge this software in any work reporting results using MIALSRTK by citing the following:
+	[1] S. Tourbier, X. Bresson, P. Hagmann, M. B. Cuadra. (2019, March 19).
+        sebastientourbier/mialsuperresolutiontoolkit: MIAL Super-Resolution Toolkit v1.0 (Version v1.0).
+        Zenodo. <http://doi.org/10.5281/zenodo.2598448>
 
-  [1] S. Tourbier, X. Bresson, P. Hagmann, M. B. Cuadra. (2019, March 19).
-      sebastientourbier/mialsuperresolutiontoolkit: MIAL Super-Resolution Toolkit v1.0 (Version v1.0).
-      Zenodo. http://doi.org/10.5281/zenodo.2598448
+    [2] S. Tourbier, C. Velasco-Annis, V. Taimouri, P. Hagmann, R. Meuli, S. K. Warfield,
+        M. B. Cuadra, A. Gholipour, *Automated template-based brain localization and extraction for fetal brain MRI reconstruction*, Neuroimage (2017) In Press. 
+        [DOI](https://doi.org/10.1016/j.neuroimage.2017.04.004)
 
-  [2] S. Tourbier, C. Velasco-Annis, V. Taimouri, P. Hagmann, R. Meuli, S. K. Warfield, M. B. Cuadra,
-      A. Gholipour, *Automated template-based brain localization and extraction for fetal brain MRI
-      reconstruction*, Neuroimage (2017) In Press. [DOI](https://doi.org/10.1016/j.neuroimage.2017.04.004)
-
-  [3] S. Tourbier, X. Bresson, P. Hagmann, R. Meuli, M. B. Cuadra, *An efficient total variation
-      algorithm for super-resolution in fetal brain MRI with adaptive regularization*, Neuroimage 118
-      (2015) 584-597. [DOI](https://doi.org/10.1016/j.neuroimage.2015.06.018)
+  [3] S. Tourbier, X. Bresson, P. Hagmann, R. Meuli, M. B. Cuadra, 
+      *An efficient total variation algorithm for super-resolution in fetal brain MRI
+      with adaptive regularization*, Neuroimage 118 (2015) 584-597. 
+      [DOI](https://doi.org/10.1016/j.neuroimage.2015.06.018)
 
 ## Documentation 
 
-  * FOR USERS: [How to run the Docker image](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/userguide_docker.md)
-  * FOR DEVELOPERS/CONTRIBUTORS: [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
-  * [Doxygen source code documentation](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
+* FOR USERS: [How to run the Docker image](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/userguide_docker.md)
+* FOR DEVELOPERS/CONTRIBUTORS: [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
+* [Doxygen source code documentation](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
 
 ## Credits 
 

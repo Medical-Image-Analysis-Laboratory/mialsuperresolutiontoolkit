@@ -31,12 +31,14 @@ ENV MY_CONDA_PY3ENV "pymialsrtk-env"
 ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
 
 # Create the conda environment
-ADD environment.yml /app/environment.yml
+COPY environment.yml /app/environment.yml
 RUN conda env create -f /app/environment.yml
 
 # Install pymialsrtk
-RUN cd /opt/mialsuperresolutiontoolkit \
-    && /bin/bash -c '$CONDA_ACTIVATE && python setup.py install'
+WORKDIR /opt/mialsuperresolutiontoolkit
+RUN /bin/bash -c '$CONDA_ACTIVATE && python setup.py install'
+
+WORKDIR /app
 
 # # Create entrypoint script
 # RUN echo '#! /bin/bash \n \

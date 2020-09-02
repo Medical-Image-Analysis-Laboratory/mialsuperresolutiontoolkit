@@ -62,11 +62,12 @@ class BtkNLMDenoisingOutputSpec(TraitedSpec):
 class BtkNLMDenoising(BaseInterface):
 
     input_spec = BtkNLMDenoisingInputSpec
-    output_spec = BtkNLMDenoisingOutputSpec 
+    output_spec = BtkNLMDenoisingOutputSpec
 
-    def _run_interface(self, runtime): 
+    def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir,'/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
+                                ''.join((name, self.inputs.out_postfix, ext)))
 
         if self.inputs.in_mask:
             cmd = 'btkNLMDenoising -i "{}" -m "{}" -o "{}" -b {}'.format(self.inputs.in_file, self.inputs.in_mask, out_file, self.inputs.weight)
@@ -142,7 +143,8 @@ class MultipleBtkNLMDenoising(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
-        return outputs 
+        return outputs
+
 
 #############################
 # Slice intensity correction
@@ -671,8 +673,8 @@ class BrainExtraction(BaseInterface):
 
     def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
 
+        # out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
         try:
             self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
                                self.inputs.in_ckpt_seg, self.inputs.threshold_seg, self.inputs.bids_dir, self.inputs.out_postfix)
@@ -800,7 +802,7 @@ class BrainExtraction(BaseInterface):
             for i in range(np.asarray(pred3d).shape[0]):
                 if np.sum(pred3d[i, :, :]) != 0:
                     pred3d[i, :, :] = self._extractLargestCC(pred3d[i, :, :].astype('uint8'))
-                    contours, hierarchy = cv2.findContours(pred3d[i, :, :].astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    contours, _ = cv2.findContours(pred3d[i, :, :].astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     area = cv2.minAreaRect(np.squeeze(contours))
                     heights.append(area[1][0])
                     widths.append(area[1][1])
@@ -907,7 +909,7 @@ class BrainExtraction(BaseInterface):
 
     # Function returning largest connected component of an object
     def _extractLargestCC(self, image):
-        nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=4)
+        nb_components, output, stats, _ = cv2.connectedComponentsWithStats(image, connectivity=4)
         sizes = stats[:, -1]
         max_label = 1
         # in case no segmentation
@@ -924,14 +926,14 @@ class BrainExtraction(BaseInterface):
 
     # Post-processing the binarized network output by PGD
     def _post_processing(self, pred_lbl):
-        post_proc = True
+        # post_proc = True
         post_proc_cc = True
         post_proc_fill_holes = True
 
         post_proc_closing_minima = True
         post_proc_opening_maxima = True
         post_proc_extremity = False
-        stackmodified = True
+        # stackmodified = True
 
         crt_stack = pred_lbl.copy()
         crt_stack_pp = crt_stack.copy()
@@ -945,11 +947,11 @@ class BrainExtraction(BaseInterface):
             if post_proc_cc:
                 # print("post_proc_cc")
                 crt_stack_cc = crt_stack.copy()
-                labeled_array, num_features = snd.measurements.label(crt_stack_cc)
+                labeled_array, _ = snd.measurements.label(crt_stack_cc)
                 unique, counts = np.unique(labeled_array, return_counts=True)
 
                 # Try to remove false positives seen as independent connected components #2ndBrain
-                for ind in range(len(unique)):
+                for ind in enumerate(unique):
                     if 5 < counts[ind] and counts[ind] < 300:
                         wherr = np.where(labeled_array == unique[ind])
                         for ii in range(len(wherr[0])):
@@ -997,7 +999,7 @@ class BrainExtraction(BaseInterface):
                     local_minima = argrelextrema(np.asarray(distrib_cc), np.less)[0]
                     local_maxima = argrelextrema(np.asarray(distrib_cc), np.greater)[0]
 
-                    for iMin in range(len(local_minima)):
+                    for iMin in enumerate(local_minima):
                         for iMax in range(len(local_maxima) - 1):
                             # print(local_maxima[iMax], "<", local_minima[iMin], "AND", local_minima[iMin], "<", local_maxima[iMax+1], "   ???")
 
@@ -1027,7 +1029,7 @@ class BrainExtraction(BaseInterface):
                         local_maxima_n = argrelextrema(np.asarray(distrib_closed), np.greater)[
                             0]  # default is mode='clip'. Doesn't consider extremity as being an extrema
 
-                        for iMax in range(len(local_maxima_n)):
+                        for iMax in enumerate(local_maxima_n):
 
                             # Check if this local maxima is a "peak"
                             if ((distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] - 1] > 50) and

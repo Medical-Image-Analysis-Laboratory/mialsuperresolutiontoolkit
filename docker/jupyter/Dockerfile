@@ -14,7 +14,7 @@ ENV MY_CONDA_PY3ENV "pymialsrtk-env"
 ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
 
 # Pull the environment name out of the environment.yml
-ADD environment.yml /app/environment.yml
+COPY environment.yml /app/environment.yml
 RUN conda env create -f /app/environment.yml
 
 # Install pymialsrtk inside installed conda environment (see environment.yml)
@@ -28,7 +28,7 @@ RUN bash -c '$CONDA_ACTIVATE && jupyter nbextension install --py jupyter_highlig
 RUN bash -c "$CONDA_ACTIVATE && pip install git+git://github.com/nipy/niwidgets && python3 -m ipykernel install --prefix=/opt/conda --name $MY_CONDA_PY3ENV"
 
 RUN mkdir -p /app/notebooks
-ADD . /app/notebooks
+COPY . /app/notebooks
 
 WORKDIR /app/notebooks
 
