@@ -1,4 +1,4 @@
-![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
+# ![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
 ---
 
 Copyright © 2016-2017 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
@@ -12,17 +12,19 @@ The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consis
 
 A Docker image is provided to facilitate the deployment and freely available @ [Docker store](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit).  
 
-  * Please acknowledge this software in any work reporting results using MIALSRTK by citing the following:
+* Please acknowledge this software in any work reporting results using MIALSRTK by citing the following:
 
-	[1] S. Tourbier, X. Bresson, P. Hagmann, M. B. Cuadra. (2019, March 19). sebastientourbier/mialsuperresolutiontoolkit: MIAL Super-Resolution Toolkit v1.0 (Version v1.0). Zenodo. http://doi.org/10.5281/zenodo.2598448
+  [1] S. Tourbier, X. Bresson, P. Hagmann, M. B. Cuadra. (2019, March 19).
+      sebastientourbier/mialsuperresolutiontoolkit: MIAL Super-Resolution Toolkit v1.0 (Version v1.0).
+      Zenodo. http://doi.org/10.5281/zenodo.2598448
 
-	[2] S. Tourbier, C. Velasco-Annis, V. Taimouri, P. Hagmann, R. Meuli, S. K. Warfield, M. B. Cuadra,
-	A. Gholipour, *Automated template-based brain localization and extraction for fetal brain MRI
-	reconstruction*, Neuroimage (2017) In Press. [DOI](https://doi.org/10.1016/j.neuroimage.2017.04.004)
+  [2] S. Tourbier, C. Velasco-Annis, V. Taimouri, P. Hagmann, R. Meuli, S. K. Warfield, M. B. Cuadra,
+      A. Gholipour, *Automated template-based brain localization and extraction for fetal brain MRI
+      reconstruction*, Neuroimage (2017) In Press. [DOI](https://doi.org/10.1016/j.neuroimage.2017.04.004)
 
-	[3] S. Tourbier, X. Bresson, P. Hagmann, R. Meuli, M. B. Cuadra, *An efficient total variation
-	algorithm for super-resolution in fetal brain MRI with adaptive regularization*, Neuroimage 118
-	(2015) 584-597. [DOI](https://doi.org/10.1016/j.neuroimage.2015.06.018)
+  [3] S. Tourbier, X. Bresson, P. Hagmann, R. Meuli, M. B. Cuadra, *An efficient total variation
+      algorithm for super-resolution in fetal brain MRI with adaptive regularization*, Neuroimage 118
+      (2015) 584-597. [DOI](https://doi.org/10.1016/j.neuroimage.2015.06.018)
 
 ## Documentation 
 
