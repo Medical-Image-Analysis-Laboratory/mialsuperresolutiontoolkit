@@ -10,18 +10,26 @@ MIAL Super-Resolution Toolkit
 
 This neuroimaging processing pipeline software is developed by the Medical Image Analysis Laboratory (MIAL) at the University Hospital of Lausanne (CHUV) for use within the lab, as well as for open-source software distribution.
 
-..
 
 .. image:: https://zenodo.org/badge/183162514.svg
   :target: https://zenodo.org/badge/latestdoi/183162514
   :alt: Digital Object Identifier
-.. image:: https://circleci.com/gh/connectomicslab/connectomemapper3/tree/master.svg?style=svg
-  :target: https://circleci.com/gh/connectomicslab/connectomemapper3/tree/master
-  :alt: Continuous Integration Status
-.. image:: https://readthedocs.org/projects/connectome-mapper-3/badge/?version=latest
-  :target: https://connectome-mapper-3.readthedocs.io/en/latest/?badge=latest
+.. image:: https://img.shields.io/docker/pulls/sebastientourbier/mialsuperresolutiontoolkit
+  :target: 
+  :alt: Docker Pulls
+.. image:: https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?branch=master
+  :target: https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit
+  :alt: TravisCI Status (C++)
+.. image:: https://circleci.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?style=shield
+  :target: https://app.circleci.com/pipelines/github/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit
+  :alt: CircleCI Status (BIDS-App)
+.. image:: https://readthedocs.org/projects/mialsrtk/badge/?version=latest
+  :target: https://mialsrtk.readthedocs.io/en/latest/?badge=latest
   :alt: Documentation Status
-  
+.. image:: https://img.shields.io/github/all-contributors/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit
+  :target:
+  :alt: Github All Contributors  
+
 
 .. warning:: THIS SOFTWARE IS FOR RESEARCH PURPOSES ONLY AND SHALL NOT BE USED FOR ANY CLINICAL USE. THIS SOFTWARE HAS NOT BEEN REVIEWED OR APPROVED BY THE FOOD AND DRUG ADMINISTRATION OR EQUIVALENT AUTHORITY, AND IS FOR NON-CLINICAL, IRB-APPROVED RESEARCH USE ONLY. IN NO EVENT SHALL DATA OR IMAGES GENERATED THROUGH THE USE OF THE SOFTWARE BE USED IN THE PROVISION OF PATIENT CARE.
   
@@ -93,6 +101,7 @@ Contents
 
    bids
    usage
+   outputs
 
 .. _user-usecases:
 
