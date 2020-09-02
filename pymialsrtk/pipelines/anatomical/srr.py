@@ -2,33 +2,24 @@
 # coding: utf-8
 
 import os
-import shutil
-import json
-import glob
+
 import pkg_resources
 
 from nipype import config, logging
-from nipype.interfaces.io import BIDSDataGrabber,DataGrabber, DataSink, JSONFileSink
-#from nipype.pipeline import Node, MapNode, Workflow
+# from nipype.interfaces.io import BIDSDataGrabber
+from nipype.interfaces.io import DataGrabber, DataSink, JSONFileSink
+# from nipype.pipeline import Node, MapNode, Workflow
 from nipype.pipeline import Node, Workflow
-from nipype.interfaces.utility import Function
-
-# from pymialsrtk.interfaces.docker import prepareDockerPaths
 
 # Import the implemented interface from pymialsrtk
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 
-#from traits.api import *
-#from nipype.utils.filemanip import split_filename
-#from nipype.interfaces.base import traits, isdefined, CommandLine, CommandLineInputSpec,    TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
-
-
 # Get pymialsrtk version
 from pymialsrtk.info import __version__
 
-    
+
 class AnatomicalPipeline:
     """
     Description of the class and attributes
@@ -43,11 +34,11 @@ class AnatomicalPipeline:
     lambdaTV = "0.001"
     primal_dual_loops = "20"
     srID = "01"
-    session=None
-    p_stacksOrder=None
-    use_manual_masks=False
+    session = None
+    p_stacksOrder = None
+    use_manual_masks = False
 
-    def __init__(self, bids_dir, output_dir, subject, 
+    def __init__(self, bids_dir, output_dir, subject,
                  p_stacksOrder, srID, session=None, paramTV={},
                  use_manual_masks=False):
         """
@@ -67,10 +58,9 @@ class AnatomicalPipeline:
         self.lambdaTV = paramTV["lambdaTV"] if "lambdaTV" in paramTV.keys() else 0.75
         self.primal_dual_loops = paramTV["primal_dual_loops"] if "primal_dual_loops" in paramTV.keys() else 10
 
-        # Use manual/custom brain masks 
+        # Use manual/custom brain masks
         # By defaut use the automated brain extraction method
         self.use_manual_masks = use_manual_masks
-
 
     def create_workflow(self):
         """
@@ -81,10 +71,8 @@ class AnatomicalPipeline:
         if self.session is not None:
             sub_ses = ''.join([sub_ses, '_', self.session])
 
-
-        wf_base_dir = os.path.join(self.output_dir,"nipype", self.subject, "anatomical_pipeline")
-        final_res_dir = os.path.join(self.output_dir,'-'.join(["pymialsrtk", __version__]), self.subject)
-        
+        wf_base_dir = os.path.join(self.output_dir, "nipype", self.subject, "anatomical_pipeline")
+        final_res_dir = os.path.join(self.output_dir, '-'.join(["pymialsrtk", __version__]), self.subject)
 
         if self.session is not None:
             wf_base_dir = os.path.join(wf_base_dir, self.session)
@@ -92,7 +80,6 @@ class AnatomicalPipeline:
 
         # #if self.srID is not None:
         # wf_base_dir = os.path.join(wf_base_dir, self.srID)
-
 
         if not os.path.exists(wf_base_dir):
             os.makedirs(wf_base_dir)
@@ -103,13 +90,11 @@ class AnatomicalPipeline:
 
         self.wf = Workflow(name=pipeline_name,base_dir=wf_base_dir)
         # srr_nipype_dir = os.path.join(self.wf.base_dir, self.wf.name )
-        
-        
+
         # Initialization (Not sure we can control the name of nipype log)
-        if os.path.isfile(os.path.join(wf_base_dir,"pypeline_"+self.subject+".log")):
-            os.unlink(os.path.join(wf_base_dir,"pypeline_"+self.subject+".log"))
-    #         open(os.path.join(self.output_dir,"pypeline.log"), 'a').close()
-            
+        if os.path.isfile(os.path.join(wf_base_dir, "pypeline_" + self.subject + ".log")):
+            os.unlink(os.path.join(wf_base_dir, "pypeline_" + self.subject + ".log"))
+            # open(os.path.join(self.output_dir,"pypeline.log"), 'a').close()
 
         config.update_config({'logging': {'log_directory': os.path.join(wf_base_dir), 'log_to_file': True},
                               'execution': {
@@ -117,58 +102,70 @@ class AnatomicalPipeline:
                                   'stop_on_first_crash': True,
                                   'stop_on_first_rerun': False,
                                   'crashfile_format': "txt",
-                                  'write_provenance' : False,},
-                              'monitoring': { 'enabled': True }
-                            })
-        
+                                  'write_provenance': False},
+                              'monitoring': {'enabled': True}
+                              })
+
         config.enable_provenance()
-        
+
         logging.update_logging(config)
         iflogger = logging.getLogger('nipype.interface')
 
         iflogger.info("**** Processing ****")
 
         if self.use_manual_masks:
-            dg = Node(interface=DataGrabber(outfields = ['T2ws', 'masks']), name='data_grabber')
-            
+            dg = Node(interface=DataGrabber(outfields=['T2ws', 'masks']), name='data_grabber')
+
             dg.inputs.base_directory = self.bids_dir
             dg.inputs.template = '*'
             dg.inputs.raise_on_empty = False
-            dg.inputs.sort_filelist=True
-            
+            dg.inputs.sort_filelist = True
+
             dg.inputs.field_template = dict(T2ws=os.path.join(self.subject, 'anat', sub_ses+'*_run-*_T2w.nii.gz'),
-                                           masks=os.path.join('derivatives','manual_masks', self.subject, 'anat', sub_ses+'*_run-*_*mask.nii.gz'))
+                                            masks=os.path.join('derivatives',
+                                                               'manual_masks',
+                                                               self.subject,
+                                                               'anat',
+                                                               sub_ses+'*_run-*_*mask.nii.gz'))
             if self.session is not None:
-                dg.inputs.field_template = dict(T2ws=os.path.join( self.subject, self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])),
-                                                masks=os.path.join('derivatives','manual_masks', self.subject, self.session, 'anat','_'.join([sub_ses, '*run-*', '*mask.nii.gz'])))
-            
+                dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
+                                                                  self.session,
+                                                                  'anat',
+                                                                  '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])),
+                                                masks=os.path.join('derivatives',
+                                                                   'manual_masks',
+                                                                   self.subject,
+                                                                   self.session,
+                                                                   'anat',
+                                                                   '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])))
         else:
 
-            dg = Node(interface=DataGrabber(outfields = ['T2ws']), name='data_grabber')
-            
+            dg = Node(interface=DataGrabber(outfields=['T2ws']), name='data_grabber')
+
             dg.inputs.base_directory = self.bids_dir
             dg.inputs.template = '*'
             dg.inputs.raise_on_empty = False
-            dg.inputs.sort_filelist=True
-            
-            dg.inputs.field_template = dict(T2ws=os.path.join(self.subject, 'anat', sub_ses+'*_run-*_T2w.nii.gz'))
-            if self.session is not None:
-                dg.inputs.field_template = dict(T2ws=os.path.join( self.subject, self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
-            
+            dg.inputs.sort_filelist = True
 
-            brainMask = Node(interface = preprocess.MultipleBrainExtraction(),name='Multiple_Brain_extraction') 
+            dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
+                                                              'anat', sub_ses+'*_run-*_T2w.nii.gz'))
+            if self.session is not None:
+                dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
+                                                                  self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
+
+            brainMask = Node(interface = preprocess.MultipleBrainExtraction(), name='Multiple_Brain_extraction') 
             brainMask.inputs.bids_dir = self.bids_dir
-            brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk", "data/Network_checkpoints/Network_checkpoints_localization/Unet.ckpt-88000")
+            brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk",
+                                                                           "data/Network_checkpoints/Network_checkpoints_localization/Unet.ckpt-88000")
             brainMask.inputs.threshold_loc = 0.49
-            brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename("pymialsrtk", "data/Network_checkpoints/Network_checkpoints_segmentation/Unet.ckpt-20000")
+            brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename("pymialsrtk",
+                                                                           "data/Network_checkpoints/Network_checkpoints_segmentation/Unet.ckpt-20000")
             brainMask.inputs.threshold_seg = 0.5
 
-        
         nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
         nlmDenoise.inputs.bids_dir = self.bids_dir
         nlmDenoise.inputs.stacksOrder = self.p_stacksOrder
 
-        
         # Sans le mask le premier correct slice intensity...
         srtkCorrectSliceIntensity01_nlm = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01_nlm')
         srtkCorrectSliceIntensity01_nlm.inputs.bids_dir = self.bids_dir
