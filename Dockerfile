@@ -59,7 +59,7 @@ RUN mkdir build
 WORKDIR /opt/mialsuperresolutiontoolkit/build
 
 RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_OMP:BOOL=ON ../src \
-    && make -j2 && sudo make install && cd .. 
+    && make -j2 && make install
 
 # Make MIALSRTK happy
 ENV BIN_DIR "/usr/local/bin" 
