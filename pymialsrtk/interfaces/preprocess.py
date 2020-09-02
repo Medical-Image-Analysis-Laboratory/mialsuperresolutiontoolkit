@@ -950,7 +950,7 @@ class BrainExtraction(BaseInterface):
                 unique, counts = np.unique(labeled_array, return_counts=True)
 
                 # Try to remove false positives seen as independent connected components #2ndBrain
-                for ind in enumerate(unique):
+                for ind, _ in enumerate(unique):
                     if 5 < counts[ind] and counts[ind] < 300:
                         wherr = np.where(labeled_array == unique[ind])
                         for ii in range(len(wherr[0])):
@@ -998,7 +998,7 @@ class BrainExtraction(BaseInterface):
                     local_minima = argrelextrema(np.asarray(distrib_cc), np.less)[0]
                     local_maxima = argrelextrema(np.asarray(distrib_cc), np.greater)[0]
 
-                    for iMin in enumerate(local_minima):
+                    for iMin, _ in enumerate(local_minima):
                         for iMax in range(len(local_maxima) - 1):
                             # print(local_maxima[iMax], "<", local_minima[iMin], "AND", local_minima[iMin], "<", local_maxima[iMax+1], "   ???")
 
@@ -1028,7 +1028,7 @@ class BrainExtraction(BaseInterface):
                         local_maxima_n = argrelextrema(np.asarray(distrib_closed), np.greater)[
                             0]  # default is mode='clip'. Doesn't consider extremity as being an extrema
 
-                        for iMax in enumerate(local_maxima_n):
+                        for iMax, _ in enumerate(local_maxima_n):
 
                             # Check if this local maxima is a "peak"
                             if ((distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] - 1] > 50) and
