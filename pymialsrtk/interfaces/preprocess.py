@@ -780,7 +780,7 @@ class BrainExtraction(BaseInterface):
                 feed_dict = {x: im}
                 pred_ = sess_test_loc.run(pred, feed_dict=feed_dict)
 
-                theta = np.percentile(pred, percentileLoc)
+                theta = np.percentile(pred_, percentileLoc)
                 pred_bin = np.where(pred_ > theta, 1, 0)
                 pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
 
