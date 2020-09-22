@@ -6,7 +6,7 @@
 """
 
 import os
-
+import traceback
 from glob import glob
 
 import nibabel
@@ -677,9 +677,9 @@ class BrainExtraction(BaseInterface):
         try:
             self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
                                self.inputs.in_ckpt_seg, self.inputs.threshold_seg, self.inputs.bids_dir, self.inputs.out_postfix)
-        except Exception as e:
+        except Exception:
             print('Failed')
-            print(e)
+            print(traceback.format_exc())
         return runtime
 
     def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc, modelCkptSeg, thresholdSeg, bidsDir, out_postfix):
