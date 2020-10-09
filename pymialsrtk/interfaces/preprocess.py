@@ -694,7 +694,8 @@ class BrainExtraction(BaseInterface):
         img_nib = nibabel.load(os.path.join(dataPath))
         image_data = img_nib.get_data()
         images = np.zeros((image_data.shape[2], width, height, n_channels))
-        pred3dFinal = np.zeros((image_data.shape[2], width, height, n_channels))
+        #pred3dFinal = np.zeros((image_data.shape[2], width, height, n_channels))
+        pred3dFinal = np.zeros((image_data.shape[2], image_data.shape[0], image_data.shape[1], n_channels))
 
         slice_counter = 0
         for ii in range(image_data.shape[2]):
@@ -801,7 +802,7 @@ class BrainExtraction(BaseInterface):
             for i in range(np.asarray(pred3d).shape[0]):
                 if np.sum(pred3d[i, :, :]) != 0:
                     pred3d[i, :, :] = self._extractLargestCC(pred3d[i, :, :].astype('uint8'))
-                    contours, _ = cv2.findContours(pred3d[i, :, :].astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    contours, hierarchy = cv2.findContours(pred3d[i, :, :].astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     area = cv2.minAreaRect(np.squeeze(contours))
                     heights.append(area[1][0])
                     widths.append(area[1][1])
