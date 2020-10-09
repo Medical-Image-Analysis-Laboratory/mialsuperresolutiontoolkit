@@ -6,7 +6,7 @@
 """
 
 import os
-
+import traceback
 from glob import glob
 
 import nibabel
@@ -677,9 +677,9 @@ class BrainExtraction(BaseInterface):
         try:
             self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
                                self.inputs.in_ckpt_seg, self.inputs.threshold_seg, self.inputs.bids_dir, self.inputs.out_postfix)
-        except Exception as e:
+        except Exception:
             print('Failed')
-            print(e)
+            print(traceback.format_exc())
         return runtime
 
     def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc, modelCkptSeg, thresholdSeg, bidsDir, out_postfix):
@@ -780,7 +780,7 @@ class BrainExtraction(BaseInterface):
                 feed_dict = {x: im}
                 pred_ = sess_test_loc.run(pred, feed_dict=feed_dict)
 
-                theta = np.percentile(pred, percentileLoc)
+                theta = np.percentile(pred_, percentileLoc)
                 pred_bin = np.where(pred_ > theta, 1, 0)
                 pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
 
@@ -796,7 +796,7 @@ class BrainExtraction(BaseInterface):
             if ppp:
                 pred3d = self._post_processing(pred3d)
 
-            pred3d = [cv2.resize(elem, dsize=(width, height), interpolation=cv2.INTER_NEAREST) for elem in pred3d]
+            pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]),interpolation=cv2.INTER_NEAREST) for elem in pred3d] #
             pred3d = np.asarray(pred3d)
             for i in range(np.asarray(pred3d).shape[0]):
                 if np.sum(pred3d[i, :, :]) != 0:
@@ -821,6 +821,26 @@ class BrainExtraction(BaseInterface):
         # Step2: Brain segmentation
         width = 96
         height = 96
+
+        images = np.zeros((image_data.shape[2], width, height, n_channels))
+
+        slice_counter = 0
+        for ii in range(image_data.shape[2]):
+            img_patch = cv2.resize(image_data[x_beg:x_end, y_beg:y_end, ii], dsize=(width, height))
+
+            if normalize:
+                if normalize == "local_max":
+                     images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
+                elif normalize == "global_max":
+                     images[slice_counter, :, :, 0] = img_patch / max_val
+                elif normalize ==  "mean_std":
+                     images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
+                else:
+                     raise ValueError('Please select a valid normalization')
+            else:
+                images[slice_counter, :, :, 0] = img_patch
+
+            slice_counter += 1
 
         g = tf.Graph()
         with g.as_default():
@@ -869,38 +889,33 @@ class BrainExtraction(BaseInterface):
 
             pred = conv_2d(conv9, 2, 1,  activation='linear', padding='valid')
 
-        subImages = np.zeros((images.shape[0], width, height))
-        for ii in range(images.shape[0]):
-            subImages[ii, :, :] = cv2.resize(images[ii, x_beg:x_end, y_beg:y_end, :], dsize=(width, height))
-        print(images.shape)
         with tf.Session(graph=g) as sess_test_seg:
-            # Restore the model
+        # Restore the model
             tf_saver = tf.train.Saver()
             tf_saver.restore(sess_test_seg, modelCkptSeg)
-
+        
             for idx in range(images.shape[0]):
-
-                im = np.reshape(subImages[idx, :, :], [1, width, height, n_channels])
-
+            
+                im = np.reshape(images[idx, :, :], [1, width, height, n_channels])
+            
                 feed_dict = {x: im}
                 pred_ = sess_test_seg.run(pred, feed_dict=feed_dict)
                 percentileSeg = thresholdSeg*100
                 theta = np.percentile(pred_, percentileSeg)
-                pred_bin = np.where(pred_ > theta, 1, 0)
+                pred_bin = np.where(pred_>theta, 1, 0)
+	        # Map predictions to original indices and size
 
-                # Map predictions to original indices and size
                 pred_bin = cv2.resize(pred_bin[0, :, :, 0], dsize=(y_end-y_beg, x_end-x_beg), interpolation=cv2.INTER_NEAREST)
+             
                 pred3dFinal[idx, x_beg:x_end, y_beg:y_end,0] = pred_bin.astype('float64')
-                # pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
-
+                
             pppp = True
             if pppp:
                 pred3dFinal = self._post_processing(np.asarray(pred3dFinal))
             pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3dFinal]
             pred3d = np.asarray(pred3d)
-            # if Orient module applied, no need for this line(?)
-            upsampled = np.swapaxes(np.swapaxes(pred3d, 1, 2), 0, 2)
-            up_mask = nibabel.Nifti1Image(upsampled, img_nib.affine)
+            upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
+            up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
 
             _, name, ext = split_filename(os.path.abspath(dataPath))
             save_file = os.path.join(os.getcwd().replace(bidsDir, '/fetaldata'), ''.join((name, out_postfix, ext)))

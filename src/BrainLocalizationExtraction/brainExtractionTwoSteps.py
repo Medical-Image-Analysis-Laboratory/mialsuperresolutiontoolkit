@@ -25,6 +25,7 @@ from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
 import scipy.ndimage as snd
 from skimage import morphology
 from scipy.signal import argrelextrema
+from nipype.utils.filemanip import split_filename
 
 
 def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg, bidsDir, out_postfix):
@@ -40,7 +41,7 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
     img_nib = nibabel.load(os.path.join(dataPath))
     image_data = img_nib.get_data()
     images = np.zeros((image_data.shape[2], width, height, n_channels))
-    pred3dFinal = np.zeros((image_data.shape[2], width, height, n_channels))
+    pred3dFinal = np.zeros((image_data.shape[2], image_data.shape[0], image_data.shape[1], n_channels))
 
     slice_counter = 0
     for ii in range(image_data.shape[2]):
@@ -146,7 +147,8 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
         if ppp:
             pred3d = post_processing(pred3d)
 
-        pred3d = [cv2.resize(elem,dsize=(width, height),interpolation=cv2.INTER_NEAREST) for elem in pred3d]
+        #pred3d = [cv2.resize(elem,dsize=(width, height),interpolation=cv2.INTER_NEAREST) for elem in pred3d]  #HNA
+        pred3d = [cv2.resize(elem,dsize=(image_data.shape[1], image_data.shape[0]),interpolation=cv2.INTER_NEAREST) for elem in pred3d]
         pred3d = np.asarray(pred3d)
         for i in range(np.asarray(pred3d).shape[0]):
             if np.sum(pred3d[i,:,:])!=0:	  
@@ -171,6 +173,27 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
     #Step2: Brain segmentation
     width = 96
     height = 96
+    #HNA_IN
+    images = np.zeros((image_data.shape[2], width, height, n_channels))
+
+    slice_counter = 0
+    for ii in range(image_data.shape[2]):
+        img_patch = cv2.resize(image_data[x_beg:x_end, y_beg:y_end, ii], dsize=(width, height))
+
+        if normalize:
+            if normalize == "local_max":
+                 images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
+            elif normalize == "global_max":
+                 images[slice_counter, :, :, 0] = img_patch / max_val
+            elif normalize ==  "mean_std":
+                 images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
+            else:
+                 raise ValueError('Please select a valid normalization')
+        else:
+            images[slice_counter, :, :, 0] = img_patch
+
+        slice_counter += 1
+    #HNA_OUT
 
     g = tf.Graph()
     with g.as_default():
@@ -220,12 +243,7 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
 
         pred = conv_2d(conv9, 2, 1,  activation='linear', padding='valid')
 
-
-    subImages = np.zeros((images.shape[0], width, height))
-    print(images.shape)
-    for ii in range(images.shape[0]):
-        subImages[ii, :, :] = cv2.resize(images[ii, x_beg:x_end, y_beg:y_end,:], dsize=(width, height))
-    print(images.shape)
+    
     with tf.Session(graph=g) as sess_test_seg:
     # Restore the model
         tf_saver = tf.train.Saver()
@@ -233,7 +251,7 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
     
         for idx in range(images.shape[0]):
         
-            im = np.reshape(subImages[idx, :, :], [1, width, height, n_channels])
+            im = np.reshape(images[idx, :, :], [1, width, height, n_channels])
         
             feed_dict = {x: im}
             pred_ = sess_test_seg.run(pred, feed_dict=feed_dict)
@@ -243,19 +261,21 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
 	    #Map predictions to original indices and size
 
             pred_bin = cv2.resize(pred_bin[0, :, :, 0], dsize=(y_end-y_beg, x_end-x_beg), interpolation=cv2.INTER_NEAREST)
-
+         
             pred3dFinal[idx, x_beg:x_end, y_beg:y_end,0] = pred_bin.astype('float64')
             
             #pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
-        pppp = False
+        pppp = True
         if pppp:
             pred3dFinal = post_processing(np.asarray(pred3dFinal))
         pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3dFinal]
         pred3d = np.asarray(pred3d)
         upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
         up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
+
         _, name, ext = split_filename(os.path.abspath(dataPath))
-        save_file = os.path.join(os.getcwd().replace(bidsDir,'/fetaldata'), ''.join((name, out_postfix, ext)))
+        #save_file = os.path.join(os.getcwd().replace(bidsDir,'/fetaldata'), ''.join((name, out_postfix, ext)))
+        save_file = os.path.join(os.getcwd(), ''.join((name, out_postfix, ext)))
         nibabel.save(up_mask, save_file)
 
 #Funnction returning largest connected component of an object
@@ -450,6 +470,7 @@ def get_parser():
 	parser.add_argument('-t','--threshold_loc', required=True, action='append', help='Threshold localization')
 	parser.add_argument('-C','--checkpoint_seg', required=True, action='append', help='Network checkpoint segmentation')
 	parser.add_argument('-T','--threshold_seg', required=True, action='append', help='Threshold segmentation')
+	parser.add_argument('-b','--bids_dir', required=True, action='append', help='BIDS dir')
 	parser.add_argument('-o','--out_postfix', required=True, action='append', help='Suffix to masked images')
 	
 	return parser
@@ -498,4 +519,4 @@ if __name__ == "__main__":
 	# print('Inputs: {}'.format(args.input))
 	# print('Masks: {}'.format(args.mask))
 	# print('Outputs: {}'.format(args.output))
-	extractBrain(args.input[0],args.checkpoint_loc[0],float(args.threshold_loc[0]),args.checkpoint_seg[0],float(args.threshold_seg[0]),args.out_postfix[0]) #I had to add [0] index to extract string from list
+	extractBrain(args.input[0],args.checkpoint_loc[0],float(args.threshold_loc[0]),args.checkpoint_seg[0],float(args.threshold_seg[0]),args.bids_dir[0],args.out_postfix[0]) #I had to add [0] index to extract string from list
