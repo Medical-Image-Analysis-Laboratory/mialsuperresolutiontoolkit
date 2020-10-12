@@ -259,7 +259,7 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     input_spec = MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec
     output_spec = MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec
 
-    def _run_interface(self, runtime): 
+    def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_im_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
         out_fld_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_fld_postfix, ext)))
@@ -919,7 +919,7 @@ class BrainExtraction(BaseInterface):
 
     # Function returning largest connected component of an object
     def _extractLargestCC(self, image):
-        nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=4)
+        nb_components, output, stats, _ = cv2.connectedComponentsWithStats(image, connectivity=4)
         sizes = stats[:, -1]
         max_label = 1
         # in case no segmentation
