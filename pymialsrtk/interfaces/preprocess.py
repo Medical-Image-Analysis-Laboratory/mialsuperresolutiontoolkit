@@ -644,7 +644,6 @@ class BrainExtractionInputSpec(BaseInterfaceInputSpec):
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
     threshold_seg = traits.Float(0.5, desc='Threshold determining cutoff probability (0.5 by default)')
     out_postfix = traits.Str("_masked.nii.gz", usedefault=True)
-    # out_file = File(mandatory=True, desc= 'Output image')
 
 
 class BrainExtractionOutputSpec(TraitedSpec):
@@ -672,8 +671,7 @@ class BrainExtraction(BaseInterface):
     output_spec = BrainExtractionOutputSpec
 
     def _run_interface(self, runtime):
-        # _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        # out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+
         try:
             self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
                                self.inputs.in_ckpt_seg, self.inputs.threshold_seg, self.inputs.bids_dir, self.inputs.out_postfix)
@@ -683,6 +681,7 @@ class BrainExtraction(BaseInterface):
         return runtime
 
     def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc, modelCkptSeg, thresholdSeg, bidsDir, out_postfix):
+
         # Step1: Main part brain localization
         normalize = "local_max"
         width = 128
@@ -694,7 +693,6 @@ class BrainExtraction(BaseInterface):
         img_nib = nibabel.load(os.path.join(dataPath))
         image_data = img_nib.get_data()
         images = np.zeros((image_data.shape[2], width, height, n_channels))
-        #pred3dFinal = np.zeros((image_data.shape[2], width, height, n_channels))
         pred3dFinal = np.zeros((image_data.shape[2], image_data.shape[0], image_data.shape[1], n_channels))
 
         slice_counter = 0
@@ -797,12 +795,12 @@ class BrainExtraction(BaseInterface):
             if ppp:
                 pred3d = self._post_processing(pred3d)
 
-            pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]),interpolation=cv2.INTER_NEAREST) for elem in pred3d] #
+            pred3d = [cv2.resize(elem,dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3d]
             pred3d = np.asarray(pred3d)
             for i in range(np.asarray(pred3d).shape[0]):
                 if np.sum(pred3d[i, :, :]) != 0:
                     pred3d[i, :, :] = self._extractLargestCC(pred3d[i, :, :].astype('uint8'))
-                    contours, hierarchy = cv2.findContours(pred3d[i, :, :].astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    contours, _ = cv2.findContours(pred3d[i, :, :].astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     area = cv2.minAreaRect(np.squeeze(contours))
                     heights.append(area[1][0])
                     widths.append(area[1][1])
@@ -898,16 +896,13 @@ class BrainExtraction(BaseInterface):
             for idx in range(images.shape[0]):
             
                 im = np.reshape(images[idx, :, :], [1, width, height, n_channels])
-            
                 feed_dict = {x: im}
                 pred_ = sess_test_seg.run(pred, feed_dict=feed_dict)
                 percentileSeg = thresholdSeg*100
                 theta = np.percentile(pred_, percentileSeg)
-                pred_bin = np.where(pred_>theta, 1, 0)
+                pred_bin = np.where(pred_ > theta, 1, 0)
 	        # Map predictions to original indices and size
-
                 pred_bin = cv2.resize(pred_bin[0, :, :, 0], dsize=(y_end-y_beg, x_end-x_beg), interpolation=cv2.INTER_NEAREST)
-             
                 pred3dFinal[idx, x_beg:x_end, y_beg:y_end,0] = pred_bin.astype('float64')
                 
             pppp = True
@@ -917,14 +912,14 @@ class BrainExtraction(BaseInterface):
             pred3d = np.asarray(pred3d)
             upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
             up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
-
+            # Save
             _, name, ext = split_filename(os.path.abspath(dataPath))
             save_file = os.path.join(os.getcwd().replace(bidsDir, '/fetaldata'), ''.join((name, out_postfix, ext)))
             nibabel.save(up_mask, save_file)
 
     # Function returning largest connected component of an object
     def _extractLargestCC(self, image):
-        nb_components, output, stats, _ = cv2.connectedComponentsWithStats(image, connectivity=4)
+        nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=4)
         sizes = stats[:, -1]
         max_label = 1
         # in case no segmentation
@@ -939,7 +934,7 @@ class BrainExtraction(BaseInterface):
         largest_cc[output == max_label] = 255
         return largest_cc.astype('uint8')
 
-    # Post-processing the binarized network output by PGD
+    # Post-processing the binarized network output by Priscille de Dumast
     def _post_processing(self, pred_lbl):
         # post_proc = True
         post_proc_cc = True
@@ -1115,7 +1110,7 @@ class MultipleBrainExtractionInputSpec(BaseInterfaceInputSpec):
     threshold_loc = traits.Float(0.49, desc='Threshold determining cutoff probability (0.49 by default)')
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
     threshold_seg = traits.Float(0.5, desc='Threshold determining cutoff probability (0.5 by default)')
-    out_postfix = traits.Str("_masked.nii.gz", usedefault=True)
+    out_postfix = traits.Str("_masked", usedefault=True)
 
 
 class MultipleBrainExtractionOutputSpec(TraitedSpec):
