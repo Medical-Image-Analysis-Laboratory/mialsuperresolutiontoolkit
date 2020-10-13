@@ -30,7 +30,7 @@ from nipype.utils.filemanip import split_filename
 
 def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg, bidsDir, out_postfix):
     
-    #Step1: Main part brain localization
+    # Step1: Main part brain localization
     normalize = "local_max"
     width = 128
     height = 128
@@ -62,7 +62,7 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
 
         slice_counter += 1
     
-    #Tensorflow graph
+    # Tensorflow graph
 
     g = tf.Graph()
     with g.as_default():
@@ -113,9 +113,8 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
         pred = conv_2d(conv9, 2, 1,  activation='linear', padding='valid')
 
 
-    #Thresholding parameter to binarize predictions
+    # Thresholding parameter to binarize predictions
     percentileLoc = thresholdLoc*100
-
     im = np.zeros((1, width, height, n_channels))
     pred3d = []
     with tf.Session(graph=g) as sess_test_loc:
@@ -142,12 +141,11 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
         coms_x = []
         coms_y= []
 
-	#Apply PPP
+	# Apply PPP
         ppp = True
         if ppp:
             pred3d = post_processing(pred3d)
 
-        #pred3d = [cv2.resize(elem,dsize=(width, height),interpolation=cv2.INTER_NEAREST) for elem in pred3d]  #HNA
         pred3d = [cv2.resize(elem,dsize=(image_data.shape[1], image_data.shape[0]),interpolation=cv2.INTER_NEAREST) for elem in pred3d]
         pred3d = np.asarray(pred3d)
         for i in range(np.asarray(pred3d).shape[0]):
@@ -160,7 +158,8 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
                 bbox = cv2.boxPoints(area).astype('int')
                 coms_x.append(int((np.max(bbox[:,1])+np.min(bbox[:,1]))/2))
                 coms_y.append(int((np.max(bbox[:,0])+np.min(bbox[:,0]))/2))
-	#Saving localization points
+
+	# Saving localization points
         med_x = int(np.median(coms_x))
         med_y = int(np.median(coms_y))
         half_max_x = int(np.max(heights)/2)
@@ -170,10 +169,9 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
         y_beg = med_y-half_max_y-border_y
         y_end = med_y+half_max_y+border_y
 
-    #Step2: Brain segmentation
+    # Step2: Brain segmentation
     width = 96
     height = 96
-    #HNA_IN
     images = np.zeros((image_data.shape[2], width, height, n_channels))
 
     slice_counter = 0
@@ -193,7 +191,6 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
             images[slice_counter, :, :, 0] = img_patch
 
         slice_counter += 1
-    #HNA_OUT
 
     g = tf.Graph()
     with g.as_default():
@@ -259,12 +256,10 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
             theta = np.percentile(pred_,percentileSeg)
             pred_bin = np.where(pred_>theta,1,0)
 	    #Map predictions to original indices and size
-
             pred_bin = cv2.resize(pred_bin[0, :, :, 0], dsize=(y_end-y_beg, x_end-x_beg), interpolation=cv2.INTER_NEAREST)
-         
             pred3dFinal[idx, x_beg:x_end, y_beg:y_end,0] = pred_bin.astype('float64')
             
-            #pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
+
         pppp = True
         if pppp:
             pred3dFinal = post_processing(np.asarray(pred3dFinal))
@@ -272,15 +267,14 @@ def extractBrain(dataPath, modelCkptLoc, thresholdLoc,modelCkptSeg,thresholdSeg,
         pred3d = np.asarray(pred3d)
         upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
         up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
-
+        # Save
         _, name, ext = split_filename(os.path.abspath(dataPath))
-        #save_file = os.path.join(os.getcwd().replace(bidsDir,'/fetaldata'), ''.join((name, out_postfix, ext)))
-        save_file = os.path.join(os.getcwd(), ''.join((name, out_postfix, ext)))
+        save_file = os.path.join(os.getcwd().replace(bidsDir,'/fetaldata'), ''.join((name, out_postfix, ext)))
         nibabel.save(up_mask, save_file)
 
-#Funnction returning largest connected component of an object
+# Function returning largest connected component of an object
 def extractLargestCC(image):
-    nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=4)
+    nb_components, output, stats, _ = cv2.connectedComponentsWithStats(image, connectivity=4)
     sizes = stats[:, -1]
     max_label = 1
     if len(sizes)<2: #in case no segmentation
@@ -294,7 +288,7 @@ def extractLargestCC(image):
     largest_cc[output == max_label] = 255
     return largest_cc.astype('uint8')
 
-#Post-processing the binarized network output by PGD
+# Post-processing the binarized network output by PGD
 def post_processing(pred_lbl):
     post_proc = True
     post_proc_cc = True
