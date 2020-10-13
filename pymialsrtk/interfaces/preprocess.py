@@ -643,11 +643,11 @@ class BrainExtractionInputSpec(BaseInterfaceInputSpec):
     threshold_loc = traits.Float(0.49, desc='Threshold determining cutoff probability (0.49 by default)')
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
     threshold_seg = traits.Float(0.5, desc='Threshold determining cutoff probability (0.5 by default)')
-    out_postfix = traits.Str("_masked.nii.gz", usedefault=True)
+    out_postfix = traits.Str("_brainMask.nii.gz", usedefault=True)
 
 
 class BrainExtractionOutputSpec(TraitedSpec):
-    out_file = File(desc='Brain masked image')
+    out_file = File(desc='Brain mask image')
 
 
 class BrainExtraction(BaseInterface):
@@ -1110,7 +1110,7 @@ class MultipleBrainExtractionInputSpec(BaseInterfaceInputSpec):
     threshold_loc = traits.Float(0.49, desc='Threshold determining cutoff probability (0.49 by default)')
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
     threshold_seg = traits.Float(0.5, desc='Threshold determining cutoff probability (0.5 by default)')
-    out_postfix = traits.Str("_masked", usedefault=True)
+    out_postfix = traits.Str("_brainMask", usedefault=True)
 
 
 class MultipleBrainExtractionOutputSpec(TraitedSpec):
