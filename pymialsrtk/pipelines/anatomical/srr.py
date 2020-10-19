@@ -362,6 +362,13 @@ class AnatomicalPipeline:
             substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz',
                                  sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-preprocSDI_T2w.nii.gz'))
 
+            if not self.use_manual_masks:
+                print(sub_ses+'_run-'+str(stack)+'_T2w_brainMask.nii.gz',
+                      '    --->     ',
+                      sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-brain_mask.nii.gz')
+                substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_brainMask.nii.gz',
+                                     sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-brain_mask.nii.gz'))
+
             print(sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz',
                   '    --->     ',
                   sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-preprocSR_T2w.nii.gz')
