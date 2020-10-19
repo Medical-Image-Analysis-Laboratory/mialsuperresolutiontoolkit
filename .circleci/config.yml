@@ -144,6 +144,9 @@ jobs:
                 --param_file /bids_dir/code/participants_params.json \
                 --manual 
 
+            # Rename log
+            mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_log.txt
+
             # Rename partial coverage
             mv /tmp/src/mialsuperresolutiontoolkit/data/code/coverage.xml /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_coverage.xml
       # - save_cache:
@@ -174,7 +177,10 @@ jobs:
                 -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
                 sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
                 /bids_dir /output_dir participant --participant_label 01 \
-                --param_file /bids_dir/code/participants_params.json 
+                --param_file /bids_dir/code/participants_params.json
+
+            # Rename log
+            mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_log.txt
 
             # Rename partial coverage
             mv /tmp/src/mialsuperresolutiontoolkit/data/code/coverage.xml /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_coverage.xml
