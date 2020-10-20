@@ -12,6 +12,7 @@ dependencies:
 - nipype=1.5.1
 - traits=5.1.2
 - traitsui=6.0.0
+- pyface=7.0.0
 - pydotplus=2.0.2
 - pandoc=2.11.0.1
 
