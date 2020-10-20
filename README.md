@@ -1,4 +1,4 @@
-![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
+# ![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
 ---
 
 Copyright © 2016-2017 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
@@ -6,32 +6,33 @@ Copyright © 2016-2017 Medical Image Analysis Laboratory, University Hospital Ce
 This software is distributed under the open-source BSD 3-Clause License. See LICENSE file for details.
 
 ---
-[![DOI](https://zenodo.org/badge/85210898.svg)](https://zenodo.org/badge/latestdoi/85210898) ![Docker Pulls](https://img.shields.io/docker/pulls/sebastientourbier/mialsuperresolutiontoolkit) [![Build Status](https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?branch=master)](https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit) [![CircleCI](https://circleci.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?style=shield)](https://app.circleci.com/pipelines/github/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit) [![Documentation Status](https://readthedocs.org/projects/mialsrtk/badge/?version=latest)](https://mialsrtk.readthedocs.io/en/latest/?badge=latest) [![Github All Contributors](https://img.shields.io/github/all-contributors/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit)](#credits-) 
-
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?include_prereleases) [![DOI](https://zenodo.org/badge/85210898.svg)](https://zenodo.org/badge/latestdoi/85210898) ![Docker Pulls](https://img.shields.io/docker/pulls/sebastientourbier/mialsuperresolutiontoolkit) [![Build Status](https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?branch=master)](https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit) [![CircleCI](https://circleci.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?style=shield)](https://app.circleci.com/pipelines/github/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit) [![Code Coverage](https://app.codacy.com/project/badge/Coverage/a27593d6fae7436eb2cd65b80f3342c3)](https://www.codacy.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?utm_source=github.com&utm_medium=referral&utm_content=Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit&utm_campaign=Badge_Coverage) [![Documentation Status](https://readthedocs.org/projects/mialsrtk/badge/?version=latest)](https://mialsrtk.readthedocs.io/en/latest/?badge=latest) [![Code Quality](https://app.codacy.com/project/badge/Grade/a27593d6fae7436eb2cd65b80f3342c3)](https://www.codacy.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit&amp;utm_campaign=Badge_Grade) [![Github All Contributors](https://img.shields.io/github/all-contributors/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit)](#credits-) 
    
 The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consists of a set of C++ image processing tools necessary to perform motion-robust super-resolution fetal MRI reconstruction. This toolkit, supported by the Swiss National Science Foundation (grant SNSF-141283), includes all algorithms and methods for brain extraction [1], intensity standardization [1,2], motion estimation and super-resolution [2] developed during my PhD. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading. The USAGE message of each tool can be obained using either the *-h* or *--help* flag. 
 
 A Docker image is provided to facilitate the deployment and freely available @ [Docker store](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit).  
 
 * Please acknowledge this software in any work reporting results using MIALSRTK by citing the following:
+	[1] S. Tourbier, X. Bresson, P. Hagmann, M. B. Cuadra. (2019, March 19).
+        sebastientourbier/mialsuperresolutiontoolkit: MIAL Super-Resolution Toolkit v1.0 (Version v1.0).
+        Zenodo. <http://doi.org/10.5281/zenodo.2598448>
 
-[1] S. Tourbier, X. Bresson, P. Hagmann, M. B. Cuadra. (2019, March 19). sebastientourbier/mialsuperresolutiontoolkit: MIAL Super-Resolution Toolkit v1.0 (Version v1.0). Zenodo. http://doi.org/10.5281/zenodo.2598448
+    [2] S. Tourbier, C. Velasco-Annis, V. Taimouri, P. Hagmann, R. Meuli, S. K. Warfield,
+        M. B. Cuadra, A. Gholipour, *Automated template-based brain localization and extraction for fetal brain MRI reconstruction*, Neuroimage (2017) In Press. 
+        [DOI](https://doi.org/10.1016/j.neuroimage.2017.04.004)
 
-[2] S. Tourbier, C. Velasco-Annis, V. Taimouri, P. Hagmann, R. Meuli, S. K. Warfield, M. B. Cuadra,
-A. Gholipour, *Automated template-based brain localization and extraction for fetal brain MRI
-reconstruction*, Neuroimage (2017) In Press. [DOI](https://doi.org/10.1016/j.neuroimage.2017.04.004)
+  [3] S. Tourbier, X. Bresson, P. Hagmann, R. Meuli, M. B. Cuadra, 
+      *An efficient total variation algorithm for super-resolution in fetal brain MRI
+      with adaptive regularization*, Neuroimage 118 (2015) 584-597. 
+      [DOI](https://doi.org/10.1016/j.neuroimage.2015.06.018)
 
-[3] S. Tourbier, X. Bresson, P. Hagmann, R. Meuli, M. B. Cuadra, *An efficient total variation
-algorithm for super-resolution in fetal brain MRI with adaptive regularization*, Neuroimage 118
-(2015) 584-597. [DOI](https://doi.org/10.1016/j.neuroimage.2015.06.018)
-
-# Documentation #
+## Documentation 
 
 * FOR USERS: [How to run the Docker image](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/userguide_docker.md)
 * FOR DEVELOPERS/CONTRIBUTORS: [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
 * [Doxygen source code documentation](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
 
-# Credits #
+## Credits 
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->

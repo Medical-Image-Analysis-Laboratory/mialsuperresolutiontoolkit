@@ -3,20 +3,36 @@ name: pymialsrtk-env
 channels:
 - conda-forge
 - defaults
+- anaconda
 
 dependencies:
-- python=3.7.2
+- python=3.6.8
 - pip=19.0.3
-- git-annex=7.20190219
-- nibabel=2.3.3
-- nipype=1.2.0
+- nibabel=3.0.1
+- nipype=1.5.1
+- traits=5.1.2
 - traitsui=6.0.0
+- pyface=7.0.0
 - pydotplus=2.0.2
+- pandoc=2.11.0.1
 
 - pip:
-    - duecredit==0.7.0
+    - coverage==5.1
+    - duecredit==0.8.0
     - apptools==4.4.0
-    - niworkflows==0.10.2
+    # - niworkflows==0.10.2
     - graphviz
     - numpy==1.16.4 # numpy 1.18.5 caused error (fix: https://github.com/DeepLabCut/Docker4DeepLabCut2.0/issues/26)
-    
+    - tensorflow==1.13.1 # https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.1.0-cp36-cp36m-linux_x86_64.whl # tensorflow==1.15 # tflearn needs tensorflow 1.0+
+    - tensorflow-estimator==1.13.0
+    - tensorboard==1.13.1
+    - tflearn==0.3.2
+    - MedPy==0.4.0
+    - opencv-python==4.1.0.25
+    - scikit-learn==0.20.3
+    - scikit-image==0.14.2
+    - sphinx==1.8.5
+    - sphinx_rtd_theme==0.4.3
+    - sphinx-argparse==0.2.5
+    - nbsphinx==0.7.1
+    - recommonmark==0.5.0

@@ -10,7 +10,8 @@ MIAL Super-Resolution Toolkit
 
 This neuroimaging processing pipeline software is developed by the Medical Image Analysis Laboratory (MIAL) at the University Hospital of Lausanne (CHUV) for use within the lab, as well as for open-source software distribution.
 
-
+.. image:: https://img.shields.io/github/v/release/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?include_prereleases   
+  :alt: GitHub release (latest by date including pre-releases)
 .. image:: https://zenodo.org/badge/183162514.svg
   :target: https://zenodo.org/badge/latestdoi/183162514
   :alt: Digital Object Identifier
@@ -23,9 +24,15 @@ This neuroimaging processing pipeline software is developed by the Medical Image
 .. image:: https://circleci.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?style=shield
   :target: https://app.circleci.com/pipelines/github/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit
   :alt: CircleCI Status (BIDS-App)
+.. image:: https://app.codacy.com/project/badge/Coverage/a27593d6fae7436eb2cd65b80f3342c3
+  :target: https://www.codacy.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit&amp;utm_campaign=Badge_Coverage
+  :alt: Code Coverage
 .. image:: https://readthedocs.org/projects/mialsrtk/badge/?version=latest
   :target: https://mialsrtk.readthedocs.io/en/latest/?badge=latest
   :alt: Documentation Status
+.. image:: https://app.codacy.com/project/badge/Grade/a27593d6fae7436eb2cd65b80f3342c3    
+  :target: https://www.codacy.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit&amp;utm_campaign=Badge_Grade
+  :alt: Code Quality
 .. image:: https://img.shields.io/github/all-contributors/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit
   :target:
   :alt: Github All Contributors  

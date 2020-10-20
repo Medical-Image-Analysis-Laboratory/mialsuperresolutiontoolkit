@@ -1,6 +1,7 @@
 name: pymialsrtk-env
 
 channels:
+- anaconda
 - conda-forge
 - defaults
 
