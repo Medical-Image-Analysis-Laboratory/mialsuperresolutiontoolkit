@@ -2,8 +2,8 @@
 
 _version_major = 2
 _version_minor = 0
-_version_micro = 0
-_version_extra = '-beta-20190906'
+_version_micro = 1
+_version_extra = ''
 
 __release_date__ = '06.09.2019'
 
