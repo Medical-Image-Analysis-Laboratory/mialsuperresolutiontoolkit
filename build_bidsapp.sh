@@ -2,7 +2,7 @@
 CMP_BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 echo $CMP_BUILD_DATE
 
-VERSION=v$(python get_version.py)
+VERSION=v$(python3 get_version.py)
 echo $VERSION
 
 VCS_REF=$(git rev-parse --verify HEAD)
@@ -17,7 +17,7 @@ docker build --rm --build-arg BUILD_DATE=$CMP_BUILD_DATE \
 				  -t "${MAIN_DOCKER}" . \
 
 
-docker build --no-cache --rm --build-arg BUILD_DATE=$CMP_BUILD_DATE \
+docker build --rm --build-arg BUILD_DATE=$CMP_BUILD_DATE \
                              --build-arg VERSION=$VERSION \
                              --build-arg VCS_REF=$VCS_REF \
                              --build-arg MAIN_DOCKER=$MAIN_DOCKER \
