@@ -6,6 +6,7 @@ FROM $MAIN_DOCKER
 # Pull the environment name out of the environment.yml
 ADD environment.yml /app/environment.yml
 RUN conda env create -f /app/environment.yml
+RUN pip install numpy scipy nibabel
 
 # Install pymialsrtk inside installed conda environment (see environment.yml)
 #RUN /bin/bash -c ". activate pymialsrtk-env && python setup.py install"
