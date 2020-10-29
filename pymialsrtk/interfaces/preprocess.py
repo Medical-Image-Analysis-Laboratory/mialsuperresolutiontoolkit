@@ -2,9 +2,9 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-""" PyMIALSRTK preprocessing functions including BTK Non-local-mean denoising [1], slice intensity correction
-slice N4 bias field correction [3], slice-by-slice correct bias field, intensity standardization,
-histogram normalization and brain extraction.
+""" PyMIALSRTK preprocessing functions including BTK Non-local-mean denoising, slice intensity correction
+slice N4 bias field correction, slice-by-slice correct bias field, intensity standardization,
+histogram normalization and both manual or deep learning based automatic brain extraction.
 """
 
 import os
@@ -63,12 +63,14 @@ class BtkNLMDenoisingOutputSpec(TraitedSpec):
 
 class BtkNLMDenoising(BaseInterface):
     """
-    Runs the non local mean denoising module [F.Rousseau et al.;
-    Computer Methods and Programs in Biomedicine, 2013]
-    (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3508300/).
-    
+    Runs the the non local mean denoising module that implements the method proposed by Rousseau et al. [1]_.
+
+    References
+    ------------
+    .. [1] Rousseau et al.; Computer Methods and Programs in Biomedicine, 2013. `(link to paper) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3508300>`_
+
     Example
-    =======
+    ----------
     >>> from pymialsrtk.interfaces.preprocess import BtkNLMDenoising
     >>> nlmDenoise = BtkNLMDenoising()
     >>> nlmDenoise.inputs.bids_dir = '/my_directory'
@@ -76,7 +78,7 @@ class BtkNLMDenoising(BaseInterface):
     >>> nlmDenoise.inputs.in_mask = 'my_mask.nii.gz'
     >>> nlmDenoise.inputs.out_postfix = '_nlm'
     >>> nlmDenoise.inputs.weight = 0.1
-    >>> nlmDenoise.run()
+    >>> nlmDenoise.run() # doctest: +SKIP
 
     """
     
@@ -174,7 +176,7 @@ class MialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image', mandatory=True)
     in_mask = File(desc='Input mask', mandatory=False)
-    out_postfix = traits.Str("", desc='Suffixe to be added to in_file', usedefault=True) 
+    out_postfix = traits.Str("", desc='Suffixe to be added to in_file', usedefault=True)
 
 
 class MialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
@@ -193,7 +195,7 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
     >>> sliceIntensityCorr.inputs.in_file = 'my_image.nii.gz'
     >>> sliceIntensityCorr.inputs.in_mask = 'my_mask.nii.gz'
     >>> sliceIntensityCorr.inputs.out_postfix = ''
-    >>> sliceIntensityCorr.run()
+    >>> sliceIntensityCorr.run() # doctest: +SKIP
 
     """
         
@@ -291,12 +293,14 @@ class MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
 
 class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     """
-    Runs the MIAL SRTK slice by slice N4 bias field correction module
-    [Tustison et al.; Medical Imaging, IEEE Transactions, 2010]
-    (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3071855/)
-    
+    Runs the MIAL SRTK slice by slice N4 bias field correction module that implements the method proposed by Tustison et al. [1]_.
+
+    References
+    ------------
+    .. [1] Tustison et al.; Medical Imaging, IEEE Transactions, 2010. `(link to paper) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3071855>`_
+
     Example
-    =======
+    ----------
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
     >>> N4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> N4biasFieldCorr.inputs.bids_dir = '/my_directory'
@@ -304,10 +308,10 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     >>> N4biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
     >>> N4biasFieldCorr.inputs.out_im_postfix = '_bcorr'
     >>> N4biasFieldCorr.inputs.out_fld_postfix = '_n4bias'
-    >>> N4biasFieldCorr.run()
+    >>> N4biasFieldCorr.run() # doctest: +SKIP
 
     """
-        
+    
     input_spec = MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec
     output_spec = MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec
 
@@ -421,7 +425,7 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> biasFieldCorr.inputs.in_file = 'my_image.nii.gz'
     >>> biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
     >>> biasFieldCorr.inputs.out_im_postfix = '_bcorr'
-    >>> biasFieldCorr.run()
+    >>> biasFieldCorr.run() # doctest: +SKIP
 
     """
         
@@ -511,7 +515,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
-    out_postfix = traits.Str("", desc='Suffixe to be added intensity corrected input_images', usedefault=True)
+    out_postfix = traits.Str("", desc='Suffixe to be added to intensity corrected input_images', usedefault=True)
     in_max = traits.Float(desc='Maximal intensity',usedefault=False)
     stacksOrder = traits.List(desc='To_be_completed',mandatory=False)
 
@@ -529,14 +533,14 @@ class MialsrtkIntensityStandardization(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkIntensityStandardization
     >>> intensityStandardization= MialsrtkIntensityStandardization()
     >>> intensityStandardization.inputs.bids_dir = '/my_directory'
-    >>> intensityStandardization.inputs.input_images =
+    >>> intensityStandardization.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
     >>> intensityStandardization.inputs.out_postfix = 
     >>> intensityStandardization.inputs.in_max = 
     >>> intensityStandardization.inputs.stacksOrder = 
-    >>> intensityStandardization.run()
+    >>> intensityStandardization.run() # doctest: +SKIP
 
     """
-        
+    
     input_spec = MialsrtkIntensityStandardizationInputSpec
     output_spec = MialsrtkIntensityStandardizationOutputSpec
 
@@ -583,22 +587,23 @@ class MialsrtkHistogramNormalizationOutputSpec(TraitedSpec):
 
 
 class MialsrtkHistogramNormalization(BaseInterface):
-
     """
-    Runs the MIAL SRTK histogram normalizaton module
-    [Nyúl et al.; Medical Imaging, IEEE Transactions, 2000]
-    (https://ieeexplore.ieee.org/document/836373).
-    
+    Runs the MIAL SRTK histogram normalizaton module that implements the method proposed by Nyúl et al. [1]_.
+
+    References
+    ------------
+    .. [1] Nyúl et al.; Medical Imaging, IEEE Transactions, 2000. `(link to paper) <https://ieeexplore.ieee.org/document/836373>`_
+
     Example
-    =======
+    ----------
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkHistogramNormalization
     >>> histNorm = MialsrtkHistogramNormalization()
     >>> histNorm.inputs.bids_dir = '/my_directory'
-    >>> histNorm.inputs.input_images = 
-    >>> histNorm.inputs.input_masks =
+    >>> histNorm.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
+    >>> histNorm.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
     >>> histNorm.inputs.out_postfix = '_histnorm'
     >>> histNorm.inputs.stacksOrder = 
-    >>> histNorm.run()
+    >>> histNorm.run()  # doctest: +SKIP
 
     """
         
@@ -674,7 +679,7 @@ class MialsrtkMaskImage(BaseInterface):
     >>> maskImg.inputs.in_file = 'my_image.nii.gz'
     >>> maskImg.inputs.in_mask = 'my_mask.nii.gz'
     >>> maskImg.inputs.out_im_postfix = '_masked'
-    >>> maskImg.run()
+    >>> maskImg.run() # doctest: +SKIP
 
     """
     
@@ -769,9 +774,14 @@ class BrainExtractionOutputSpec(TraitedSpec):
 
 class BrainExtraction(BaseInterface):
     """
-    Brain extraction using a 2D U-Net [Ronneberger et al.; MICCAI, 2015]
-    (https://arxiv.org/abs/1505.04597) using pre-trained weights from
-    Salehi et al.; arXiv, 2017 (https://arxiv.org/abs/1710.09338).
+    Runs the automatic brain extraction module based on a 2D U-Net (Ronneberger et al. [1]_)
+    using the pre-trained weights from Salehi et al. [2]_.
+
+    References
+    ------------
+    .. [1] Ronneberger et al.; Medical Image Computing and Computer Assisted Interventions, 2015. `(link to paper) <https://arxiv.org/abs/1505.04597>`_
+    .. [2] Salehi et al.; arXiv, 2017. `(link to paper) <https://arxiv.org/abs/1710.09338>`_
+    
     Examples
     --------
     >>> from pymialsrtk.interfaces.preprocess import BrainExtraction
@@ -783,7 +793,7 @@ class BrainExtraction(BaseInterface):
     >>> brainmask.inputs.in_ckpt_seg = 'my_seg_checkpoint'
     >>> brainmask.inputs.threshold_seg = 0.5
     >>> brainmask.inputs.out_postfix = '_brainMask.nii.gz'
-    >>> brainmask.run()
+    >>> brainmask.run() # doctest: +SKIP
     """
 
     input_spec = BrainExtractionInputSpec
