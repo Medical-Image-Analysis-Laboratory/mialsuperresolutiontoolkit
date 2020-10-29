@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-""" PyMIALSRTK preprocessing functions
+""" PyMIALSRTK postprocessing functions encompassing a High Resolution mask refinement and an N4 global bias field correction
 """
 
 import os
@@ -26,19 +26,19 @@ from pymialsrtk.interfaces.utils import run
 
 class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='files to be SR', mandatory=True))
-    input_masks = InputMultiPath(File(desc='mask of files to be SR', mandatory=True))
+    input_images = InputMultiPath(File(desc='Files to be SR', mandatory=True))
+    input_masks = InputMultiPath(File(desc='Mask of files to be SR', mandatory=True))
     input_transforms = InputMultiPath(File(desc='', mandatory=True))
-    input_sr = File(mandatory=True)
+    input_sr = File(desc='The SR image', mandatory=True)
 
-    input_rad_dilatation = traits.Int(1, usedefault=True)
-    in_use_staple = traits.Bool(True, usedefault=True)
+    input_rad_dilatation = traits.Int(1,desc='To_be_completed', usedefault=True)
+    in_use_staple = traits.Bool(True, desc='To_be_completed', usedefault=True)
 
-    deblurring = traits.Bool(False, usedefault=True)
-    out_LRmask_postfix = traits.Str("_LRmask", usedefault=True)
-    out_srmask_postfix = traits.Str("_srMask", usedefault=True)
+    deblurring = traits.Bool(False, desc='Apply deblurring or not', usedefault=True)
+    out_LRmask_postfix = traits.Str("_LRmask", desc='Suffixe to be added to the Low resolution input_masks', usedefault=True)
+    out_srmask_postfix = traits.Str("_srMask", desc='Suffixe to be added to the Super resoluted output mask', usedefault=True)
 
-    stacksOrder = traits.List(mandatory=False)
+    stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
 
 
 class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
@@ -47,6 +47,31 @@ class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
 
 
 class MialsrtkRefineHRMaskByIntersection(BaseInterface):
+    """
+    Runs the MIAL SRTK mask refinement module using the Simultaneous Truth And Performance Level Estimate (STAPLE) by Warfield et al. [1]_.
+
+    References
+    ------------
+    .. [1] Warfield et al.; Medical Imaging, IEEE Transactions, 2004. `(link to paper) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1283110/>`_
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.postprocess import MialsrtkRefineHRMaskByIntersection
+    >>> refMask = MialsrtkRefineHRMaskByIntersection()
+    >>> refMask.inputs.bids_dir = '/my_directory'
+    >>> refMask.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
+    >>> refMask.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
+    >>> refMask.inputs.input_transforms = '_histnorm'
+    >>> refMask.inputs.input_sr = 
+    >>> refMask.inputs.input_rad_dilatation = 
+    >>> refMask.inputs.in_use_staple = 
+    >>> refMask.inputs.deblurring = '_histnorm'
+    >>> refMask.inputs.out_LRmask_postfix = 
+    >>> refMask.inputs.out_srmask_postfix = '_histnorm'
+    >>> refMask.inputs.stacksOrder = 
+    >>> refMask.run()  # doctest: +SKIP
+    
+    """
+        
     input_spec = MialsrtkRefineHRMaskByIntersectionInputSpec
     output_spec = MialsrtkRefineHRMaskByIntersectionOutputSpec
 
@@ -141,6 +166,26 @@ class MialsrtkN4BiasFieldCorrectionOutputSpec(TraitedSpec):
 
 
 class MialsrtkN4BiasFieldCorrection(BaseInterface):
+    """
+    Runs the MIAL SRTK slice by slice N4 bias field correction module that implements the method proposed by Tustison et al. [1]_.
+
+    References
+    ------------
+    .. [1] Tustison et al.; Medical Imaging, IEEE Transactions, 2010. `(link to paper) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3071855>`_
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
+    >>> N4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
+    >>> N4biasFieldCorr.inputs.bids_dir = '/my_directory'
+    >>> N4biasFieldCorr.inputs.input_image = 'my_image.nii.gz'
+    >>> N4biasFieldCorr.inputs.input_mask = 'my_mask.nii.gz'
+    >>> N4biasFieldCorr.inputs.out_im_postfix = '_gbcorr'
+    >>> N4biasFieldCorr.inputs.out_fld_postfix = '_gbcorrfield'
+    >>> N4biasFieldCorr.run() # doctest: +SKIP
+    
+    """
+    
     input_spec = MialsrtkN4BiasFieldCorrectionInputSpec
     output_spec = MialsrtkN4BiasFieldCorrectionOutputSpec
 
