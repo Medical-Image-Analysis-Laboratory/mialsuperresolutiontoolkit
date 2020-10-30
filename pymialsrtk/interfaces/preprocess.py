@@ -491,6 +491,8 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     Runs on multiple images the MIAL SRTK slice by slice N4 bias field correction module that implements the method proposed by Tustison et al. [1]_.
     Calls MialsrtkSliceBySliceN4BiasFieldCorrection interface with a list of images/masks.
 
+    Parameters
+    ----------
     bids_dir <string>
         BIDS root directory (required)
 
@@ -588,8 +590,28 @@ class MialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
 
 class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     """
-    Runs the MIAL SRTK slice by slice bias field correction module [To_be_cited].
-    
+    Runs the MIAL SRTK independant slice by slice bias field correction module [To_be_cited].
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    in_file <string>
+        Input image file (required)
+
+    in_mask <string>
+        Masks of the input image (required)
+
+    in_field <string>
+        Bias field to correct in the input image (required)
+
+    out_im_postfix <string>
+        suffix added to image filename to construct output corrected image filename (default is '_bcorr')
+
+    out_fld_postfix <string>
+        suffix added to image filename to construct output bias field image filename (default is '_n4bias')
+
     Example
     =======
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceCorrectBiasField
@@ -598,7 +620,6 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> biasFieldCorr.inputs.in_file = 'my_image.nii.gz'
     >>> biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
     >>> biasFieldCorr.inputs.in_field = 'my_field.nii.gz'
-    >>> biasFieldCorr.inputs.out_im_postfix = '_bcorr'
     >>> biasFieldCorr.run() # doctest: +SKIP
 
     """
@@ -644,6 +665,36 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     Runs the MIAL SRTK slice by slice bias field correction module [to_be_cited] on multiple images.
     Calls MialsrtkSliceBySliceCorrectBiasField interface with a list of images/masks/fields.
 
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_images <list<string>>
+        Input image files (required)
+
+    input_masks <list<string>>
+        Masks of the input images (required)
+
+    input_fields <list<string>>
+        Bias fields to correct in the input images (required)
+
+    out_im_postfix <string>
+        suffix added to image filename to construct output corrected image filename (default is '_bcorr')
+
+    stacksOrder <list<int>>
+        order of images index. To ensure images are processed with their correct corresponding mask.
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkSliceBySliceN4BiasFieldCorrection
+    >>> multiN4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
+    >>> multiN4biasFieldCorr.inputs.bids_dir = '/my_directory'
+    >>> multiN4biasFieldCorr.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.stacksOrder = [0,1]
+    >>> multiN4biasFieldCorr.run() # doctest: +SKIP
+
     See also
     ------------
     pymialsrtk.interfaces.preprocess.MialsrtkCorrectSliceIntensity
@@ -654,6 +705,10 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     output_spec = MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec
 
     def _run_interface(self, runtime):
+
+        # ToDo: self.inputs.stacksOrder not tested
+        if not self.inputs.stacksOrder:
+            self.inputs.stacksOrder = list(range(0, len(self.inputs.input_images)))
 
         run_nb_images = []
         for in_file in self.inputs.input_images:
