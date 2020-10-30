@@ -124,6 +124,19 @@ class MultipleBtkNLMDenoisingOutputSpec(TraitedSpec):
 
 
 class MultipleBtkNLMDenoising(BaseInterface):
+    """
+    Runs the the non local mean denoising module on multiple images that implements the method proposed by Rousseau et al. [1]_.
+    Calls BtkNLMDenoising interface with a list of images/masks.
+
+    See also
+    ------------
+    pymialsrtk.interfaces.preprocess.BtkNLMDenoising
+    
+    References
+    ------------
+    .. [1] Rousseau et al.; Computer Methods and Programs in Biomedicine, 2013. `(link to paper) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3508300>`_
+
+    """    
     input_spec = MultipleBtkNLMDenoisingInputSpec
     output_spec = MultipleBtkNLMDenoisingOutputSpec
 
@@ -235,6 +248,16 @@ class MultipleMialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
 
 
 class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
+    """
+    Runs the MIAL SRTK slice intensity correction module [to_be_cited] on multiple images.
+    Calls MialsrtkCorrectSliceIntensity interface with a list of images/masks.
+
+    See also
+    ------------
+    pymialsrtk.interfaces.preprocess.MialsrtkCorrectSliceIntensity
+    
+    """
+    
     input_spec = MultipleMialsrtkCorrectSliceIntensityInputSpec
     output_spec = MultipleMialsrtkCorrectSliceIntensityOutputSpec
 
@@ -360,6 +383,20 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
 
 
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
+    """
+    Runs on multiple images the MIAL SRTK slice by slice N4 bias field correction module that implements the method proposed by Tustison et al. [1]_.
+    Calls MialsrtkSliceBySliceN4BiasFieldCorrection interface with a list of images/masks.
+
+    See also
+    ------------
+    pymialsrtk.interfaces.preprocess.MialsrtkSliceBySliceN4BiasFieldCorrection
+    
+    References
+    ------------
+    .. [1] Tustison et al.; Medical Imaging, IEEE Transactions, 2010. `(link to paper) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3071855>`_
+
+    """
+    
     input_spec = MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec
     output_spec = MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec
 
@@ -424,6 +461,7 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> biasFieldCorr.inputs.bids_dir = '/my_directory'
     >>> biasFieldCorr.inputs.in_file = 'my_image.nii.gz'
     >>> biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
+    >>> biasFieldCorr.inputs.in_field = 'my_field.nii.gz'
     >>> biasFieldCorr.inputs.out_im_postfix = '_bcorr'
     >>> biasFieldCorr.run() # doctest: +SKIP
 
@@ -466,6 +504,16 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
 
 
 class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
+    """
+    Runs the MIAL SRTK slice by slice bias field correction module [to_be_cited] on multiple images.
+    Calls MialsrtkSliceBySliceCorrectBiasField interface with a list of images/masks/fields.
+
+    See also
+    ------------
+    pymialsrtk.interfaces.preprocess.MialsrtkCorrectSliceIntensity
+    
+    """
+    
     input_spec = MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec
     output_spec = MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec
 
@@ -719,6 +767,16 @@ class MultipleMialsrtkMaskImageOutputSpec(TraitedSpec):
 
 
 class MultipleMialsrtkMaskImage(BaseInterface):
+    """
+    Runs the MIAL SRTK mask image module on multiple images.
+    Calls MialsrtkMaskImage interface with a list of images/masks.
+
+    See also
+    ------------
+    pymialsrtk.interfaces.preprocess.MialsrtkMaskImage
+    
+    """
+        
     input_spec = MultipleMialsrtkMaskImageInputSpec
     output_spec = MultipleMialsrtkMaskImageOutputSpec
 
@@ -810,7 +868,18 @@ class BrainExtraction(BaseInterface):
         return runtime
 
     def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc, modelCkptSeg, thresholdSeg, bidsDir, out_postfix):
-
+        """
+        Generate a brain mask by passing the input image(s) through two networks:
+        The first network localizes the brain by a coarse-grained segmentation while the
+        second one segments it more precisely. The function saves the output mask in the
+        specific module folder created in bidsDir
+  
+        Parameters
+        ----------
+        Described in pymialsrtk.interfaces.preprocess.BrainExtractionInputSpec
+          
+        """
+        
         # Step1: Main part brain localization
         normalize = "local_max"
         width = 128
@@ -1041,7 +1110,7 @@ class BrainExtraction(BaseInterface):
             pred3d = np.asarray(pred3d)
             upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
             up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
-            # Save
+            # Save output mask
             _, name, ext = split_filename(os.path.abspath(dataPath))
             save_file = os.path.join(os.getcwd().replace(bidsDir, '/fetaldata'), ''.join((name, out_postfix, ext)))
             nibabel.save(up_mask, save_file)
@@ -1247,6 +1316,22 @@ class MultipleBrainExtractionOutputSpec(TraitedSpec):
 
 
 class MultipleBrainExtraction(BaseInterface):
+    """
+    Runs on multiple images the automatic brain extraction module based on a 2D U-Net (Ronneberger et al. [1]_)
+    using the pre-trained weights from Salehi et al. [2]_.
+    Calls the BrainExtraction module on a list of images.
+
+    See also
+    ------------
+    pymialsrtk.interfaces.preprocess.BrainExtraction
+    
+    References
+    ------------
+    .. [1] Ronneberger et al.; Medical Image Computing and Computer Assisted Interventions, 2015. `(link to paper) <https://arxiv.org/abs/1505.04597>`_
+    .. [2] Salehi et al.; arXiv, 2017. `(link to paper) <https://arxiv.org/abs/1710.09338>`_
+
+    """
+        
     input_spec = MultipleBrainExtractionInputSpec
     output_spec = MultipleBrainExtractionOutputSpec
 
