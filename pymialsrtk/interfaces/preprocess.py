@@ -340,7 +340,6 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
     See also
     ------------
     pymialsrtk.interfaces.preprocess.MialsrtkCorrectSliceIntensity
-    
     """
     
     input_spec = MultipleMialsrtkCorrectSliceIntensityInputSpec
@@ -385,10 +384,10 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
         outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
         return outputs
 
+
 ##########################################
 # Slice by slice N4 bias field correction
 ##########################################
-
 
 class MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
@@ -397,11 +396,9 @@ class MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec)
     out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to N4 bias correced in_file ', usedefault=True)
     out_fld_postfix = traits.Str("_n4bias", desc='Suffixe to be added to the bias', usedefault=True)
 
-
 class MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     out_im_file = File(desc='Corrected slice by slice from N4 bias field')
     out_fld_file = File(desc='slice by slice N4 bias field')
-
 
 class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     """
@@ -436,7 +433,6 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     >>> N4biasFieldCorr.inputs.in_file = 'my_image.nii.gz'
     >>> N4biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
     >>> N4biasFieldCorr.run() # doctest: +SKIP
-
     """
     
     input_spec = MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec
@@ -480,11 +476,9 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceIn
     out_fld_postfix = traits.Str("_n4bias", desc='Suffixe to be added to the bias', usedefault=True)
     stacksOrder = traits.List(madatory=False)
 
-
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
     output_fields = OutputMultiPath(File())
-
 
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     """
@@ -575,7 +569,6 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
 # slice by slice correct bias field
 #####################################
 
-
 class MialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image', mandatory=True)
@@ -583,10 +576,8 @@ class MialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
     in_field = File(desc='Input bias field', mandatory=True)
     out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to bias field corrected in_file', usedefault=True)
 
-
 class MialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
     out_im_file = File(desc='Bias field corrected image')
-
 
 class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     """
@@ -621,9 +612,8 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
     >>> biasFieldCorr.inputs.in_field = 'my_field.nii.gz'
     >>> biasFieldCorr.run() # doctest: +SKIP
-
     """
-        
+
     input_spec = MialsrtkSliceBySliceCorrectBiasFieldInputSpec
     output_spec = MialsrtkSliceBySliceCorrectBiasFieldOutputSpec
 
@@ -646,7 +636,6 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
         outputs['out_im_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
         return outputs
 
-
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
@@ -654,7 +643,6 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSp
     input_fields = InputMultiPath(File(desc='field to remove', mandatory=True))
     out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to bias field corrected input_images', usedefault=True)
     stacksOrder = traits.List(mandatory=False)
-
 
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
@@ -756,28 +744,37 @@ class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
     out_postfix = traits.Str("", desc='Suffixe to be added to intensity corrected input_images', usedefault=True)
     in_max = traits.Float(desc='Maximal intensity',usedefault=False)
-    stacksOrder = traits.List(desc='To_be_completed',mandatory=False)
-
+    stacksOrder = traits.List(desc='To_be_completed',mandatory=False) # ToDo: Can be removed -> Also in pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline !!!
 
 class MialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
 
-
 class MialsrtkIntensityStandardization(BaseInterface):
     """
     Runs the MIAL SRTK intensity standardization module [To_be_cited].
-    
+    Rescale image intensity by linear transformation
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_images <list<string>>
+        Input image filenames (required)
+
+    in_max <float>
+        Maximum intensity (default is 255)
+
+    out_postfix <string>
+        suffix added to image filenames to construct output standardized image filenames (default is '')
+
     Example
     =======
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkIntensityStandardization
     >>> intensityStandardization= MialsrtkIntensityStandardization()
     >>> intensityStandardization.inputs.bids_dir = '/my_directory'
     >>> intensityStandardization.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
-    >>> intensityStandardization.inputs.out_postfix = 
-    >>> intensityStandardization.inputs.in_max = 
-    >>> intensityStandardization.inputs.stacksOrder = 
     >>> intensityStandardization.run() # doctest: +SKIP
-
     """
     
     input_spec = MialsrtkIntensityStandardizationInputSpec
@@ -812,7 +809,6 @@ class MialsrtkIntensityStandardization(BaseInterface):
 # Histogram normalization
 ###########################
 
-
 class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(desc='files to be HistNorm', mandatory=True))
@@ -829,6 +825,23 @@ class MialsrtkHistogramNormalization(BaseInterface):
     """
     Runs the MIAL SRTK histogram normalizaton module that implements the method proposed by Nyúl et al. [1]_.
 
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_images <list<string>>
+        Input image filenames (required)
+
+    input_masks <list<string>>
+        Masks of the input images
+
+    out_postfix <string>
+        suffix added to image filenames to construct output normalized image filenames (default is '_histnorm')
+
+    stacksOrder <list<int>>
+        order of images index. To ensure images are processed with their correct corresponding mask.
+
     References
     ------------
     .. [1] Nyúl et al.; Medical Imaging, IEEE Transactions, 2000. `(link to paper) <https://ieeexplore.ieee.org/document/836373>`_
@@ -841,9 +854,8 @@ class MialsrtkHistogramNormalization(BaseInterface):
     >>> histNorm.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
     >>> histNorm.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
     >>> histNorm.inputs.out_postfix = '_histnorm'
-    >>> histNorm.inputs.stacksOrder = 
+    >>> histNorm.inputs.stacksOrder = [0,1]
     >>> histNorm.run()  # doctest: +SKIP
-
     """
         
     input_spec = MialsrtkHistogramNormalizationInputSpec
@@ -852,6 +864,10 @@ class MialsrtkHistogramNormalization(BaseInterface):
     def _run_interface(self, runtime):
 
         cmd = 'python /usr/local/bin/mialsrtkHistogramNormalization.py '
+
+        # ToDo: self.inputs.stacksOrder not tested
+        if not self.inputs.stacksOrder:
+            self.inputs.stacksOrder = list(range(0, len(self.inputs.input_images)))
 
         run_nb_images = []
         for in_file in self.inputs.input_images:
@@ -894,7 +910,6 @@ class MialsrtkHistogramNormalization(BaseInterface):
 # Mask Image
 ##############
 
-
 class MialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     in_file = File(desc='Input image',mandatory=True)
@@ -909,7 +924,21 @@ class MialsrtkMaskImageOutputSpec(TraitedSpec):
 class MialsrtkMaskImage(BaseInterface):
     """
     Runs the MIAL SRTK mask image module.
-    
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    in_file <string>
+        Input image file (required)
+
+    in_mask <string>
+        Masks of the input image (required)
+
+    out_im_postfix <string>
+        suffix added to image filename to construct output masked image filename (default is '')
+
     Example
     =======
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkMaskImage
@@ -919,7 +948,6 @@ class MialsrtkMaskImage(BaseInterface):
     >>> maskImg.inputs.in_mask = 'my_mask.nii.gz'
     >>> maskImg.inputs.out_im_postfix = '_masked'
     >>> maskImg.run() # doctest: +SKIP
-
     """
     
     input_spec = MialsrtkMaskImageInputSpec
@@ -952,15 +980,44 @@ class MultipleMialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     out_im_postfix = traits.Str("", desc='Suffixe to be added to masked input_images', usedefault=True)
     stacksOrder = traits.List(mandatory=False)
 
-
 class MultipleMialsrtkMaskImageOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
-
 
 class MultipleMialsrtkMaskImage(BaseInterface):
     """
     Runs the MIAL SRTK mask image module on multiple images.
     Calls MialsrtkMaskImage interface with a list of images/masks.
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_images <list<string>>
+        Input image files (required)
+
+    input_masks <list<string>>
+        Masks of the input images (required)
+
+    input_fields <list<string>>
+        Bias fields to correct in the input images (required)
+
+    out_im_postfix <string>
+        suffix added to image filename to construct output masked image filenames (default is '')
+
+    stacksOrder <list<int>>
+        order of images index. To ensure images are processed with their correct corresponding mask.
+
+    Example
+    =======
+    >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkMaskImage
+    >>> multiMaskImg = MultipleMialsrtkMaskImage()
+    >>> multiMaskImg.inputs.bids_dir = '/my_directory'
+    >>> multiMaskImg.inputs.in_file = ['my_image02.nii.gz', 'my_image01.nii.gz']
+    >>> multiMaskImg.inputs.in_mask = ['my_mask02.nii.gz', 'my_mask01.nii.gz']
+    >>> multiMaskImg.inputs.out_im_postfix = '_masked'
+    >>> multiMaskImg.inputs.stacksOrder = [0,1]
+    >>> multiMaskImg.run() # doctest: +SKIP
 
     See also
     ------------
