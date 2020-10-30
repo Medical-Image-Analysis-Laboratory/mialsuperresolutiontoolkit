@@ -137,4 +137,5 @@ Contents
    :caption: About MIALSRTK
 
    LICENSE
+   contributing
    citing
