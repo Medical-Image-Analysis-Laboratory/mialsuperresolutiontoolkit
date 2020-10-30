@@ -1082,16 +1082,22 @@ class BrainExtraction(BaseInterface):
     ----------
     base_dir <string>
         BIDS root directory (required)
+	
     in_file <string>
         Input image file (required)
+	
     in_ckpt_loc <string>
         Network_checkpoint for localization (required)
+	
     threshold_loc <Float>
          Threshold determining cutoff probability (default is 0.49)
+	 
     in_ckpt_seg <string>
         Network_checkpoint for segmentation
+	
     threshold_seg <Float>
          Threshold determining cutoff probability (default is 0.5)
+	 
     out_postfix <string>
         Suffix of the automatically generated mask (default is '_brainMask.nii.gz')
     
@@ -1578,16 +1584,22 @@ class MultipleBrainExtraction(BaseInterface):
     ----------
     bids_dir <string>
         BIDS root directory (required)
+	
     input_images list<<string>>
         List of input image file (required)
+	
     in_ckpt_loc <string>
         Network_checkpoint for localization (required)
+	
     threshold_loc <Float>
          Threshold determining cutoff probability (default is 0.49)
+	 
     in_ckpt_seg <string>
         Network_checkpoint for segmentation
+	
     threshold_seg <Float>
          Threshold determining cutoff probability (default is 0.5)
+	 
     out_postfix <string>
         Suffix of the automatically generated mask (default is '_brainMask')
 
