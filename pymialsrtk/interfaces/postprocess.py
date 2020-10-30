@@ -23,36 +23,65 @@ from pymialsrtk.interfaces.utils import run
 #  Refinement HR mask
 #######################
 
-
 class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='Files to be SR', mandatory=True))
-    input_masks = InputMultiPath(File(desc='Mask of files to be SR', mandatory=True))
-    input_transforms = InputMultiPath(File(desc='', mandatory=True))
-    input_sr = File(desc='The SR image', mandatory=True)
+    input_images = InputMultiPath(File(desc='Image filenames used in SR reconstruction', mandatory=True))
+    input_masks = InputMultiPath(File(desc='Mask filenames', mandatory=True))
+    input_transforms = InputMultiPath(File(desc='Transformation filenames', mandatory=True))
+    input_sr = File(desc='SR image filename', mandatory=True)
 
-    input_rad_dilatation = traits.Int(1,desc='To_be_completed', usedefault=True)
-    in_use_staple = traits.Bool(True, desc='To_be_completed', usedefault=True)
+    input_rad_dilatation = traits.Int(1,desc='Radius of the structuring element (ball)', usedefault=True)
+    in_use_staple = traits.Bool(True, desc='Use STAPLE for voting (default is True). If False, Majority voting is used instead', usedefault=True)
 
-    deblurring = traits.Bool(False, desc='Apply deblurring or not', usedefault=True)
-    out_LRmask_postfix = traits.Str("_LRmask", desc='Suffixe to be added to the Low resolution input_masks', usedefault=True)
-    out_srmask_postfix = traits.Str("_srMask", desc='Suffixe to be added to the Super resoluted output mask', usedefault=True)
+    out_LRmask_postfix = traits.Str("_LRmask", desc='Suffix to be added to the Low resolution input_masks', usedefault=True)
+    out_srmask_postfix = traits.Str("_srMask", desc='Suffix to be added to the SR reconstruction filename to construct output SR mask filename', usedefault=True)
 
     stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
 
-
 class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
-    output_SRmask = File()
-    output_LRmasks = OutputMultiPath(File())
-
+    output_SRmask = File(desc='Output super-resolution reconstruction refined mask')
+    output_LRmasks = OutputMultiPath(File(desc='Output low-resolution reconstruction refined masks'))
 
 class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     """
     Runs the MIAL SRTK mask refinement module using the Simultaneous Truth And Performance Level Estimate (STAPLE) by Warfield et al. [1]_.
 
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_images <list<string>>
+        Input image filenames (required)
+
+    input_masks <list<string>>
+        Mask of the input images (required)
+
+    input_transforms <list<string>>
+        Input transformation filenames (required)
+
+    input_sr <string>
+        SR reconstruction filename (required)
+
+    input_rad_dilatation <float>
+        Radius of the structuring element (ball) used for binary  morphological dilation (default is 1)
+
+    in_use_staple <bool>
+        Use STAPLE for voting (default is True). If STAPLE is not used, Majority Voting is used instead.
+
+    out_LRmask_postfix <string>
+        suffix added to construct output low-resolution mask filenames (default is '_LRmask')
+
+    out_srmask_postfix <string>
+        suffix added to construct output super-resolution mask filename (default is '_srMask')
+
+    stacksOrder <list<int>>
+        order of images index. To ensure images are processed with their correct corresponding mask.
+
     References
     ------------
     .. [1] Warfield et al.; Medical Imaging, IEEE Transactions, 2004. `(link to paper) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1283110/>`_
+
     Example
     ----------
     >>> from pymialsrtk.interfaces.postprocess import MialsrtkRefineHRMaskByIntersection
@@ -60,16 +89,10 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     >>> refMask.inputs.bids_dir = '/my_directory'
     >>> refMask.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
     >>> refMask.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
-    >>> refMask.inputs.input_transforms = '_histnorm'
-    >>> refMask.inputs.input_sr = 
-    >>> refMask.inputs.input_rad_dilatation = 
-    >>> refMask.inputs.in_use_staple = 
-    >>> refMask.inputs.deblurring = '_histnorm'
-    >>> refMask.inputs.out_LRmask_postfix = 
-    >>> refMask.inputs.out_srmask_postfix = '_histnorm'
-    >>> refMask.inputs.stacksOrder = 
+    >>> refMask.inputs.input_transforms = ['transform1.txt','transform2.nii.gz']
+    >>> refMask.inputs.input_sr = 'sr_image.nii.gz'
+    >>> refMask.inputs.stacksOrder = [0,1]
     >>> refMask.run()  # doctest: +SKIP
-    
     """
         
     input_spec = MialsrtkRefineHRMaskByIntersectionInputSpec
@@ -150,24 +173,38 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 # N4 Bias field correction
 ############################
 
-
 class MialsrtkN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_image = File(desc='files to be HistNorm', mandatory=True)
-    input_mask = File(desc='mask of files to be HistNorm', mandatory=False)
+    input_image = File(desc='Input image filename to be normalized', mandatory=True)
+    input_mask = File(desc='Input mask filename', mandatory=False)
 
     out_im_postfix = traits.Str("_gbcorr", usedefault=True)
     out_fld_postfix = traits.Str("_gbcorrfield", usedefault=True)
 
-
 class MialsrtkN4BiasFieldCorrectionOutputSpec(TraitedSpec):
-    output_image = File()
-    output_field = File()
-
+    output_image = File(desc='Output corrected image')
+    output_field = File(desc='Output bias field extracted from input image')
 
 class MialsrtkN4BiasFieldCorrection(BaseInterface):
     """
     Runs the MIAL SRTK slice by slice N4 bias field correction module that implements the method proposed by Tustison et al. [1]_.
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_image <string>
+        Input image filename (required)
+
+    input_mask <string>
+        Mask of the input image
+
+    out_im_postfix <string>
+        suffix added to construct output image corrected filename (default is '_gbcorr')
+
+    out_fld_postfix <string>
+        suffix added to construct output bias field filename (default is '_gbcorrfield')
 
     References
     ------------
@@ -180,10 +217,7 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
     >>> N4biasFieldCorr.inputs.bids_dir = '/my_directory'
     >>> N4biasFieldCorr.inputs.input_image = 'my_image.nii.gz'
     >>> N4biasFieldCorr.inputs.input_mask = 'my_mask.nii.gz'
-    >>> N4biasFieldCorr.inputs.out_im_postfix = '_gbcorr'
-    >>> N4biasFieldCorr.inputs.out_fld_postfix = '_gbcorrfield'
     >>> N4biasFieldCorr.run() # doctest: +SKIP
-    
     """
     
     input_spec = MialsrtkN4BiasFieldCorrectionInputSpec
