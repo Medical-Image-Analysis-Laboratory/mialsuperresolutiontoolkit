@@ -12,12 +12,15 @@
 # serve to show the default.
 
 
+import os
 import sys
 
-sys.path.append('../pymialsrtk/')
-from info import __minor_version__
-from info import __version__
-from info import __release_date__
+sys.path.append('../')
+#sys.path.insert(0,"'../pymialsrtk/'")
+
+from pymialsrtk.info import __minor_version__
+from pymialsrtk.info import __version__
+from pymialsrtk.info import __release_date__
 
 import time
 
@@ -37,7 +40,7 @@ source_suffix = ['.rst', '.md']
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../pymialsrtk'))
 
 # -- General configuration -----------------------------------------------------
 

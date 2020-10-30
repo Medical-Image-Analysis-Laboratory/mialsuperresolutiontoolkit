@@ -110,6 +110,18 @@ Contents
    usage
    outputs
 
+.. _api-doc:
+
+.. toctree::
+   :maxdepth: 5
+   :caption: API Documentation
+   
+   api_preprocess
+   api_postprocess
+   api_reconstruction
+   api_utils
+   api_pipelines
+
 .. _user-usecases:
 
 .. toctree::
