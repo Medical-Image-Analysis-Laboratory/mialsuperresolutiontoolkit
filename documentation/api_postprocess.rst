@@ -1,7 +1,7 @@
 .. _apidoc_postprocess:
 
 *******************
-Preprocess module
+Postprocess module
 *******************
 
 .. automodule:: pymialsrtk.interfaces.postprocess
