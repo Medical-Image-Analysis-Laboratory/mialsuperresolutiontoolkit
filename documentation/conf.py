@@ -57,7 +57,7 @@ extensions = ['sphinx.ext.autosectionlabel',
                'nbsphinx']
 
 
-autodoc_mock_imports = ['nipype','cv2']
+autodoc_mock_imports = ['nipype','cv2', 'skimage']
 
 # Allow errors in notebooks for doc
 nbsphinx_allow_errors = True

@@ -1266,8 +1266,6 @@ class BrainExtraction(BaseInterface):
             if normalize:
                 if normalize == "local_max":
                      images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
-                elif normalize == "global_max":
-                     images[slice_counter, :, :, 0] = img_patch / max_val
                 elif normalize ==  "mean_std":
                      images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
                 else:
