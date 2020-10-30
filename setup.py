@@ -4,7 +4,7 @@
 """
 import os
 import sys
-from glob import glob
+# from glob import glob
 if os.path.exists('MANIFEST'): os.remove('MANIFEST')
 
 packages=["pymialsrtk",

@@ -39,7 +39,7 @@ class AnatomicalPipeline:
     use_manual_masks = False
 
     def __init__(self, bids_dir, output_dir, subject,
-                 p_stacksOrder, srID, session=None, paramTV={},
+                 p_stacksOrder, srID, session=None, paramTV=dict(),
                  use_manual_masks=False):
         """
         Constructor for instance of AnatomicalPipeline class
@@ -203,7 +203,7 @@ class AnatomicalPipeline:
         srtkHistogramNormalization.inputs.bids_dir = self.bids_dir
         srtkHistogramNormalization.inputs.stacksOrder = self.p_stacksOrder
 
-        srtkHistogramNormalization_nlm = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization_nlm')  
+        srtkHistogramNormalization_nlm = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization_nlm')
         srtkHistogramNormalization_nlm.inputs.bids_dir = self.bids_dir
         srtkHistogramNormalization_nlm.inputs.stacksOrder = self.p_stacksOrder
 
@@ -217,13 +217,13 @@ class AnatomicalPipeline:
         srtkMaskImage01.inputs.bids_dir = self.bids_dir
         srtkMaskImage01.inputs.stacksOrder = self.p_stacksOrder
 
-        srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')  
+        srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
         srtkImageReconstruction.inputs.bids_dir = self.bids_dir
         srtkImageReconstruction.inputs.stacksOrder = self.p_stacksOrder
 
         srtkImageReconstruction.inputs.sub_ses = sub_ses
 
-        srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(), name='srtkTVSuperResolution')  
+        srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(), name='srtkTVSuperResolution')
         srtkTVSuperResolution.inputs.bids_dir = self.bids_dir
         srtkTVSuperResolution.inputs.stacksOrder = self.p_stacksOrder
         srtkTVSuperResolution.inputs.sub_ses = sub_ses

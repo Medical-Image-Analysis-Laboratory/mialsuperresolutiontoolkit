@@ -167,7 +167,7 @@ class MialsrtkImageReconstruction(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_transforms'] = glob(os.path.abspath("*.txt"))
 
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
+        _, _, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
 
         outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                              ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
