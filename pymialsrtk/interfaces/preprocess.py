@@ -49,15 +49,13 @@ from pymialsrtk.interfaces.utils import run
 
 class BtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    in_file = File(desc='Input image', mandatory=True)
-    in_mask = File(desc='Input mask', mandatory=False)
-    out_postfix = traits.Str("_nlm", desc='Suffix to be added to in_file', usedefault=True)
-    weight = traits.Float(0.1, desc='NLM weight (0.1 by default)', usedefault=True)
-
+    in_file = File(desc='Input image filename', mandatory=True)
+    in_mask = File(desc='Input mask filename', mandatory=False)
+    out_postfix = traits.Str("_nlm", desc='Suffix to be added to input image filename to construst denoised output filename', usedefault=True)
+    weight = traits.Float(0.1, desc='NLM smoothing parameter (0.1 by default)', usedefault=True)
 
 class BtkNLMDenoisingOutputSpec(TraitedSpec):
-    out_file = File(desc='Denoised image')
-
+    out_file = File(desc='Output denoised image')
 
 class BtkNLMDenoising(BaseInterface):
     """
@@ -94,7 +92,6 @@ class BtkNLMDenoising(BaseInterface):
     >>> nlmDenoise.inputs.in_mask = 'my_mask.nii.gz'
     >>> nlmDenoise.inputs.weight = 0.2
     >>> nlmDenoise.run() # doctest: +SKIP
-
     """
     
     input_spec = BtkNLMDenoisingInputSpec
@@ -127,14 +124,14 @@ class BtkNLMDenoising(BaseInterface):
 
 class MultipleBtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='files to be denoised', mandatory=True))
-    input_masks = InputMultiPath(File(desc='mask of files to be denoised', mandatory=False))
-    weight = traits.Float(0.1, desc='NLM weight (0.1 by default)', usedefault=True)
-    out_postfix = traits.Str("_nlm", desc='Suffixe to be added to input_images',usedefault=True)
+    input_images = InputMultiPath(File(desc='Input image filenames to be denoised', mandatory=True))
+    input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
+    weight = traits.Float(0.1, desc='NLM smoothing parameter (0.1 by default)', usedefault=True)
+    out_postfix = traits.Str("_nlm", desc='Suffix to be added to input image filenames to construst denoised output filenames',usedefault=True)
     stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
 
 class MultipleBtkNLMDenoisingOutputSpec(TraitedSpec):
-    output_images = OutputMultiPath(File())
+    output_images = OutputMultiPath(File(desc='Output denoised images'))
 
 class MultipleBtkNLMDenoising(BaseInterface):
     """
@@ -232,17 +229,14 @@ class MultipleBtkNLMDenoising(BaseInterface):
 # Slice intensity correction
 #############################
 
-
 class MialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    in_file = File(desc='Input image', mandatory=True)
-    in_mask = File(desc='Input mask', mandatory=False)
-    out_postfix = traits.Str("", desc='Suffixe to be added to in_file', usedefault=True)
-
+    in_file = File(desc='Input image filename', mandatory=True)
+    in_mask = File(desc='Input mask filename', mandatory=False)
+    out_postfix = traits.Str("", desc='Suffix to be added to input image file to construct corrected output filename', usedefault=True)
 
 class MialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
-    out_file = File(desc='Corrected slice intensities')
-
+    out_file = File(desc='Output image with corrected slice intensities')
 
 class MialsrtkCorrectSliceIntensity(BaseInterface):
     """
@@ -298,10 +292,10 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
 
 class MultipleMialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
-    input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=False))
-    out_postfix = traits.Str("", desc='Suffixe to be added to input_images',usedefault=True)
-    stacksOrder = traits.List(mandatory=False)
+    input_images = InputMultiPath(File(desc='Input image filenames to be corrected for slice intensity', mandatory=True))
+    input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
+    out_postfix = traits.Str("", desc='Suffix to be added to input image filenames to construct corrected output filenames',usedefault=True)
+    stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
 
 class MultipleMialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
@@ -393,12 +387,12 @@ class MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec)
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image', mandatory=True)
     in_mask = File(desc='Input mask', mandatory=True)
-    out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to N4 bias correced in_file ', usedefault=True)
-    out_fld_postfix = traits.Str("_n4bias", desc='Suffixe to be added to the bias', usedefault=True)
+    out_im_postfix = traits.Str("_bcorr", desc='Suffix to be added to input image filename to construct corrected output filename', usedefault=True)
+    out_fld_postfix = traits.Str("_n4bias", desc='Suffix to be added to input image filename to construct output bias field filename', usedefault=True)
 
 class MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
-    out_im_file = File(desc='Corrected slice by slice from N4 bias field')
-    out_fld_file = File(desc='slice by slice N4 bias field')
+    out_im_file = File(desc='Filename of corrected output image from N4 bias field (slice by slice).')
+    out_fld_file = File(desc='Filename bias field extracted slice by slice from input image.')
 
 class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     """
@@ -472,9 +466,9 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceIn
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=True))
-    out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to the bias corrected input_images', usedefault=True)
-    out_fld_postfix = traits.Str("_n4bias", desc='Suffixe to be added to the bias', usedefault=True)
-    stacksOrder = traits.List(madatory=False)
+    out_im_postfix = traits.Str("_bcorr", desc='Suffix to be added to input image filenames to construct corrected output filenames', usedefault=True)
+    out_fld_postfix = traits.Str("_n4bias", desc='Suffix to be added to input image filenames to construct output bias field filenames', usedefault=True)
+    stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
 
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
@@ -642,7 +636,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSp
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=True))
     input_fields = InputMultiPath(File(desc='field to remove', mandatory=True))
     out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to bias field corrected input_images', usedefault=True)
-    stacksOrder = traits.List(mandatory=False)
+    stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
 
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
@@ -738,13 +732,12 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 # Intensity standardization
 #############################
 
-
 class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
-    out_postfix = traits.Str("", desc='Suffixe to be added to intensity corrected input_images', usedefault=True)
+    out_postfix = traits.Str("", desc='Suffix to be added to intensity corrected input_images', usedefault=True)
     in_max = traits.Float(desc='Maximal intensity',usedefault=False)
-    stacksOrder = traits.List(desc='To_be_completed',mandatory=False) # ToDo: Can be removed -> Also in pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline !!!
+    stacksOrder = traits.List(desc='To_be_completed', mandatory=False) # ToDo: Can be removed -> Also in pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline !!!
 
 class MialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
@@ -776,7 +769,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
     >>> intensityStandardization.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
     >>> intensityStandardization.run() # doctest: +SKIP
     """
-    
+
     input_spec = MialsrtkIntensityStandardizationInputSpec
     output_spec = MialsrtkIntensityStandardizationOutputSpec
 
@@ -811,10 +804,10 @@ class MialsrtkIntensityStandardization(BaseInterface):
 
 class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='files to be HistNorm', mandatory=True))
-    input_masks = InputMultiPath(File(desc='mask of files to be HistNorm', mandatory=False))
-    out_postfix = traits.Str("_histnorm", desc='Suffixe to be added to HistNorm input_images', usedefault=True)
-    stacksOrder = traits.List(desc='To_be_completed',mandatory=False)
+    input_images = InputMultiPath(File(desc='Input image filenames to be normalized', mandatory=True))
+    input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
+    out_postfix = traits.Str("_histnorm", desc='Suffix to be added to normalized input image filenames to construct ouptut normalized image filenames', usedefault=True)
+    stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
 
 
 class MialsrtkHistogramNormalizationOutputSpec(TraitedSpec):
@@ -912,14 +905,12 @@ class MialsrtkHistogramNormalization(BaseInterface):
 
 class MialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
-    in_file = File(desc='Input image',mandatory=True)
-    in_mask = File(desc='Input mask',mandatory=True)
-    out_im_postfix = traits.Str("", desc='Suffixe to be added to masked in_file', usedefault=True)
-
+    in_file = File(desc='Input image filename to be masked',mandatory=True)
+    in_mask = File(desc='Input mask filename',mandatory=True)
+    out_im_postfix = traits.Str("", desc='Suffix to be added to masked in_file', usedefault=True)
 
 class MialsrtkMaskImageOutputSpec(TraitedSpec):
     out_im_file = File(desc='Masked image')
-
 
 class MialsrtkMaskImage(BaseInterface):
     """
@@ -975,13 +966,13 @@ class MialsrtkMaskImage(BaseInterface):
 
 class MultipleMialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
-    input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=True))
-    out_im_postfix = traits.Str("", desc='Suffixe to be added to masked input_images', usedefault=True)
-    stacksOrder = traits.List(mandatory=False)
+    input_images = InputMultiPath(File(desc='Input image filenames to be corrected for intensity', mandatory=True))
+    input_masks = InputMultiPath(File(desc='Input mask filenames ', mandatory=True))
+    out_im_postfix = traits.Str("", desc='Suffix to be added to masked input_images', usedefault=True)
+    stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
 
 class MultipleMialsrtkMaskImageOutputSpec(TraitedSpec):
-    output_images = OutputMultiPath(File())
+    output_images = OutputMultiPath(File(desc='Output masked image filenames'))
 
 class MultipleMialsrtkMaskImage(BaseInterface):
     """
@@ -1022,7 +1013,6 @@ class MultipleMialsrtkMaskImage(BaseInterface):
     See also
     ------------
     pymialsrtk.interfaces.preprocess.MialsrtkMaskImage
-    
     """
         
     input_spec = MultipleMialsrtkMaskImageInputSpec
