@@ -3,6 +3,7 @@
 #  This software is distributed under the open-source license Modified BSD.
 
 """
+
 PyMIALSRTK preprocessing functions including BTK Non-local-mean denoising, slice intensity correction
 slice N4 bias field correction, slice-by-slice correct bias field, intensity standardization,
 histogram normalization and both manual or deep learning based automatic brain extraction.
@@ -60,7 +61,7 @@ class BtkNLMDenoisingOutputSpec(TraitedSpec):
     out_file = File(desc='Output denoised image')
 
 class BtkNLMDenoising(BaseInterface):
-    
+
     """
     Runs the non-local mean denoising module: implementation by Rousseau et al. [1]_ of the method proposed by Coupé et al. [2]_.
 
@@ -173,7 +174,7 @@ class MultipleBtkNLMDenoising(BaseInterface):
     >>> multiNlmDenoise.inputs.bids_dir = '/my_directory'
     >>> multiNlmDenoise.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
     >>> multiNlmDenoise.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
-    >>> multiNlmDenoise.stacksOrder = [1,0]
+    >>> multiNlmDenoise.stacks_order = [1,0]
     >>> multiNlmDenoise.run() # doctest: +SKIP
 
     See Also
@@ -185,9 +186,9 @@ class MultipleBtkNLMDenoising(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        # ToDo: self.inputs.stacksOrder not tested
-        if not self.inputs.stacksOrder:
-            self.inputs.stacksOrder = list(range(0, len(self.inputs.input_images)))
+        # ToDo: self.inputs.stacks_order not tested
+        if not self.inputs.stacks_order:
+            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
 
         run_nb_images = []
         for in_file in self.inputs.input_images:
@@ -202,7 +203,7 @@ class MultipleBtkNLMDenoising(BaseInterface):
                 cut_apr = cut_avt.split('_')[0]
                 run_nb_masks.append(int(cut_apr))
 
-        for order in self.inputs.stacksOrder:
+        for order in self.inputs.stacks_order:
             index_img = run_nb_images.index(order)
             if len(self.inputs.input_masks) > 0:
                 index_mask = run_nb_masks.index(order)
@@ -243,7 +244,7 @@ class MialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
 class MialsrtkCorrectSliceIntensity(BaseInterface):
     
     """
-    Runs the MIAL SRTK mean slice intensity correction module [to_be_cited].
+    Runs the MIAL SRTK mean slice intensity correction module.
 
     Parameters
     ----------
@@ -267,7 +268,7 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
     >>> sliceIntensityCorr.inputs.in_file = 'my_image.nii.gz'
     >>> sliceIntensityCorr.inputs.in_mask = 'my_mask.nii.gz'
     >>> sliceIntensityCorr.run() # doctest: +SKIP
-    """       
+    """
     input_spec = MialsrtkCorrectSliceIntensityInputSpec
     output_spec = MialsrtkCorrectSliceIntensityOutputSpec
 
@@ -296,7 +297,7 @@ class MultipleMialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     input_images = InputMultiPath(File(desc='Input image filenames to be corrected for slice intensity', mandatory=True))
     input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
     out_postfix = traits.Str("", desc='Suffix to be added to input image filenames to construct corrected output filenames',usedefault=True)
-    stacksOrder = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
+    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 class MultipleMialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
@@ -304,7 +305,7 @@ class MultipleMialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
 class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
     
     """
-    Apply the MIAL SRTK slice intensity correction module [to_be_cited] on multiple images.
+    Apply the MIAL SRTK slice intensity correction module on multiple images.
     Calls MialsrtkCorrectSliceIntensity interface with a list of images/masks.
 
     Parameters
@@ -321,7 +322,7 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
     out_postfix <string>
         suffix added to images files to construct output filenames (default is '')
 
-    stacksOrder <list<int>>
+    stacks_order <list<int>>
         order of images index. To ensure images are processed with their correct corresponding mask.
 
     Example
@@ -342,9 +343,9 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        # ToDo: self.inputs.stacksOrder not tested
-        if not self.inputs.stacksOrder:
-            self.inputs.stacksOrder = list(range(0, len(self.inputs.input_images)))
+        # ToDo: self.inputs.stacks_order not tested
+        if not self.inputs.stacks_order:
+            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
 
         run_nb_images = []
         for in_file in self.inputs.input_images:
@@ -359,7 +360,7 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
                 cut_apr = cut_avt.split('_')[0]
                 run_nb_masks.append(int(cut_apr))
 
-        for order in self.inputs.stacksOrder:
+        for order in self.inputs.stacks_order:
             index_img = run_nb_images.index(order)
             if len(self.inputs.input_masks) > 0:
                 index_mask = run_nb_masks.index(order)
@@ -469,7 +470,7 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceIn
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=True))
     out_im_postfix = traits.Str("_bcorr", desc='Suffix to be added to input image filenames to construct corrected output filenames', usedefault=True)
     out_fld_postfix = traits.Str("_n4bias", desc='Suffix to be added to input image filenames to construct output bias field filenames', usedefault=True)
-    stacksOrder = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
+    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
@@ -498,7 +499,7 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     out_fld_postfix <string>
         suffix added to image filename to construct output bias field image filename (default is '_n4bias')
 
-    stacksOrder <list<int>>
+    stacks_order <list<int>>
         order of images index. To ensure images are processed with their correct corresponding mask.
 
     Example
@@ -508,7 +509,7 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     >>> multiN4biasFieldCorr.inputs.bids_dir = '/my_directory'
     >>> multiN4biasFieldCorr.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
     >>> multiN4biasFieldCorr.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.stacksOrder = [0,1]
+    >>> multiN4biasFieldCorr.inputs.stacks_order = [0,1]
     >>> multiN4biasFieldCorr.run() # doctest: +SKIP
 
     See also
@@ -525,9 +526,9 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        # ToDo: self.inputs.stacksOrder not tested
-        if not self.inputs.stacksOrder:
-            self.inputs.stacksOrder = list(range(0, len(self.inputs.input_images)))
+        # ToDo: self.inputs.stacks_order not tested
+        if not self.inputs.stacks_order:
+            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
 
         run_nb_images = []
         for in_file in self.inputs.input_images:
@@ -541,7 +542,7 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
             cut_apr = cut_avt.split('_')[0]
             run_nb_masks.append(int(cut_apr))
 
-        for order in self.inputs.stacksOrder:
+        for order in self.inputs.stacks_order:
             index_img = run_nb_images.index(order)
             index_mask = run_nb_masks.index(order)
 
@@ -577,7 +578,7 @@ class MialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
 class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     
     """
-    Runs the MIAL SRTK independant slice by slice bias field correction module [To_be_cited].
+    Runs the MIAL SRTK independant slice by slice bias field correction module.
 
     Parameters
     ----------
@@ -637,7 +638,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSp
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=True))
     input_fields = InputMultiPath(File(desc='field to remove', mandatory=True))
     out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to bias field corrected input_images', usedefault=True)
-    stacksOrder = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
+    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
@@ -646,7 +647,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
 class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     
     """
-    Runs the MIAL SRTK slice by slice bias field correction module [to_be_cited] on multiple images.
+    Runs the MIAL SRTK slice by slice bias field correction module on multiple images.
     Calls MialsrtkSliceBySliceCorrectBiasField interface with a list of images/masks/fields.
 
     Parameters
@@ -666,7 +667,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     out_im_postfix <string>
         suffix added to image filename to construct output corrected image filename (default is '_bcorr')
 
-    stacksOrder <list<int>>
+    stacks_order <list<int>>
         order of images index. To ensure images are processed with their correct corresponding mask.
 
     Example
@@ -676,7 +677,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> multiN4biasFieldCorr.inputs.bids_dir = '/my_directory'
     >>> multiN4biasFieldCorr.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
     >>> multiN4biasFieldCorr.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.stacksOrder = [0,1]
+    >>> multiN4biasFieldCorr.inputs.stacks_order = [0,1]
     >>> multiN4biasFieldCorr.run() # doctest: +SKIP
 
     See also
@@ -688,9 +689,9 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        # ToDo: self.inputs.stacksOrder not tested
-        if not self.inputs.stacksOrder:
-            self.inputs.stacksOrder = list(range(0, len(self.inputs.input_images)))
+        # ToDo: self.inputs.stacks_order not tested
+        if not self.inputs.stacks_order:
+            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
 
         run_nb_images = []
         for in_file in self.inputs.input_images:
@@ -710,7 +711,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
             cut_apr = cut_avt.split('_')[0]
             run_nb_fields.append(int(cut_apr))
 
-        for order in self.inputs.stacksOrder:
+        for order in self.inputs.stacks_order:
             index_img = run_nb_images.index(order)
             index_mask = run_nb_masks.index(order)
             index_fld = run_nb_fields.index(order)
@@ -736,16 +737,15 @@ class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
     out_postfix = traits.Str("", desc='Suffix to be added to intensity corrected input_images', usedefault=True)
-    in_max = traits.Float(desc='Maximal intensity',usedefault=False)
+    in_max = traits.Float(desc='Maximahjl intensity', usedefault=False)
     stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False) # ToDo: Can be removed -> Also in pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline !!!
 
 class MialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
 
 class MialsrtkIntensityStandardization(BaseInterface):
-    
     """
-    Runs the MIAL SRTK intensity standardization module [To_be_cited].
+    Runs the MIAL SRTK intensity standardization module.
     Rescale image intensity by linear transformation
 
     Parameters
@@ -808,7 +808,7 @@ class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
     input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
     out_postfix = traits.Str("_histnorm", desc='Suffix to be added to normalized input image filenames to construct ouptut normalized image filenames',
                              usedefault=True)
-    stacksOrder = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
+    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 
 class MialsrtkHistogramNormalizationOutputSpec(TraitedSpec):
@@ -834,7 +834,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
     out_postfix <string>
         suffix added to image filenames to construct output normalized image filenames (default is '_histnorm')
 
-    stacksOrder <list<int>>
+    stacks_order <list<int>>
         order of images index. To ensure images are processed with their correct corresponding mask.
 
     References
@@ -849,7 +849,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
     >>> histNorm.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
     >>> histNorm.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
     >>> histNorm.inputs.out_postfix = '_histnorm'
-    >>> histNorm.inputs.stacksOrder = [0,1]
+    >>> histNorm.inputs.stacks_order = [0,1]
     >>> histNorm.run()  # doctest: +SKIP
     """       
     input_spec = MialsrtkHistogramNormalizationInputSpec
@@ -859,9 +859,9 @@ class MialsrtkHistogramNormalization(BaseInterface):
 
         cmd = 'python /usr/local/bin/mialsrtkHistogramNormalization.py '
 
-        # ToDo: self.inputs.stacksOrder not tested
-        if not self.inputs.stacksOrder:
-            self.inputs.stacksOrder = list(range(0, len(self.inputs.input_images)))
+        # ToDo: self.inputs.stacks_order not tested
+        if not self.inputs.stacks_order:
+            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
 
         run_nb_images = []
         for in_file in self.inputs.input_images:
@@ -876,7 +876,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
                 cut_apr = cut_avt.split('_')[0]
                 run_nb_masks.append(int(cut_apr))
 
-        for order in self.inputs.stacksOrder:
+        for order in self.inputs.stacks_order:
             index_img = run_nb_images.index(order)
             _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[index_img]))
             out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
@@ -970,7 +970,7 @@ class MultipleMialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     input_images = InputMultiPath(File(desc='Input image filenames to be corrected for intensity', mandatory=True))
     input_masks = InputMultiPath(File(desc='Input mask filenames ', mandatory=True))
     out_im_postfix = traits.Str("", desc='Suffix to be added to masked input_images', usedefault=True)
-    stacksOrder = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
+    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 class MultipleMialsrtkMaskImageOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File(desc='Output masked image filenames'))
@@ -998,7 +998,7 @@ class MultipleMialsrtkMaskImage(BaseInterface):
     out_im_postfix <string>
         suffix added to image filename to construct output masked image filenames (default is '')
 
-    stacksOrder <list<int>>
+    stacks_order <list<int>>
         order of images index. To ensure images are processed with their correct corresponding mask.
 
     Example
@@ -1009,7 +1009,7 @@ class MultipleMialsrtkMaskImage(BaseInterface):
     >>> multiMaskImg.inputs.in_file = ['my_image02.nii.gz', 'my_image01.nii.gz']
     >>> multiMaskImg.inputs.in_mask = ['my_mask02.nii.gz', 'my_mask01.nii.gz']
     >>> multiMaskImg.inputs.out_im_postfix = '_masked'
-    >>> multiMaskImg.inputs.stacksOrder = [0,1]
+    >>> multiMaskImg.inputs.stacks_order = [0,1]
     >>> multiMaskImg.run() # doctest: +SKIP
 
     See also
@@ -1033,7 +1033,7 @@ class MultipleMialsrtkMaskImage(BaseInterface):
             cut_apr = cut_avt.split('_')[0]
             run_nb_masks.append(int(cut_apr))
 
-        for order in self.inputs.stacksOrder:
+        for order in self.inputs.stacks_order:
             index_img = run_nb_images.index(order)
             index_mask = run_nb_masks.index(order)
 
@@ -1141,8 +1141,8 @@ class BrainExtraction(BaseInterface):
         Described in pymialsrtk.interfaces.preprocess.BrainExtraction
           
         """
-        
-        ##### Step2: Brain localization ##### 
+
+        ##### Step 1: Brain localization #####
         normalize = "local_max"
         width = 128
         height = 128
@@ -1157,22 +1157,22 @@ class BrainExtraction(BaseInterface):
 
         slice_counter = 0
         for ii in range(image_data.shape[2]):
-            img_patch = cv2.resize(image_data[:, :, ii], dsize=(width, height), fx=width,
+           img_patch = cv2.resize(image_data[:, :, ii], dsize=(width, height), fx=width,
                                    fy=height)
 
-            if normalize:
-               if normalize == "local_max":
-                  images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
-               elif normalize == "global_max":
-                  images[slice_counter, :, :, 0] = img_patch / max_val
-               elif normalize == "mean_std":
-                  images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
-               else:
-                  raise ValueError('Please select a valid normalization')
-            else:
-               images[slice_counter, :, :, 0] = img_patch
+           if normalize:
+              if normalize == "local_max":
+                 images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
+              elif normalize == "global_max":
+                 images[slice_counter, :, :, 0] = img_patch / max_val
+              elif normalize == "mean_std":
+                 images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
+              else:
+                 raise ValueError('Please select a valid normalization')
+           else:
+              images[slice_counter, :, :, 0] = img_patch
 
-            slice_counter += 1
+           slice_counter += 1
 
         # Tensorflow graph
         g = tf.Graph()
@@ -1277,7 +1277,7 @@ class BrainExtraction(BaseInterface):
             y_beg = med_y-half_max_y-border_y
             y_end = med_y+half_max_y+border_y
 
-        ##### Step2: Brain segmentation ##### 
+        ##### Step 2: Brain segmentation #####
         width = 96
         height = 96
 
@@ -1285,19 +1285,19 @@ class BrainExtraction(BaseInterface):
 
         slice_counter = 0
         for ii in range(image_data.shape[2]):
-            img_patch = cv2.resize(image_data[x_beg:x_end, y_beg:y_end, ii], dsize=(width, height))
+           img_patch = cv2.resize(image_data[x_beg:x_end, y_beg:y_end, ii], dsize=(width, height))
 
-            if normalize:
-               if normalize == "local_max":
-                  images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
-               elif normalize ==  "mean_std":
-                  images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
-               else:
-                  raise ValueError('Please select a valid normalization')
-            else:
-                images[slice_counter, :, :, 0] = img_patch
+           if normalize:
+              if normalize == "local_max":
+                 images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
+              elif normalize ==  "mean_std":
+                 images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
+              else:
+                 raise ValueError('Please select a valid normalization')
+           else:
+               images[slice_counter, :, :, 0] = img_patch
 
-            slice_counter += 1
+           slice_counter += 1
 
         g = tf.Graph()
         with g.as_default():
