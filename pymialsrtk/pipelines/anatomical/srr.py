@@ -22,7 +22,26 @@ from pymialsrtk.info import __version__
 
 class AnatomicalPipeline:
     """
-    Description of the class and attributes
+    Creates a pipeline instance to run the workflow
+    
+    A typical execution looks like:
+    
+    # Initialize an instance of AnatomicalPipeline
+    pipeline = AnatomicalPipeline(bids_dir,
+                                  output_dir,
+                                  subject,
+                                  p_stacksOrder,
+                                  srID,
+                                  session,
+                                  paramTV,
+                                  use_manual_masks)
+                                  
+    # Create the super resolution Nipype workflow
+    pipeline.create_workflow()
+
+    # Execute the workflow
+    res = pipeline.run(number_of_cores)
+
     """
 
     bids_dir = None
@@ -64,7 +83,9 @@ class AnatomicalPipeline:
 
     def create_workflow(self):
         """
-        Create the Niype workflow of the super-resolution pipeline
+        Create the Niype workflow of the super-resolution pipeline.
+        It is composed of a succession of Nodes and their corresponding parameters,
+        where the output of node i goes to the input of node i+1.
         """
 
         sub_ses = self.subject
@@ -173,7 +194,7 @@ class AnatomicalPipeline:
         srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
 
         srtkCorrectSliceIntensity01 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01')
-        srtkCorrectSliceIntensity01.inputs.bids_dir = self.bids_dir
+        srtkCorrectSliceIntensity0deltatTV1.inputs.bids_dir = self.bids_dir
         srtkCorrectSliceIntensity01.inputs.stacksOrder = self.p_stacksOrder
         srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
 
@@ -423,6 +444,7 @@ class AnatomicalPipeline:
         Execute the super-resolution pipeline and the execution graph
         as a PNG image
         """
+        
         if(number_of_cores != 1):
             res = self.wf.run(plugin='MultiProc', plugin_args={'n_procs': self.number_of_cores})
             self.dictsink.run()
