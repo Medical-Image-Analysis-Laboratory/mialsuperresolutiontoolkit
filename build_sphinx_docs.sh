@@ -16,8 +16,8 @@ echo "Building documentation in $DIR/documentation/_build/html"
 
 OLDPWD=$PWD
 
-cd $DIR/documentation
+cd "$DIR/documentation"
 make clean
 make html
 
-cd $OLDPWD
+cd "$OLDPWD"
