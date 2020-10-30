@@ -196,7 +196,7 @@ class AnatomicalPipeline:
         srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
 
         srtkCorrectSliceIntensity01 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01')
-        srtkCorrectSliceIntensity0deltatTV1.inputs.bids_dir = self.bids_dir
+        srtkCorrectSliceIntensity01.inputs.bids_dir = self.bids_dir
         srtkCorrectSliceIntensity01.inputs.stacksOrder = self.p_stacksOrder
         srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
 
