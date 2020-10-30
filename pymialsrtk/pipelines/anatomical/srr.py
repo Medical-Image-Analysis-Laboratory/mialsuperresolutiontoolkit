@@ -58,7 +58,7 @@ class AnatomicalPipeline:
     use_manual_masks = False
 
     def __init__(self, bids_dir, output_dir, subject,
-                 p_stacksOrder, srID, session=None, paramTV=dict(),
+                 p_stacksOrder, srID, session=None, paramTV=None,
                  use_manual_masks=False):
         """
         Constructor for instance of AnatomicalPipeline class
@@ -73,6 +73,8 @@ class AnatomicalPipeline:
         self.p_stacksOrder = p_stacksOrder
 
         # (default) sr tv parameters
+        if paramTV is None:
+            paramTV = dict()
         self.deltatTV = paramTV["deltatTV"] if "deltatTV" in paramTV.keys() else 0.01
         self.lambdaTV = paramTV["lambdaTV"] if "lambdaTV" in paramTV.keys() else 0.75
         self.primal_dual_loops = paramTV["primal_dual_loops"] if "primal_dual_loops" in paramTV.keys() else 10

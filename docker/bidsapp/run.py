@@ -11,7 +11,10 @@ from pymialsrtk.parser import get_parser
 from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
 
 
-def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=dict(), number_of_cores=1, srID=None, use_manual_masks=False):
+def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, number_of_cores=1, srID=None, use_manual_masks=False):
+
+    if paramTV is None:
+        paramTV = dict()
 
     subject = 'sub-' + subject
     if session is not None:
@@ -19,7 +22,6 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=dict(), 
 
     if srID is None:
         srID = "01"
-
     # Initialize an instance of AnatomicalPipeline
     pipeline = AnatomicalPipeline(bids_dir,
                                   output_dir,
