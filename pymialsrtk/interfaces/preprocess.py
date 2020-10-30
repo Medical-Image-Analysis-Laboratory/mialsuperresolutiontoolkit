@@ -133,10 +133,8 @@ class MultipleBtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
     out_postfix = traits.Str("_nlm", desc='Suffixe to be added to input_images',usedefault=True)
     stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
 
-
 class MultipleBtkNLMDenoisingOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
-
 
 class MultipleBtkNLMDenoising(BaseInterface):
     """
@@ -171,12 +169,12 @@ class MultipleBtkNLMDenoising(BaseInterface):
     Example
     ----------
     >>> from pymialsrtk.interfaces.preprocess import MultipleBtkNLMDenoising
-    >>> multinlmDenoise = MultipleBtkNLMDenoising()
-    >>> multinlmDenoise.inputs.bids_dir = '/my_directory'
-    >>> multinlmDenoise.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
-    >>> multinlmDenoise.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
-    >>> multinlmDenoise.stacksOrder = [1,0]
-    >>> multinlmDenoise.run() # doctest: +SKIP
+    >>> multiNlmDenoise = MultipleBtkNLMDenoising()
+    >>> multiNlmDenoise.inputs.bids_dir = '/my_directory'
+    >>> multiNlmDenoise.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
+    >>> multiNlmDenoise.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
+    >>> multiNlmDenoise.stacksOrder = [1,0]
+    >>> multiNlmDenoise.run() # doctest: +SKIP
 
     See Also
     --------
@@ -187,6 +185,10 @@ class MultipleBtkNLMDenoising(BaseInterface):
     output_spec = MultipleBtkNLMDenoisingOutputSpec
 
     def _run_interface(self, runtime):
+
+        # ToDo: self.inputs.stacksOrder not tested
+        if not self.inputs.stacksOrder:
+            self.inputs.stacksOrder = list(range(0, len(self.inputs.input_images)))
 
         run_nb_images = []
         for in_file in self.inputs.input_images:
@@ -244,8 +246,22 @@ class MialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
 
 class MialsrtkCorrectSliceIntensity(BaseInterface):
     """
-    Runs the MIAL SRTK slice intensity correction module [to_be_cited].
-    
+    Runs the MIAL SRTK mean slice intensity correction module [to_be_cited].
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    in_file <string>
+        Input image file (required)
+
+    in_mask <string>
+        Masks of the input image
+
+    out_postfix <string>
+        suffix added to image filename to construct output filename (default is '')
+
     Example
     =======
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkCorrectSliceIntensity
@@ -253,7 +269,6 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
     >>> sliceIntensityCorr.inputs.bids_dir = '/my_directory'
     >>> sliceIntensityCorr.inputs.in_file = 'my_image.nii.gz'
     >>> sliceIntensityCorr.inputs.in_mask = 'my_mask.nii.gz'
-    >>> sliceIntensityCorr.inputs.out_postfix = ''
     >>> sliceIntensityCorr.run() # doctest: +SKIP
 
     """
@@ -286,17 +301,41 @@ class MultipleMialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=False))
     out_postfix = traits.Str("", desc='Suffixe to be added to input_images',usedefault=True)
-    stacksOrder = traits.List(madatory=False)
-
+    stacksOrder = traits.List(mandatory=False)
 
 class MultipleMialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
     output_images = OutputMultiPath(File())
 
-
 class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
     """
-    Runs the MIAL SRTK slice intensity correction module [to_be_cited] on multiple images.
+    Apply the MIAL SRTK slice intensity correction module [to_be_cited] on multiple images.
     Calls MialsrtkCorrectSliceIntensity interface with a list of images/masks.
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_images <list<string>>
+        Input image files (required)
+
+    input_masks <list<string>>
+        Masks of the input images
+
+    out_postfix <string>
+        suffix added to images files to construct output filenames (default is '')
+
+    stacksOrder <list<int>>
+        order of images index. To ensure images are processed with their correct corresponding mask.
+
+    Example
+    =======
+    >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkCorrectSliceIntensity
+    >>> multiSliceIntensityCorr = MialsrtkCorrectSliceIntensity()
+    >>> multiSliceIntensityCorr.inputs.bids_dir = '/my_directory'
+    >>> multiSliceIntensityCorr.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
+    >>> multiSliceIntensityCorr.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
+    >>> multiSliceIntensityCorr.run() # doctest: +SKIP
 
     See also
     ------------
@@ -308,6 +347,10 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
     output_spec = MultipleMialsrtkCorrectSliceIntensityOutputSpec
 
     def _run_interface(self, runtime):
+
+        # ToDo: self.inputs.stacksOrder not tested
+        if not self.inputs.stacksOrder:
+            self.inputs.stacksOrder = list(range(0, len(self.inputs.input_images)))
 
         run_nb_images = []
         for in_file in self.inputs.input_images:
