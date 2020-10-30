@@ -1061,7 +1061,7 @@ class BrainExtractionInputSpec(BaseInterfaceInputSpec):
     threshold_loc = traits.Float(0.49, desc='Threshold determining cutoff probability (0.49 by default)')
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
     threshold_seg = traits.Float(0.5, desc='Threshold determining cutoff probability (0.5 by default)')
-    out_postfix = traits.Str("_brainMask.nii.gz", desc='Suffixe of the automatically generated mask', usedefault=True)
+    out_postfix = traits.Str("_brainMask.nii.gz", desc='Suffix of the automatically generated mask', usedefault=True)
 
 
 class BrainExtractionOutputSpec(TraitedSpec):
@@ -1077,6 +1077,29 @@ class BrainExtraction(BaseInterface):
     ------------
     .. [1] Ronneberger et al.; Medical Image Computing and Computer Assisted Interventions, 2015. `(link to paper) <https://arxiv.org/abs/1505.04597>`_
     .. [2] Salehi et al.; arXiv, 2017. `(link to paper) <https://arxiv.org/abs/1710.09338>`_
+    
+    Parameters
+    ----------
+    base_dir <string>
+        BIDS root directory (required)
+	
+    in_file <string>
+        Input image file (required)
+	
+    in_ckpt_loc <string>
+        Network_checkpoint for localization (required)
+	
+    threshold_loc <Float>
+         Threshold determining cutoff probability (default is 0.49)
+	 
+    in_ckpt_seg <string>
+        Network_checkpoint for segmentation
+	
+    threshold_seg <Float>
+         Threshold determining cutoff probability (default is 0.5)
+	 
+    out_postfix <string>
+        Suffix of the automatically generated mask (default is '_brainMask.nii.gz')
     
     Examples
     --------
@@ -1114,7 +1137,7 @@ class BrainExtraction(BaseInterface):
   
         Parameters
         ----------
-        Described in pymialsrtk.interfaces.preprocess.BrainExtractionInputSpec
+        Described in pymialsrtk.interfaces.preprocess.BrainExtraction
           
         """
         
@@ -1555,7 +1578,30 @@ class MultipleBrainExtraction(BaseInterface):
     """
     Runs on multiple images the automatic brain extraction module based on a 2D U-Net (Ronneberger et al. [1]_)
     using the pre-trained weights from Salehi et al. [2]_.
-    Calls the BrainExtraction module on a list of images.
+    Calls the BrainExtraction module on a list of images
+    
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+	
+    input_images list<<string>>
+        List of input image file (required)
+	
+    in_ckpt_loc <string>
+        Network_checkpoint for localization (required)
+	
+    threshold_loc <Float>
+         Threshold determining cutoff probability (default is 0.49)
+	 
+    in_ckpt_seg <string>
+        Network_checkpoint for segmentation
+	
+    threshold_seg <Float>
+         Threshold determining cutoff probability (default is 0.5)
+	 
+    out_postfix <string>
+        Suffix of the automatically generated mask (default is '_brainMask')
 
     See also
     ------------
