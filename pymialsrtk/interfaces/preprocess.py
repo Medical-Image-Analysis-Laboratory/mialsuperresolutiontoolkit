@@ -12,9 +12,7 @@ import traceback
 from glob import glob
 
 import nibabel
-
 import cv2
-
 # from medpy.io import load
 
 import scipy.ndimage as snd
@@ -53,7 +51,7 @@ class BtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image', mandatory=True)
     in_mask = File(desc='Input mask', mandatory=False)
-    out_postfix = traits.Str("_nlm", desc='Suffixe to be added to in_file', usedefault=True)
+    out_postfix = traits.Str("_nlm", desc='Suffix to be added to in_file', usedefault=True)
     weight = traits.Float(0.1, desc='NLM weight (0.1 by default)', usedefault=True)
 
 
@@ -63,21 +61,38 @@ class BtkNLMDenoisingOutputSpec(TraitedSpec):
 
 class BtkNLMDenoising(BaseInterface):
     """
-    Runs the the non local mean denoising module that implements the method proposed by Rousseau et al. [1]_.
+    Runs the non-local mean denoising module: implementation by Rousseau et al. [1]_ of the method proposed by Coupé et al. [2]_.
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    in_file <string>
+        Input image file (required)
+
+    in_mask <string>
+        Mask of the input image
+
+    out_postfix <string>
+        suffix added to input image filename to construct output filename (default is '_nlm')
+
+    weight <float>
+        smoothing parameter (high beta produces smoother result, default is 0.1)
 
     References
-    ------------
+    -----------
     .. [1] Rousseau et al.; Computer Methods and Programs in Biomedicine, 2013. `(link to paper) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3508300>`_
+    .. [2] Coupé et al.; IEEE Transactions on Medical Imaging, 2008. `(link to paper) <https://doi.org/10.1109/tmi.2007.906087>`_
 
     Example
-    ----------
+    ---------
     >>> from pymialsrtk.interfaces.preprocess import BtkNLMDenoising
     >>> nlmDenoise = BtkNLMDenoising()
     >>> nlmDenoise.inputs.bids_dir = '/my_directory'
     >>> nlmDenoise.inputs.in_file = 'my_image.nii.gz'
     >>> nlmDenoise.inputs.in_mask = 'my_mask.nii.gz'
-    >>> nlmDenoise.inputs.out_postfix = '_nlm'
-    >>> nlmDenoise.inputs.weight = 0.1
+    >>> nlmDenoise.inputs.weight = 0.2
     >>> nlmDenoise.run() # doctest: +SKIP
 
     """
@@ -124,6 +139,51 @@ class MultipleBtkNLMDenoisingOutputSpec(TraitedSpec):
 
 
 class MultipleBtkNLMDenoising(BaseInterface):
+    """
+    Apply the non-local mean (NLM) denoising module on multiple inputs.
+    NLM denoising implementation by Rousseau et al. [1]_ of the method proposed by Coupé et al. [2]_.
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_images <list<string>>
+        Input image files (required)
+
+    input_masks <list<string>>
+        Masks of the input images
+
+    out_postfix <string>
+        suffix added to images files to construct output filenames (default is '_nlm')
+
+    weight <float>
+        smoothing parameter (high beta produces smoother result, default is 0.1)
+
+    stacksOrder <list<int>>
+        order of images index. To ensure images are processed with their correct corresponding mask.
+
+    References
+    ------------
+    .. [1] Rousseau et al.; Computer Methods and Programs in Biomedicine, 2013. `(link to paper) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3508300>`_
+    .. [2] Coupé et al.; IEEE Transactions on Medical Imaging, 2008. `(link to paper) <https://doi.org/10.1109/tmi.2007.906087>`_
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.preprocess import MultipleBtkNLMDenoising
+    >>> multinlmDenoise = MultipleBtkNLMDenoising()
+    >>> multinlmDenoise.inputs.bids_dir = '/my_directory'
+    >>> multinlmDenoise.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
+    >>> multinlmDenoise.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
+    >>> multinlmDenoise.stacksOrder = [1,0]
+    >>> multinlmDenoise.run() # doctest: +SKIP
+
+    See Also
+    --------
+    pymialsrtk.interfaces.preprocess.BtkNLMDenoising
+
+    """
+
     input_spec = MultipleBtkNLMDenoisingInputSpec
     output_spec = MultipleBtkNLMDenoisingOutputSpec
 
