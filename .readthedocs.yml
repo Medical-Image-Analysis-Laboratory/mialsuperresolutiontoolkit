@@ -18,12 +18,12 @@ formats:
   - htmlzip
   - pdf
 
-# Install the pymialsrtk conda environment with all dependencies required to build the doc
-conda:
-  environment: docker/bidsapp/environment.yml
+# # Install the pymialsrtk conda environment with all dependencies required to build the doc
+# conda:
+#   environment: docker/bidsapp/environment.yml
   
-# # Optionally set the version of Python and requirements required to build your docs
-# python:
-#   version: 3.6
-#   install:
-#     - requirements: documentation/requirements.txt
+# Optionally set the version of Python and requirements required to build your docs
+python:
+  version: 3.6
+  install:
+    - requirements: documentation/requirements.txt
