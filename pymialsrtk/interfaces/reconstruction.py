@@ -33,7 +33,7 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     out_sdi_prefix = traits.Str("SDI_", usedefault=True)
     out_sdi_postfix = traits.Str("_SDI", usedefault=True)
     out_transf_postfix = traits.Str("_transform", usedefault=True)
-    stacksOrder = traits.List(mandatory=True)
+    stacks_order = traits.List(mandatory=True)
 
     # in_deblurring = traits.Bool(False, usedefault=True)
     # in_reg = traits.Bool(True, usedefault=True)
@@ -75,13 +75,13 @@ class MialsrtkImageReconstruction(BaseInterface):
             cut_apr = cut_avt.split('_')[0]
             run_nb_masks.append(int(cut_apr))
 
-        for order in self.inputs.stacksOrder:
+        for order in self.inputs.stacks_order:
             index_img = run_nb_images.index(order)
 
             _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[index_img]))
             transf_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                        ''.join([name, self.inputs.out_transf_postfix, '_',
-                                                str(len(self.inputs.stacksOrder)), 'V', '.txt']))
+                                                str(len(self.inputs.stacks_order)), 'V', '.txt']))
 
             params.append("-i")
             params.append(self.inputs.input_images[index_img])
@@ -97,7 +97,7 @@ class MialsrtkImageReconstruction(BaseInterface):
 
         out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                 ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
-                                          str(len(self.inputs.stacksOrder)), 'V_rad',
+                                          str(len(self.inputs.stacks_order)), 'V_rad',
                                           str(int(self.inputs.input_rad_dilatation)), ext])))
         # out_file = ''.join(list(out_file))
 
@@ -171,7 +171,7 @@ class MialsrtkImageReconstruction(BaseInterface):
 
         outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                              ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
-                                                       str(len(self.inputs.stacksOrder)),'V_rad', str(int(self.inputs.input_rad_dilatation)), ext])))
+                                                       str(len(self.inputs.stacks_order)),'V_rad', str(int(self.inputs.input_rad_dilatation)), ext])))
 
         return outputs
 
@@ -202,7 +202,7 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     in_outer_thresh = traits.Float(0.000001, usedefault=True)
 
     out_prefix = traits.Str("SRTV_", usedefault=True)
-    stacksOrder = traits.List(mandatory=False)
+    stacks_order = traits.List(mandatory=False)
 
     input_rad_dilatation = traits.Float(1.0, usedefault=True)
 
@@ -239,7 +239,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
             cut_apr = cut_avt.split('_')[0]
             run_nb_transforms.append(int(cut_apr))
 
-        for order in self.inputs.stacksOrder:
+        for order in self.inputs.stacks_order:
             index_img = run_nb_images.index(order)
             index_mask = run_nb_masks.index(order)
             index_tranform = run_nb_transforms.index(order)
@@ -252,7 +252,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         name = name.replace('SDI_', self.inputs.out_prefix)
         out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                 ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                          str(len(self.inputs.stacksOrder)),'V_rad',
+                                          str(len(self.inputs.stacks_order)),'V_rad',
                                           str(int(self.inputs.input_rad_dilatation)), ext])))
 
         cmd += ['-r', self.inputs.input_sdi]
@@ -288,7 +288,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         name = name.replace('SDI_', self.inputs.out_prefix)
         outputs['output_sr'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                             ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                                      str(len(self.inputs.stacksOrder)),'V_rad',
+                                                      str(len(self.inputs.stacks_order)),'V_rad',
                                                       str(int(self.inputs.input_rad_dilatation)), ext])))
 
         return outputs
