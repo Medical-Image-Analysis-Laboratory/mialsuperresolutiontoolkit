@@ -30,7 +30,7 @@ class AnatomicalPipeline:
     pipeline = AnatomicalPipeline(bids_dir,
                                   output_dir,
                                   subject,
-                                  p_stacksOrder,
+                                  p_stacks_order,
                                   srID,
                                   session,
                                   paramTV,
@@ -54,11 +54,11 @@ class AnatomicalPipeline:
     primal_dual_loops = "20"
     srID = "01"
     session = None
-    p_stacksOrder = None
+    p_stacks_order = None
     use_manual_masks = False
 
     def __init__(self, bids_dir, output_dir, subject,
-                 p_stacksOrder, srID, session=None, paramTV=None,
+                 p_stacks_order, srID, session=None, paramTV=None,
                  use_manual_masks=False):
         """
         Constructor for instance of AnatomicalPipeline class
@@ -70,7 +70,7 @@ class AnatomicalPipeline:
         self.subject = subject
         self.srID = srID
         self.session = session
-        self.p_stacksOrder = p_stacksOrder
+        self.p_stacks_order = p_stacks_order
 
         # (default) sr tv parameters
         if paramTV is None:
@@ -187,34 +187,34 @@ class AnatomicalPipeline:
 
         nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
         nlmDenoise.inputs.bids_dir = self.bids_dir
-        nlmDenoise.inputs.stacksOrder = self.p_stacksOrder
+        nlmDenoise.inputs.stacks_order = self.p_stacks_order
 
         # Sans le mask le premier correct slice intensity...
         srtkCorrectSliceIntensity01_nlm = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01_nlm')
         srtkCorrectSliceIntensity01_nlm.inputs.bids_dir = self.bids_dir
-        srtkCorrectSliceIntensity01_nlm.inputs.stacksOrder = self.p_stacksOrder
+        srtkCorrectSliceIntensity01_nlm.inputs.stacks_order = self.p_stacks_order
         srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
 
         srtkCorrectSliceIntensity01 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01')
         srtkCorrectSliceIntensity01.inputs.bids_dir = self.bids_dir
-        srtkCorrectSliceIntensity01.inputs.stacksOrder = self.p_stacksOrder
+        srtkCorrectSliceIntensity01.inputs.stacks_order = self.p_stacks_order
         srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
 
         srtkSliceBySliceN4BiasFieldCorrection = Node(interface=preprocess.MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(), name='srtkSliceBySliceN4BiasFieldCorrection')
         srtkSliceBySliceN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
-        srtkSliceBySliceN4BiasFieldCorrection.inputs.stacksOrder = self.p_stacksOrder
+        srtkSliceBySliceN4BiasFieldCorrection.inputs.stacks_order = self.p_stacks_order
 
         srtkSliceBySliceCorrectBiasField = Node(interface=preprocess.MultipleMialsrtkSliceBySliceCorrectBiasField(), name='srtkSliceBySliceCorrectBiasField')
         srtkSliceBySliceCorrectBiasField.inputs.bids_dir = self.bids_dir
-        srtkSliceBySliceCorrectBiasField.inputs.stacksOrder = self.p_stacksOrder
+        srtkSliceBySliceCorrectBiasField.inputs.stacks_order = self.p_stacks_order
 
         srtkCorrectSliceIntensity02_nlm = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity02_nlm')
         srtkCorrectSliceIntensity02_nlm.inputs.bids_dir = self.bids_dir
-        srtkCorrectSliceIntensity02_nlm.inputs.stacksOrder = self.p_stacksOrder
+        srtkCorrectSliceIntensity02_nlm.inputs.stacks_order = self.p_stacks_order
 
         srtkCorrectSliceIntensity02 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity02')
         srtkCorrectSliceIntensity02.inputs.bids_dir = self.bids_dir
-        srtkCorrectSliceIntensity02.inputs.stacksOrder = self.p_stacksOrder
+        srtkCorrectSliceIntensity02.inputs.stacks_order = self.p_stacks_order
 
         srtkIntensityStandardization01 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization01')
         srtkIntensityStandardization01.inputs.bids_dir = self.bids_dir
@@ -224,11 +224,11 @@ class AnatomicalPipeline:
 
         srtkHistogramNormalization = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization')
         srtkHistogramNormalization.inputs.bids_dir = self.bids_dir
-        srtkHistogramNormalization.inputs.stacksOrder = self.p_stacksOrder
+        srtkHistogramNormalization.inputs.stacks_order = self.p_stacks_order
 
         srtkHistogramNormalization_nlm = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization_nlm')
         srtkHistogramNormalization_nlm.inputs.bids_dir = self.bids_dir
-        srtkHistogramNormalization_nlm.inputs.stacksOrder = self.p_stacksOrder
+        srtkHistogramNormalization_nlm.inputs.stacks_order = self.p_stacks_order
 
         srtkIntensityStandardization02 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02')
         srtkIntensityStandardization02.inputs.bids_dir = self.bids_dir
@@ -238,17 +238,17 @@ class AnatomicalPipeline:
 
         srtkMaskImage01 = Node(interface=preprocess.MultipleMialsrtkMaskImage(), name='srtkMaskImage01')
         srtkMaskImage01.inputs.bids_dir = self.bids_dir
-        srtkMaskImage01.inputs.stacksOrder = self.p_stacksOrder
+        srtkMaskImage01.inputs.stacks_order = self.p_stacks_order
 
         srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
         srtkImageReconstruction.inputs.bids_dir = self.bids_dir
-        srtkImageReconstruction.inputs.stacksOrder = self.p_stacksOrder
+        srtkImageReconstruction.inputs.stacks_order = self.p_stacks_order
 
         srtkImageReconstruction.inputs.sub_ses = sub_ses
 
         srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(), name='srtkTVSuperResolution')
         srtkTVSuperResolution.inputs.bids_dir = self.bids_dir
-        srtkTVSuperResolution.inputs.stacksOrder = self.p_stacksOrder
+        srtkTVSuperResolution.inputs.stacks_order = self.p_stacks_order
         srtkTVSuperResolution.inputs.sub_ses = sub_ses
         srtkTVSuperResolution.inputs.in_loop = self.primal_dual_loops
         srtkTVSuperResolution.inputs.in_deltat = self.deltatTV
@@ -256,7 +256,7 @@ class AnatomicalPipeline:
 
         srtkRefineHRMaskByIntersection = Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(), name='srtkRefineHRMaskByIntersection')
         srtkRefineHRMaskByIntersection.inputs.bids_dir = self.bids_dir
-        srtkRefineHRMaskByIntersection.inputs.stacksOrder = self.p_stacksOrder
+        srtkRefineHRMaskByIntersection.inputs.stacks_order = self.p_stacks_order
 
         srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(), name='srtkN4BiasFieldCorrection')
         srtkN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
@@ -270,9 +270,9 @@ class AnatomicalPipeline:
         # JSON file SRTV
         output_dict = {}
         output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation Super-Resolution algorithm provided by MIALSRTK"
-        output_dict["Input sources run order"] = self.p_stacksOrder
+        output_dict["Input sources run order"] = self.p_stacks_order
         output_dict["CustomMetaData"] = {}
-        output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.p_stacksOrder))
+        output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.p_stacks_order))
         output_dict["CustomMetaData"]["TV regularization weight lambda"] = self.lambdaTV
         output_dict["CustomMetaData"]["Optimization time step"] = self.deltatTV
         output_dict["CustomMetaData"]["Primal/dual loops"] = self.primal_dual_loops
@@ -378,7 +378,7 @@ class AnatomicalPipeline:
         # Saving files
         substitutions = []
 
-        for stack in self.p_stacksOrder:
+        for stack in self.p_stacks_order:
             print(sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz',
                   '    --->     ',
                   sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-preprocSDI_T2w.nii.gz')
@@ -398,10 +398,10 @@ class AnatomicalPipeline:
             substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm.nii.gz',
                                  sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-preprocSR_T2w.nii.gz'))
 
-            print(sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(self.p_stacksOrder))+'V.txt',
+            print(sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(self.p_stacks_order))+'V.txt',
                   '    --->     ',
                   sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
-            substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(self.p_stacksOrder))+'V.txt',
+            substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(self.p_stacks_order))+'V.txt',
                                  sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt'))
 
             print(sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
@@ -410,16 +410,16 @@ class AnatomicalPipeline:
             substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
                                  sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_T2w_desc-brain_mask.nii.gz'))
 
-        print('SDI_'+sub_ses+'_'+str(len(self.p_stacksOrder))+'V_rad1.nii.gz',
+        print('SDI_'+sub_ses+'_'+str(len(self.p_stacks_order))+'V_rad1.nii.gz',
               '    --->     ',
               sub_ses+'_rec-SDI'+'_id-'+str(self.srID)+'_T2w.nii.gz')
-        substitutions.append(('SDI_'+sub_ses+'_'+str(len(self.p_stacksOrder))+'V_rad1.nii.gz',
+        substitutions.append(('SDI_'+sub_ses+'_'+str(len(self.p_stacks_order))+'V_rad1.nii.gz',
                              sub_ses+'_rec-SDI'+'_id-'+str(self.srID)+'_T2w.nii.gz'))
 
-        print('SRTV_'+sub_ses+'_'+str(len(self.p_stacksOrder))+'V_rad1_gbcorr.nii.gz',
+        print('SRTV_'+sub_ses+'_'+str(len(self.p_stacks_order))+'V_rad1_gbcorr.nii.gz',
               '    --->     ',
               sub_ses+'_rec-SR'+'_id-'+str(self.srID)+'_T2w.nii.gz')
-        substitutions.append(('SRTV_'+sub_ses+'_'+str(len(self.p_stacksOrder))+'V_rad1_gbcorr.nii.gz',
+        substitutions.append(('SRTV_'+sub_ses+'_'+str(len(self.p_stacks_order))+'V_rad1_gbcorr.nii.gz',
                              sub_ses+'_rec-SR'+'_id-'+str(self.srID)+'_T2w.nii.gz'))
 
         print(sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz',
