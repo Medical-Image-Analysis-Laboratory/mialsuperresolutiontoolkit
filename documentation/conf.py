@@ -51,6 +51,7 @@ sys.path.insert(0, os.path.abspath('../pymialsrtk'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autosectionlabel',
               'sphinx.ext.autodoc',
+              'sphinx.ext.napoleon',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
               'sphinxarg.ext',
