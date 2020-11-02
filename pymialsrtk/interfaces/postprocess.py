@@ -36,7 +36,7 @@ class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
     out_LRmask_postfix = traits.Str("_LRmask", desc='Suffix to be added to the Low resolution input_masks', usedefault=True)
     out_srmask_postfix = traits.Str("_srMask", desc='Suffix to be added to the SR reconstruction filename to construct output SR mask filename', usedefault=True)
 
-    stacksOrder = traits.List(desc='To_be_completed', mandatory=False)
+    stacks_order = traits.List(desc='To_be_completed', mandatory=False)
 
 class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
     output_SRmask = File(desc='Output super-resolution reconstruction refined mask')
@@ -75,7 +75,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     out_srmask_postfix <string>
         suffix added to construct output super-resolution mask filename (default is '_srMask')
 
-    stacksOrder <list<int>>
+    stacks_order <list<int>>
         order of images index. To ensure images are processed with their correct corresponding mask.
 
     References
@@ -91,7 +91,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     >>> refMask.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
     >>> refMask.inputs.input_transforms = ['transform1.txt','transform2.nii.gz']
     >>> refMask.inputs.input_sr = 'sr_image.nii.gz'
-    >>> refMask.inputs.stacksOrder = [0,1]
+    >>> refMask.inputs.stacks_order = [0,1]
     >>> refMask.run()  # doctest: +SKIP
     """
         
@@ -125,7 +125,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
             cut_apr = cut_avt.split('_')[0]
             run_nb_transforms.append(int(cut_apr))
 
-        for order in self.inputs.stacksOrder:
+        for order in self.inputs.stacks_order:
             index_img = run_nb_images.index(order)
             index_mask = run_nb_masks.index(order)
             index_tranform = run_nb_transforms.index(order)
