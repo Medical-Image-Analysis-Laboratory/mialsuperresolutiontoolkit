@@ -16,7 +16,6 @@ sphinx:
 # Optionally build your docs in additional formats such as PDF
 formats:
   - htmlzip
-  - pdf
 
 # # Install the pymialsrtk conda environment with all dependencies required to build the doc
 # conda:
