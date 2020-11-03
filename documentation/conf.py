@@ -58,9 +58,9 @@ extensions = ['sphinx.ext.autosectionlabel',
               'autodocsumm',
               'nbsphinx']
 
-autodoc_default_options = {
-    'autosummary': True,
-}
+# autodoc_default_options = {
+#    'autosummary': True,
+# }
 
 autodoc_mock_imports = ['nipype','cv2', 'skimage']
 
