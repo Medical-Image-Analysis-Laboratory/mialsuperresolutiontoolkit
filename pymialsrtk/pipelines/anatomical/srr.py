@@ -370,10 +370,10 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkRefineHRMaskByIntersection, "input_sr")
 
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkN4BiasFieldCorrection, "input_image")
-        self.wf.connect(srtkRefineHRMaskByIntersection, "output_SRmask", srtkN4BiasFieldCorrection, "input_mask")
+        self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", srtkN4BiasFieldCorrection, "input_mask")
 
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkMaskImage02, "in_file")
-        self.wf.connect(srtkRefineHRMaskByIntersection, "output_SRmask", srtkMaskImage02, "in_mask")
+        self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", srtkMaskImage02, "in_mask")
 
         # Saving files
         substitutions = []
@@ -439,7 +439,7 @@ class AnatomicalPipeline:
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat.@SDI')
         self.wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
-        self.wf.connect(srtkRefineHRMaskByIntersection, "output_SRmask", datasink, 'anat.@SRmask')
+        self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", datasink, 'anat.@SRmask')
 
     def run(self, number_of_cores=1):
         """
