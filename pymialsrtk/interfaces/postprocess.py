@@ -114,7 +114,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     >>> refMask.inputs.stacks_order = [0,1]
     >>> refMask.run()  # doctest: +SKIP
     """
-        
+
     input_spec = MialsrtkRefineHRMaskByIntersectionInputSpec
     output_spec = MialsrtkRefineHRMaskByIntersectionOutputSpec
 
@@ -194,22 +194,9 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 ############################
 
 class MialsrtkN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_image = File(desc='Input image filename to be normalized', mandatory=True)
-    input_mask = File(desc='Input mask filename', mandatory=False)
+    """Class used to represent inputs of the MialsrtkN4BiasFieldCorrection interface.
 
-    out_im_postfix = traits.Str("_gbcorr", usedefault=True)
-    out_fld_postfix = traits.Str("_gbcorrfield", usedefault=True)
-
-class MialsrtkN4BiasFieldCorrectionOutputSpec(TraitedSpec):
-    output_image = File(desc='Output corrected image')
-    output_field = File(desc='Output bias field extracted from input image')
-
-class MialsrtkN4BiasFieldCorrection(BaseInterface):
-    """
-    Runs the MIAL SRTK slice by slice N4 bias field correction module that implements the method proposed by Tustison et al. [1]_.
-
-    Parameters
+    Attributes
     ----------
     bids_dir <string>
         BIDS root directory (required)
@@ -225,6 +212,39 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
 
     out_fld_postfix <string>
         suffix added to construct output bias field filename (default is '_gbcorrfield')
+
+    See Also
+    ----------
+    pymialsrtk.interfaces.preprocess.MialsrtkN4BiasFieldCorrection
+    """
+    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
+    input_image = File(desc='Input image filename to be normalized', mandatory=True)
+    input_mask = File(desc='Input mask filename', mandatory=False)
+
+    out_im_postfix = traits.Str("_gbcorr", usedefault=True)
+    out_fld_postfix = traits.Str("_gbcorrfield", usedefault=True)
+
+class MialsrtkN4BiasFieldCorrectionOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the MialsrtkN4BiasFieldCorrection interface.
+
+    Attributes
+    -----------
+    output_image <string>
+        Output corrected image file
+
+    output_field <string>
+        Output field file
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.MialsrtkN4BiasFieldCorrection
+    """
+    output_image = File(desc='Output corrected image')
+    output_field = File(desc='Output bias field extracted from input image')
+
+class MialsrtkN4BiasFieldCorrection(BaseInterface):
+    """
+    Runs the MIAL SRTK slice by slice N4 bias field correction module that implements the method proposed by Tustison et al. [1]_.
 
     References
     ------------
