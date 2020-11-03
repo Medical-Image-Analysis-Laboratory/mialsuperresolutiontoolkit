@@ -55,7 +55,6 @@ extensions = ['sphinx.ext.autosectionlabel',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
               'sphinxarg.ext',
-              'autodocsumm',
               'nbsphinx']
 
 # autodoc_default_options = {
