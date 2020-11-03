@@ -24,29 +24,9 @@ from pymialsrtk.interfaces.utils import run
 #######################
 
 class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='Image filenames used in SR reconstruction', mandatory=True))
-    input_masks = InputMultiPath(File(desc='Mask filenames', mandatory=True))
-    input_transforms = InputMultiPath(File(desc='Transformation filenames', mandatory=True))
-    input_sr = File(desc='SR image filename', mandatory=True)
+    """Class used to represent inputs of the MialsrtkRefineHRMaskByIntersection interface.
 
-    input_rad_dilatation = traits.Int(1,desc='Radius of the structuring element (ball)', usedefault=True)
-    in_use_staple = traits.Bool(True, desc='Use STAPLE for voting (default is True). If False, Majority voting is used instead', usedefault=True)
-
-    out_LRmask_postfix = traits.Str("_LRmask", desc='Suffix to be added to the Low resolution input_masks', usedefault=True)
-    out_srmask_postfix = traits.Str("_srMask", desc='Suffix to be added to the SR reconstruction filename to construct output SR mask filename', usedefault=True)
-
-    stacks_order = traits.List(desc='To_be_completed', mandatory=False)
-
-class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
-    output_SRmask = File(desc='Output super-resolution reconstruction refined mask')
-    output_LRmasks = OutputMultiPath(File(desc='Output low-resolution reconstruction refined masks'))
-
-class MialsrtkRefineHRMaskByIntersection(BaseInterface):
-    """
-    Runs the MIAL SRTK mask refinement module using the Simultaneous Truth And Performance Level Estimate (STAPLE) by Warfield et al. [1]_.
-
-    Parameters
+    Attributes
     ----------
     bids_dir <string>
         BIDS root directory (required)
@@ -77,6 +57,46 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 
     stacks_order <list<int>>
         order of images index. To ensure images are processed with their correct corresponding mask.
+
+    See Also
+    ----------
+    pymialsrtk.interfaces.preprocess.MialsrtkRefineHRMaskByIntersection
+    """
+    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
+    input_images = InputMultiPath(File(desc='Image filenames used in SR reconstruction', mandatory=True))
+    input_masks = InputMultiPath(File(desc='Mask filenames', mandatory=True))
+    input_transforms = InputMultiPath(File(desc='Transformation filenames', mandatory=True))
+    input_sr = File(desc='SR image filename', mandatory=True)
+
+    input_rad_dilatation = traits.Int(1,desc='Radius of the structuring element (ball)', usedefault=True)
+    in_use_staple = traits.Bool(True, desc='Use STAPLE for voting (default is True). If False, Majority voting is used instead', usedefault=True)
+
+    out_LRmask_postfix = traits.Str("_LRmask", desc='Suffix to be added to the Low resolution input_masks', usedefault=True)
+    out_srmask_postfix = traits.Str("_srMask", desc='Suffix to be added to the SR reconstruction filename to construct output SR mask filename', usedefault=True)
+
+    stacks_order = traits.List(desc='To_be_completed', mandatory=False)
+
+class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the MialsrtkRefineHRMaskByIntersection interface.
+
+    Attributes
+    -----------
+    output_LRmasks <string>
+        Output refined low-resolution mask file
+
+    output_SRmask <string>
+        Output refined high-resolution mask file
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.MialsrtkRefineHRMaskByIntersection
+    """
+    output_SRmask = File(desc='Output super-resolution reconstruction refined mask')
+    output_LRmasks = OutputMultiPath(File(desc='Output low-resolution reconstruction refined masks'))
+
+class MialsrtkRefineHRMaskByIntersection(BaseInterface):
+    """
+    Runs the MIAL SRTK mask refinement module using the Simultaneous Truth And Performance Level Estimate (STAPLE) by Warfield et al. [1]_.
 
     References
     ------------
