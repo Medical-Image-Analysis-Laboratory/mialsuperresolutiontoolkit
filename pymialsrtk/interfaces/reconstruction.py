@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-""" PyMIALSRTK preprocessing functions
+"""PyMIALSRTK preprocessing functions
 """
 
 import os
@@ -12,7 +12,6 @@ from glob import glob
 from traits.api import *
 
 from nipype.utils.filemanip import split_filename
-# from nipype.interfaces.base import isdefined, CommandLine, CommandLineInputSpec
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
@@ -180,9 +179,72 @@ class MialsrtkImageReconstruction(BaseInterface):
 #  Total Variation Super Resolution
 #####################################
 
-# --bregman-loop 1 --loop ${LOOPS} --iter 50 --step-scale 10 --gamma 10 --deltat ${DELTA_T} --lambda ${LAMBDA_TV} --inner-thresh 0.00001 --outer-thresh 0.000001"
-
 class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the MialsrtkTVSuperResolution interface.
+
+    Attributes
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_images <list<string>>
+        Input image filenames (required)
+
+    input_masks <list<string>>
+        Mask of the input images (required)
+
+    input_transforms <list<string>>
+        Input transformation filenames (required)
+
+    input_sdi <string>
+        Reconstructed image for initialization. Typically the output of MialsrtkImageReconstruction is used. (required)
+
+    deblurring <bool>
+        Flag to set deblurring PSF during SR (double the neighborhood) (default is 0).
+
+    in_loop <int>
+        Number of loops (SR/denoising) (required)
+
+    in_deltat <float>
+        Parameter deltat (required)
+
+    in_lambda <float>
+        Regularization factor (required)
+
+    in_bregman_loop <int>
+        Number of Bregman loops (default is 1)
+
+    in_iter <int>
+        Number of inner iterations (default is 50)
+
+    in_step_scale <float>
+        Parameter step scale (default is 10.0)
+
+    in_gamma <float>
+        Parameter gamma (default is 10.0)
+
+    in_inner_thresh <float>
+        Inner loop convergence threshold (default = 1e-5)
+
+    in_outer_thresh <float>
+        Outer loop convergence threshold (default = 1e-6)
+
+    out_prefix <string>
+        prefix added to construct output super-resolution filename (default is 'SRTV_')
+
+    stacks_order <list<int>>
+        order of images index. To ensure images are processed with their correct corresponding mask.
+
+    input_rad_dilatation <float>
+        Radius dilatation used in prior step to construct output filename. (default is 1.0)
+
+    sub_ses <string>
+        Subject and session BIDS identifier to construct output filename.
+
+    See Also
+    ----------
+    pymialsrtk.interfaces.preprocess.MialsrtkTVSuperResolution
+    """
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(desc='files to be SR', mandatory=True))
     input_masks = InputMultiPath(File(desc='mask of files to be SR', mandatory=True))
@@ -210,10 +272,44 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
 
 
 class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
-    output_sr = File()
+    """Class used to represent outputs of the MialsrtkTVSuperResolution interface.
+
+    Attributes
+    -----------
+    output_sr <string>
+        Output super-resolution reconstruction file
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.MialsrtkTVSuperResolution
+    """
+    output_sr = File(desc='Super-resolution reconstruction output')
 
 
 class MialsrtkTVSuperResolution(BaseInterface):
+    """Apply super-resolution algorithm using one or multiple input images [1]_.
+
+    References
+    ------------
+    .. [1] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.reconstruction import MialsrtkTVSuperResolution
+    >>> srtkTVSuperResolution = MialsrtkTVSuperResolution()
+    >>> srtkTVSuperResolution.inputs.bids_dir = '/my_directory'
+    >>> srtkTVSuperResolution.input_images = ['image01.nii.gz', 'image02.nii.gz', 'image03.nii.gz', 'image04.nii.gz']
+    >>> srtkTVSuperResolution.input_masks = ['mask01.nii.gz', 'mask02.nii.gz', 'mask03.nii.gz', 'mask04.nii.gz']
+    >>> srtkTVSuperResolution.input_transforms = ['transform01.txt', 'transform02.txt', 'transform03.txt', 'transform04.txt']
+    >>> srtkTVSuperResolution.input_sdi = 'sdi.nii.gz'
+    >>> srtkTVSuperResolution.inputs.stacksOrder = [0,1,2,3]
+    >>> srtkTVSuperResolution.inputs.sub_ses = 'sub-01_ses-01'
+    >>> srtkTVSuperResolution.inputs.in_loop = 10
+    >>> srtkTVSuperResolution.inputs.in_deltat = 0.01
+    >>> srtkTVSuperResolution.inputs.in_lambda = 0.75
+    >>> srtkTVSuperResolution.run()  # doctest: +SKIP
+    """
+
     input_spec = MialsrtkTVSuperResolutionInputSpec
     output_spec = MialsrtkTVSuperResolutionOutputSpec
 
@@ -248,8 +344,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
             cmd += ['-m', self.inputs.input_masks[index_mask]]
             cmd += ['-t', self.inputs.input_transforms[index_tranform]]
 
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
-        name = name.replace('SDI_', self.inputs.out_prefix)
+        _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
         out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                 ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_',
                                           str(len(self.inputs.stacks_order)),'V_rad',
@@ -284,8 +379,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
-        name = name.replace('SDI_', self.inputs.out_prefix)
+        _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
         outputs['output_sr'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                             ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_',
                                                       str(len(self.inputs.stacks_order)),'V_rad',
