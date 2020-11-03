@@ -2,8 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-""" PyMIALSRTK postprocessing functions encompassing a High Resolution mask refinement and an N4 global bias field correction
-"""
+""" PyMIALSRTK postprocessing functions encompassing a High Resolution mask refinement and an N4 global bias field correction."""
 
 import os
 
@@ -49,7 +48,7 @@ class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
     in_use_staple <bool>
         Use STAPLE for voting (default is True). If STAPLE is not used, Majority Voting is used instead.
 
-    out_LRmask_postfix <string>
+    out_lrmask_postfix <string>
         suffix added to construct output low-resolution mask filenames (default is '_LRmask')
 
     out_srmask_postfix <string>
@@ -71,8 +70,11 @@ class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
     input_rad_dilatation = traits.Int(1,desc='Radius of the structuring element (ball)', usedefault=True)
     in_use_staple = traits.Bool(True, desc='Use STAPLE for voting (default is True). If False, Majority voting is used instead', usedefault=True)
 
-    out_LRmask_postfix = traits.Str("_LRmask", desc='Suffix to be added to the Low resolution input_masks', usedefault=True)
-    out_srmask_postfix = traits.Str("_srMask", desc='Suffix to be added to the SR reconstruction filename to construct output SR mask filename', usedefault=True)
+    out_lrmask_postfix = traits.Str("_LRmask", desc='Suffix to be added to the Low resolution input_masks',
+                                    usedefault=True)
+    out_srmask_postfix = traits.Str("_srMask",
+                                    desc='Suffix to be added to the SR reconstruction filename to construct output SR mask filename',
+                                    usedefault=True)
 
     stacks_order = traits.List(desc='To_be_completed', mandatory=False)
 
@@ -81,22 +83,21 @@ class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
 
     Attributes
     -----------
-    output_LRmasks <string>
+    output_lrmasks <string>
         Output refined low-resolution mask file
 
-    output_SRmask <string>
+    output_srmask <string>
         Output refined high-resolution mask file
 
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MialsrtkRefineHRMaskByIntersection
     """
-    output_SRmask = File(desc='Output super-resolution reconstruction refined mask')
-    output_LRmasks = OutputMultiPath(File(desc='Output low-resolution reconstruction refined masks'))
+    output_srmask = File(desc='Output super-resolution reconstruction refined mask')
+    output_lrmasks = OutputMultiPath(File(desc='Output low-resolution reconstruction refined masks'))
 
 class MialsrtkRefineHRMaskByIntersection(BaseInterface):
-    """
-    Runs the MIAL SRTK mask refinement module using the Simultaneous Truth And Performance Level Estimate (STAPLE) by Warfield et al. [1]_.
+    """Runs the MIAL SRTK mask refinement module using the Simultaneous Truth And Performance Level Estimate (STAPLE) by Warfield et al. [1]_.
 
     References
     ------------
@@ -156,7 +157,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 
             _, name, ext = split_filename(self.inputs.input_images[index_img])
             out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                    ''.join((name, self.inputs.out_LRmask_postfix, ext)))
+                                    ''.join((name, self.inputs.out_lrmask_postfix, ext)))
             cmd += ['-O', out_file]
 
         _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
@@ -183,9 +184,9 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
         _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
         run_id = (name.split('run-')[1]).split('_')[0]
         name = name.replace('_run-'+run_id+'_', '_')
-        outputs['output_SRmask'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
+        outputs['output_srmask'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                                 ''.join((name, self.inputs.out_srmask_postfix, ext)))
-        outputs['output_LRmasks'] = glob(os.path.abspath(''.join(["*", self.inputs.out_LRmask_postfix, ext])))
+        outputs['output_lrmasks'] = glob(os.path.abspath(''.join(["*", self.inputs.out_lrmask_postfix, ext])))
         return outputs
 
 

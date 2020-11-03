@@ -87,7 +87,7 @@ class BtkNLMDenoisingOutputSpec(TraitedSpec):
     Attributes
     -----------   
     out_file <string>
-        Output denoised image file 
+        Output denoised image file
 
     See also
     --------------
@@ -600,7 +600,7 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     Attributes
     -----------   
     output_images list<<string>>
-        Output N4 bias field corrected images 
+        Output N4 bias field corrected images
 
     output_fields list<<string>>
         Output bias fields
@@ -721,7 +721,7 @@ class MialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
     Attributes
     -----------   
     out_im_file <string>
-        Output bias field corrected image file 
+        Output bias field corrected image file
 
     See also
     --------------
@@ -827,7 +827,7 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
     Attributes
     -----------   
     output_images list<<string>>
-        Output bias field corrected images 
+        Output bias field corrected images
 
     See also
     --------------
@@ -940,7 +940,7 @@ class MialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
     Attributes
     -----------   
     output_images list<<string>>
-        Output intensity standardized images 
+        Output intensity standardized images
 
     See also
     --------------
@@ -1033,13 +1033,12 @@ class MialsrtkHistogramNormalizationOutputSpec(TraitedSpec):
     Attributes
     -----------   
     output_images list<<string>>
-        Output histogram normalized images 
+        Output histogram normalized images
 
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MialsrtkHistogramNormalization
     """
-
     output_images = OutputMultiPath(File(desc='Histogram normalized images'))
 
 
@@ -1062,7 +1061,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
     >>> histNorm.inputs.out_postfix = '_histnorm'
     >>> histNorm.inputs.stacks_order = [0,1]
     >>> histNorm.run()  # doctest: +SKIP
-    """       
+    """
     input_spec = MialsrtkHistogramNormalizationInputSpec
     output_spec = MialsrtkHistogramNormalizationOutputSpec
 
@@ -1148,7 +1147,7 @@ class MialsrtkMaskImageOutputSpec(TraitedSpec):
     Attributes
     -----------   
     out_im_file <string>
-        Output masked image 
+        Output masked image
 
     See also
     --------------
@@ -1349,7 +1348,7 @@ class BrainExtractionOutputSpec(TraitedSpec):
     Attributes
     -----------   
     out_file <string>
-        Brain mask output image 
+        Brain mask output image
 
     See also
     --------------
@@ -1397,8 +1396,7 @@ class BrainExtraction(BaseInterface):
         return runtime
 
     def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc, modelCkptSeg, thresholdSeg, bidsDir, out_postfix):
-        """
-        Generate a brain mask by passing the input image(s) through two networks:
+        """Generate a brain mask by passing the input image(s) through two networks:
         The first network localizes the brain by a coarse-grained segmentation while the
         second one segments it more precisely. The function saves the output mask in the
         specific module folder created in bidsDir
@@ -1406,7 +1404,6 @@ class BrainExtraction(BaseInterface):
         Parameters
         ----------
         Described in pymialsrtk.interfaces.preprocess.BrainExtraction
-          
         """
 
         ##### Step 1: Brain localization #####
