@@ -23,37 +23,94 @@ from pymialsrtk.interfaces.utils import run
 ########################
 
 class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the MialsrtkImageReconstruction interface.
+
+    Attributes
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    input_images <list<string>>
+        Input image filenames (required)
+
+    input_masks <list<string>>
+        Mask of the input images (required)
+
+    in_roi <enum>
+        Define region of interest (required):
+            - 'box': Use intersections for roi calculation
+            - 'mask': Use masks for roi calculation
+            - 'all': Use the whole image FOV
+
+    input_rad_dilatation <float>
+        Radius dilatation used in prior step to construct output filename. (default is 1.0)
+
+    sub_ses <string>
+        Subject and session BIDS identifier to construct output filename.
+
+    out_sdi_postfix <string>
+        suffix added to construct output scattered data interpolation filename (default is '_SDI')
+
+    out_transf_postfix <string>
+        suffix added to construct output transformation filenames (default is '_transform')
+
+    stacks_order <list<int>>
+        order of images index. To ensure images are processed with their correct corresponding mask.
+
+    See Also
+    ----------
+    pymialsrtk.interfaces.preprocess.MialsrtkImageReconstruction
+    """
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_roi = traits.Enum('mask', "all", "box", "mask", mandatory=True, usedefault=True)
-    input_masks = InputMultiPath(File(desc=''))
-    input_images = InputMultiPath(File(desc=''))
+    input_masks = InputMultiPath(File(desc='Input masks'))
+    input_images = InputMultiPath(File(desc='Input images'))
     input_rad_dilatation = traits.Float(1.0, usedefault=True)
     sub_ses = traits.Str("x", usedefault=True)
     out_sdi_prefix = traits.Str("SDI_", usedefault=True)
-    out_sdi_postfix = traits.Str("_SDI", usedefault=True)
     out_transf_postfix = traits.Str("_transform", usedefault=True)
     stacks_order = traits.List(mandatory=True)
 
-    # in_deblurring = traits.Bool(False, usedefault=True)
-    # in_reg = traits.Bool(True, usedefault=True)
-    # in_3d = traits.Bool(False, usedefault=True)
-
-    # in_margin = traits.Float(usedefault=False)
-    # in_epsilon = traits.Float(usedefault=False)
-
-    # in_combinedMasks = traits.Str(usedefault=False) ## ?? TODO
-    # # in_reference = File(desc='Reference image') # , mandatory=True)
-
-    # in_imresampled = InputMultiPath(File(desc='')) # , mandatory = True))
-    # in_imroi = InputMultiPath(File(desc='')) # , mandatory = True))
-
-
 class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
-    output_sdi = File()
-    output_transforms = OutputMultiPath(File(desc='SDI'))
+    """Class used to represent outputs of the MialsrtkImageReconstruction interface.
+
+    Attributes
+    -----------
+    output_sdi <string>
+        Output scattered data interpolation image file
+
+    output_transforms <string>
+        Output transformation files
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.MialsrtkImageReconstruction
+    """
+    output_sdi = File(desc='Output reconstructed image')
+    output_transforms = OutputMultiPath(File(desc='Output transformation files'))
 
 
 class MialsrtkImageReconstruction(BaseInterface):
+    """Creates a high resolution image from a set of low resolution images [1]_.
+
+    References
+    ------------
+    .. [1] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.reconstruction import MialsrtkImageReconstruction
+    >>> srtkImageReconstruction = MialsrtkTVSuperResolution()
+    >>> srtkImageReconstruction.inputs.bids_dir = '/my_directory'
+    >>> srtkImageReconstruction.input_images = ['image01.nii.gz', 'image02.nii.gz', 'image03.nii.gz', 'image04.nii.gz']
+    >>> srtkImageReconstruction.input_masks = ['mask01.nii.gz', 'mask02.nii.gz', 'mask03.nii.gz', 'mask04.nii.gz']
+    >>> srtkImageReconstruction.inputs.stacksOrder = [0,1,2,3]
+    >>> srtkImageReconstruction.inputs.sub_ses = 'sub-01_ses-01'
+    >>> srtkImageReconstruction.inputs.in_roi = 'mask'
+    >>> srtkImageReconstruction.inputs.in_deltat = 0.01
+    >>> srtkImageReconstruction.inputs.in_lambda = 0.75
+    >>> srtkImageReconstruction.run()  # doctest: +SKIP
+    """
     input_spec = MialsrtkImageReconstructionInputSpec
     output_spec = MialsrtkImageReconstructionOutputSpec
 
@@ -98,57 +155,12 @@ class MialsrtkImageReconstruction(BaseInterface):
                                 ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
                                           str(len(self.inputs.stacks_order)), 'V_rad',
                                           str(int(self.inputs.input_rad_dilatation)), ext])))
-        # out_file = ''.join(list(out_file))
 
         params.append("-o")
         params.append(out_file)
 
-        # if self.inputs.in_iter:
-        #     params.append("--iter")
-        #     params.append(str(self.inputs.in_iter))
-
-        # if self.inputs.in_imresampled:
-        #     for ir in self.inputs.in_imresampled:
-        #         params.append("--ir")
-        #         params.append(ir)
-
-        # if self.inputs.in_imroi:
-        #     for roi in self.inputs.in_imroi:
-        #         params.append("--roi")
-        #         params.append(roi)
-
-        # if self.inputs.in_deblurring:
-        #     params.append("--deblurring")
-
-        # if not self.inputs.in_reg:
-        #     params.append("--noreg")
-
-        # if self.inputs.in_3d:
-        #     params.append("--3D")
-
-        # if self.inputs.in_margin:
-        #     params.append("--margin")
-        #     params.append(str(self.inputs.in_margin))
-
-        # if self.inputs.in_epsilon:
-        #     params.append("--epsilon")
-        #     params.append(str(self.inputs.in_epsilon))
-
-        # if self.inputs.in_iter:
-        #     params.append("--iter")
-        #     params.append(str(self.inputs.in_iter))
-
-        # if self.inputs.in_combinedMasks:
-        #     params.append("--combinedMasks")
-        #     params.append(str(self.inputs.in_combinedMasks))
-
-        # if self.inputs.in_reference:
-        #     params.append("--reference")
-        #     params.append(str(self.inputs.in_reference))
-
         cmd = ["mialsrtkImageReconstruction"]
         cmd += params
-        # cmd = ["mialsrtkImageReconstruction", "--help"]
 
         try:
             print('... cmd: {}'.format(cmd))
