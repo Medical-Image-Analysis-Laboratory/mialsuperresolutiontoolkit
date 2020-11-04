@@ -9,6 +9,8 @@ from pymialsrtk.info import __release_date__
 
 
 def get_parser():
+    """Create and return the parser object of the BIDS App."""
+
     import argparse
     p = argparse.ArgumentParser(description='Entrypoint script to the MIALsrtk pipeline')
 
