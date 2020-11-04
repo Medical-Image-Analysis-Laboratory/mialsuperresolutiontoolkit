@@ -2,14 +2,35 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-""" PyMIALSRTK utils functions
-"""
+"""PyMIALSRTK utils functions"""
 
 import os
 import subprocess
 
 
 def run(self, command, env=None, cwd=os.getcwd()):
+    """Function calls by each MIALSRTK interface.
+
+    It runs the command specified as input via ``subprocess.run()``.
+
+    Parameters
+    ----------
+    command <string>
+        String containing the command to be executed (required)
+
+    env <os.environ>
+        Specify a custom os.environ
+
+    cwd <Directory>
+        Specify a custom current working directory
+
+    Examples
+    --------
+    >>> cmd = 'btkNLMDenoising -i "/path/to/in_file" -o "/path/to/out_file" -b 0.1'
+    >>> run(self, cmd, env={}, cwd=os.path.abspath(bids_dir))
+
+    """
+
     merged_env = os.environ
 
     if env is not None:
