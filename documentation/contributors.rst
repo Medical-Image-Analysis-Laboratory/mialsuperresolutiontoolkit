@@ -13,4 +13,4 @@ Contributors
 	    <td align="center"><a href="https://github.com/hamzake"><img src="https://avatars2.githubusercontent.com/u/27707790?v=4" width="100px;" alt=""/><br /><sub><b>hamzake</b></sub></a><br /><a href="#example-hamzake" title="Examples">💡</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=hamzake" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=hamzake" title="Code">💻</a></td>
 	    <td align="center"><a href="https://github.com/meribach"><img src="https://avatars3.githubusercontent.com/u/2786897?v=4" width="100px;" alt=""/><br /><sub><b>Meritxell Bach</b></sub></a><br /><a href="#fundingFinding-meribach" title="Funding Finding">🔍</a></td>
 	  </tr>
-	</table>	
+	</table>
