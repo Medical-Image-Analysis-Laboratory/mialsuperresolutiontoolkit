@@ -1620,19 +1620,19 @@ class BrainExtraction(BaseInterface):
 
         slice_counter = 0
         for ii in range(image_data.shape[2]):
-           img_patch = cv2.resize(image_data[x_beg:x_end, y_beg:y_end, ii], dsize=(width, height))
+            img_patch = cv2.resize(image_data[x_beg:x_end, y_beg:y_end, ii], dsize=(width, height))
 
-           if normalize:
-              if normalize == "local_max":
-                 images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
-              elif normalize ==  "mean_std":
-                 images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
-              else:
-                 raise ValueError('Please select a valid normalization')
-           else:
-               images[slice_counter, :, :, 0] = img_patch
+            if normalize:
+                if normalize == "local_max":
+                    images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
+                elif normalize == "mean_std":
+                    images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
+                else:
+                    raise ValueError('Please select a valid normalization')
+            else:
+                images[slice_counter, :, :, 0] = img_patch
 
-           slice_counter += 1
+            slice_counter += 1
 
         g = tf.Graph()
         with g.as_default():
@@ -1685,19 +1685,19 @@ class BrainExtraction(BaseInterface):
             # Restore the model
             tf_saver = tf.train.Saver()
             tf_saver.restore(sess_test_seg, modelCkptSeg)
-        
+
             for idx in range(images.shape[0]):
-            
+
                 im = np.reshape(images[idx, :, :], [1, width, height, n_channels])
                 feed_dict = {x: im}
                 pred_ = sess_test_seg.run(pred, feed_dict=feed_dict)
-                percentileSeg = thresholdSeg*100
+                percentileSeg = thresholdSeg * 100
                 theta = np.percentile(pred_, percentileSeg)
                 pred_bin = np.where(pred_ > theta, 1, 0)
-	        # Map predictions to original indices and size
+                # Map predictions to original indices and size
                 pred_bin = cv2.resize(pred_bin[0, :, :, 0], dsize=(y_end-y_beg, x_end-x_beg), interpolation=cv2.INTER_NEAREST)
                 pred3dFinal[idx, x_beg:x_end, y_beg:y_end,0] = pred_bin.astype('float64')
-                
+
             pppp = True
             if pppp:
                 pred3dFinal = self._post_processing(np.asarray(pred3dFinal))
