@@ -1,37 +1,70 @@
 # ![MIALSRTK logo](https://cloud.githubusercontent.com/assets/22279770/24004342/5e78836a-0a66-11e7-8b7d-058961cfe8e8.png)
 ---
 
-Copyright © 2016-2017 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
+Copyright © 2016-2020 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
 
-This software is distributed under the open-source BSD 3-Clause License. See LICENSE file for details.
+This software is distributed under the open-source BSD 3-Clause License. See [LICENSE](LICENSE.txt) file for details.
 
 ---
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?include_prereleases) [![DOI](https://zenodo.org/badge/85210898.svg)](https://zenodo.org/badge/latestdoi/85210898) ![Docker Pulls](https://img.shields.io/docker/pulls/sebastientourbier/mialsuperresolutiontoolkit) [![Build Status](https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?branch=master)](https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit) [![CircleCI](https://circleci.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?style=shield)](https://app.circleci.com/pipelines/github/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit) [![Code Coverage](https://app.codacy.com/project/badge/Coverage/a27593d6fae7436eb2cd65b80f3342c3)](https://www.codacy.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?utm_source=github.com&utm_medium=referral&utm_content=Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit&utm_campaign=Badge_Coverage) [![Documentation Status](https://readthedocs.org/projects/mialsrtk/badge/?version=latest)](https://mialsrtk.readthedocs.io/en/latest/?badge=latest) [![Code Quality](https://app.codacy.com/project/badge/Grade/a27593d6fae7436eb2cd65b80f3342c3)](https://www.codacy.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit&amp;utm_campaign=Badge_Grade) [![Github All Contributors](https://img.shields.io/github/all-contributors/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit)](#credits-) 
-   
-The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consists of a set of C++ image processing tools necessary to perform motion-robust super-resolution fetal MRI reconstruction. This toolkit, supported by the Swiss National Science Foundation (grant SNSF-141283), includes all algorithms and methods for brain extraction [1], intensity standardization [1,2], motion estimation and super-resolution [2] developed during my PhD. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading. The USAGE message of each tool can be obained using either the *-h* or *--help* flag. 
 
-A Docker image is provided to facilitate the deployment and freely available @ [Docker store](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit).  
+The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consists of a set of C++ image processing tools and a Python3 workflow library necessary to perform motion-robust super-resolution fetal MRI reconstruction. 
 
-*   Please acknowledge this software in any work reporting results using MIALSRTK by citing the following:
+The original C++ MIALSRTK library includes all algorithms and methods for brain extraction, intensity standardization, motion estimation and super-resolution. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading.
 
-  	[1] S. Tourbier, X. Bresson, P. Hagmann, M. B. Cuadra. (2019, March 19).
-          sebastientourbier/mialsuperresolutiontoolkit: MIAL Super-Resolution Toolkit v1.0 (Version v1.0).
-          Zenodo. <http://doi.org/10.5281/zenodo.2598448>
+MIALSRTK has been recently extended with the `pymialsrtk` Python3 library following recent advances in standardization of neuroimaging data organization and processing workflows such as the [Brain Imaging Data Structure (BIDS)](https://bids.neuroimaging.io/) and [BIDS App](https://bids-apps.neuroimaging.io/) standards. This library has a modular architecture built on top of the Nipype dataflow library which consists of (1) processing nodes that interface with each of the MIALSRTK C++ tools and (2) a processing pipeline that link the interfaces in a common workflow. The processing pipeline with all dependencies including the C++ MIALSRTK tools are encapsulated in a Docker image container, which is now distributed as a `BIDS App` which handles datasets organized following the BIDS standard. 
 
-    [2] S. Tourbier, C. Velasco-Annis, V. Taimouri, P. Hagmann, R. Meuli, S. K. Warfield,
-        M. B. Cuadra, A. Gholipour, *Automated template-based brain localization and extraction for fetal brain MRI reconstruction*, Neuroimage (2017) In Press. 
-        [DOI](https://doi.org/10.1016/j.neuroimage.2017.04.004)
+All these design considerations allow us not only to (1) represent the entire processing pipeline of super-resolution reconstruction as an execution graph, where each MIALSRTK C++ tools are connected, but also to (2) provide a mecanism to record data provenance and execution details, and to (3) easily customize the BIDS App to suit specific needs as interfaces with new tools can be added with relatively little effort to account for additional algorithms.
 
-    [3] S. Tourbier, X. Bresson, P. Hagmann, R. Meuli, M. B. Cuadra, 
-        *An efficient total variation algorithm for super-resolution in fetal brain MRI
-        with adaptive regularization*, Neuroimage 118 (2015) 584-597. 
-        [DOI](https://doi.org/10.1016/j.neuroimage.2015.06.018)
+The Docker image of the BIDS App is freely available @ [Docker store](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit-bidsapp).  
 
-## Documentation 
+### Resources
 
-* FOR USERS: [How to run the Docker image](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/userguide_docker.md)
-* FOR DEVELOPERS/CONTRIBUTORS: [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
-* [Doxygen source code documentation](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
+*   **Documentation:** [https://mialsrtk.readthedocs.io/](https://mialsrtk.readthedocs.io/)
+*   **Source:** [https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit](https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit)
+*   **Bug reports:** [https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues](https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues)
+*   **FOR C++ DEVELOPERS/CONTRIBUTORS:** [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
+*   [**C++ code documentation**](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
+
+### Usage
+
+The BIDS App of MIALSRTK has the following command line arguments:
+
+    $ docker run -it sebastientourbier/mialsuperresolutiontoolkit-bidsapp --help
+
+    usage: run.py [-h]
+                  [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
+                  [--param_file PARAM_FILE] [--manual] [-v]
+                  bids_dir output_dir {participant}
+
+    Entrypoint script to the MIALSRTK BIDS App
+
+    positional arguments:
+      bids_dir              The directory with the input dataset formatted
+                            according to the BIDS standard.
+      output_dir            The directory where the output files should be stored.
+                            If you are running group level analysis this folder
+                            should be prepopulated with the results of
+                            theparticipant level analysis.
+      {participant}         Level of the analysis that will be performed. Only
+                            participant is available
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]
+                            The label(s) of the participant(s) that should be
+                            analyzed. The label corresponds to
+                            sub-<participant_label> from the BIDS spec (so it does
+                            not include "sub-"). If this parameter is not provided
+                            all subjects should be analyzed. Multiple participants
+                            can be specified with a space separated list.
+      --param_file PARAM_FILE
+                            Path to a JSON file containing subjects' exams
+                            information and super-resolution total variation
+                            parameters.
+      --manual              Use manual brain masks found in
+                            <output_dir>/manual_masks/ directory
+      -v, --version         show program's version number and exit
 
 ## Credits 
 
