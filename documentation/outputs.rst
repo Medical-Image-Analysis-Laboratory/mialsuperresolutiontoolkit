@@ -49,19 +49,19 @@ Anatomical derivatives
 Nipype Workflow Derivatives
 ==========================================
 
-The execution of the Nipype workflow (pipeline) involves the creation of a number of intermediate outputs which are written to ``<bids_dataset/derivatives>/nipype/sub-<subject_label>/anatomical_pipeline``: 
+The execution of the Nipype workflow (pipeline) involves the creation of a number of intermediate outputs which are written to ``<bids_dataset/derivatives>/nipype/sub-<subject_label>/rec-<sr_id>/srr_pipeline``: 
 
 .. image:: images/nipype_wf_derivatives.png
     :width: 888
     :align: center
 
-To enhance transparency on how data is processed, outputs include a pipeline execution graph saved as ``anatomical_pipeline/graph.svg`` which summarizes all processing nodes involves in the given processing pipeline:
+To enhance transparency on how data is processed, outputs include a pipeline execution graph saved as ``srr_pipeline/graph.png`` which summarizes all processing nodes involves in the given processing pipeline:
 
 .. image:: images/nipype_wf_graph.png
     :width: 888
     :align: center
 
-Execution details (data provenance) of each interface (node) of a given pipeline are reported in ``anatomical_pipeline/<interface_name>/_report/report.rst``
+Execution details (data provenance) of each interface (node) of a given pipeline are reported in ``srr_pipeline/<interface_name>/_report/report.rst``
 
 .. image:: images/nipype_node_report.png
     :width: 888
