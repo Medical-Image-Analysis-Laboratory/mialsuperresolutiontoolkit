@@ -21,26 +21,64 @@ from pymialsrtk.info import __version__
 
 
 class AnatomicalPipeline:
-    """
-    Creates a pipeline instance to run the workflow
-    
-    A typical execution looks like:
-    
-    # Initialize an instance of AnatomicalPipeline
-    pipeline = AnatomicalPipeline(bids_dir,
-                                  output_dir,
-                                  subject,
-                                  p_stacks_order,
-                                  srID,
-                                  session,
-                                  paramTV,
-                                  use_manual_masks)
-                                  
-    # Create the super resolution Nipype workflow
-    pipeline.create_workflow()
+    """Class used to represent the workflow of the Super-Resolution reconstruction pipeline.
 
-    # Execute the workflow
-    res = pipeline.run(number_of_cores)
+    Attributes
+    -----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    output_dir <string>
+        Output derivatives directory (required)
+
+    subject <string>
+        Subject ID (in the form ``sub-XX``)
+
+    wf <nipype.pipeline.Workflow>
+        Nipype workflow of the reconstruction pipeline
+
+    dictsink <nipype.interfaces.io.JSONFileSink>
+        Nipype node used to generate a JSON file that store provenance metadata
+        for the SR-reconstructed images
+
+    deltatTV <string>
+        Super-resolution optimization time-step
+
+    lambdaTV <Float>
+        Regularization weight (default is 0.75)
+
+    primal_dual_loops <string>
+        Number of primal/dual loops used in the optimization of the total-variation
+        super-resolution algorithm.
+
+    srID <string>
+        ID of the reconstruction useful to distinguish when multiple reconstructions
+        with different order of stacks are run on the same subject
+
+    session <string>
+        Session ID if applicable (in the form ``ses-YY``)
+
+    p_stacks_order list<<int>>
+        List of stack indices that specify the order of the stacks
+
+    use_manual_masks <Boolean>
+        If set to True, use manual masks expected to be in ``/output_dir/manual_masks``.
+
+    Examples
+    --------
+    >>from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
+    >>pipeline = AnatomicalPipeline('/path/to/bids_dir',
+                                  '/path/to/output_dir',
+                                  'sub-01',
+                                  [1,3,2,0],
+                                  01,
+                                  None,
+                                  paramTV={deltatTV = "0.001",
+                                           lambdaTV = "0.75",
+                                           primal_dual_loops = "20"},
+                                  use_manual_masks=False) # Create a new instance
+    >>pipeline.create_workflow() # Create the super resolution Nipype workflow
+    >>res = pipeline.run(number_of_cores=1) # Execute the workflow
 
     """
 
@@ -60,9 +98,7 @@ class AnatomicalPipeline:
     def __init__(self, bids_dir, output_dir, subject,
                  p_stacks_order, srID, session=None, paramTV=None,
                  use_manual_masks=False):
-        """
-        Constructor for instance of AnatomicalPipeline class
-        """
+        """Constructor of AnatomicalPipeline class instance"""
 
         # BIDS processing parameters
         self.bids_dir = bids_dir
@@ -84,10 +120,11 @@ class AnatomicalPipeline:
         self.use_manual_masks = use_manual_masks
 
     def create_workflow(self):
-        """
-        Create the Niype workflow of the super-resolution pipeline.
+        """Create the Niype workflow of the super-resolution pipeline.
+
         It is composed of a succession of Nodes and their corresponding parameters,
         where the output of node i goes to the input of node i+1.
+
         """
 
         sub_ses = self.subject
@@ -442,11 +479,20 @@ class AnatomicalPipeline:
         self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", datasink, 'anat.@SRmask')
 
     def run(self, number_of_cores=1):
+        """Execute the workflow of the super-resolution reconstruction pipeline.
+
+        Nipype execution engine will take care of the management and execution of 
+        all processing steps involved in the super-resolution reconstruction pipeline.
+        Note that the complete execution graph is saved as a PNG image to support 
+        transparency on the whole processing.
+
+        Parameters
+        ----------
+        number_of_cores <int>
+            Number of cores / CPUs used by the workflow
+
         """
-        Execute the super-resolution pipeline and the execution graph
-        as a PNG image
-        """
-        
+
         if(number_of_cores != 1):
             res = self.wf.run(plugin='MultiProc', plugin_args={'n_procs': self.number_of_cores})
             self.dictsink.run()
