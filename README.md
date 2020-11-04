@@ -18,7 +18,7 @@ All these design considerations allow us not only to (1) represent the entire pr
 
 The Docker image of the BIDS App is freely available @ [Docker store](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit-bidsapp).  
 
-### Resources
+## Resources
 
 *   **BIDS App and `pymialsrtk` documentation:** [https://mialsrtk.readthedocs.io/](https://mialsrtk.readthedocs.io/)
 
@@ -27,12 +27,12 @@ The Docker image of the BIDS App is freely available @ [Docker store](https://st
 *   **Bug reports:** [https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues](https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues)
 
 *   **For C++ developers/contributors:** 
-    
+
     *   [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
     
     *   [C++ code documentation](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
 
-### Usage
+## Usage
 
 The BIDS App of MIALSRTK has the following command line arguments:
 
