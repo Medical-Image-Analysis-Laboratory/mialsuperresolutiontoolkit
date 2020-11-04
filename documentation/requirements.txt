@@ -1,5 +1,5 @@
-sphinx-argparse==0.2.5
+sphinx-argparse
 nbsphinx
-traits==4.6.0
-grabbit==0.2.3
-pybids==0.6.5
+traits
+grabbit
+pybids
