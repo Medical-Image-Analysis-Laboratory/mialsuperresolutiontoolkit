@@ -1,4 +1,4 @@
-"""This file contains cmp package information"""
+"""This file contains MIALSRTK package information"""
 
 _version_major = 2
 _version_minor = 0

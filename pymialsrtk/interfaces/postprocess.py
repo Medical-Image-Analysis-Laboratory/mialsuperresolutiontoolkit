@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""PyMIALSRTK postprocessing functions
+"""PyMIALSRTK postprocessing functions.
 
 It encompasses a High Resolution mask refinement and an N4 global bias field correction.
 
@@ -64,7 +64,9 @@ class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
     See Also
     ----------
     pymialsrtk.interfaces.preprocess.MialsrtkRefineHRMaskByIntersection
+
     """
+
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(desc='Image filenames used in SR reconstruction', mandatory=True))
     input_masks = InputMultiPath(File(desc='Mask filenames', mandatory=True))
@@ -82,6 +84,7 @@ class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
 
     stacks_order = traits.List(desc='To_be_completed', mandatory=False)
 
+
 class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkRefineHRMaskByIntersection interface.
 
@@ -96,12 +99,17 @@ class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MialsrtkRefineHRMaskByIntersection
+
     """
+
     output_srmask = File(desc='Output super-resolution reconstruction refined mask')
     output_lrmasks = OutputMultiPath(File(desc='Output low-resolution reconstruction refined masks'))
 
+
 class MialsrtkRefineHRMaskByIntersection(BaseInterface):
-    """Runs the MIAL SRTK mask refinement module using the Simultaneous Truth And Performance Level Estimate (STAPLE) by Warfield et al. [1]_.
+    """Runs the MIAL SRTK mask refinement module.
+
+    It uses the Simultaneous Truth And Performance Level Estimate (STAPLE) by Warfield et al. [1]_.
 
     References
     ------------
@@ -118,6 +126,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     >>> refMask.inputs.input_sr = 'sr_image.nii.gz'
     >>> refMask.inputs.stacks_order = [0,1]
     >>> refMask.run()  # doctest: +SKIP
+
     """
 
     input_spec = MialsrtkRefineHRMaskByIntersectionInputSpec
@@ -221,13 +230,16 @@ class MialsrtkN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
     See Also
     ----------
     pymialsrtk.interfaces.preprocess.MialsrtkN4BiasFieldCorrection
+
     """
+
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_image = File(desc='Input image filename to be normalized', mandatory=True)
     input_mask = File(desc='Input mask filename', mandatory=False)
 
     out_im_postfix = traits.Str("_gbcorr", usedefault=True)
     out_fld_postfix = traits.Str("_gbcorrfield", usedefault=True)
+
 
 class MialsrtkN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkN4BiasFieldCorrection interface.
@@ -243,13 +255,18 @@ class MialsrtkN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MialsrtkN4BiasFieldCorrection
+
     """
+
     output_image = File(desc='Output corrected image')
     output_field = File(desc='Output bias field extracted from input image')
 
+
 class MialsrtkN4BiasFieldCorrection(BaseInterface):
     """
-    Runs the MIAL SRTK slice by slice N4 bias field correction module that implements the method proposed by Tustison et al. [1]_.
+    Runs the MIAL SRTK slice by slice N4 bias field correction module.
+
+    This tools implements the method proposed by Tustison et al. [1]_ slice by slice.
 
     References
     ------------
@@ -263,8 +280,9 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
     >>> N4biasFieldCorr.inputs.input_image = 'my_image.nii.gz'
     >>> N4biasFieldCorr.inputs.input_mask = 'my_mask.nii.gz'
     >>> N4biasFieldCorr.run() # doctest: +SKIP
+
     """
-    
+
     input_spec = MialsrtkN4BiasFieldCorrectionInputSpec
     output_spec = MialsrtkN4BiasFieldCorrectionOutputSpec
 

@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""PyMIALSRTK preprocessing functions
+"""PyMIALSRTK preprocessing functions.
 
 It includes BTK Non-local-mean denoising, slice intensity correction
 slice N4 bias field correction, slice-by-slice correct bias field, intensity standardization,

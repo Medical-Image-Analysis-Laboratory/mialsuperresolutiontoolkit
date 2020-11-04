@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""PyMIALSRTK reconstruction functions"""
+"""PyMIALSRTK reconstruction functions."""
 
 import os
 
@@ -59,7 +59,9 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     See Also
     ----------
     pymialsrtk.interfaces.preprocess.MialsrtkImageReconstruction
+
     """
+
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_roi = traits.Enum('mask', "all", "box", "mask", mandatory=True, usedefault=True)
     input_masks = InputMultiPath(File(desc='Input masks'))
@@ -69,6 +71,7 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     out_sdi_prefix = traits.Str("SDI_", usedefault=True)
     out_transf_postfix = traits.Str("_transform", usedefault=True)
     stacks_order = traits.List(mandatory=True)
+
 
 class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkImageReconstruction interface.
@@ -84,7 +87,9 @@ class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MialsrtkImageReconstruction
+
     """
+
     output_sdi = File(desc='Output reconstructed image')
     output_transforms = OutputMultiPath(File(desc='Output transformation files'))
 
@@ -109,7 +114,9 @@ class MialsrtkImageReconstruction(BaseInterface):
     >>> srtkImageReconstruction.inputs.in_deltat = 0.01
     >>> srtkImageReconstruction.inputs.in_lambda = 0.75
     >>> srtkImageReconstruction.run()  # doctest: +SKIP
+
     """
+
     input_spec = MialsrtkImageReconstructionInputSpec
     output_spec = MialsrtkImageReconstructionOutputSpec
 
@@ -255,7 +262,9 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     See Also
     ----------
     pymialsrtk.interfaces.preprocess.MialsrtkTVSuperResolution
+
     """
+
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(desc='files to be SR', mandatory=True))
     input_masks = InputMultiPath(File(desc='mask of files to be SR', mandatory=True))
@@ -293,7 +302,9 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MialsrtkTVSuperResolution
+
     """
+
     output_sr = File(desc='Super-resolution reconstruction output')
 
 
@@ -319,6 +330,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
     >>> srtkTVSuperResolution.inputs.in_deltat = 0.01
     >>> srtkTVSuperResolution.inputs.in_lambda = 0.75
     >>> srtkTVSuperResolution.run()  # doctest: +SKIP
+
     """
 
     input_spec = MialsrtkTVSuperResolutionInputSpec

@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the super-resolution reconstruction pipeline"""
+"""Module for the super-resolution reconstruction pipeline."""
 
 import os
 
@@ -104,7 +104,7 @@ class AnatomicalPipeline:
     def __init__(self, bids_dir, output_dir, subject,
                  p_stacks_order, srID, session=None, paramTV=None,
                  use_manual_masks=False):
-        """Constructor of AnatomicalPipeline class instance"""
+        """Constructor of AnatomicalPipeline class instance."""
 
         # BIDS processing parameters
         self.bids_dir = bids_dir

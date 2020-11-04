@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""PyMIALSRTK utils functions"""
+"""PyMIALSRTK utils functions."""
 
 import os
 import subprocess
