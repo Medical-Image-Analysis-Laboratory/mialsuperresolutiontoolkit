@@ -12,6 +12,42 @@ from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
 
 
 def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, number_of_cores=1, srID=None, use_manual_masks=False):
+    """Main function that creates and executes the workflow of the BIDS App on one subject.
+
+    It creates an instance of the class :class:`pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline`,
+    which is then used to create and execute the workflow of the super-resolution reconstruction pipeline.
+
+    Parameters
+    ----------
+    bids_dir <string>
+        BIDS root directory (required)
+
+    output_dir <string>
+        Output derivatives directory (required)
+
+    subject <string>
+        Subject ID (in the form ``sub-XX``)
+
+    p_stacks_order list<<int>>
+        List of stack indices that specify the order of the stacks
+
+    session <string>
+        Session ID if applicable (in the form ``ses-YY``)
+
+    paramTV dict<'deltatTV': float, 'lambdaTV': float, 'primal_dual_loops': int>>
+        Dictionary of Total-Variation super-resolution optimizer parameters
+
+    number_of_cores <int>
+        Number of cores / CPUs used by the worflow execution engine
+
+    srID <string>
+        ID of the reconstruction useful to distinguish when multiple reconstructions
+        with different order of stacks are run on the same subject
+
+    use_manual_masks <Boolean>
+        If set to True, use manual masks expected to be in ``/output_dir/manual_masks``.
+
+    """
 
     if paramTV is None:
         paramTV = dict()

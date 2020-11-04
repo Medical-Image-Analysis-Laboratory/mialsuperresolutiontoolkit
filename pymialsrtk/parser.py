@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""MIALSRTK BIDS App Commandline Parser"""
+"""MIALSRTK BIDS App Commandline Parser."""
 
 from pymialsrtk.info import __version__
 from pymialsrtk.info import __release_date__

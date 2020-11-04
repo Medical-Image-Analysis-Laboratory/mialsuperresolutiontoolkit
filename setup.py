@@ -36,6 +36,8 @@ if not 'extra_setuptools_args' in globals():
     extra_setuptools_args = dict()
 
 def main(**extra_args):
+    """Main function of the ``setup.py``"""
+
     from distutils.core import setup
     from pymialsrtk.info import __version__
     setup(name='pymialsrtk',
