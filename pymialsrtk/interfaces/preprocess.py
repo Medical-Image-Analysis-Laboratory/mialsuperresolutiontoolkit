@@ -1710,7 +1710,6 @@ class BrainExtraction(BaseInterface):
             save_file = os.path.join(os.getcwd().replace(bidsDir, '/fetaldata'), ''.join((name, out_postfix, ext)))
             nibabel.save(up_mask, save_file)
 
-    # Function returning largest connected component of an object
     def _extractLargestCC(self, image):
         """Function returning largest connected component of an object."""
 
@@ -1729,7 +1728,6 @@ class BrainExtraction(BaseInterface):
         largest_cc[output == max_label] = 255
         return largest_cc.astype('uint8')
 
-    # Post-processing the binarized network output by Priscille de Dumast
     def _post_processing(self, pred_lbl):
         """Post-processing the binarized network output by Priscille de Dumast."""
 
