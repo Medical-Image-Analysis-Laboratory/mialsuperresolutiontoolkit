@@ -37,25 +37,25 @@ This neuroimaging processing pipeline software is developed by the Medical Image
   :target:
   :alt: Github All Contributors  
 
-
 .. warning:: THIS SOFTWARE IS FOR RESEARCH PURPOSES ONLY AND SHALL NOT BE USED FOR ANY CLINICAL USE. THIS SOFTWARE HAS NOT BEEN REVIEWED OR APPROVED BY THE FOOD AND DRUG ADMINISTRATION OR EQUIVALENT AUTHORITY, AND IS FOR NON-CLINICAL, IRB-APPROVED RESEARCH USE ONLY. IN NO EVENT SHALL DATA OR IMAGES GENERATED THROUGH THE USE OF THE SOFTWARE BE USED IN THE PROVISION OF PATIENT CARE.
-  
-  
+
 *********
 About
 *********
 
-The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) [ref1]_ consists of a set of C++ and Python image processing tools necessary to perform motion-robust super-resolution fetal MRI reconstruction. 
+The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consists of a set of C++ and Python3 image processing and worflow tools necessary to perform motion-robust super-resolution fetal MRI reconstruction. 
 
-The C++ MIALSRTK library includes all algorithms and methods for brain extraction [ref2]_ , intensity standardization [ref2]_ [ref3]_ , motion estimation and super-resolution [ref3]_  developed during the PhD of Sebastien Tourbier. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading. The USAGE message of each tool can be obtained using either the *-h* or *--help* flag. 
+The original C++ MIALSRTK library includes all algorithms and methods for brain extraction, intensity standardization, motion estimation and super-resolution. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading. The USAGE message of each tool can be obtained using either the *-h* or *--help* flag. 
 
-Adopting recent advances in standardization of neuroimaging data organization (with the Brain Imaging Data Structure - BIDS - standard) and processing (with the BIDS App standard), 
-MIALSRTK2 provides now a BIDS App, a . Its workflow relies on the Nipype dataflow library which:
-* represents the entire processing pipeline as a graph, where each MIALSRTK C++ tools are connected, and
-* provides a mecanism to record data provenance and execution details. 
+MIALSRTK has been extended with the `pymialsrtk` Python library following recent advances in standardization of neuroimaging data organization and processing workflows (See :ref:`BIDS and BIDS App standards <cmpbids>`). This library has a modular architecture built on top of the Nipype dataflow library which consists of (1) processing nodes that interface with each of the MIALSRTK C++ tools and (2) a processing pipeline that link the interfaces in a common workflow. The processing pipeline is encapsulated in a Docker image container and is distributed as a `BIDS App` which handles datasets organized following the Brain Imaging Data Structure (BIDS) standard. See :ref:`BIDS App usage <cmdusage>` for more details. 
 
-See :ref:`BIDS App usage <cmdusage>` for more details.  
+All these design considerations allows us not only to (1) represent the entire processing pipeline of super-resolution reconstruction as an execution graph, where each MIALSRTK C++ tools are connected, but also to (2) provide a mecanism to record data provenance and execution details, and to (3) easily customize the BIDS App to suit specific needs as interfaces with new tools can be added with relatively little effort to account for additional algorithms. 
 
+*******************
+Aknowledgment
+*******************
+
+If your are using the MIALSRTK BIDS App in your work, please acknowledge this software and its dependencies. See :ref:`Citing <citing>` for more details.
 
 *********
 Funding
@@ -71,22 +71,16 @@ This software is distributed under the open-source license Modified BSD. See :re
 
 All trademarks referenced herein are property of their respective holders.
 
-*******************
-Aknowledgment
-*******************
-
-If your are using the MIALSRTK BIDS App in your work, please acknowledge this software and its dependencies. See :ref:`Citing <citing>` for more details.
-
 Help/Questions
 --------------
 
 If you run into any problems or have any code bugs or questions, please create a new `GitHub Issue <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues>`_.
 
-.. ***********************
-.. Eager to contribute?
-.. ***********************
+***********************
+ Eager to contribute?
+***********************
 
-.. See :ref:`Contributing to Connectome Mapper <contributing>` for more details.
+See :ref:`Contributing to MIALSRTK <contributing>` for more details.
 
 ***********************
 Contents
@@ -128,7 +122,7 @@ Contents
    :maxdepth: 1
    :caption: Examples & Tutorials
    
-   NLM denoising <notebooks/brainHack.ipynb>
+.. NLM denoising <notebooks/brainHack.ipynb>
 
 .. _about-docs:
 
