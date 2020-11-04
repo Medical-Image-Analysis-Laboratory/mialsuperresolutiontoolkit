@@ -137,12 +137,24 @@ class AnatomicalPipeline:
         if self.session is not None:
             sub_ses = ''.join([sub_ses, '_', self.session])
 
-        wf_base_dir = os.path.join(self.output_dir, "nipype", self.subject, "anatomical_pipeline")
-        final_res_dir = os.path.join(self.output_dir, '-'.join(["pymialsrtk", __version__]), self.subject)
-
-        if self.session is not None:
-            wf_base_dir = os.path.join(wf_base_dir, self.session)
-            final_res_dir = os.path.join(final_res_dir, self.session)
+        if self.session is None:
+            wf_base_dir = os.path.join(self.output_dir,
+                                       "nipype",
+                                       self.subject,
+                                       "rec-{}".format(self.srID))
+            final_res_dir = os.path.join(self.output_dir,
+                                         '-'.join(["pymialsrtk", __version__]),
+                                         self.subject)
+        else:
+            wf_base_dir = os.path.join(self.output_dir,
+                                       "nipype",
+                                       self.subject,
+                                       self.session,
+                                       "rec-{}".format(self.srID))
+            final_res_dir = os.path.join(self.output_dir,
+                                         '-'.join(["pymialsrtk", __version__]),
+                                         self.subject,
+                                         self.session)
 
         # #if self.srID is not None:
         # wf_base_dir = os.path.join(wf_base_dir, self.srID)
@@ -152,23 +164,24 @@ class AnatomicalPipeline:
         print("Process directory: {}".format(wf_base_dir))
 
         # Workflow name cannot begin with a number (oterhwise ValueError)
-        pipeline_name = "rec{}".format(self.srID)
+        pipeline_name = "srr_pipeline"
 
         self.wf = Workflow(name=pipeline_name,base_dir=wf_base_dir)
         # srr_nipype_dir = os.path.join(self.wf.base_dir, self.wf.name )
 
         # Initialization (Not sure we can control the name of nipype log)
-        if os.path.isfile(os.path.join(wf_base_dir, "pypeline_" + self.subject + ".log")):
-            os.unlink(os.path.join(wf_base_dir, "pypeline_" + self.subject + ".log"))
+        if os.path.isfile(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log")):
+            os.unlink(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log"))
             # open(os.path.join(self.output_dir,"pypeline.log"), 'a').close()
 
-        config.update_config({'logging': {'log_directory': os.path.join(wf_base_dir), 'log_to_file': True},
+        config.update_config({'logging': {'log_directory': os.path.join(wf_base_dir, pipeline_name),
+                                          'log_to_file': True},
                               'execution': {
                                   'remove_unnecessary_outputs': False,
                                   'stop_on_first_crash': True,
                                   'stop_on_first_rerun': False,
                                   'crashfile_format': "txt",
-                                  'write_provenance': False},
+                                  'write_provenance': True},
                               'monitoring': {'enabled': True}
                               })
 
