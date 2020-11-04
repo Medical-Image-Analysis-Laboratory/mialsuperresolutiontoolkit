@@ -20,11 +20,12 @@ The Docker image of the BIDS App is freely available @ [Docker store](https://st
 
 ### Resources
 
-*   **Documentation:** [https://mialsrtk.readthedocs.io/](https://mialsrtk.readthedocs.io/)
+*   **BIDS App and `pymialsrtk` documentation:** [https://mialsrtk.readthedocs.io/](https://mialsrtk.readthedocs.io/)
 *   **Source:** [https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit](https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit)
 *   **Bug reports:** [https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues](https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues)
-*   **FOR C++ DEVELOPERS/CONTRIBUTORS:** [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
-*   [**C++ code documentation**](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
+*   **For C++ developers/contributors:** 
+    *   [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
+    *   [C++ code documentation](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
 
 ### Usage
 
