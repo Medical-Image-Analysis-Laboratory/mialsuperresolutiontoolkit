@@ -521,7 +521,7 @@ class MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     Attributes
     -----------
     out_im_file <string>
-        Output N4 bias field corrected image file 
+        Output N4 bias field corrected image file
     out_fld_file <string>
         Output bias field
 
@@ -753,9 +753,9 @@ class MialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
 
 class MialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkSliceBySliceCorrectBiasField interface.
-    
+
     Attributes
-    -----------   
+    -----------
     out_im_file <string>
         Output bias field corrected image file
 
@@ -1960,8 +1960,8 @@ class MultipleBrainExtractionOutputSpec(TraitedSpec):
 class MultipleBrainExtraction(BaseInterface):
     """Runs on multiple images the automatic brain extraction module.
 
-    It calls on a list of images the :class:`pymialsrtk.interfaces.preprocess.BrainExtraction.BrainExtraction` module 
-    that implements a brain extraction algorithm based on a 2D U-Net (Ronneberger et al. [1]_) using 
+    It calls on a list of images the :class:`pymialsrtk.interfaces.preprocess.BrainExtraction.BrainExtraction` module
+    that implements a brain extraction algorithm based on a 2D U-Net (Ronneberger et al. [1]_) using
     the pre-trained weights from Salehi et al. [2]_.
 
     References

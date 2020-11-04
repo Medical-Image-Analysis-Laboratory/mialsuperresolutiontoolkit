@@ -500,9 +500,9 @@ class AnatomicalPipeline:
     def run(self, number_of_cores=1):
         """Execute the workflow of the super-resolution reconstruction pipeline.
 
-        Nipype execution engine will take care of the management and execution of 
+        Nipype execution engine will take care of the management and execution of
         all processing steps involved in the super-resolution reconstruction pipeline.
-        Note that the complete execution graph is saved as a PNG image to support 
+        Note that the complete execution graph is saved as a PNG image to support
         transparency on the whole processing.
 
         Parameters

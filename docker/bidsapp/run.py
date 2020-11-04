@@ -97,7 +97,7 @@ if __name__ == '__main__':
                 sr_list = participants_params[sub]
                 print(sr_list)
 
-                for iSr, sr_params in enumerate(sr_list):
+                for sr_params in sr_list:
 
                     ses = sr_params["session"] if "session" in sr_params.keys() else None
 
