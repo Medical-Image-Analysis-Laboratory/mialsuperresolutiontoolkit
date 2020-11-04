@@ -174,7 +174,7 @@ class AnatomicalPipeline:
             os.unlink(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log"))
             # open(os.path.join(self.output_dir,"pypeline.log"), 'a').close()
 
-        config.update_config({'logging': {'log_directory': os.path.join(wf_base_dir, pipeline_name),
+        config.update_config({'logging': {'log_directory': os.path.join(wf_base_dir),
                                           'log_to_file': True},
                               'execution': {
                                   'remove_unnecessary_outputs': False,
