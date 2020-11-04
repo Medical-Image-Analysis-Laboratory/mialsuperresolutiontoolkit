@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-"""PyMIALSRTK
-"""
+"""``Setup.py`` for PyMIALSRTK."""
+
 import os
 import sys
 # from glob import glob

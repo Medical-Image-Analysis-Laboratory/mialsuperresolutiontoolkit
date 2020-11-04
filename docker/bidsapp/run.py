@@ -1,5 +1,8 @@
-#!/usr/bin/env python
-# coding: utf-8
+# Copyright © 2016-2020 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+#
+#  This software is distributed under the open-source license Modified BSD.
+
+"""Entrypoint point script of the BIDS APP."""
 
 import os
 import sys
