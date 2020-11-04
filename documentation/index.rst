@@ -133,3 +133,4 @@ Contents
    LICENSE
    contributing
    citing
+   contributors
