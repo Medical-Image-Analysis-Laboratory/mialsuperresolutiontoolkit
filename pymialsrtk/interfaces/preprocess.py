@@ -136,7 +136,7 @@ class BtkNLMDenoising(BaseInterface):
 
         try:
             print('... cmd: {}'.format(cmd))
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -352,7 +352,7 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
         cmd = 'mialsrtkCorrectSliceIntensity "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -570,7 +570,7 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
                                                                                      out_im_file, out_fld_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -792,7 +792,7 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
         cmd = 'mialsrtkSliceBySliceCorrectBiasField "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, self.inputs.in_field, out_im_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -1008,7 +1008,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
 
         try:
             print('... cmd: {}'.format(cmd))
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -1132,7 +1132,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
                 cmd = cmd + ' -i "{}" -o "{}"" '.format(self.inputs.input_images[index_img], out_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -1220,7 +1220,7 @@ class MialsrtkMaskImage(BaseInterface):
         cmd = 'mialsrtkMaskImage -i "{}" -m "{}" -o "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)

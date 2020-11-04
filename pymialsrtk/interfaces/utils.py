@@ -27,7 +27,7 @@ def run(command, env=None, cwd=None):
     Examples
     --------
     >>> cmd = 'btkNLMDenoising -i "/path/to/in_file" -o "/path/to/out_file" -b 0.1'
-    >>> run(self, cmd)
+    >>> run(cmd)
 
     """
 

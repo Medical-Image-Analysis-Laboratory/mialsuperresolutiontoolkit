@@ -176,7 +176,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -280,7 +280,7 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)

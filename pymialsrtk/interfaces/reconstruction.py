@@ -167,7 +167,7 @@ class MialsrtkImageReconstruction(BaseInterface):
             print("")
             print(cmd)
             print("")
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -381,7 +381,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            run(self, cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
