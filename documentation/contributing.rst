@@ -1,6 +1,6 @@
-*************
-Contributing
-*************
+*************************
+Contributing to MIALSRTK
+*************************
 
 This project follows the all-contributors specification. 
 Contributions in many different ways are welcome!
@@ -53,7 +53,7 @@ Get Started!
 
 Ready to contribute? Here's how to set up `MIALSRTK` for local development.
 
-1. Fork the `MIALSRTK` repo on GitHub.
+1. Fork the `mialsuperresolutiontoolkit` repo on GitHub.
 
 2. Clone your fork locally::
 
