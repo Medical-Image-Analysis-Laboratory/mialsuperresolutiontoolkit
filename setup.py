@@ -5,16 +5,17 @@
 import os
 import sys
 # from glob import glob
-if os.path.exists('MANIFEST'): os.remove('MANIFEST')
+if os.path.exists('MANIFEST'):
+    os.remove('MANIFEST')
 
-packages=["pymialsrtk",
-          "pymialsrtk.interfaces",
-          "pymialsrtk.pipelines",
-          "pymialsrtk.pipelines.anatomical"]
+packages = ["pymialsrtk",
+            "pymialsrtk.interfaces",
+            "pymialsrtk.pipelines",
+            "pymialsrtk.pipelines.anatomical"]
 
 package_data = {"pymialsrtk":
                 ['data/Network_checkpoints/Network_checkpoints_localization/*',
-                'data/Network_checkpoints/Network_checkpoints_segmentation/*']
+                 'data/Network_checkpoints/Network_checkpoints_segmentation/*']
                 }
 
 # package_data = {'cmtklib':
@@ -32,8 +33,9 @@ if len(set(('develop', 'bdist_egg', 'bdist_rpm', 'bdist', 'bdist_dumb',
 # extra_setuptools_args can be defined from the line above, but it can
 # also be defined here because setup.py has been exec'ed from
 # setup_egg.py.
-if not 'extra_setuptools_args' in globals():
+if 'extra_setuptools_args' not in globals():
     extra_setuptools_args = dict()
+
 
 def main(**extra_args):
     """Main function of the ``setup.py``"""
@@ -43,14 +45,17 @@ def main(**extra_args):
     setup(name='pymialsrtk',
           version=__version__,
           description='PyMIALSRTK: Nipype pipelines for the MIAL Super Resolution Toolkit ',
-          long_description=""" PyMIALSRTK interfaces with the MIALSRTK C++ tools and implements a full processing pipeline using the NiPype dataflow library, from motion-corrupted anisotropic multi-slice MRI scans to a motion-free isotropic high-resolution image. """,
-          author= 'Sebastien Tourbier',
+          long_description="""PyMIALSRTK interfaces with the MIALSRTK C++ tools and implements
+                              a full processing pipeline using the NiPype dataflow library,
+                              from motion-corrupted anisotropic multi-slice MRI scans
+                              to a motion-free isotropic high-resolution image. """,
+          author='Sebastien Tourbier',
           author_email='sebastien.tourbier@alumni.epfl.ch',
           url='http://www.connectomics.org/',
-          scripts = ['scripts/superresolution'],
+          scripts=['scripts/superresolution'],
           license='Modified BSD License',
-          packages = packages,
-        classifiers = [c.strip() for c in """\
+          packages=packages,
+          classifiers=[c.strip() for c in """\
             Development Status :: 1 - Beta
             Intended Audience :: Developers
             Intended Audience :: Science/Research
@@ -59,12 +64,12 @@ def main(**extra_args):
             Topic :: Scientific/Engineering
             Topic :: Software Development
             """.splitlines() if len(c.split()) > 0],
-          maintainer = 'Medical Image Analysis Laboratory, University Hospital of Lausanne and the MIALSRTK developers',
-          maintainer_email = 'sebastien.tourbier@alumni.epfl.ch',
-          package_data = package_data,
+          maintainer='Medical Image Analysis Laboratory, University Hospital of Lausanne and the MIALSRTK developers',
+          maintainer_email='sebastien.tourbier@alumni.epfl.ch',
+          package_data=package_data,
           requires=["numpy (>=1.2)", "nibabel (>=2.0.0)", "pybids (>=0.9.1)"],
-          **extra_args
-         )
+          **extra_args)
+
 
 if __name__ == "__main__":
     main(**extra_setuptools_args)
