@@ -2,7 +2,11 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-""" PyMIALSRTK postprocessing functions encompassing a High Resolution mask refinement and an N4 global bias field correction."""
+"""PyMIALSRTK postprocessing functions
+
+It encompasses a High Resolution mask refinement and an N4 global bias field correction.
+
+"""
 
 import os
 

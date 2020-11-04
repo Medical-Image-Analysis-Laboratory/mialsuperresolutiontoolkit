@@ -2,8 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""PyMIALSRTK preprocessing functions
-"""
+"""PyMIALSRTK reconstruction functions"""
 
 import os
 
