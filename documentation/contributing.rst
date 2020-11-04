@@ -3,7 +3,7 @@
 Contributing to MIALSRTK
 *************************
 
-This project follows the all-contributors specification. 
+This project follows the `all contributors specification <https://allcontributors.org/>`_. 
 Contributions in many different ways are welcome!
 
 
