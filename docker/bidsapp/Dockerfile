@@ -2,7 +2,7 @@
 # Use an initial image, where all MIAL Super-Resolution BIDSApp dependencies are installed, as a parent image
 ##############################################################
 ARG MAIN_DOCKER
-FROM $MAIN_DOCKER
+FROM "${MAIN_DOCKER}"
 
 ##############################################################
 # HPC
