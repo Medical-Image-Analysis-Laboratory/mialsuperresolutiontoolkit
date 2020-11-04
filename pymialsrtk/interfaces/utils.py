@@ -8,7 +8,7 @@ import os
 import subprocess
 
 
-def run(self, command, env=None, cwd=os.getcwd()):
+def run(command, env=None, cwd=None):
     """Function calls by each MIALSRTK interface.
 
     It runs the command specified as input via ``subprocess.run()``.
@@ -32,6 +32,9 @@ def run(self, command, env=None, cwd=os.getcwd()):
     """
 
     merged_env = os.environ
+
+    if cwd is None:
+        cwd = os.getcwd()
 
     if env is not None:
         merged_env.update(env)
