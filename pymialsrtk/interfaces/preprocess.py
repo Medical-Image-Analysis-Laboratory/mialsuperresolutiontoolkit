@@ -957,7 +957,8 @@ class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
     out_postfix = traits.Str("", desc='Suffix to be added to intensity corrected input_images', usedefault=True)
     in_max = traits.Float(desc='Maximal intensity', usedefault=False)
-    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False) # ToDo: Can be removed -> Also in pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline !!!
+    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask',
+                               mandatory=False) # ToDo: Can be removed -> Also in pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline !!!
 
 
 class MialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
@@ -1255,7 +1256,7 @@ class MultipleMialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
 
     stacks_order <list<int>>
         order of images index. To ensure images are processed with their correct corresponding mask.
-    
+
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MultipleMialsrtkMaskImage
@@ -1271,7 +1272,7 @@ class MultipleMialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
 
 class MultipleMialsrtkMaskImageOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MultipleMialsrtkMaskImage interface.
-    
+
     Attributes
     -----------
     output_images list<<string>>
