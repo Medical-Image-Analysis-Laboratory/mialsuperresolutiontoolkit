@@ -66,8 +66,9 @@ class AnatomicalPipeline:
 
     Examples
     --------
-    >>from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
-    >>pipeline = AnatomicalPipeline('/path/to/bids_dir',
+    >>> from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
+    >>> # Create a new instance
+    >>> pipeline = AnatomicalPipeline('/path/to/bids_dir',
                                   '/path/to/output_dir',
                                   'sub-01',
                                   [1,3,2,0],
@@ -76,9 +77,11 @@ class AnatomicalPipeline:
                                   paramTV={deltatTV = "0.001",
                                            lambdaTV = "0.75",
                                            primal_dual_loops = "20"},
-                                  use_manual_masks=False) # Create a new instance
-    >>pipeline.create_workflow() # Create the super resolution Nipype workflow
-    >>res = pipeline.run(number_of_cores=1) # Execute the workflow
+                                  use_manual_masks=False)
+    >>> # Create the super resolution Nipype workflow
+    >>> pipeline.create_workflow()
+    >>> # Execute the workflow
+    >>> res = pipeline.run(number_of_cores=1) # doctest: +SKIP
 
     """
 
