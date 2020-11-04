@@ -256,7 +256,8 @@ class AnatomicalPipeline:
         srtkCorrectSliceIntensity01.inputs.stacks_order = self.p_stacks_order
         srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
 
-        srtkSliceBySliceN4BiasFieldCorrection = Node(interface=preprocess.MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(), name='srtkSliceBySliceN4BiasFieldCorrection')
+        srtkSliceBySliceN4BiasFieldCorrection = Node(interface=preprocess.MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(),
+                                                     name='srtkSliceBySliceN4BiasFieldCorrection')
         srtkSliceBySliceN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
         srtkSliceBySliceN4BiasFieldCorrection.inputs.stacks_order = self.p_stacks_order
 
