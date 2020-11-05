@@ -71,7 +71,7 @@ If you run into any problems or have any code bugs or questions, please create a
 Eager to contribute?
 ---------------------
 
-See :ref:`Contributing to MIALSRTK <contributing>` for more details.
+See :ref:`Contributing <contributing>` for more details.
 
 Funding
 --------
