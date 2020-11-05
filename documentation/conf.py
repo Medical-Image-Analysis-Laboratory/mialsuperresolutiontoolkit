@@ -225,10 +225,10 @@ autosectionlabel_prefix_document = True
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    # 'papersize': 'letterpaper',
+    'papersize': 'a4paper',
     
     # The font size ('10pt', '11pt' or '12pt').
-    # 'pointsize': '10pt',
+    'pointsize': '10pt',
     
     # Additional stuff for the LaTeX preamble.
     # 'preamble': '',
@@ -243,14 +243,14 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-# latex_logo = None
+latex_logo = 'images/mialsrtk-logo.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
-# latex_use_parts = False
+latex_use_parts = True
 
 # If true, show page references after internal links.
-# latex_show_pagerefs = False
+latex_show_pagerefs = True
 
 # If true, show URL addresses after external links.
 # latex_show_urls = False
