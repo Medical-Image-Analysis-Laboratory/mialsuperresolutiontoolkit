@@ -2,7 +2,7 @@
 Outputs of MIALSRTK BIDS App
 *****************************************
 
-Processed, or derivative, data are outputed to ``<bids_dataset/derivatives>/`` and follow the :abbr:`BIDS (brain imaging data structure)` Derivatives specification (see `BIDS Derivatives Extension <https://bids-specification.readthedocs.io/en/v1.4.1/>`_) whenever possible.  
+Processed, or derivative, data are outputed to ``<bids_dataset/derivatives>/`` and follow the :abbr:`BIDS (Brain Imaging Data Structure)` v1.4.1 standard (see `BIDS Derivatives <https://bids-specification.readthedocs.io/en/v1.4.1/05-derivatives/01-introduction.html>`_) whenever possible.  
 
 BIDS derivatives entities
 --------------------------
