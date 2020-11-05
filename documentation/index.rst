@@ -43,13 +43,15 @@ This neuroimaging processing pipeline software is developed by the Medical Image
 Introduction
 =============
 
-The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consists of a set of C++ and Python3 image processing and worflow tools necessary to perform motion-robust super-resolution fetal MRI reconstruction. 
+The `Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK)` consists of a set of C++ and Python3 image processing and worflow tools necessary to perform motion-robust super-resolution fetal MRI reconstruction. 
 
-The original C++ MIALSRTK library includes all algorithms and methods for brain extraction, intensity standardization, motion estimation and super-resolution. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading. The USAGE message of each tool can be obtained using either the *-h* or *--help* flag. 
+The *original* `C++ MIALSRTK library` includes all algorithms and methods for brain extraction, intensity standardization, motion estimation and super-resolution. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading. 
 
-MIALSRTK has been extended with the `pymialsrtk` Python library following recent advances in standardization of neuroimaging data organization and processing workflows (See :ref:`BIDS and BIDS App standards <cmpbids>`). This library has a modular architecture built on top of the Nipype dataflow library which consists of (1) processing nodes that interface with each of the MIALSRTK C++ tools and (2) a processing pipeline that link the interfaces in a common workflow. The processing pipeline is encapsulated in a Docker image container and is distributed as a `BIDS App` which handles datasets organized following the Brain Imaging Data Structure (BIDS) standard. See :ref:`BIDS App usage <cmdusage>` for more details. 
+MIALSRTK has been extended with the `pymialsrtk` Python library following recent advances in standardization of neuroimaging data organization and processing workflows (See :ref:`BIDS and BIDS App standards <cmpbids>`). This library has a modular architecture built on top of the Nipype dataflow library which consists of (1) processing nodes that interface with each of the MIALSRTK C++ tools and (2) a processing pipeline that links the interfaces in a common workflow. 
 
-All these design considerations allows us not only to (1) represent the entire processing pipeline of super-resolution reconstruction as an execution graph, where each MIALSRTK C++ tools are connected, but also to (2) provide a mecanism to record data provenance and execution details, and to (3) easily customize the BIDS App to suit specific needs as interfaces with new tools can be added with relatively little effort to account for additional algorithms. 
+The processing pipeline with all dependencies including the C++ MIALSRTK tools are encapsulated in a Docker image container, which is now distributed as a `BIDS App` which handles datasets organized following the BIDS standard. See :ref:`BIDS App usage <cmdusage>` for more details.
+
+All these design considerations allow us not only to (1) represent the entire processing pipeline as an *execution graph, where each MIALSRTK C++ tools are connected*, but also to (2) provide a *mecanism to record data provenance and execution details*, and to (3) easily customize the BIDS App to suit specific needs as interfaces with *new tools can be added with relatively little effort* to account for additional algorithms. 
 
 Aknowledgment
 --------------
