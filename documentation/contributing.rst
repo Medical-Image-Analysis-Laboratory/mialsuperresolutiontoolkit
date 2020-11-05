@@ -125,7 +125,7 @@ How to build the documentation locally
 	Make sure to have activated the conda environment ``pymialsrtk-env`` before running the script ``build_sphinx_docs.sh``.
 
 Not listed as a contributor?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
 This is easy, MIALSRTK has the `all contributors bot <https://allcontributors.org/docs/en/bot/usage>`_ installed.
 
