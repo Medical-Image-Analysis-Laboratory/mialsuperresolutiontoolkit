@@ -1,6 +1,6 @@
 
 MIAL Super-Resolution Toolkit
-============================================
+************************************
 
 .. image:: images/mialsrtk-logo.png
   :width: 600
@@ -39,9 +39,9 @@ This neuroimaging processing pipeline software is developed by the Medical Image
 
 .. warning:: THIS SOFTWARE IS FOR RESEARCH PURPOSES ONLY AND SHALL NOT BE USED FOR ANY CLINICAL USE. THIS SOFTWARE HAS NOT BEEN REVIEWED OR APPROVED BY THE FOOD AND DRUG ADMINISTRATION OR EQUIVALENT AUTHORITY, AND IS FOR NON-CLINICAL, IRB-APPROVED RESEARCH USE ONLY. IN NO EVENT SHALL DATA OR IMAGES GENERATED THROUGH THE USE OF THE SOFTWARE BE USED IN THE PROVISION OF PATIENT CARE.
 
-*********
+
 About
-*********
+======
 
 The Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK) consists of a set of C++ and Python3 image processing and worflow tools necessary to perform motion-robust super-resolution fetal MRI reconstruction. 
 
@@ -51,40 +51,35 @@ MIALSRTK has been extended with the `pymialsrtk` Python library following recent
 
 All these design considerations allows us not only to (1) represent the entire processing pipeline of super-resolution reconstruction as an execution graph, where each MIALSRTK C++ tools are connected, but also to (2) provide a mecanism to record data provenance and execution details, and to (3) easily customize the BIDS App to suit specific needs as interfaces with new tools can be added with relatively little effort to account for additional algorithms. 
 
-*******************
 Aknowledgment
-*******************
+==============
 
 If your are using the MIALSRTK BIDS App in your work, please acknowledge this software and its dependencies. See :ref:`Citing <citing>` for more details.
 
-*********
 Funding
-*********
+========
 
 Originally supported by the Swiss National Science Foundation (grant SNSF-141283).
 
-*******************
 License information
-*******************
+===================
 
 This software is distributed under the open-source license Modified BSD. See :ref:`license <LICENSE>` for more details.
 
 All trademarks referenced herein are property of their respective holders.
 
 Help/Questions
---------------
+================
 
 If you run into any problems or have any code bugs or questions, please create a new `GitHub Issue <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues>`_.
 
-***********************
- Eager to contribute?
-***********************
+Eager to contribute?
+======================
 
 See :ref:`Contributing to MIALSRTK <contributing>` for more details.
 
-***********************
 Contents
-***********************
+=========
 
 .. _getting_started:
 
