@@ -1,8 +1,8 @@
 .. _apidoc_pipelines:
 
-***************************
-Pipelines
-***************************
+******************
+Pipelines module
+******************
 
 .. automodule:: pymialsrtk.pipelines.anatomical.srr
    :members:
