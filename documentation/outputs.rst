@@ -2,33 +2,35 @@
 Outputs of MIALSRTK BIDS App
 *****************************************
 
-Processed, or derivative, data are outputed to ``<bids_dataset/derivatives>/``. 
+Processed, or derivative, data are outputed to ``<bids_dataset/derivatives>/`` and follow the :abbr:`BIDS (brain imaging data structure)` Derivatives specification (see `BIDS Derivatives Extension <https://bids-specification.readthedocs.io/en/v1.4.1/>`_) whenever possible.  
+
+BIDS derivatives entities
+--------------------------
+
+.. tabularcolumns:: |l|p{5cm}|
+
++--------------------------+------------------------------------------------------------------+
+| **Entity**               | **Description**                                                  |
++--------------------------+------------------------------------------------------------------+
+| ``sub-<subject_label>``  | <subject_label>  | Label to distinguish different subject        |
++--------------------------+------------------------------------------------------------------+
+| ``ses-<session_label>``  | Label to distinguish different T2w scan acquisition session      |
++--------------------------+------------------------------------------------------------------+
+| ``run-<run_label>``      | Label to distinguish different T2w scans                         |
++--------------------------+------------------------------------------------------------------+
+| ``rec-<recon_label> ``   | Label of the reconstruction type                                 |
++--------------------------+------------------------------------------------------------------+
+| ``id-<srr_id>``          | Label of the reconstruction for a given configuration            |
++--------------------------+------------------------------------------------------------------+
+
+See `Original BIDS Entities Appendix <https://bids-specification.readthedocs.io/en/v1.4.1/99-appendices/09-entities.html>`_ for more description.
+
+.. note:: The new entity ``id-<srr_id>`` has been introduced to distinguish between outputs when the pipeline is run with multiple configurations (such a new order of scans) on the same subject.
 
 Main MIALSRTK BIDS App Derivatives
 ==========================================
 
 Main outputs produced by MIALSRTK BIDS App are written to ``<bids_dataset/derivatives>/pymialsrtk-<variant>/sub-<subject_label>/(_ses-<session_label>/)``. An execution log of the full workflow is saved as `sub-<subject_label>(_ses-<session_label>)_id-<srr_id>_log.txt``.
-
-.. note:: MIALSRTK BIDS App outputs follows the :abbr:`BIDS (brain imaging data structure)` Derivatives specification (see `BIDS Derivatives Extension <https://bids-specification.readthedocs.io/en/v1.4.0/>`_) whenever possible. However a new entity ``id-<srr_id>`` has been introduced to distinguish between outputs when the pipeline is run with multiple configurations (such a new order of scans) on the same subject.
-
-BIDS derivatives entities
---------------------------
-
-.. tabularcolumns:: |l|c|p{5cm}|
-
-+--------------+------------------+-------------------------------------------------------+
-|  **Entity**  | **Label**        | **Description**                                       |
-+--------------+------------------+-------------------------------------------------------+
-|  ``sub``     | <subject_label>  | Label of the subject                                  |
-+--------------+------------------+-------------------------------------------------------+
-|  ``ses``     | <session_label>  | Label of the session                                  |
-+--------------+------------------+-------------------------------------------------------+
-|  ``run``     | <run_label>      | Label of the T2w scan                                 |
-+--------------+------------------+-------------------------------------------------------+
-|  ``rec``     | <recon_label>    | Label of the reconstruction type                      |
-+--------------+------------------+-------------------------------------------------------+
-|  ``id``      | <srr_id>         | Label of the reconstruction for a given configuration |
-+--------------+------------------+-------------------------------------------------------+
 
 Anatomical derivatives
 ------------------------
