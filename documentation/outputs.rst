@@ -18,7 +18,7 @@ BIDS derivatives entities
 +--------------------------+---------------------------------------------------------------------------------------------------------------------+
 | ``run-<run_label>``      | Label to distinguish different T2w scans                                                                            |
 +--------------------------+---------------------------------------------------------------------------------------------------------------------+
-| ``rec-<recon_label> ``   | Label to distinguish images reconstructed using scattered data interpolation (SDI) or super-resolution (SR) methods |
+| ``rec-<recon_label>``    | Label to distinguish images reconstructed using scattered data interpolation (SDI) or super-resolution (SR) methods |
 +--------------------------+---------------------------------------------------------------------------------------------------------------------+
 | ``id-<srr_id>``          | Label to distinguish outputs of multiple reconstructions with different configuration                               |
 +--------------------------+---------------------------------------------------------------------------------------------------------------------+
