@@ -25,7 +25,7 @@ BIDS derivatives entities
 
 See `Original BIDS Entities Appendix <https://bids-specification.readthedocs.io/en/v1.4.1/99-appendices/09-entities.html>`_ for more description.
 
-.. note:: A new entity ``id-<label>`` has been introduced to distinguish between outputs when the pipeline is run with multiple configurations (such a new order of scans) on the same subject.
+.. note:: A new entity `id-<label>` has been introduced to distinguish between outputs when the pipeline is run with multiple configurations (such a new order of scans) on the same subject.
 
 Main MIALSRTK BIDS App Derivatives
 ==========================================
@@ -77,7 +77,7 @@ Anatomical derivatives
 Nipype Workflow Derivatives
 ==========================================
 
-The execution of the Nipype workflow (pipeline) involves the creation of a number of intermediate outputs for each subject ``sub-<label>`` and each run ``rec-<id_label>`` which are written to ``<bids_dataset/derivatives>/nipype/sub-<label>/rec-<id_label>/srr_pipeline`` where ``<id_label>`` corresponds to the label used previously for the entity ``id-<label>``: 
+The execution of the Nipype workflow (pipeline) involves the creation of a number of intermediate outputs for each subject `sub-<label>` and each run `rec-<id_label>` which are written to ``<bids_dataset/derivatives>/nipype/sub-<label>/rec-<id_label>/srr_pipeline`` where `<id_label>` corresponds to the label used previously for the entity `id-<label>`: 
 
 .. image:: images/nipype_wf_derivatives.png
     :width: 600

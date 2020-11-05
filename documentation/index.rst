@@ -45,9 +45,9 @@ Introduction
 
 The `Medical Image Analysis Laboratory Super-Resolution ToolKit (MIALSRTK)` consists of a set of C++ and Python3 image processing and worflow tools necessary to perform motion-robust super-resolution fetal MRI reconstruction. 
 
-The *original* `C++ MIALSRTK library` includes all algorithms and methods for brain extraction, intensity standardization, motion estimation and super-resolution. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading. 
+The *original* `C++ MIALSRTK` library includes all algorithms and methods for brain extraction, intensity standardization, motion estimation and super-resolution. It uses the CMake build system and depends on the open-source image processing Insight ToolKit (ITK) library, the command line parser TCLAP library and OpenMP for multi-threading. 
 
-MIALSRTK has been extended with the `pymialsrtk` Python library following recent advances in standardization of neuroimaging data organization and processing workflows (See :ref:`BIDS and BIDS App standards <cmpbids>`). This library has a modular architecture built on top of the Nipype dataflow library which consists of (1) processing nodes that interface with each of the MIALSRTK C++ tools and (2) a processing pipeline that links the interfaces in a common workflow. 
+`MIALSRTK` has been extended with the `pymialsrtk` Python3 library following recent advances in standardization of neuroimaging data organization and processing workflows (See :ref:`BIDS and BIDS App standards <cmpbids>`). This library has a modular architecture built on top of the Nipype dataflow library which consists of (1) processing nodes that interface with each of the MIALSRTK C++ tools and (2) a processing pipeline that links the interfaces in a common workflow. 
 
 The processing pipeline with all dependencies including the C++ MIALSRTK tools are encapsulated in a Docker image container, which is now distributed as a `BIDS App` which handles datasets organized following the BIDS standard. See :ref:`BIDS App usage <cmdusage>` for more details.
 
@@ -56,7 +56,7 @@ All these design considerations allow us not only to (1) represent the entire pr
 Aknowledgment
 --------------
 
-If your are using the MIALSRTK BIDS App in your work, please acknowledge this software and its dependencies. See :ref:`Citing <citing>` for more details.
+If your are using `MIALSRTK` in your work, please acknowledge this software and its dependencies. See :ref:`Citing <citing>` for more details.
 
 License information
 --------------------

@@ -95,7 +95,7 @@ Before you submit a pull request, check that it meets these guidelines:
 How to build the BIDS App locally
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Go to the clone directory of your fork and run the script ``build_bidsapp.sh`` ::
+1. Go to the clone directory of your fork and run the script `build_bidsapp.sh` ::
 
     cd mialsuperresolutiontoolkit
     sh build_bidsapp.sh
@@ -107,27 +107,27 @@ Note that the tag of the version of the image will be extracted from ``pymialsrt
 How to build the documentation locally
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Install the MIALSRTK conda environment ``pymialsrtk-env`` with sphinx and all extensions to generate the documentation::
+1. Install the `MIALSRTK` conda environment `pymialsrtk-env` with sphinx and all extensions to generate the documentation::
 
     cd mialsuperresolutiontoolkit
     conda env create -f docker/bidsapp/environment.yml
 
-2. Activate the MIALSRTK conda environment ``pymialsrtk-env`` and install ``pymialsrtk`` ::
+2. Activate the MIALSRTK conda environment `pymialsrtk-env` and install `pymialsrtk` ::
 
     conda activate pymialsrtk-env
     python setup.py install
 
-3. Run the script ``build_sphinx_docs.sh`` to generate the HTML documentation in ``documentation/_build/html``::
+3. Run the script `build_sphinx_docs.sh` to generate the HTML documentation in ``documentation/_build/html``::
 
     bash build_sphinx_docs.sh
 
 .. note::
-	Make sure to have activated the conda environment ``pymialsrtk-env`` before running the script ``build_sphinx_docs.sh``.
+	Make sure to have activated the conda environment `pymialsrtk-env` before running the script `build_sphinx_docs.sh`.
 
 Not listed as a contributor?
 ----------------------------
 
-This is easy, MIALSRTK has the `all contributors bot <https://allcontributors.org/docs/en/bot/usage>`_ installed.
+This is easy, `MIALSRTK` has the `all contributors bot <https://allcontributors.org/docs/en/bot/usage>`_ installed.
 
 Just comment on Issue or Pull Request (PR), asking `@all-contributors` to add you as contributor::
 
