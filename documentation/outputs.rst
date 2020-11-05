@@ -9,23 +9,23 @@ BIDS derivatives entities
 
 .. tabularcolumns:: |l|p{5cm}|
 
-+--------------------------+------------------------------------------------------------------+
-| **Entity**               | **Description**                                                  |
-+--------------------------+------------------------------------------------------------------+
-| ``sub-<subject_label>``  | <subject_label>  | Label to distinguish different subject        |
-+--------------------------+------------------------------------------------------------------+
-| ``ses-<session_label>``  | Label to distinguish different T2w scan acquisition session      |
-+--------------------------+------------------------------------------------------------------+
-| ``run-<run_label>``      | Label to distinguish different T2w scans                         |
-+--------------------------+------------------------------------------------------------------+
-| ``rec-<recon_label> ``   | Label of the reconstruction type                                 |
-+--------------------------+------------------------------------------------------------------+
-| ``id-<srr_id>``          | Label of the reconstruction for a given configuration            |
-+--------------------------+------------------------------------------------------------------+
++--------------------------+---------------------------------------------------------------------------------------------------------------------+
+| **Entity**               | **Description**                                                                                                     |
++--------------------------+---------------------------------------------------------------------------------------------------------------------+
+| ``sub-<subject_label>``  | Label to distinguish different subject                                                                              |
++--------------------------+---------------------------------------------------------------------------------------------------------------------+
+| ``ses-<session_label>``  | Label to distinguish different T2w scan acquisition session                                                         |
++--------------------------+---------------------------------------------------------------------------------------------------------------------+
+| ``run-<run_label>``      | Label to distinguish different T2w scans                                                                            |
++--------------------------+---------------------------------------------------------------------------------------------------------------------+
+| ``rec-<recon_label> ``   | Label to distinguish images reconstructed using scattered data interpolation (SDI) or super-resolution (SR) methods |
++--------------------------+---------------------------------------------------------------------------------------------------------------------+
+| ``id-<srr_id>``          | Label to distinguish outputs of multiple reconstructions with different configuration                               |
++--------------------------+---------------------------------------------------------------------------------------------------------------------+
 
 See `Original BIDS Entities Appendix <https://bids-specification.readthedocs.io/en/v1.4.1/99-appendices/09-entities.html>`_ for more description.
 
-.. note:: The new entity ``id-<srr_id>`` has been introduced to distinguish between outputs when the pipeline is run with multiple configurations (such a new order of scans) on the same subject.
+.. note:: A new entity ``id-<srr_id>`` has been introduced to distinguish between outputs when the pipeline is run with multiple configurations (such a new order of scans) on the same subject.
 
 Main MIALSRTK BIDS App Derivatives
 ==========================================
