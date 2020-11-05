@@ -133,7 +133,7 @@ Just comment on Issue or Pull Request (PR), asking `@all-contributors` to add yo
 
     @all-contributors please add <github_username> for <contributions>
 
-`<contribution>: See the `Emoji Key Contribution Types Reference <https://github.com/all-contributors/all-contributors/blob/master/docs/emoji-key.md>`_ for a list of valid `contribution` types.
+`<contribution>`: See the `Emoji Key Contribution Types Reference <https://github.com/all-contributors/all-contributors/blob/master/docs/emoji-key.md>`_ for a list of valid `contribution` types.
 
 The all-contributors bot will create a PR to add you in the README and reply with the pull request details.
 
