@@ -3,7 +3,7 @@ MIAL Super-Resolution Toolkit
 ============================================
 
 .. image:: images/mialsrtk-logo.png
-  :width: 800
+  :width: 600
   :align: center
 
 **Latest released version:** |release|
