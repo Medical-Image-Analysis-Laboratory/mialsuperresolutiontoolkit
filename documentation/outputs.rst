@@ -25,12 +25,12 @@ BIDS derivatives entities
 
 See `Original BIDS Entities Appendix <https://bids-specification.readthedocs.io/en/v1.4.1/99-appendices/09-entities.html>`_ for more description.
 
-.. note:: A new entity ``id-<srr_id>`` has been introduced to distinguish between outputs when the pipeline is run with multiple configurations (such a new order of scans) on the same subject.
+.. note:: A new entity ``id-<label>`` has been introduced to distinguish between outputs when the pipeline is run with multiple configurations (such a new order of scans) on the same subject.
 
 Main MIALSRTK BIDS App Derivatives
 ==========================================
 
-Main outputs produced by MIALSRTK BIDS App are written to ``<bids_dataset/derivatives>/pymialsrtk-<variant>/sub-<subject_label>/(_ses-<session_label>/)``. An execution log of the full workflow is saved as `sub-<subject_label>(_ses-<session_label>)_id-<srr_id>_log.txt``.
+Main outputs produced by MIALSRTK BIDS App are written to ``<bids_dataset/derivatives>/pymialsrtk-<variant>/sub-<label>/(_ses-<label>/)``. The execution log of the full workflow is saved as `sub-<label>(_ses-<label>)_id-<label>_log.txt``.
 
 Anatomical derivatives
 ------------------------
@@ -38,46 +38,46 @@ Anatomical derivatives
 
     * The brain masks of the T2w scans:
 
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-01_id-<srr_id>_desc-brain_mask.nii.gz``
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-02_id-<srr_id>_desc-brain_mask.nii.gz``
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-03_id-<srr_id>_desc-brain_mask.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_run-01_id-<label>_desc-brain_mask.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_run-02_id-<label>_desc-brain_mask.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_run-03_id-<label>_desc-brain_mask.nii.gz``
         - ...
 
     * The preprocessed T2w scans used for slice motion estimation and scattered data interpolation (SDI) reconstruction:
 
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-01_id-<srr_id>_desc-preprocSDI_T2w.nii.gz``
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-02_id-<srr_id>_desc-preprocSDI_T2w.nii.gz``
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-03_id-<srr_id>_desc-preprocSDI_T2w.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_run-01_id-<label>_desc-preprocSDI_T2w.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_run-02_id-<label>_desc-preprocSDI_T2w.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_run-03_id-<label>_desc-preprocSDI_T2w.nii.gz``
         - ...
         
     * The preprocessed T2w scans used for super-resolution reconstruction:
 
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-01_id-<srr_id>_desc-preprocSR_T2w.nii.gz``
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-02_id-<srr_id>_desc-preprocSR_T2w.nii.gz``
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-03_id-<srr_id>_desc-preprocSR_T2w.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_run-01_id-<label>_desc-preprocSR_T2w.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_run-02_id-<label>_desc-preprocSR_T2w.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_run-03_id-<label>_desc-preprocSR_T2w.nii.gz``
         - ...
    
     * The high-resolution image reconstructed by SDI:
 
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_rec-SDI_id-<srr_id>_T2w.nii.gz``
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_rec-SDI_id-<srr_id>_T2w.json``
+        - ``anat/sub-<label>(_ses-<label>)_rec-SDI_id-<label>_T2w.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_rec-SDI_id-<label>_T2w.json``
 
     * The high-resolution image reconstructed by SDI:
 
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_rec-SR_id-<srr_id>_T2w.nii.gz``
-        - ``anat/sub-<subject_label>(_ses-<session_label>)_rec-SR_id-<srr_id>_T2w.json``
+        - ``anat/sub-<label>(_ses-<label>)_rec-SR_id-<label>_T2w.nii.gz``
+        - ``anat/sub-<label>(_ses-<label>)_rec-SR_id-<label>_T2w.json``
 
-* The slice-to-volume registration transform of each T2W scans estimated during slice motion estimation and SDI reconstruction and used in the super-resolution forward model are placed in each subject's ``xfm/`` subfolder:
+* The slice-by-slice transforms of all T2W scans estimated during slice motion estimation and SDI reconstruction and used in the super-resolution forward model are placed in each subject's ``xfm/`` subfolder:
 
-    - ``xfm/sub-<subject_label>(_ses-<session_label>)_run-1_id-<srr_id>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
-    - ``xfm/sub-<subject_label>(_ses-<session_label>)_run-2_id-<srr_id>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
-    - ``xfm/sub-<subject_label>(_ses-<session_label>)_run-3_id-<srr_id>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
+    - ``xfm/sub-<label>(_ses-<label>)_run-1_id-<label>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
+    - ``xfm/sub-<label>(_ses-<label>)_run-2_id-<label>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
+    - ``xfm/sub-<label>(_ses-<label>)_run-3_id-<label>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
     - ...
 
 Nipype Workflow Derivatives
 ==========================================
 
-The execution of the Nipype workflow (pipeline) involves the creation of a number of intermediate outputs which are written to ``<bids_dataset/derivatives>/nipype/sub-<subject_label>/rec-<sr_id>/srr_pipeline``: 
+The execution of the Nipype workflow (pipeline) involves the creation of a number of intermediate outputs for each subject ``sub-<label>`` and each run ``rec-<id_label>`` which are written to ``<bids_dataset/derivatives>/nipype/sub-<label>/rec-<id_label>/srr_pipeline`` where ``<id_label>`` corresponds to the label used previously for the entity ``id-<label>``: 
 
 .. image:: images/nipype_wf_derivatives.png
     :width: 888
