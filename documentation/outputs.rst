@@ -7,44 +7,70 @@ Processed, or derivative, data are outputed to ``<bids_dataset/derivatives>/``.
 Main MIALSRTK BIDS App Derivatives
 ==========================================
 
-Main outputs produced by MIALSRTK BIDS App are written to ``<bids_dataset/derivatives>/pymialsrtk-<variant>/sub-<subject_label>/``. An execution log of the full workflow is saved as `sub-<subject_label>_log.txt``
+Main outputs produced by MIALSRTK BIDS App are written to ``<bids_dataset/derivatives>/pymialsrtk-<variant>/sub-<subject_label>/(_ses-<session_label>/)``. An execution log of the full workflow is saved as `sub-<subject_label>(_ses-<session_label>)_id-<srr_id>_log.txt``.
+
+.. note:: MIALSRTK BIDS App outputs follows the :abbr:`BIDS (brain imaging data structure)` Derivatives specification (see `BIDS Derivatives Extension <https://bids-specification.readthedocs.io/en/v1.4.0/>`_) whenever possible. However a new entity ``id-<srr_id>`` has been introduced to distinguish between outputs when the pipeline is run with multiple configurations (such a new order of scans) on the same subject.
+
+BIDS derivatives entities
+--------------------------
+
+.. tabularcolumns:: |l|c|p{5cm}|
+
++--------------+------------------+-------------------------------------------------------+
+|  **Entity**  | **Label**        | **Description**                                       |
++--------------+------------------+-------------------------------------------------------+
+|  ``sub``     | <subject_label>  | Label of the subject                                  |
++--------------+------------------+-------------------------------------------------------+
+|  ``ses``     | <session_label>  | Label of the session                                  |
++--------------+------------------+-------------------------------------------------------+
+|  ``run``     | <run_label>      | Label of the T2w scan                                 |
++--------------+------------------+-------------------------------------------------------+
+|  ``rec``     | <recon_label>    | Label of the reconstruction type                      |
++--------------+------------------+-------------------------------------------------------+
+|  ``id``      | <srr_id>         | Label of the reconstruction for a given configuration |
++--------------+------------------+-------------------------------------------------------+
 
 Anatomical derivatives
 ------------------------
 * Anatomical derivatives are placed in each subject's ``anat/`` subfolder, including:
 
-  * The brain masks of the T2w scans:
+    * The brain masks of the T2w scans:
 
-        - ``anat/sub-<subject_label>_run-01_desc-brain_mask.nii.gz``
-        - ``anat/sub-<subject_label>_run-02_desc-brain_mask.nii.gz``
-        - ``anat/sub-<subject_label>_run-03_desc-brain_mask.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-01_id-<srr_id>_desc-brain_mask.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-02_id-<srr_id>_desc-brain_mask.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-03_id-<srr_id>_desc-brain_mask.nii.gz``
         - ...
 
     * The preprocessed T2w scans used for slice motion estimation and scattered data interpolation (SDI) reconstruction:
 
-        - ``anat/sub-<subject_label>_run-01_desc-SDIprep_T2w.nii.gz``
-        - ``anat/sub-<subject_label>_run-02_desc-SDIprep_T2w.nii.gz``
-        - ``anat/sub-<subject_label>_run-03_desc-SDIprep_T2w.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-01_id-<srr_id>_desc-preprocSDI_T2w.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-02_id-<srr_id>_desc-preprocSDI_T2w.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-03_id-<srr_id>_desc-preprocSDI_T2w.nii.gz``
         - ...
         
     * The preprocessed T2w scans used for super-resolution reconstruction:
 
-        - ``anat/sub-<subject_label>_run-01_desc-SRprep_T2w.nii.gz``
-        - ``anat/sub-<subject_label>_run-02_desc-SRprep_T2w.nii.gz``
-        - ``anat/sub-<subject_label>_run-03_desc-SRprep_T2w.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-01_id-<srr_id>_desc-preprocSR_T2w.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-02_id-<srr_id>_desc-preprocSR_T2w.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_run-03_id-<srr_id>_desc-preprocSR_T2w.nii.gz``
         - ...
-       
-        
+   
     * The high-resolution image reconstructed by SDI:
 
-        - ``anat/sub-01_rec-SDI_id-1_T2w.nii.gz``
-        - ``anat/sub-01_rec-SDI_id-1_T2w.json``
-        
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_rec-SDI_id-<srr_id>_T2w.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_rec-SDI_id-<srr_id>_T2w.json``
+
     * The high-resolution image reconstructed by SDI:
 
-        - ``anat/sub-01_rec-SR_id-1_T2w.nii.gz``
-        - ``anat/sub-01_rec-SR_id-1_T2w.json``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_rec-SR_id-<srr_id>_T2w.nii.gz``
+        - ``anat/sub-<subject_label>(_ses-<session_label>)_rec-SR_id-<srr_id>_T2w.json``
 
+* The slice-to-volume registration transform of each T2W scans estimated during slice motion estimation and SDI reconstruction and used in the super-resolution forward model are placed in each subject's ``xfm/`` subfolder:
+
+    - ``xfm/sub-<subject_label>(_ses-<session_label>)_run-1_id-<srr_id>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
+    - ``xfm/sub-<subject_label>(_ses-<session_label>)_run-2_id-<srr_id>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
+    - ``xfm/sub-<subject_label>(_ses-<session_label>)_run-3_id-<srr_id>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
+    - ...
 
 Nipype Workflow Derivatives
 ==========================================
@@ -66,5 +92,3 @@ Execution details (data provenance) of each interface (node) of a given pipeline
 .. image:: images/nipype_node_report.png
     :width: 888
     :align: center
-
-.. note:: MIALSRTK BIDS App outputs are currently being updated to conform to the :abbr:`BIDS (brain imaging data structure)` Derivatives specification (see `BIDS Derivatives Extension <https://bids-specification.readthedocs.io/en/v1.4.0/>`_). 
