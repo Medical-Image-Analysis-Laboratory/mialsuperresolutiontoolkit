@@ -145,7 +145,7 @@ html_theme = 'sphinx_rtd_theme'  # 'sphinxdoc'
 # documentation.
 html_theme_options = {
     'logo_only': True,  # should be commented if html_theme = 'alabaster'
-    'display_version': True
+    'display_version': False
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -230,15 +230,25 @@ latex_elements = {
     # The font size ('10pt', '11pt' or '12pt').
     'pointsize': '10pt',
     
+    # Font settings
+    'fontpkg': r'''
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+''',
+    
     # Additional stuff for the LaTeX preamble.
-    # 'preamble': '',
+    
+     # Additional stuff
+    'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
+    'printindex': r'\tiny\raggedright\printindex',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
     ('index', 'MIALSRTK.tex', u'MIALSRTK Documentation',
-     u'Medical Image Analysis Laboratory', 'manual'),
+     u'Medical Image Analysis Laboratory and Contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -257,20 +267,7 @@ latex_show_pagerefs = True
 
 # Customize latex
 latex_elements = {
-    'fontpkg': r'''
-\setmainfont{DejaVu Serif}
-\setsansfont{DejaVu Sans}
-\setmonofont{DejaVu Sans Mono}
-''',
-    'preamble': r'''
-\usepackage[titles]{tocloft}
-\cftsetpnumwidth {1.25cm}\cftsetrmarg{1.5cm}
-\setlength{\cftchapnumwidth}{0.75cm}
-\setlength{\cftsecindent}{\cftchapnumwidth}
-\setlength{\cftsecnumwidth}{1.25cm}
-''',
-    'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
-    'printindex': r'\footnotesize\raggedright\printindex',
+    
 }
 latex_show_urls = 'footnote'
 
