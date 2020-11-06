@@ -238,7 +238,7 @@ latex_elements = {
 ''',
     
     # Additional stuff for the LaTeX preamble.
-    # 'fontpkg' ; ''
+    'preamble': r'\usepackage{fontspec}',
     
     # Use Fancy chapter
     'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
