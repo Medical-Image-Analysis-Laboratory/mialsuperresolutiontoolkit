@@ -253,7 +253,7 @@ latex_use_parts = True
 latex_show_pagerefs = True
 
 # Specify Latex engine
-latex_engine = 'xelatex'
+# latex_engine = 'xelatex'
 
 # Customize latex
 latex_elements = {
