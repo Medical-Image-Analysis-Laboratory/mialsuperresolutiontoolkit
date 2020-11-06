@@ -27,7 +27,8 @@
       "contributions": [
         "example",
         "test",
-        "code"
+        "code",
+        "doc"
       ]
     },
     {
