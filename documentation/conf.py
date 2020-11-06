@@ -230,6 +230,9 @@ latex_elements = {
     # The font size ('10pt', '11pt' or '12pt').
     'pointsize': '10pt',
     
+    # Additional package
+    'extrapackages': r'\usepackage{fontspec}',
+    
     # Font settings
     'fontpkg': r'''
 \setmainfont{DejaVu Serif}
@@ -238,7 +241,7 @@ latex_elements = {
 ''',
     
     # Additional stuff for the LaTeX preamble.
-    'preamble': r'\usepackage{fontspec}',
+    # 'preamble': r'\usepackage{fontspec}',
     
     # Use Fancy chapter
     'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
