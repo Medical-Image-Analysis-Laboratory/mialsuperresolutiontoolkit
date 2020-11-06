@@ -244,7 +244,7 @@ latex_elements = {
     'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
     
     # Adjust for the large character width of the monospace font, used in code-blocks
-    'fvset' : r'\\fvset{fontsize=\\footnotesize}' 
+    'fvset': r'\\fvset{fontsize=\\footnotesize}',
     
     # Adjust size for long module name in generated index
     'printindex': r'\tiny\raggedright\printindex',
@@ -271,10 +271,6 @@ latex_show_pagerefs = True
 # Specify Latex engine
 # latex_engine = 'xelatex'
 
-# Customize latex
-latex_elements = {
-    
-}
 latex_show_urls = 'footnote'
 
 # If true, show URL addresses after external links.
