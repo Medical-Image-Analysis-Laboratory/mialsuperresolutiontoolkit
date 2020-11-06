@@ -242,10 +242,7 @@ latex_elements = {
 
     # Additional stuff for the LaTeX preamble.
     'preamble': r'''
-\usepackage{fontspec}
-\setmainfont{DejaVu Serif}
-\setsansfont{DejaVu Sans}
-\setmonofont{DejaVu Sans Mono}
+\usepackage{dejavu}
 ''',
 
     # Use Fancy chapter
