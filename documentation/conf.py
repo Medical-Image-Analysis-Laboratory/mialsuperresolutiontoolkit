@@ -226,31 +226,39 @@ autosectionlabel_prefix_document = True
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     'papersize': 'a4paper',
-    
+
     # The font size ('10pt', '11pt' or '12pt').
     'pointsize': '10pt',
-    
+
     # Additional package
-    'extrapackages': r'\usepackage{fontspec}',
-    
+    # 'extrapackages': r'',
+
     # Font settings
-    'fontpkg': r'''
+#    'fontpkg': r'''
+# \setmainfont{DejaVu Serif}
+# \setsansfont{DejaVu Sans}
+# \setmonofont{DejaVu Sans Mono}
+# ''',
+
+    # Additional stuff for the LaTeX preamble.
+    'preamble': r'''
+\usepackage{fontspec}
 \setmainfont{DejaVu Serif}
 \setsansfont{DejaVu Sans}
 \setmonofont{DejaVu Sans Mono}
 ''',
-    
-    # Additional stuff for the LaTeX preamble.
-    # 'preamble': r'\usepackage{fontspec}',
-    
+
     # Use Fancy chapter
     'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
-    
+
     # Adjust for the large character width of the monospace font, used in code-blocks
     'fvset': r'\\fvset{fontsize=\\footnotesize}',
-    
+
     # Adjust size for long module name in generated index
-    'printindex': r'\tiny\raggedright\printindex',
+    'printindex': r'''
+\idxlayout{columns=1}
+\tiny\raggedright\printindex
+''',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
