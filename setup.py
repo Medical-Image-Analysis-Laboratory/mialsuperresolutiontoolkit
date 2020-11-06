@@ -52,7 +52,7 @@ def main(**extra_args):
           author='Sebastien Tourbier',
           author_email='sebastien.tourbier@alumni.epfl.ch',
           url='http://www.connectomics.org/',
-          scripts=['scripts/superresolution'],
+          # scripts=['scripts/superresolution'],
           license='Modified BSD License',
           packages=packages,
           classifiers=[c.strip() for c in """\
