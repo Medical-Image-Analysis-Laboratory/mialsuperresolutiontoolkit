@@ -238,9 +238,15 @@ latex_elements = {
 ''',
     
     # Additional stuff for the LaTeX preamble.
+    # 'fontpkg' ; ''
     
-     # Additional stuff
+    # Use Fancy chapter
     'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
+    
+    # Adjust for the large character width of the monospace font, used in code-blocks
+    'fvset' : r'\\fvset{fontsize=\\footnotesize}' 
+    
+    # Adjust size for long module name in generated index
     'printindex': r'\tiny\raggedright\printindex',
 }
 
