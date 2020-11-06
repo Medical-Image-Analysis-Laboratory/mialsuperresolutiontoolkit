@@ -79,7 +79,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = u'The MIAL Super-Resolution Toolkit'
+project = u'Medical Image Analysis Laboratory Super-Resolution Toolkit'
 copyright = u'2016-{}, Medical Image Analysis Laboratory (MIAL) & Contributors'.format(time.strftime("%Y"))
 
 # The version info for the project you're documenting, acts as replacement for
@@ -145,7 +145,7 @@ html_theme = 'sphinx_rtd_theme'  # 'sphinxdoc'
 # documentation.
 html_theme_options = {
     'logo_only': True,  # should be commented if html_theme = 'alabaster'
-    'display_version': False
+    'display_version': True
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -153,10 +153,10 @@ html_theme_options = {
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'The MIAL Super-Resolution Toolkit'
+# html_title = 'The MIAL Super-Resolution Toolkit'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-# html_short_title = None
+html_short_title = u'MIALSRTK'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -188,7 +188,7 @@ html_last_updated_fmt = '%b %d, %Y'
 # html_additional_pages = {}
 
 # If false, no module index is generated.
-# html_domain_indices = True
+html_domain_indices = True
 
 # If false, no index is generated.
 html_use_index = True
@@ -252,6 +252,28 @@ latex_use_parts = True
 # If true, show page references after internal links.
 latex_show_pagerefs = True
 
+# Specify Latex engine
+latex_engine = 'xelatex'
+
+# Customize latex
+latex_elements = {
+    'fontpkg': r'''
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+''',
+    'preamble': r'''
+\usepackage[titles]{tocloft}
+\cftsetpnumwidth {1.25cm}\cftsetrmarg{1.5cm}
+\setlength{\cftchapnumwidth}{0.75cm}
+\setlength{\cftsecindent}{\cftchapnumwidth}
+\setlength{\cftsecnumwidth}{1.25cm}
+''',
+    'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
+    'printindex': r'\footnotesize\raggedright\printindex',
+}
+latex_show_urls = 'footnote'
+
 # If true, show URL addresses after external links.
 # latex_show_urls = False
 
@@ -268,7 +290,7 @@ latex_show_pagerefs = True
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'MIALSRTK', u'MIALSRTK Documentation',
-     [u'Medical Image Analysis Laboratory'], 1)
+     [u'Medical Image Analysis Laboratory and Contributors'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -282,8 +304,9 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'MIALSRTK', u'MIALSRTK Documentation',
-     u'Medical Image Analysis Laboratory', 'MIALSRTK', 'One line description of project.',
-     'Miscellaneous'),
+     u'Medical Image Analysis Laboratory and Contributors', 'MIALSRTK',
+     'Set of C++ image processing and Python workflow tools necessary to perform motion-robust super-resolution fetal MRI reconstruction.',
+     'Science'),
 ]
 
 # Documents to append as an appendix to all manuals.
