@@ -1,0 +1,6 @@
+run-1 axial
+run-2 coronal
+run-3 sagittal
+run-4 coronal
+run-5 sagittal
+run-6 sagittal

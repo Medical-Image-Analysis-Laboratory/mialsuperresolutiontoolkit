@@ -3,13 +3,11 @@
     "keywords": [
       "fetal",
       "neuroimaging",
-      "workflow",
       "pipeline",
       "super-resolution",
       "registration",
       "MRI",
-      "BIDS",
-      "BIDS-App"
+      "BIDS"
     ],
     "publication_date": "2019-03-19",
     "creators": [
@@ -17,6 +15,10 @@
         "name": "Tourbier, Sebastien",
         "affiliation": "Department of Radiology, Lausanne University Hospital (CHUV), Switzerland",
         "orcid": "0000-0002-4441-899X"
+      },
+      {
+        "name": "Bresson, Xavier",
+        "affiliation": "Data Science and AI Center (DSAIR), Nanyang Technological University (NTU), Singapore"
       },
       {
         "name": "Bach Cuadra, Meritxell",

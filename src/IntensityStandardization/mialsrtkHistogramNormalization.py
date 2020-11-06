@@ -45,10 +45,10 @@ def mean_nonzero(image):
     return mean
 
 def intensityNormalization(image,landmarks):
-    print 'min ='+str(landmarks['p1'])
-    print 'max (99.8%) ='+str(landmarks['p2'])
+    print('min ='+str(landmarks['p1']))
+    print('max (99.8%) =',str(landmarks['p2']))
         #print 'mean ='+str(landmarks['mean'])
-    print 'quartiles [25%,50%,75%] ='+str(landmarks['quartiles'])
+    print('quartiles [25%,50%,75%] ='+str(landmarks['quartiles']))
     return 1
 
 def displayHistogram(image,image_name,loffset,roffset):
@@ -93,7 +93,7 @@ def trainImageLandmarks(list_landmarks):
     ymax=np.max(maxLR)
     ymax_index=maxLR.index(max(maxLR))
     dS = float(ymax*(mup_L[ymax_index]+mup_R[ymax_index]))
-    print 'Ymax  =  '+str(ymax)+'  at position '+str(ymax_index)+'  ,  dS = '+str(dS)+' (=s2 when s1=0)'
+    print('Ymax  =  ', str(ymax)+'  at position '+str(ymax_index)+'  ,  dS = '+str(dS)+' (=s2 when s1=0)')
     return list_landmarks,dS
 
 def mapImageLandmarks(list_landmarks,s1,s2):
@@ -101,13 +101,13 @@ def mapImageLandmarks(list_landmarks,s1,s2):
     index=0
     while index<len(list_landmarks):
         land_index=0
-        print 'Image index: '+str(index)
+        print('Image index:', str(index))
         while land_index<len(list_landmarks[index]['quartiles']):
-            print 'old landmark: '+str(list_landmarks_mapped[index]['quartiles'][land_index])
+            print('old landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
             list_landmarks_mapped[index]['quartiles'][land_index]=s1+float((list_landmarks_mapped[index]['quartiles'][land_index]-list_landmarks_mapped[index]['p1'])/float(list_landmarks_mapped[index]['p2']-list_landmarks_mapped[index]['p1']))*float((s2-s1))
-            print 'new landmark: '+str(list_landmarks_mapped[index]['quartiles'][land_index])
+            print('new landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
             land_index+=1
-        print 'p1, p2 = '+str(list_landmarks_mapped[index]['p1'])+', '+str(list_landmarks_mapped[index]['p2'])
+        print('p1, p2 = ', str(list_landmarks_mapped[index]['p1']), ',', str(list_landmarks_mapped[index]['p2']))
         index+=1
     return list_landmarks_mapped
 
@@ -179,19 +179,22 @@ def computeMeanMapImageLandmarks(list_landmarks):
         mean_landmarks[str(land_index)] = mean_landmarks[str(land_index)] / len(list_landmarks)
         land_index+=1
 
-    print 'Final landmark average : '
-    print mean_landmarks
+    print('Final landmark average : ')
+    print(mean_landmarks)
     return mean_landmarks
 
 
-def main(image_directory,mask_directory,output_directory,suffix,iteration):
-    image_paths= sorted(glob.glob(image_directory+"/*_lr_"+suffix+"_iteration_"+iteration+".nii.gz"))
-    mask_paths=sorted(glob.glob(mask_directory+"/*_lr_brain_mask"+str(args.mask_type)+"_reo_iteration_"+iteration+".nii.gz"))
+def main(images,masks,outputs):
+    
+    image_paths= sorted(images)
+    mask_paths=sorted(masks)
+    output_paths = sorted(outputs)
+
     if(len(image_paths)!=len(mask_paths)):
-        print 'Loading failed: Number of images and masks are different (# images = '+str(len(image_paths))+' \ # masks = '+str(len(mask_paths))+')'
+        print('Loading failed: Number of images and masks are different (# images = ', str(len(image_paths)), '\\ # masks =', str(len(mask_paths)), ')')
         return
     else:
-        print 'Loading passed: Number of images and masks are equal (# images = '+str(len(image_paths))+' \ # masks = '+str(len(mask_paths))+')'
+        print('Loading passed: Number of images and masks are equal (# images =', str(len(image_paths)), '\\ # masks =', str(len(mask_paths)), ')')
     
     list_landmarks=[]
    
@@ -201,7 +204,7 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
     index=0
     while index<len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
-        print 'Process image '+image_name
+        print('Process image', image_name)
         image = nib.load(image_paths[index]).get_data()
         #image = scipy.ndimage.filters.gaussian_filter(image,1.0)
         mask = nib.load(mask_paths[index]).get_data()
@@ -217,7 +220,7 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
     list_landmarks,dS = trainImageLandmarks(list_landmarks)
 
     s2 = np.ceil(dS - s1)
-    print 'Standard scale estimated: ['+str(s1)+','+str(s2)+']'
+    print('Standard scale estimated: [', str(s1), ',', str(s2), ']')
 
     list_landmarks_mapped = mapImageLandmarks(list_landmarks,s1,s2)
 
@@ -228,7 +231,7 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
     #pyplot.subplot(212)
     while index<len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
-        print 'Map image '+image_name
+        print ('Map image', image_name)
         image = nib.load(image_paths[index])
         image_data = image.get_data()
         mask_data = nib.load(mask_paths[index]).get_data()
@@ -242,9 +245,8 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
         displayHistogram(maskedImageMapped,image_name,1,0)
         o2o=verifyOne2OneMapping(s1,s2,list_landmarks[index],mean_landmarks)
         new_image = nib.Nifti1Image(np.reshape(maskedImageMapped,np.array([dimY,dimX,dimZ])),image.get_affine(),header=image.get_header())
-        new_image_name = str(output_directory)+"/"+str(image_name)+'_histnorm.nii.gz'
-        print 'Save normalized image '+str(image_name)+ ' as '+str(new_image_name) + '(one 2 one mapping :'+str(o2o)+')'
-        nib.save(new_image,new_image_name)
+        print('Save normalized image', str(image_name), 'as', str(output_paths[index]), '(one 2 one mapping :', str(o2o), ')')
+        nib.save(new_image,output_paths[index])
         index+=1
     #pyplot.legend()
     #pyplot.xlabel('Intensity')
@@ -253,57 +255,49 @@ def main(image_directory,mask_directory,output_directory,suffix,iteration):
     ## To be uncommented to display plot before/after histogram normalizatiopn
     ##pyplot.show()
 
-# Read command line args
-# try:
-#     myopts, args = getopt.getopt(sys.argv[1:],'i:h:o', ['input_directory=','mask_directory=','output_directory'])
-# except getopt.GetoptError, err:
-#     print str(err)
-#     sys.exit(2)
-
-# for opt, arg in myopts:
-#     if opt in ('-i','--input_directory'):
-#         image_directory=arg
-#         print image_directory
-#     if opt in ('-h','--mask_directory'):
-#         mask_directory=arg
-#         print mask_directory
-#     if opt in ('-o','--output_directory'):
-#         output_directory=arg
-#         print output_directory
-#     else:
-#          print("Usage: %s -i input_directory -m mask_directory -o output_directory" % sys.argv[0])
-#          sys.exit(2)
-         
-# main(image_directory,mask_directory,output_directory)
-
-# #directory='/Users/sebastientourbier/Desktop/F019/'
-# #directory='/media/Shared_Data/MyStudies/PrereconstructionPipeline/Data/'
+# Parse command line args
 
 parser = argparse.ArgumentParser(description='Intensity histogram normalization based on percentiles')
-parser.add_argument('-i','--input_dir',help='Input directory')
-parser.add_argument('-m','--mask_dir',help='Mask directory')
-parser.add_argument('-t','--mask_type',help='Mask type: could be "", SSMMI_CompositeVersor2DBSplineNCC, SSMMI_VersorOnlyNCC or MAN')
-parser.add_argument('-o','--output_dir',help='Output directory')
-parser.add_argument('-S','--suffix',help='Suffix of image filename, such as filename ended by *_Final_${suffix}_iteration_${iteration}.nii.gz, where ${iteration} is given by input flag -I or --iteration. suffix="uni_bcorr_reo" (not denoised images) or suffix="nlm_uni_bcorr_reo" (denoised images)')
-parser.add_argument('-I','--iteration',help='Reconstruction iteration, needed to load the corresponding input images being histogram equalized')
+parser.add_argument('-i','--input', required=True, action='append', help='Input image(s)')
+parser.add_argument('-m','--mask', required=True, action='append', help='Input mask(s)')
+parser.add_argument('-o','--output', required=True, action='append', help='Output normalized image(s)')
 
 args = parser.parse_args()
 
-print args.input_dir!=None
-print args.mask_dir!=None
-print args.mask_type!=None
-print args.output_dir!=None
-print args.suffix!=None
-print args.iteration!=None
+print(len(args.input)>0)
+print(len(args.mask)>0)
+print(len(args.output)>0)
+print('Inputs: {}'.format(args.input))
+print('Masks: {}'.format(args.mask))
+print('Outputs: {}'.format(args.output))
 
-if (args.input_dir!=None and args.mask_dir!=None and args.output_dir!=None and args.mask_type!=None and args.suffix!=None and args.iteration!=None):
-    print 'Input directory: '+str(args.input_dir)
-    print 'Mask directory: '+str(args.mask_dir)
-    print 'Mask type: '+str(args.mask_type)
-    print 'Output directory: '+str(args.output_dir)
-    print 'Image file suffix: '+str(args.suffix)
-    print 'Reconstruction iteration: '+str(args.iteration)
-    main(str(args.input_dir),str(args.mask_dir),str(args.output_dir),str(args.suffix),str(args.iteration))
-else:
-    print("Usage: %s -i input_directory -m mask_directory -t mask_type -o output_directory -S image_file_suffix -I iteration" % sys.argv[0])
+if len(args.input)==0:
+    print("Error: No input images provided")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
     sys.exit(2)
+
+if len(args.mask)==0:
+    print("Error: No masks provided")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    sys.exit(2)
+
+if len(args.output)==0:
+    print("Error: No output provided")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    sys.exit(2)
+
+if (len(args.input)!=len(args.mask)):
+    print("Error: Number of inputs and masks are not equal")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    sys.exit(2)
+
+if (len(args.input)!=len(args.output)):
+    print("Error: Number of inputs and outputs are not equal")
+    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    sys.exit(2)
+
+
+print('Inputs: {}'.format(args.input))
+print('Masks: {}'.format(args.mask))
+print('Outputs: {}'.format(args.output))
+main(args.input,args.mask,args.output)

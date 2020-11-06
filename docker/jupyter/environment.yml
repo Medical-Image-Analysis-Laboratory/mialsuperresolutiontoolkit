@@ -1,0 +1,26 @@
+name: pymialsrtk-env
+
+channels:
+- anaconda
+- conda-forge
+- defaults
+
+dependencies:
+- python=3.7.2
+- pip=19.0.3
+- git-annex=7.20190219
+- nibabel=2.3.3
+- nipype=1.2.0
+- traitsui=6.0.0
+- jupyter=1.0.0
+- jupyterlab=1.1.3
+- matplotlib=2.2.3
+- graphviz=2.40.1
+
+- pip:
+    - duecredit==0.7.0
+    - apptools==4.4.0
+    - niworkflows==0.10.2
+    - jupyter_contrib_nbextensions==0.5.1
+    - scikit-learn==0.21.3
+    - pybids==0.9.1

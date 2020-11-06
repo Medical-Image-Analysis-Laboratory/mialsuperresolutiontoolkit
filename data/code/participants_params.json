@@ -1,0 +1,9 @@
+{
+  "01": [
+    { "sr-id":1,
+      "stacksOrder": [1, 3, 5],
+      "paramTV": { 
+        "lambdaTV": 0.75, 
+        "deltatTV": 0.01 }
+    }]
+}

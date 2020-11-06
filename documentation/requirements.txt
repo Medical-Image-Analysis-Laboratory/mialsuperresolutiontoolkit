@@ -1,0 +1,5 @@
+sphinx-argparse
+nbsphinx
+traits
+grabbit
+pybids

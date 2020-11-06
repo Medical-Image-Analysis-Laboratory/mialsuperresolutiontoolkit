@@ -1,0 +1,411 @@
+version: 2.1
+
+orbs:
+  coverage-reporter: codacy/coverage-reporter@11.0.1
+
+jobs:
+
+  build:
+    environment:
+      TZ: "/usr/share/zoneinfo/Europe/Zurich"
+      SCRATCH: "/scratch"
+    docker:
+      - image: docker:19.03.1-git 
+    working_directory: tmp/src/mialsuperresolutiontoolkit
+    steps:
+      - run:
+          name: Install parallel gzip and python2
+          command: |
+            apk add --no-cache pigz python2
+      - restore_cache:
+          keys:
+            - docker-{{ .Branch }}-{{ epoch }}
+            - docker-{{ .Branch }}-
+            - docker-master-
+            - docker-
+          paths:
+            - /tmp/cache/docker.tar.gz
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Build Docker image
+          no_output_timeout: 120m
+          command: |
+            # Get version, update files.
+            THISVERSION=v$( python get_version.py )
+            echo "THISVERSION : ${THISVERSION}"
+            echo "CIRCLE_TAG : ${CIRCLE_TAG}"
+            if [[ ${THISVERSION:0:1} == "0" ]] ; then
+              echo "WARNING: latest git tag could not be found"
+              echo "Please, make sure you fetch all tags from upstream with"
+              echo "the command ``git fetch --tags --verbose`` and push"
+              echo "them to your fork with ``git push origin --tags``"
+            fi
+
+            # Build main docker image
+            ls -la .
+            e=1 && for i in {1..5}; do
+              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 --rm=false --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=$VCS_REF --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 . \
+              && e=0 && break || sleep 15
+            done && [ "$e" -eq "0" ]   
+            # Build CMP BIDS App docker image
+            ls -la ./docker/bidsapp
+            e=1 && for i in {1..5}; do
+              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-bidsapp --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit-bidsapp ./docker/bidsapp \
+              && e=0 && break || sleep 15
+            done && [ "$e" -eq "0" ]
+      - run:
+          name: Save Docker Images
+          no_output_timeout: 40m
+          command: |
+            # Get version, update files.
+            THISVERSION=$( python get_version.py )
+            mkdir -p /tmp/cache
+            docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
+            | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - cache/docker.tar.gz
+            - src/mialsuperresolutiontoolkit
+
+
+  test:
+    machine:
+      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-1604:201903-01
+
+    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
+
+    steps:
+      - checkout:
+          path: /home/circleci/src/mialsuperresolutiontoolkit
+      - run:
+          name: Check whether test should be skipped
+          command: |
+            cd /home/circleci/src/mialsuperresolutiontoolkit
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?test]' )" != "" ]]; then
+              echo "Skipping test"
+              circleci step halt
+            fi
+      - attach_workspace:
+          at: /tmp
+      # - restore_cache:
+      #     keys:
+      #       - ds-sample-derivatives-{{ .Branch }}-{{ epoch }}
+      #       - ds-sample-derivatives-{{ .Branch }}
+      #       - ds-sample-derivatives-master
+      #       - ds-sample-derivatives-
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+              sudo apt-get update && sudo apt-get -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Create the data/test folder
+          no_output_timeout: 1h
+          command: |
+            mkdir -p /tmp/src/mialsuperresolutiontoolkit/data/test
+      - run:
+          name: Test-01 - Run super-resolution pipelines on sample testing dataset with manual masks
+          no_output_timeout: 6h
+          command: |
+            # Get version, update files.
+            #THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            #echo "THISVERSION : ${THISVERSION}"
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data/code
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data/derivatives
+
+            #Execute BIDS App
+            docker run -it --rm --entrypoint /app/run_srr_coverage.sh \
+                -v /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
+                -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
+                sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
+                /bids_dir /output_dir participant --participant_label 01 \
+                --param_file /bids_dir/code/participants_params.json \
+                --manual 
+
+            # Rename log
+            mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_log.txt
+
+            # Rename partial coverage
+            mv /tmp/src/mialsuperresolutiontoolkit/data/code/coverage.xml /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_coverage.xml
+      # - save_cache:
+      #    key: ds-sample-derivatives-{{ .Branch }}-{{ epoch }}
+      #    paths:
+      #       - /tmp/data/ds-sample/derivatives
+      - run:
+          name: Test-01 - Checking outputs of MIALSRTK BIDS App run
+          command: |
+            # Get all files in derivatives except the _*.json interface hash generated by nipype (find) / remove the full path of the derivatives (sed) / sort the files and write it to a text file
+            sudo find /tmp/src/mialsuperresolutiontoolkit/data/derivatives -path */figures -prune -o -not -name "_*.json" -type f -print | sed s+/tmp/src/mialsuperresolutiontoolkit/data/derivatives/++ | sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
+            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-01_outputs.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out         
+            exit $?
+      - run:
+          name: Test-02 - Run super-resolution pipelines on sample testing dataset with automatic brain extraction
+          no_output_timeout: 6h
+          command: |
+            # Get version, update files.
+            #THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            #echo "THISVERSION : ${THISVERSION}"
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data/code
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data/derivatives
+
+            rm -R /tmp/src/mialsuperresolutiontoolkit/data/derivatives/*
+
+            #Execute BIDS App
+            docker run -it --rm --entrypoint /app/run_srr_coverage.sh \
+                -v /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
+                -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
+                sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
+                /bids_dir /output_dir participant --participant_label 01 \
+                --param_file /bids_dir/code/participants_params.json
+
+            # Rename log
+            mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_log.txt
+
+            # Rename partial coverage
+            mv /tmp/src/mialsuperresolutiontoolkit/data/code/coverage.xml /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_coverage.xml
+      - run:
+          name: Test-02 - Checking outputs of MIALSRTK BIDS App run
+          command: |
+            # Get all files in derivatives except the _*.json interface hash generated by nipype (find) / remove the full path of the derivatives (sed) / sort the files and write it to a text file
+            sudo find /tmp/src/mialsuperresolutiontoolkit/data/derivatives -path */figures -prune -o -not -name "_*.json" -type f -print | sed s+/tmp/src/mialsuperresolutiontoolkit/data/derivatives/++ | sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
+            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-02_outputs.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out         
+            exit $?
+      - run:
+          name: Clean working directory
+          when: always
+          command: |
+            sudo chown $(id -un):$(id -gn) -R /tmp/src/mialsuperresolutiontoolkit/data
+            find /tmp/src/mialsuperresolutiontoolkit/data/derivatives -not -name "*.svg" -not -name "*.png" -not -name "*.html"  -not -name "*.nii.gz" -not -name "*.rst" \
+                -not -name "*.mat" -not -name "*.gpickle" -not -name "*.lta" -not -name "*.json" -not -name "*.txt" -not -name "*.pklz" -type f -delete
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - src/mialsuperresolutiontoolkit/data/test
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/code
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/derivatives
+
+  codacy-coverage-report:
+    docker:
+      - image: 'circleci/openjdk:8-jdk'
+
+    working_directory: /tmp/src/mialsuperresolutiontoolkit/data/test
+
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - coverage-reporter/send_report:
+          # With parcellation tests
+          # coverage-reports: '/tmp/src/mialsuperresolutiontoolkit/data/test/test-01_coverage.xml'
+          coverage-reports: '/tmp/src/mialsuperresolutiontoolkit/data/test/test-01_coverage.xml,/tmp/src/mialsuperresolutiontoolkit/data/test/test-02_coverage.xml'
+          project-token: ${CODACY_PROJECT_TOKEN}
+  # build_docs:
+  #   machine:
+  #     # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+  #     image: ubuntu-1604:201903-01 
+  #   working_directory: /home/circleci/out/docs
+  #   steps:
+  #     - checkout:
+  #         path: /home/circleci/src/connectomemapper3
+  #     - run:
+  #         name: Check whether build should be skipped
+  #         command: |
+  #           cd /home/circleci/src/connectomemapper3
+  #           if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?docs\]' )" != "" ]]; then
+  #             echo "Skipping documentation build job"
+  #             circleci step halt
+  #           fi
+
+  #     - attach_workspace:
+  #         at: /tmp
+  #     - run:
+  #         name: Load Docker image layer cache
+  #         no_output_timeout: 30m
+  #         command: |
+  #           docker info
+  #           set +o pipefail
+  #           if [ -f /tmp/cache/docker.tar.gz ]; then
+  #             wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+  #             sudo apt-get update && sudo apt-get -y install pigz
+  #             pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+  #             docker images
+  #           fi
+  #     - run:
+  #         name: Build Connectome Mapper 3 documentation
+  #         no_output_timeout: 2h
+  #         command: |
+  #           docker run -ti --rm=false -v $PWD:/_build_html \
+  #             --entrypoint=sphinx-build sebastientourbier/connectomemapper3:latest \
+  #             -T -E -b html -d _build/doctrees-readthedocs -W -D \
+  #             language=en /root/src/connectomemapper3/docs/ /_build_html 2>&1 \
+  #             | tee $PWD/builddocs.log
+  #           cat $PWD/builddocs.log
+  #           grep -qv "ERROR" $PWD/builddocs.log
+  #     - store_artifacts:
+  #         path: /home/circleci/out/docs
+
+  deploy_docker_release:
+    machine:
+      # Ubuntu 14.04 with Docker 17.10.0-ce
+      image: ubuntu-1604:201903-01
+    working_directory: /tmp/src/mialsuperresolutiontoolkit
+    steps:
+      - checkout:
+          path: /home/circleci/src/mialsuperresolutiontoolkit
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+              sudo apt-get update && sudo apt-get -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Deploy release with version tag to Docker Hub
+          no_output_timeout: 40m
+          command: |
+            # Get version, update files.
+            THISVERSION=$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            echo "THISVERSION : ${THISVERSION}"
+            echo "CIRCLE_TAG : ${CIRCLE_TAG}"
+
+            if [[ -n "$DOCKER_PASS" ]]; then
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+              if [[ -n "$CIRCLE_TAG" ]]; then
+                docker tag sebastientourbier/mialsuperresolutiontoolkit-bidsapp sebastientourbier/mialsuperresolutiontoolkit-bidsapp:$CIRCLE_TAG
+                docker push sebastientourbier/mialsuperresolutiontoolkit-bidsapp:$CIRCLE_TAG
+              fi
+            fi
+
+  deploy_docker_latest:
+    machine:
+      # Ubuntu 14.04 with Docker 17.10.0-ce
+      image: ubuntu-1604:201903-01
+    working_directory: /tmp/src/mialsuperresolutiontoolkit
+    steps:
+      - checkout:
+          path: /home/circleci/src/mialsuperresolutiontoolkit
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+              sudo apt-get update && sudo apt-get -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Deploy latest master to Docker Hub
+          no_output_timeout: 40m
+          command: |
+            # Get version, update files.
+            THISVERSION=$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            echo "THISVERSION : ${THISVERSION}"
+            echo "CIRCLE_BRANCH : ${CIRCLE_BRANCH}"
+
+            if [[ -n "$DOCKER_PASS" ]]; then
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+              docker tag sebastientourbier/mialsuperresolutiontoolkit-bidsapp sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
+              docker push sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
+            fi
+
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+
+      # - build_docs:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - /ds-sample\/.*/
+      #       tags:
+      #         only: /.*/
+
+      - test:
+          requires:
+            # - update_cache
+            - build
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+            tags:
+              only: /.*/
+
+      - codacy-coverage-report:
+          requires:
+            - test
+          filters:
+              branches:
+                ignore:
+                  - /docs?\/.*/
+              tags:
+                only: /.*/
+
+      - deploy_docker_release:
+          requires:
+            - build
+            # - build_docs
+            - test
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              ignore: /.*/
+              # only: master
+            # only act on version tags
+            tags:
+              only: /^v.*/
+      
+      - deploy_docker_latest:
+          requires:
+            - build
+            # - build_docs
+            - test
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              only: master

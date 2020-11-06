@@ -9,6 +9,11 @@
 *.*~
 *.save
 
+# python #
+#################################
+*.ipynb_checkpoints
+*__pycache__
+
 # Generated testing images #
 ############################
 superresolution.nii.gz
@@ -66,8 +71,15 @@ Build-debug
 build
 build-dbg
 build-debug
+_build
 release
 bin
 bin-dbg
 Bin
 RECON
+
+# Data derivatives  #
+#####################
+data/derivatives/mialsrtk*
+data/derivatives/nipype*
+data/derivatives/pymialsrtk*
