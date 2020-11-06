@@ -243,17 +243,18 @@ latex_elements = {
     # Additional stuff for the LaTeX preamble.
     'preamble': r'''
 \usepackage{dejavu}
+\\fvset{fontsize=\\footnotesize}
+\makeindex[columns=1, title=Alphabetical Index]
 ''',
 
     # Use Fancy chapter
     'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
 
     # Adjust for the large character width of the monospace font, used in code-blocks
-    'fvset': r'\\fvset{fontsize=\\footnotesize}',
+    # 'fvset': r'\\fvset{fontsize=\\footnotesize}',
 
     # Adjust size for long module name in generated index
     'printindex': r'''
-\idxlayout{columns=1}
 \tiny\raggedright\printindex
 ''',
 }
