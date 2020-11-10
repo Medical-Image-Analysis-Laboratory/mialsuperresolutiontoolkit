@@ -129,5 +129,6 @@ Contents
 
    LICENSE
    citing
+   changes
    contributing
    contributors
