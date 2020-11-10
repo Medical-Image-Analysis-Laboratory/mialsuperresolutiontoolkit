@@ -16,6 +16,7 @@ from glob import glob
 
 import nibabel
 import cv2
+import skimage.measure
 # from medpy.io import load
 
 import scipy.ndimage as snd
@@ -1345,6 +1346,129 @@ class MultipleMialsrtkMaskImage(BaseInterface):
 
 
 ####################
+# Stacks ordering
+####################
+
+
+class StacksOrderingInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the StacksOrdering interface.
+
+    Attributes
+    -----------
+    input_masks <list<string>>
+        Input brain masks on which motion is computed.
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.StacksOrdering
+
+    """
+
+    input_masks = InputMultiPath(File(desc='Input masks', mandatory=True))
+
+
+class StacksOrderingOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the StacksOrdering interface.
+
+    Attributes
+    -----------
+    stacks_order <string>
+        Order of images' run-id to be used for reconstruction
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.StacksOrdering
+
+    """
+
+    stacks_order = traits.List(desc='Order of stacks')
+
+
+class StacksOrdering(BaseInterface):
+    """Runs the automatic ordering of stacks.
+
+    This module is based on a centroid tracking of the the central of the brain mask.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import StacksOrdering
+    >>> stacksOrdering = StacksOrdering()
+    >>> stacksOrdering.inputs.input_images = ['my_image_run-1.nii.gz', 'my_image_run-3.nii.gz', 'my_image_run-2.nii.gz']
+    >>> stacksOrdering.run() # doctest: +SKIP
+
+    """
+
+    input_spec = StacksOrderingInputSpec
+    output_spec = StacksOrderingOutputSpec
+
+    m_stack_order = []
+
+    def _run_interface(self, runtime):
+        try:
+            self.m_stack_order = self._compute_stack_order(self.inputs.input_masks)
+        except Exception:
+            print('Failed')
+
+            print(traceback.format_exc())
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['stacks_order'] = self.m_stack_order
+        return outputs
+
+    def _compute_motion_index(self, in_file):
+        """Function to compute the motion index.
+
+        The motion index is computed from the inter-slice displacement of the centroid of the brain mask.
+        """
+        central_third = True
+
+        img = nib.load(in_file)
+
+        voxelspacing = img.header['pixdim'][2]
+        data = img.get_fdata()
+
+        z = np.where(data)[2]
+        data = data[..., int(min(z)):int(max(z) + 1)]
+
+        if central_third:
+            num_z = data.shape[2]
+            center_z = int(num_z / 2.)
+
+            data = data[..., int(center_z - num_z / 6.):int(center_z + num_z / 6.)]
+
+        centroid_coord = np.zeros((data.shape[2], 2))
+
+        for i in range(data.shape[2]):
+            moments = skimage.measure.moments(data[..., i])
+            centroid_coord[i, :] = [moments[0, 1] / moments[0, 0], moments[1, 0] / moments[0, 0]]
+
+        centroid_coord = centroid_coord[~np.isnan(centroid_coord)]
+        centroid_coord = np.reshape(centroid_coord, (int(centroid_coord.shape[0] / 2), 2))
+
+        nSlices = data.shape[2]
+        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / nSlices
+
+        return score
+
+    def _compute_stack_order(self, in_files):
+        """Function to compute the stacks order.
+
+        The motion index is computed for each mask. Stacks are ordered according to their motion index.
+        """
+        motion_ind = []
+
+        for f in in_files:
+            motion_ind.append(self._compute_motion_index(f))
+
+        motion_ind_sorted, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, in_files))))
+        run_order = [int(f.split('run-')[1].split('_')[0]) for f in images_ordered]
+
+        return run_order
+
+
+####################
 # Brain Extraction
 ####################
 
@@ -1994,3 +2118,4 @@ class MultipleBrainExtraction(BaseInterface):
         outputs = self._outputs().get()
         outputs['masks'] = glob(os.path.abspath("*.nii.gz"))
         return outputs
+
