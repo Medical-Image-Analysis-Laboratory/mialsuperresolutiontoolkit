@@ -10,7 +10,8 @@ Date: Month XX, 2020 (To be updated)
 This corresponds to the first release of the second version of the MIAL Super-Resolution Toolkit, which has evolved massively over the last years in terms of the underlying codebase and the scope of the functionality provided, following recent advances in standardization of neuroimaging data organization and processing workflows.
 
 
-*Major changes*
+Major changes
+=============
 
 * Adoption of the Brain Imaging Data Structure standard for data organization (See :ref:`BIDS and BIDS App standards <cmpbids>` for more details)
 
@@ -19,16 +20,18 @@ This corresponds to the first release of the second version of the MIAL Super-Re
 * Docker image encapsulting MIALSRTK now distributed as a `BIDS App`, a standard for containerized workflow that handles BIDS datasets with a set of predefined commandline input argument. (See :ref:`BIDS App Commadline Usage <cmdusage>` for more details)
 
 
-*New feature*
+New feature
+=============
 
-* Automatic brain extraction (masking) based on a 2D U-Net (Ronneberger et al. [1]_) using the pre-trained weights from Salehi et al. [2]_.
+* Automatic brain extraction (masking) based on a 2D U-Net (Ronneberger et al. [Ref1]_) using the pre-trained weights from Salehi et al. [Ref2]_.
 
-References
-.. [1] Ronneberger et al.; Medical Image Computing and Computer Assisted Interventions, 2015. `(link to paper) <https://arxiv.org/abs/1505.04597>`_
-.. [2] Salehi et al.; arXiv, 2017. `(link to paper) <https://arxiv.org/abs/1710.09338>`_
+.. [Ref1] Ronneberger et al.; Medical Image Computing and Computer Assisted Interventions, 2015. `(link to paper) <https://arxiv.org/abs/1505.04597>`_
+
+.. [Ref2] Salehi et al.; arXiv, 2017. `(link to paper) <https://arxiv.org/abs/1710.09338>`_
 
 
-*Software development life cycle*
+Software development life cycle
+================================
 
 * Use `Codacy <https://www.codacy.com/>`_ to support code reviews and monitor code quality over time.
 
@@ -39,9 +42,13 @@ References
 	* Test 02: Run BIDS App on the sample `data/` BIDS dataset with automated brain extraction (masking).
 
 
-*Documentation*
+Documentation
+==============
 
 * Installation instructions and Python API documentation of ```` are now generated on readthedocs at: https://mialsrtk.readthedocs.io/
 
+
+More...
+========
 
 Please check the `pull request 2 page <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/2>`_ and `pull request 4 page <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/4>`_for more change details and development discussions.
