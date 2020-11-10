@@ -41,6 +41,8 @@ Software development life cycle
 	
 	* Test 02: Run BIDS App on the sample `data/` BIDS dataset with automated brain extraction (masking).
 
+	See `CircleCI project page <https://app.circleci.com/pipelines/github/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit>`_.
+
 * Use `Codacy <https://www.codacy.com/>`_ to support code reviews and monitor code quality over time.
 
 * Use `coveragepy <https://coverage.readthedocs.io/en/coverage-5.2/>`_  in CircleCI during regression tests of the BIDS app and create code coverage reports published on our `Codacy project page <https://app.codacy.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/dashboard>`_.
