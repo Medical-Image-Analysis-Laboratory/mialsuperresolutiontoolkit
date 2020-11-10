@@ -54,7 +54,7 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
         suffix added to construct output transformation filenames (default is '_transform')
 
     stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
+        List of stack run-id that specify the order of the stacks
 
     See Also
     ----------
@@ -106,9 +106,9 @@ class MialsrtkImageReconstruction(BaseInterface):
     >>> from pymialsrtk.interfaces.reconstruction import MialsrtkImageReconstruction
     >>> srtkImageReconstruction = MialsrtkTVSuperResolution()
     >>> srtkImageReconstruction.inputs.bids_dir = '/my_directory'
-    >>> srtkImageReconstruction.input_images = ['image01.nii.gz', 'image02.nii.gz', 'image03.nii.gz', 'image04.nii.gz']
-    >>> srtkImageReconstruction.input_masks = ['mask01.nii.gz', 'mask02.nii.gz', 'mask03.nii.gz', 'mask04.nii.gz']
-    >>> srtkImageReconstruction.inputs.stacksOrder = [0,1,2,3]
+    >>> srtkImageReconstruction.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz', 'sub-01_ses-01_run-2_T2w.nii.gz', 'sub-01_ses-01_run-3_T2w.nii.gz', 'sub-01_ses-01_run-4_T2w.nii.gz']
+    >>> srtkImageReconstruction.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz', 'sub-01_ses-01_run-2_mask.nii.gz', 'sub-01_ses-01_run-3_mask.nii.gz', 'sub-01_ses-01_run-4_mask.nii.gz']
+    >>> srtkImageReconstruction.inputs.stacksOrder = [3,1,2,4]
     >>> srtkImageReconstruction.inputs.sub_ses = 'sub-01_ses-01'
     >>> srtkImageReconstruction.inputs.in_roi = 'mask'
     >>> srtkImageReconstruction.inputs.in_deltat = 0.01
@@ -128,13 +128,13 @@ class MialsrtkImageReconstruction(BaseInterface):
         run_nb_images = []
         for in_file in self.inputs.input_images:
             cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
+            cut_apr = cut_avt.replace('.','_').split('_')[0]
             run_nb_images.append(int(cut_apr))
 
         run_nb_masks = []
         for in_mask in self.inputs.input_masks:
             cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
+            cut_apr = cut_avt.replace('.','_').split('_')[0]
             run_nb_masks.append(int(cut_apr))
 
         for order in self.inputs.stacks_order:
@@ -251,7 +251,7 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
         prefix added to construct output super-resolution filename (default is 'SRTV_')
 
     stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
+        List of stack run-id that specify the order of the stacks
 
     input_rad_dilatation <float>
         Radius dilatation used in prior step to construct output filename. (default is 1.0)
@@ -320,11 +320,11 @@ class MialsrtkTVSuperResolution(BaseInterface):
     >>> from pymialsrtk.interfaces.reconstruction import MialsrtkTVSuperResolution
     >>> srtkTVSuperResolution = MialsrtkTVSuperResolution()
     >>> srtkTVSuperResolution.inputs.bids_dir = '/my_directory'
-    >>> srtkTVSuperResolution.input_images = ['image01.nii.gz', 'image02.nii.gz', 'image03.nii.gz', 'image04.nii.gz']
-    >>> srtkTVSuperResolution.input_masks = ['mask01.nii.gz', 'mask02.nii.gz', 'mask03.nii.gz', 'mask04.nii.gz']
-    >>> srtkTVSuperResolution.input_transforms = ['transform01.txt', 'transform02.txt', 'transform03.txt', 'transform04.txt']
+    >>> srtkTVSuperResolution.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz', 'sub-01_ses-01_run-2_T2w.nii.gz', 'sub-01_ses-01_run-3_T2w.nii.gz', 'sub-01_ses-01_run-4_T2w.nii.gz']
+    >>> srtkTVSuperResolution.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz', 'sub-01_ses-01_run-2_mask.nii.gz', 'sub-01_ses-01_run-3_mask.nii.gz', 'sub-01_ses-01_run-4_mask.nii.gz']
+    >>> srtkTVSuperResolution.input_transforms = ['sub-01_ses-01_run-1_transform.txt', 'sub-01_ses-01_run-2_transform.txt', 'sub-01_ses-01_run-3_transform.txt', 'sub-01_ses-01_run-4_transform.txt']
     >>> srtkTVSuperResolution.input_sdi = 'sdi.nii.gz'
-    >>> srtkTVSuperResolution.inputs.stacksOrder = [0,1,2,3]
+    >>> srtkTVSuperResolution.inputs.stacksOrder = [3,1,2,4]
     >>> srtkTVSuperResolution.inputs.sub_ses = 'sub-01_ses-01'
     >>> srtkTVSuperResolution.inputs.in_loop = 10
     >>> srtkTVSuperResolution.inputs.in_deltat = 0.01
@@ -343,19 +343,19 @@ class MialsrtkTVSuperResolution(BaseInterface):
         run_nb_images = []
         for in_file in self.inputs.input_images:
             cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
+            cut_apr = cut_avt.replace('.','_').split('_')[0]
             run_nb_images.append(int(cut_apr))
 
         run_nb_masks = []
         for in_mask in self.inputs.input_masks:
             cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
+            cut_apr = cut_avt.replace('.','_').split('_')[0]
             run_nb_masks.append(int(cut_apr))
 
         run_nb_transforms = []
         for in_transform in self.inputs.input_transforms:
             cut_avt = in_transform.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
+            cut_apr = cut_avt.replace('.','_').split('_')[0]
             run_nb_transforms.append(int(cut_apr))
 
         for order in self.inputs.stacks_order:
