@@ -19,11 +19,15 @@ Major changes
 
 * Docker image encapsulting MIALSRTK now distributed as a `BIDS App`, a standard for containerized workflow that handles BIDS datasets with a set of predefined commandline input argument. (See :ref:`BIDS App Commadline Usage <cmdusage>` for more details)
 
+* Main documentation of MIALSRTK uses now readthedocs and is available at: 
+
+  https://mialsrtk.readthedocs.io/
+
 
 New feature
 =============
 
-* Automatic brain extraction (masking) based on a 2D U-Net (Ronneberger et al. [Ref1]_) using the pre-trained weights from Salehi et al. [Ref2]_.
+* ``pymialsrtk``  implements an automatic brain extraction (masking) module based on a 2D U-Net (Ronneberger et al. [Ref1]_) using the pre-trained weights from Salehi et al. [Ref2]_. It is integrated in the BIDS App workflow by default.
 
 .. [Ref1] Ronneberger et al.; Medical Image Computing and Computer Assisted Interventions, 2015. `(link to paper) <https://arxiv.org/abs/1505.04597>`_
 
@@ -35,17 +39,11 @@ Software development life cycle
 
 * Use `Codacy <https://www.codacy.com/>`_ to support code reviews and monitor code quality over time.
 
-* Use `coveragepy <https://coverage.readthedocs.io/en/coverage-5.2/>`_  in CircleCI during regression tests of the BIDS app and create code coverage reports published on our `Codacy project page <https://app.codacy.com/gh/connectomicslab/connectomemapper3/dashboard>`_.
+* Use `coveragepy <https://coverage.readthedocs.io/en/coverage-5.2/>`_  in CircleCI during regression tests of the BIDS app and create code coverage reports published on our `Codacy project page <https://app.codacy.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/dashboard>`_.
 
 * Adopt CircleCI for continuous integration testing of the BIDS App that runs the following regression tests:
 	* Test 01: Run BIDS App on the sample `data/` BIDS dataset with the ``--manual_masks`` option.
 	* Test 02: Run BIDS App on the sample `data/` BIDS dataset with automated brain extraction (masking).
-
-
-Documentation
-==============
-
-* Installation instructions and Python API documentation of ```` are now generated on readthedocs at: https://mialsrtk.readthedocs.io/
 
 
 More...
