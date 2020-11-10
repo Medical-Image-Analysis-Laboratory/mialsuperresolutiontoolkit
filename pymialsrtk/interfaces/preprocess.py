@@ -1424,7 +1424,7 @@ class StacksOrdering(BaseInterface):
         """
         central_third = True
 
-        img = nib.load(in_file)
+        img = nibabel.load(in_file)
 
         voxelspacing = img.header['pixdim'][2]
         data = img.get_fdata()
