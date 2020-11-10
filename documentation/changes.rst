@@ -37,13 +37,15 @@ New feature
 Software development life cycle
 ================================
 
+* Adopt CircleCI for continuous integration testing and run the following regression tests:
+
+	* Test 01: Run BIDS App on the sample `data/` BIDS dataset with the ``--manual_masks`` option.
+	
+	* Test 02: Run BIDS App on the sample `data/` BIDS dataset with automated brain extraction (masking).
+
 * Use `Codacy <https://www.codacy.com/>`_ to support code reviews and monitor code quality over time.
 
 * Use `coveragepy <https://coverage.readthedocs.io/en/coverage-5.2/>`_  in CircleCI during regression tests of the BIDS app and create code coverage reports published on our `Codacy project page <https://app.codacy.com/gh/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/dashboard>`_.
-
-* Adopt CircleCI for continuous integration testing of the BIDS App that runs the following regression tests:
-	* Test 01: Run BIDS App on the sample `data/` BIDS dataset with the ``--manual_masks`` option.
-	* Test 02: Run BIDS App on the sample `data/` BIDS dataset with automated brain extraction (masking).
 
 
 More...
