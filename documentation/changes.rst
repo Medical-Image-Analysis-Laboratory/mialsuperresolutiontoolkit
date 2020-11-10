@@ -15,7 +15,7 @@ Major changes
 
 * Adoption of the Brain Imaging Data Structure standard for data organization (See :ref:`BIDS and BIDS App standards <cmpbids>` for more details)
 
-* Creation of the ``pymialsrtk`` Python workflow library, built on top of the Nipype dataflow library which implements interfaces to all C++ MIALSRTK tools connected in a common workflow to perform super-resolution reconstruction of fetal brain MRI with data provenance and execution detail recordings. (See :ref:` API Documentation <api-doc>`)
+* Creation of the ``pymialsrtk`` Python workflow library, built on top of the Nipype dataflow library which implements interfaces to all C++ MIALSRTK tools connected in a common workflow to perform super-resolution reconstruction of fetal brain MRI with data provenance and execution detail recordings. (See :ref:`API Documentation <api-doc>`)
 
 * Docker image encapsulting MIALSRTK now distributed as a `BIDS App`, a standard for containerized workflow that handles BIDS datasets with a set of predefined commandline input argument. (See :ref:`BIDS App Commadline Usage <cmdusage>` for more details)
 
