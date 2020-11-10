@@ -243,35 +243,28 @@ class AnatomicalPipeline:
 
         nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
         nlmDenoise.inputs.bids_dir = self.bids_dir
-        nlmDenoise.inputs.stacks_order = self.p_stacks_order
 
         # Sans le mask le premier correct slice intensity...
         srtkCorrectSliceIntensity01_nlm = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01_nlm')
         srtkCorrectSliceIntensity01_nlm.inputs.bids_dir = self.bids_dir
-        srtkCorrectSliceIntensity01_nlm.inputs.stacks_order = self.p_stacks_order
         srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
 
         srtkCorrectSliceIntensity01 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01')
         srtkCorrectSliceIntensity01.inputs.bids_dir = self.bids_dir
-        srtkCorrectSliceIntensity01.inputs.stacks_order = self.p_stacks_order
         srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
 
         srtkSliceBySliceN4BiasFieldCorrection = Node(interface=preprocess.MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(),
                                                      name='srtkSliceBySliceN4BiasFieldCorrection')
         srtkSliceBySliceN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
-        srtkSliceBySliceN4BiasFieldCorrection.inputs.stacks_order = self.p_stacks_order
 
         srtkSliceBySliceCorrectBiasField = Node(interface=preprocess.MultipleMialsrtkSliceBySliceCorrectBiasField(), name='srtkSliceBySliceCorrectBiasField')
         srtkSliceBySliceCorrectBiasField.inputs.bids_dir = self.bids_dir
-        srtkSliceBySliceCorrectBiasField.inputs.stacks_order = self.p_stacks_order
 
         srtkCorrectSliceIntensity02_nlm = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity02_nlm')
         srtkCorrectSliceIntensity02_nlm.inputs.bids_dir = self.bids_dir
-        srtkCorrectSliceIntensity02_nlm.inputs.stacks_order = self.p_stacks_order
 
         srtkCorrectSliceIntensity02 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity02')
         srtkCorrectSliceIntensity02.inputs.bids_dir = self.bids_dir
-        srtkCorrectSliceIntensity02.inputs.stacks_order = self.p_stacks_order
 
         srtkIntensityStandardization01 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization01')
         srtkIntensityStandardization01.inputs.bids_dir = self.bids_dir
@@ -281,11 +274,9 @@ class AnatomicalPipeline:
 
         srtkHistogramNormalization = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization')
         srtkHistogramNormalization.inputs.bids_dir = self.bids_dir
-        srtkHistogramNormalization.inputs.stacks_order = self.p_stacks_order
 
         srtkHistogramNormalization_nlm = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization_nlm')
         srtkHistogramNormalization_nlm.inputs.bids_dir = self.bids_dir
-        srtkHistogramNormalization_nlm.inputs.stacks_order = self.p_stacks_order
 
         srtkIntensityStandardization02 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02')
         srtkIntensityStandardization02.inputs.bids_dir = self.bids_dir
@@ -295,7 +286,6 @@ class AnatomicalPipeline:
 
         srtkMaskImage01 = Node(interface=preprocess.MultipleMialsrtkMaskImage(), name='srtkMaskImage01')
         srtkMaskImage01.inputs.bids_dir = self.bids_dir
-        srtkMaskImage01.inputs.stacks_order = self.p_stacks_order
 
         srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
         srtkImageReconstruction.inputs.bids_dir = self.bids_dir
@@ -313,7 +303,6 @@ class AnatomicalPipeline:
 
         srtkRefineHRMaskByIntersection = Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(), name='srtkRefineHRMaskByIntersection')
         srtkRefineHRMaskByIntersection.inputs.bids_dir = self.bids_dir
-        srtkRefineHRMaskByIntersection.inputs.stacks_order = self.p_stacks_order
 
         srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(), name='srtkN4BiasFieldCorrection')
         srtkN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir

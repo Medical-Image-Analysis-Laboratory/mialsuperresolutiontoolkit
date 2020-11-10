@@ -144,25 +144,25 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
         run_nb_images = []
         for in_file in self.inputs.input_images:
             cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
+            cut_apr = cut_avt.replace('.','_').split('_')[0]
             run_nb_images.append(int(cut_apr))
 
         run_nb_masks = []
         for in_mask in self.inputs.input_masks:
             cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
+            cut_apr = cut_avt.replace('.','_').split('_')[0]
             run_nb_masks.append(int(cut_apr))
 
         run_nb_transforms = []
         for in_mask in self.inputs.input_transforms:
             cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
+            cut_apr = cut_avt.replace('.','_').split('_')[0]
             run_nb_transforms.append(int(cut_apr))
 
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            index_mask = run_nb_masks.index(order)
-            index_tranform = run_nb_transforms.index(order)
+        for i in run_nb_images:
+            index_img = run_nb_images.index(i)
+            index_mask = run_nb_masks.index(i)
+            index_tranform = run_nb_transforms.index(i)
 
             cmd += ['-i', self.inputs.input_images[index_img]]
             cmd += ['-m', self.inputs.input_masks[index_mask]]
