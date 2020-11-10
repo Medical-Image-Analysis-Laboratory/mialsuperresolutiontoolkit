@@ -49,4 +49,4 @@ Software development life cycle
 More...
 ========
 
-Please check the `pull request 2 page <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/2>`_ and `pull request 4 page <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/4>`_for more change details and development discussions.
+Please check the `pull request 2 page <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/2>`_ and `pull request 4 page <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/4>`_ for more change details and development discussions.
