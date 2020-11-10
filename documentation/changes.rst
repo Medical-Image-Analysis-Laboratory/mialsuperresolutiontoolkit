@@ -13,13 +13,13 @@ This corresponds to the first release of the second version of the MIAL Super-Re
 Major changes
 =============
 
-* Adoption of the Brain Imaging Data Structure standard for data organization (See :ref:`BIDS and BIDS App standards <cmpbids>` for more details)
+* Adoption of the `Brain Imaging Data Structure standard <https://bids.neuroimaging.io/>`_ for data organization and the sample dataset available in data/ has been modified accordingly. (See :ref:`BIDS and BIDS App standards <cmpbids>` for more details)
 
 * MIALSRTK is going to Python with the creation of the ``pymialsrtk`` workflow library which extends the `Nipype dataflow library <https://nipype.readthedocs.io/en/latest/>`_ with the implementation of interfaces to all C++ MIALSRTK tools connected in a common workflow to perform super-resolution reconstruction of fetal brain MRI with data provenance and execution detail recordings. (See :ref:`API Documentation <api-doc>`)
 
-* Docker image encapsulting MIALSRTK is distributed as a `BIDS App`, a standard for containerized workflow that handles BIDS datasets with a set of predefined commandline input argument. (See :ref:`BIDS App Commadline Usage <cmdusage>` for more details)
+* Docker image encapsulting MIALSRTK is distributed as a BIDS App, a standard for containerized workflow that handles BIDS datasets with a set of predefined commandline input argument. (See :ref:`BIDS App Commadline Usage <cmdusage>` for more details)
 
-* Main documentation of MIALSRTK is rendered using readthedocs at https://mialsrtk.readthedocs.io/
+* Main documentation of MIALSRTK is rendered using readthedocs at https://mialsrtk.readthedocs.io/.
 
 
 New feature
