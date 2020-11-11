@@ -171,7 +171,8 @@ jobs:
             ls -la  /tmp/src/mialsuperresolutiontoolkit/data/code
             ls -la  /tmp/src/mialsuperresolutiontoolkit/data/derivatives
 
-            rm -R /tmp/src/mialsuperresolutiontoolkit/data/derivatives/*
+            # Remove existing derivatives produced by test-01
+            sudo rm -R /tmp/src/mialsuperresolutiontoolkit/data/derivatives/*
 
             #Execute BIDS App
             docker run -it --rm --entrypoint /app/run_srr_coverage.sh \
