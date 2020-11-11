@@ -1404,14 +1404,48 @@ class StacksOrdering(BaseInterface):
         """Function to compute the stacks order.
 
         The motion index is computed for each mask. Stacks are ordered according to their motion index.
+        When the view plane is specified in the filenames (tag `vp`), stacks are ordered such that the 3 first ones are
+        othogonal / in three different orientations.
         """
         motion_ind = []
 
         for f in in_files:
             motion_ind.append(self._compute_motion_index(f))
 
-        motion_ind_sorted, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, in_files))))
+        vp_defined = not -1 in [f.find('vp') for f in in_files]
+        if vp_defined:
+            orientations_ = []
+            for f in in_files:
+                orientations_.append((f.split('_vp-')[1]).split('_')[0])
+            motion_ind_sorted, images_ordered, orientations_ordered = (list(t) for t in zip(
+                *sorted(zip(motion_ind, in_files, orientations_))))
+        else:
+            motion_ind_sorted, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, in_files))))
+
         run_order = [int(f.split('run-')[1].split('_')[0]) for f in images_ordered]
+
+        if vp_defined:
+            first_ax = orientations_ordered.index('ax')
+            first_sag = orientations_ordered.index('sag')
+            first_cor = orientations_ordered.index('cor')
+            firsts = [first_ax, first_cor, first_sag]
+
+            run_tmp = run_order
+            run_order = []
+            ind_ = firsts.index(min(firsts))
+            run_order.append(int(images_ordered[firsts[ind_]].split('run-')[1].split('_')[0]))
+
+            firsts.pop(ind_)
+            ind_ = firsts.index(min(firsts))
+            run_order.append(int(images_ordered[firsts[ind_]].split('run-')[1].split('_')[0]))
+
+            firsts.pop(ind_)
+            ind_ = firsts.index(min(firsts))
+
+            run_order.append(int(images_ordered[firsts[ind_]].split('run-')[1].split('_')[0]))
+
+            others = [e for e in run_tmp if e not in run_order]
+            run_order += others
 
         return run_order
 
