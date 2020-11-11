@@ -160,7 +160,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     openmp_nb_of_cores = args.openmp_nb_of_cores
-    nipype_nb_of_cores = args.args.nipype_nb_of_cores
+    nipype_nb_of_cores = args.nipype_nb_of_cores
 
     nb_of_cores = multiprocessing.cpu_count()
 
