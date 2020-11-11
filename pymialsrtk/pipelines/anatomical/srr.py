@@ -221,6 +221,8 @@ class AnatomicalPipeline:
                                                                    self.session,
                                                                    'anat',
                                                                    '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])))
+            brainMask = Node(interface=IdentityInterface(fields=['masks']), name='brain_masks_bypass')
+
         else:
 
             dg = Node(interface=DataGrabber(outfields=['T2ws']), name='data_grabber')
@@ -340,6 +342,8 @@ class AnatomicalPipeline:
         # Nodes ready - Linking now
         if not self.use_manual_masks:
             self.wf.connect(dg, "T2ws", brainMask, "input_images")
+        else:
+            self.wf.connect(dg, "masks", brainMask, "masks")
 
         self.wf.connect(dg, "T2ws", nlmDenoise, "input_images")
         # self.wf.connect(dg, "masks", nlmDenoise, "input_masks")  ## Comment to match docker process
@@ -348,84 +352,50 @@ class AnatomicalPipeline:
             self.wf.connect(dg, "masks", stacksOrdering, "input_masks")
 
         self.wf.connect(nlmDenoise, "output_images", srtkCorrectSliceIntensity01_nlm, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkCorrectSliceIntensity01_nlm, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkCorrectSliceIntensity01_nlm, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkCorrectSliceIntensity01_nlm, "input_masks")
 
         self.wf.connect(dg, "T2ws", srtkCorrectSliceIntensity01, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkCorrectSliceIntensity01, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkCorrectSliceIntensity01, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkCorrectSliceIntensity01, "input_masks")
 
         self.wf.connect(srtkCorrectSliceIntensity01_nlm, "output_images", srtkSliceBySliceN4BiasFieldCorrection, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkSliceBySliceN4BiasFieldCorrection, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkSliceBySliceN4BiasFieldCorrection, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkSliceBySliceN4BiasFieldCorrection, "input_masks")
 
         self.wf.connect(srtkCorrectSliceIntensity01, "output_images", srtkSliceBySliceCorrectBiasField, "input_images")
         self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, "output_fields", srtkSliceBySliceCorrectBiasField, "input_fields")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkSliceBySliceCorrectBiasField, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkSliceBySliceCorrectBiasField, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkSliceBySliceCorrectBiasField, "input_masks")
         self.wf.connect(srtkSliceBySliceCorrectBiasField, "output_images", srtkCorrectSliceIntensity02, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkCorrectSliceIntensity02, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkCorrectSliceIntensity02, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkCorrectSliceIntensity02, "input_masks")
 
         self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, "output_images", srtkCorrectSliceIntensity02_nlm, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkCorrectSliceIntensity02_nlm, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkCorrectSliceIntensity02_nlm, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkCorrectSliceIntensity02_nlm, "input_masks")
         self.wf.connect(srtkCorrectSliceIntensity02, "output_images", srtkIntensityStandardization01, "input_images")
 
         self.wf.connect(srtkCorrectSliceIntensity02_nlm, "output_images", srtkIntensityStandardization01_nlm, "input_images")
 
         self.wf.connect(srtkIntensityStandardization01, "output_images", srtkHistogramNormalization, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkHistogramNormalization, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkHistogramNormalization, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkHistogramNormalization, "input_masks")
         self.wf.connect(srtkIntensityStandardization01_nlm, "output_images", srtkHistogramNormalization_nlm, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkHistogramNormalization_nlm, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkHistogramNormalization_nlm, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkHistogramNormalization_nlm, "input_masks")
         self.wf.connect(srtkHistogramNormalization, "output_images", srtkIntensityStandardization02, "input_images")
         self.wf.connect(srtkHistogramNormalization_nlm, "output_images", srtkIntensityStandardization02_nlm, "input_images")
 
         self.wf.connect(srtkIntensityStandardization02_nlm, "output_images", srtkMaskImage01, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkMaskImage01, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkMaskImage01, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkMaskImage01, "input_masks")
 
         self.wf.connect(srtkMaskImage01, "output_images", srtkImageReconstruction, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkImageReconstruction, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkImageReconstruction, "input_masks")
+
+        self.wf.connect(brainMask, "masks", srtkImageReconstruction, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
 
         self.wf.connect(srtkIntensityStandardization02, "output_images", srtkTVSuperResolution, "input_images")
         self.wf.connect(srtkImageReconstruction, "output_transforms", srtkTVSuperResolution, "input_transforms")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkTVSuperResolution, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkTVSuperResolution, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkTVSuperResolution, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
+
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
 
         self.wf.connect(srtkIntensityStandardization02, "output_images", srtkRefineHRMaskByIntersection, "input_images")
-        if self.use_manual_masks:
-            self.wf.connect(dg, "masks", srtkRefineHRMaskByIntersection, "input_masks")
-        else:
-            self.wf.connect(brainMask, "masks", srtkRefineHRMaskByIntersection, "input_masks")
+        self.wf.connect(brainMask, "masks", srtkRefineHRMaskByIntersection, "input_masks")
         self.wf.connect(srtkImageReconstruction, "output_transforms", srtkRefineHRMaskByIntersection, "input_transforms")
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkRefineHRMaskByIntersection, "input_sr")
 
