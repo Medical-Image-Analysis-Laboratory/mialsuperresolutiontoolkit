@@ -239,7 +239,7 @@ class AnatomicalPipeline:
                                                                   self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
 
             brainMask = Node(interface = preprocess.MultipleBrainExtraction(), name='Multiple_Brain_extraction')
-            brainMask.inputs.bids_dir = self.bids_dir
+            # brainMask.inputs.bids_dir = self.bids_dir
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk",
                                                                            "data/Network_checkpoints/Network_checkpoints_localization/Unet.ckpt-88000")
             brainMask.inputs.threshold_loc = 0.49
@@ -256,50 +256,36 @@ class AnatomicalPipeline:
 
 
         nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
-        nlmDenoise.inputs.bids_dir = self.bids_dir
 
         # Sans le mask le premier correct slice intensity...
         srtkCorrectSliceIntensity01_nlm = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01_nlm')
-        srtkCorrectSliceIntensity01_nlm.inputs.bids_dir = self.bids_dir
         srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
 
         srtkCorrectSliceIntensity01 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01')
-        srtkCorrectSliceIntensity01.inputs.bids_dir = self.bids_dir
         srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
 
         srtkSliceBySliceN4BiasFieldCorrection = Node(interface=preprocess.MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(),
                                                      name='srtkSliceBySliceN4BiasFieldCorrection')
-        srtkSliceBySliceN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
 
         srtkSliceBySliceCorrectBiasField = Node(interface=preprocess.MultipleMialsrtkSliceBySliceCorrectBiasField(), name='srtkSliceBySliceCorrectBiasField')
-        srtkSliceBySliceCorrectBiasField.inputs.bids_dir = self.bids_dir
 
         srtkCorrectSliceIntensity02_nlm = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity02_nlm')
-        srtkCorrectSliceIntensity02_nlm.inputs.bids_dir = self.bids_dir
 
         srtkCorrectSliceIntensity02 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity02')
-        srtkCorrectSliceIntensity02.inputs.bids_dir = self.bids_dir
 
         srtkIntensityStandardization01 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization01')
-        srtkIntensityStandardization01.inputs.bids_dir = self.bids_dir
 
         srtkIntensityStandardization01_nlm = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization01_nlm')
-        srtkIntensityStandardization01_nlm.inputs.bids_dir = self.bids_dir
 
         srtkHistogramNormalization = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization')
-        srtkHistogramNormalization.inputs.bids_dir = self.bids_dir
 
         srtkHistogramNormalization_nlm = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization_nlm')
-        srtkHistogramNormalization_nlm.inputs.bids_dir = self.bids_dir
 
         srtkIntensityStandardization02 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02')
-        srtkIntensityStandardization02.inputs.bids_dir = self.bids_dir
 
         srtkIntensityStandardization02_nlm = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02_nlm')
-        srtkIntensityStandardization02_nlm.inputs.bids_dir = self.bids_dir
 
         srtkMaskImage01 = Node(interface=preprocess.MultipleMialsrtkMaskImage(), name='srtkMaskImage01')
-        srtkMaskImage01.inputs.bids_dir = self.bids_dir
 
         srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
         srtkImageReconstruction.inputs.bids_dir = self.bids_dir
@@ -319,7 +305,6 @@ class AnatomicalPipeline:
         srtkN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
 
         srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(), name='srtkMaskImage02')
-        srtkMaskImage02.inputs.bids_dir = self.bids_dir
 
         datasink = Node(DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
