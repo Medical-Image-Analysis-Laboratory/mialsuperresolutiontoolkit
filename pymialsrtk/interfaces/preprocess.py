@@ -229,35 +229,22 @@ class MultipleBtkNLMDenoising(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        if self.inputs.input_masks:
-            run_nb_masks = []
-            for in_mask in self.inputs.input_masks:
-                cut_avt = in_mask.split('run-')[1]
-                cut_apr = cut_avt.replace('.','_').split('_')[0]
-                run_nb_masks.append(int(cut_apr))
-
-        for i in run_nb_images:
-            index_img = run_nb_images.index(i)
-            if len(self.inputs.input_masks) > 0:
-                index_mask = run_nb_masks.index(i)
+        if len(self.inputs.input_masks) > 0:
+            for in_image, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
                 ax = BtkNLMDenoising(bids_dir=self.inputs.bids_dir,
-                                     in_file=self.inputs.input_images[index_img],
-                                     in_mask=self.inputs.input_masks[index_mask],
+                                     in_file=in_image,
+                                     in_mask=in_mask,
                                      out_postfix=self.inputs.out_postfix,
                                      weight=self.inputs.weight)
-            else:
+                ax.run()
+        else:
+            for in_image in self.inputs.input_images:
                 ax = BtkNLMDenoising(bids_dir=self.inputs.bids_dir,
-                                     in_file=self.inputs.input_images[index_img],
+                                     in_file=in_image,
                                      out_postfix=self.inputs.out_postfix,
                                      weight=self.inputs.weight)
 
-            ax.run()
+                ax.run()
 
         return runtime
 
@@ -426,32 +413,19 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        if self.inputs.input_masks:
-            run_nb_masks = []
-            for in_mask in self.inputs.input_masks:
-                cut_avt = in_mask.split('run-')[1]
-                cut_apr = cut_avt.replace('.','_').split('_')[0]
-                run_nb_masks.append(int(cut_apr))
-
-        for i in run_nb_images:
-            index_img = run_nb_images.index(i)
-            if len(self.inputs.input_masks) > 0:
-                index_mask = run_nb_masks.index(i)
+        if len(self.inputs.input_masks) > 0:
+            for in_image, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
                 ax = MialsrtkCorrectSliceIntensity(bids_dir=self.inputs.bids_dir,
-                                                   in_file=self.inputs.input_images[index_img],
-                                                   in_mask=self.inputs.input_masks[index_mask],
+                                                   in_file=in_image,
+                                                   in_mask=in_mask,
                                                    out_postfix=self.inputs.out_postfix)
-            else:
+                ax.run()
+        else:
+            for in_image in self.inputs.input_images:
                 ax = MialsrtkCorrectSliceIntensity(bids_dir=self.inputs.bids_dir,
-                                                   in_file=self.inputs.input_images[index_img],
+                                                   in_file=in_image,
                                                    out_postfix=self.inputs.out_postfix)
-            ax.run()
+                ax.run()
         return runtime
 
     def _list_outputs(self):
@@ -652,26 +626,10 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     output_spec = MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec
 
     def _run_interface(self, runtime):
-
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        for i in run_nb_images:
-            index_img = run_nb_images.index(i)
-            index_mask = run_nb_masks.index(i)
-
+        for in_image, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
             ax = MialsrtkSliceBySliceN4BiasFieldCorrection(bids_dir=self.inputs.bids_dir,
-                                                           in_file=self.inputs.input_images[index_img],
-                                                           in_mask=self.inputs.input_masks[index_mask],
+                                                           in_file=in_image,
+                                                           in_mask=in_mask,
                                                            out_im_postfix=self.inputs.out_im_postfix,
                                                            out_fld_postfix=self.inputs.out_fld_postfix)
             ax.run()
@@ -839,8 +797,9 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkSliceBySliceN4BiasFieldCorrection
     >>> multiN4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> multiN4biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> multiN4biasFieldCorr.inputs.in_file = ['my_image_run-1.nii.gz', 'my_image_run-2.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.in_mask = ['my_mask_run-1.nii.gz', 'my_mask_run-2.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.input_images = ['my_image_run-1.nii.gz', 'my_image_run-2.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.input_masks = ['my_mask_run-1.nii.gz', 'my_mask_run-2.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.input_fields = ['my_field_run-1.nii.gz', 'my_field_run-2.nii.gz']
     >>> multiN4biasFieldCorr.run() # doctest: +SKIP
 
     See also
@@ -854,32 +813,11 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        run_nb_fields = []
-        for in_mask in self.inputs.input_fields:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_fields.append(int(cut_apr))
-
-        for i in run_nb_images:
-            index_img = run_nb_images.index(i)
-            index_mask = run_nb_masks.index(i)
-            index_fld = run_nb_fields.index(i)
+        for in_image, in_mask, in_field in zip(self.inputs.input_images, self.inputs.input_masks, self.inputs.input_fields):
             ax = MialsrtkSliceBySliceCorrectBiasField(bids_dir=self.inputs.bids_dir,
-                                                      in_file=self.inputs.input_images[index_img],
-                                                      in_mask=self.inputs.input_masks[index_mask],
-                                                      in_field=self.inputs.input_fields[index_fld],
+                                                      in_file=self.inputs.in_image,
+                                                      in_mask=self.inputs.in_masks,
+                                                      in_field=in_field,
                                                       out_im_postfix=self.inputs.out_im_postfix)
             ax.run()
         return runtime
@@ -1063,28 +1001,19 @@ class MialsrtkHistogramNormalization(BaseInterface):
 
         cmd = 'python /usr/local/bin/mialsrtkHistogramNormalization.py '
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_images.append(int(cut_apr))
+        if len(self.inputs.input_masks) > 0:
+            for in_file, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
+                _, name, ext = split_filename(os.path.abspath(in_file))
+                out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
 
-        if self.inputs.input_masks:
-            run_nb_masks = []
-            for in_mask in self.inputs.input_masks:
-                cut_avt = in_mask.split('run-')[1]
-                cut_apr = cut_avt.replace('.','_').split('_')[0]
-                run_nb_masks.append(int(cut_apr))
+                cmd = cmd + ' -i "{}" -o "{}" -m "{}" '.format(in_file, out_file, in_mask)
+        else:
+            for in_file in self.inputs.input_images:
+                _, name, ext = split_filename(os.path.abspath(in_file))
+                out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
+                                        ''.join((name, self.inputs.out_postfix, ext)))
 
-        for i in run_nb_images:
-            index_img = run_nb_images.index(i)
-            _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[index_img]))
-            out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
-            if len(self.inputs.input_masks) > 0:
-                index_mask = run_nb_masks.index(i)
-                cmd = cmd + ' -i "{}" -o "{}" -m "{}" '.format(self.inputs.input_images[index_img], out_file, self.inputs.input_masks[index_mask])
-            else:
-                cmd = cmd + ' -i "{}" -o "{}"" '.format(self.inputs.input_images[index_img], out_file)
+                cmd = cmd + ' -i "{}" -o "{}"" '.format(in_file, out_file)
         try:
             print('... cmd: {}'.format(cmd))
             run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
@@ -1264,25 +1193,10 @@ class MultipleMialsrtkMaskImage(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        for i in run_nb_images:
-            index_img = run_nb_images.index(i)
-            index_mask = run_nb_masks.index(i)
-
+        for in_file, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
             ax = MialsrtkMaskImage(bids_dir=self.inputs.bids_dir,
-                                   in_file=self.inputs.input_images[index_img],
-                                   in_mask=self.inputs.input_masks[index_mask],
+                                   in_file=in_file,
+                                   in_mask=in_mask,
                                    out_im_postfix=self.inputs.out_im_postfix)
             ax.run()
         return runtime
