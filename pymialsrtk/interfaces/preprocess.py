@@ -768,8 +768,8 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     def _run_interface(self, runtime):
 
         for in_image, in_mask, in_field in zip(self.inputs.input_images, self.inputs.input_masks, self.inputs.input_fields):
-            ax = MialsrtkSliceBySliceCorrectBiasField(in_file=self.inputs.in_image,
-                                                      in_mask=self.inputs.in_masks,
+            ax = MialsrtkSliceBySliceCorrectBiasField(in_file=in_image,
+                                                      in_mask=in_mask,
                                                       in_field=in_field,
                                                       out_im_postfix=self.inputs.out_im_postfix)
             ax.run()
