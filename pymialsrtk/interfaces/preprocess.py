@@ -1650,7 +1650,7 @@ class BrainExtraction(BaseInterface):
             up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
             # Save output mask
             b_dir, name, ext = split_filename(os.path.abspath(dataPath))
-            save_file = os.path.abspath(os.path.join(b_dir, ''.join((name, out_postfix, ext)))
+            save_file = os.path.abspath(os.path.join(b_dir, ''.join((name, out_postfix, ext))))
             nibabel.save(up_mask, save_file)
 
     def _extractLargestCC(self, image):
