@@ -1067,10 +1067,6 @@ class MialsrtkHistogramNormalization(BaseInterface):
 
         cmd = 'python /usr/local/bin/mialsrtkHistogramNormalization.py '
 
-        # ToDo: self.inputs.stacks_order not tested
-        if not self.inputs.stacks_order:
-            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
-
         run_nb_images = []
         for in_file in self.inputs.input_images:
             cut_avt = in_file.split('run-')[1]
