@@ -9,9 +9,82 @@ import sys
 import json
 # from traits.api import *
 
+import multiprocessing
+
 # Import the super-resolution pipeline
 from pymialsrtk.parser import get_parser
 from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
+
+
+def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores):
+    """Function that checks and returns a valid number of cores used by OpenMP and Nipype.
+
+    Parameters
+    ----------
+    openmp_nb_of_cores <int>
+        Number of cores used by openmp that was initially set
+
+    nipype_nb_of_cores <int>
+        Number of cores used by Niype that was initially set
+
+    Returns
+    -------
+    openmp_nb_of_cores <int>
+        Valid number of cores used by openmp
+
+    nipype_nb_of_cores <int>
+        Valid number of cores used by Niype
+    """
+    if openmp_nb_of_cores == 0 and nipype_nb_of_cores == 0:
+        openmp_nb_of_cores = nb_of_cores // 2
+        nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
+    elif openmp_nb_of_cores > 0 and nipype_nb_of_cores == 0:
+        if openmp_nb_of_cores >= multiprocessing.cpu_count():
+            if openmp_nb_of_cores > multiprocessing.cpu_count():
+                print(f'WARNING: Value of {openmp_nb_of_cores} set by "--openmp_nb_of_cores" is bigger than'
+                      f'the number of cores available ({nb_of_cores}) and will be reset.')
+            openmp_nb_of_cores = multiprocessing.cpu_count()
+            nipype_nb_of_cores = 1
+        else:
+          openmp_nb_of_cores = openmp_nb_of_cores
+          nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
+    elif openmp_nb_of_cores == 0 and nipype_nb_of_cores > 0:
+        if nipype_nb_of_cores >= multiprocessing.cpu_count():
+            if nipype_nb_of_cores > multiprocessing.cpu_count():
+                print(f'WARNING: Value of {nipype_nb_of_cores} set by "--nipype_nb_of_cores" is bigger than'
+                      f'the number of cores available ({nb_of_cores}) and will be reset.')
+            nipype_nb_of_cores = multiprocessing.cpu_count()
+            openmp_nb_of_cores = 1
+        else:
+          nipype_nb_of_cores = nipype_nb_of_cores
+          openmp_nb_of_cores = nb_of_cores - nipype_nb_of_cores
+    elif openmp_nb_of_cores > 0 and nipype_nb_of_cores > 0:
+        if nipype_nb_of_cores >= multiprocessing.cpu_count():
+            if openmp_nb_of_cores >= multiprocessing.cpu_count():
+                print(f'WARNING: Value of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
+                      f'"--nipype_nb_of_cores" are bigger than the number of cores available ({nb_of_cores}) and will be reset.')
+                openmp_nb_of_cores = nb_of_cores // 2
+                nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
+            else:
+                if openmp_nb_of_cores + nipype_nb_of_cores > nb_of_cores:
+                    print(f'WARNING: Addition of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
+                          f'"--nipype_nb_of_cores" are bigger than the number of cores available ({nb_of_cores}) and will be reset.')
+                    openmp_nb_of_cores = nb_of_cores // 2
+                    nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
+        else:
+            if openmp_nb_of_cores >= multiprocessing.cpu_count():
+                print(f'WARNING: Value of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
+                      f'"--nipype_nb_of_cores" are bigger than the number of cores available ({nb_of_cores}) and will be reset.')
+                openmp_nb_of_cores = nb_of_cores // 2
+                nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
+            else:
+                if openmp_nb_of_cores + nipype_nb_of_cores > nb_of_cores:
+                    print(f'WARNING: Addition of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
+                          f'"--nipype_nb_of_cores" are bigger than the number of cores available ({nb_of_cores}) and will be reset.')
+                    openmp_nb_of_cores = nb_of_cores // 2
+                    nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
+
+    return openmp_nb_of_cores, nipype_nb_of_cores
 
 
 def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, number_of_cores=1, srID=None, use_manual_masks=False):
@@ -41,7 +114,7 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, nu
         Dictionary of Total-Variation super-resolution optimizer parameters
 
     number_of_cores <int>
-        Number of cores / CPUs used by the worflow execution engine
+        Number of cores / CPUs used by the Nipype worflow execution engine
 
     srID <string>
         ID of the reconstruction useful to distinguish when multiple reconstructions
@@ -74,7 +147,7 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, nu
     pipeline.create_workflow()
 
     # Execute the workflow
-    res = pipeline.run(number_of_cores)
+    res = pipeline.run(number_of_cores=number_of_cores)
 
     return res
 
@@ -85,6 +158,18 @@ if __name__ == '__main__':
 
     parser = get_parser()
     args = parser.parse_args()
+
+    openmp_nb_of_cores = args.openmp_nb_of_cores
+    nipype_nb_of_cores = args.args.nipype_nb_of_cores
+
+    nb_of_cores = multiprocessing.cpu_count()
+
+    # Check values set for the number of cores and reset them if invalid
+    openmp_nb_of_cores, nipype_nb_of_cores = check_and_return_valid_nb_of_cores(openmp_nb_of_cores,
+                                                                                nipype_nb_of_cores)
+
+    os.environ['OMP_NUM_THREADS'] = openmp_nb_of_cores
+    print('Environment variable OMP_NUM_THREADS has been set to {}'.format(os.environ['OMP_NUM_THREADS']))
 
     print(args.param_file)
     with open(args.param_file, 'r') as f:
@@ -118,7 +203,8 @@ if __name__ == '__main__':
                                    session=ses,
                                    paramTV=sr_params['paramTV'],
                                    srID=sr_params['sr-id'],
-                                   use_manual_masks=args.manual)
+                                   use_manual_masks=args.manual,
+                                   number_of_cores=nipype_nb_of_cores)
 
                         # sys.exit(0)
 
@@ -130,7 +216,9 @@ if __name__ == '__main__':
                                    p_stacksOrder=sr_params['stacksOrder'],
                                    session=ses,
                                    srID=sr_params['sr-id'],
-                                   use_manual_masks=args.manual)
+                                   use_manual_masks=args.manual,
+                                   number_of_cores=nipype_nb_of_cores
+                                   )
 
                         # sys.exit(0)
     else:
