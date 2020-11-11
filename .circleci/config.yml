@@ -142,6 +142,8 @@ jobs:
                 sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
+                --openmp_nb_of_cores 2
+                --nipype_nb_of_cores 2
                 --manual 
 
             # Rename log
