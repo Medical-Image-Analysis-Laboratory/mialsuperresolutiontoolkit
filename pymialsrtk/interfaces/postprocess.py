@@ -82,8 +82,6 @@ class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
                                     desc='Suffix to be added to the SR reconstruction filename to construct output SR mask filename',
                                     usedefault=True)
 
-    stacks_order = traits.List(desc='To_be_completed', mandatory=False)
-
 
 class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkRefineHRMaskByIntersection interface.
@@ -124,7 +122,6 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     >>> refMask.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
     >>> refMask.inputs.input_transforms = ['transform1.txt','transform2.nii.gz']
     >>> refMask.inputs.input_sr = 'sr_image.nii.gz'
-    >>> refMask.inputs.stacks_order = [0,1]
     >>> refMask.run()  # doctest: +SKIP
 
     """
@@ -141,34 +138,13 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
         if self.inputs.in_use_staple:
             cmd += ['--use-staple']
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_images.append(int(cut_apr))
+        for in_file, in_mask, in_transform in zip(self.inputs.input_images, self.inputs.input_masks, self.inputs.input_transforms):
 
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_masks.append(int(cut_apr))
+            cmd += ['-i', in_file]
+            cmd += ['-m', in_mask]
+            cmd += ['-t', in_transform]
 
-        run_nb_transforms = []
-        for in_mask in self.inputs.input_transforms:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_transforms.append(int(cut_apr))
-
-        for i in run_nb_images:
-            index_img = run_nb_images.index(i)
-            index_mask = run_nb_masks.index(i)
-            index_tranform = run_nb_transforms.index(i)
-
-            cmd += ['-i', self.inputs.input_images[index_img]]
-            cmd += ['-m', self.inputs.input_masks[index_mask]]
-            cmd += ['-t', self.inputs.input_transforms[index_tranform]]
-
-            _, name, ext = split_filename(self.inputs.input_images[index_img])
+            _, name, ext = split_filename(in_file)
             out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                     ''.join((name, self.inputs.out_lrmask_postfix, ext)))
             cmd += ['-O', out_file]
