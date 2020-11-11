@@ -125,6 +125,9 @@ class AnatomicalPipeline:
         # By defaut use the automated brain extraction method
         self.use_manual_masks = use_manual_masks
 
+        self.compute_stacks_order = True if self.p_stacks_order is None else False
+
+
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
 
@@ -241,6 +244,10 @@ class AnatomicalPipeline:
                                                                            "data/Network_checkpoints/Network_checkpoints_segmentation/Unet.ckpt-20000")
             brainMask.inputs.threshold_seg = 0.5
 
+        if self.compute_stacks_order:
+            stacksOrdering = Node(interface=preprocess.StacksOrdering(), name='stackOrdering')
+
+
         nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
         nlmDenoise.inputs.bids_dir = self.bids_dir
 
@@ -289,13 +296,15 @@ class AnatomicalPipeline:
 
         srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
         srtkImageReconstruction.inputs.bids_dir = self.bids_dir
-        srtkImageReconstruction.inputs.stacks_order = self.p_stacks_order
+        if not self.compute_stacks_order:
+            srtkImageReconstruction.inputs.stacks_order = self.p_stacks_order
 
         srtkImageReconstruction.inputs.sub_ses = sub_ses
 
         srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(), name='srtkTVSuperResolution')
         srtkTVSuperResolution.inputs.bids_dir = self.bids_dir
-        srtkTVSuperResolution.inputs.stacks_order = self.p_stacks_order
+        if not self.compute_stacks_order:
+            srtkTVSuperResolution.inputs.stacks_order = self.p_stacks_order
         srtkTVSuperResolution.inputs.sub_ses = sub_ses
         srtkTVSuperResolution.inputs.in_loop = self.primal_dual_loops
         srtkTVSuperResolution.inputs.in_deltat = self.deltatTV
@@ -334,6 +343,9 @@ class AnatomicalPipeline:
 
         self.wf.connect(dg, "T2ws", nlmDenoise, "input_images")
         # self.wf.connect(dg, "masks", nlmDenoise, "input_masks")  ## Comment to match docker process
+
+        if self.compute_stacks_order:
+            self.wf.connect(dg, "masks", stacksOrdering, "input_masks")
 
         self.wf.connect(nlmDenoise, "output_images", srtkCorrectSliceIntensity01_nlm, "input_images")
         if self.use_manual_masks:
@@ -398,6 +410,8 @@ class AnatomicalPipeline:
             self.wf.connect(dg, "masks", srtkImageReconstruction, "input_masks")
         else:
             self.wf.connect(brainMask, "masks", srtkImageReconstruction, "input_masks")
+        if self.compute_stacks_order:
+            self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
 
         self.wf.connect(srtkIntensityStandardization02, "output_images", srtkTVSuperResolution, "input_images")
         self.wf.connect(srtkImageReconstruction, "output_transforms", srtkTVSuperResolution, "input_transforms")
@@ -405,6 +419,8 @@ class AnatomicalPipeline:
             self.wf.connect(dg, "masks", srtkTVSuperResolution, "input_masks")
         else:
             self.wf.connect(brainMask, "masks", srtkTVSuperResolution, "input_masks")
+        if self.compute_stacks_order:
+            self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
 
         self.wf.connect(srtkIntensityStandardization02, "output_images", srtkRefineHRMaskByIntersection, "input_images")
