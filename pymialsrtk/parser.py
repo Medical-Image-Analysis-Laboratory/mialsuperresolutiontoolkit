@@ -52,7 +52,7 @@ def get_parser():
                    help='Specify number of cores used by the Niype workflow library'
                         'to distribute the different independent processing steps'
                         '(in the case of slice-by-slice bids field correction for example).'
-                        'Default: 0, meaning it will be determined automatically',,
+                        'Default: 0, meaning it will be determined automatically',
                    default=0, type=int)
 
     p.add_argument('--manual',
