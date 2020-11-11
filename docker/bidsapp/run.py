@@ -35,32 +35,34 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores):
     nipype_nb_of_cores <int>
         Valid number of cores used by Niype
     """
+    nb_of_cores = multiprocessing.cpu_count()
+
     if openmp_nb_of_cores == 0 and nipype_nb_of_cores == 0:
         openmp_nb_of_cores = nb_of_cores // 2
         nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
     elif openmp_nb_of_cores > 0 and nipype_nb_of_cores == 0:
-        if openmp_nb_of_cores >= multiprocessing.cpu_count():
-            if openmp_nb_of_cores > multiprocessing.cpu_count():
+        if openmp_nb_of_cores >= nb_of_cores:
+            if openmp_nb_of_cores > nb_of_cores:
                 print(f'WARNING: Value of {openmp_nb_of_cores} set by "--openmp_nb_of_cores" is bigger than'
                       f'the number of cores available ({nb_of_cores}) and will be reset.')
-            openmp_nb_of_cores = multiprocessing.cpu_count()
+            openmp_nb_of_cores = nb_of_cores
             nipype_nb_of_cores = 1
         else:
           openmp_nb_of_cores = openmp_nb_of_cores
           nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
     elif openmp_nb_of_cores == 0 and nipype_nb_of_cores > 0:
-        if nipype_nb_of_cores >= multiprocessing.cpu_count():
-            if nipype_nb_of_cores > multiprocessing.cpu_count():
+        if nipype_nb_of_cores >= nb_of_cores:
+            if nipype_nb_of_cores > nb_of_cores:
                 print(f'WARNING: Value of {nipype_nb_of_cores} set by "--nipype_nb_of_cores" is bigger than'
                       f'the number of cores available ({nb_of_cores}) and will be reset.')
-            nipype_nb_of_cores = multiprocessing.cpu_count()
+            nipype_nb_of_cores = nb_of_cores
             openmp_nb_of_cores = 1
         else:
           nipype_nb_of_cores = nipype_nb_of_cores
           openmp_nb_of_cores = nb_of_cores - nipype_nb_of_cores
     elif openmp_nb_of_cores > 0 and nipype_nb_of_cores > 0:
-        if nipype_nb_of_cores >= multiprocessing.cpu_count():
-            if openmp_nb_of_cores >= multiprocessing.cpu_count():
+        if nipype_nb_of_cores >= nb_of_cores:
+            if openmp_nb_of_cores >= nb_of_cores:
                 print(f'WARNING: Value of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
                       f'"--nipype_nb_of_cores" are bigger than the number of cores available ({nb_of_cores}) and will be reset.')
                 openmp_nb_of_cores = nb_of_cores // 2
@@ -72,9 +74,9 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores):
                     openmp_nb_of_cores = nb_of_cores // 2
                     nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
         else:
-            if openmp_nb_of_cores >= multiprocessing.cpu_count():
-                print(f'WARNING: Value of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
-                      f'"--nipype_nb_of_cores" are bigger than the number of cores available ({nb_of_cores}) and will be reset.')
+            if openmp_nb_of_cores >= nb_of_cores:
+                print(f'WARNING: Value of {onpenmp_nb_of_cores} set by "--nipype_nb_of_cores" are bigger'
+                      f'than the number of cores available ({nb_of_cores}) and will be reset.')
                 openmp_nb_of_cores = nb_of_cores // 2
                 nipype_nb_of_cores = nb_of_cores - openmp_nb_of_cores
             else:
@@ -161,8 +163,6 @@ if __name__ == '__main__':
 
     openmp_nb_of_cores = args.openmp_nb_of_cores
     nipype_nb_of_cores = args.nipype_nb_of_cores
-
-    nb_of_cores = multiprocessing.cpu_count()
 
     # Check values set for the number of cores and reset them if invalid
     openmp_nb_of_cores, nipype_nb_of_cores = check_and_return_valid_nb_of_cores(openmp_nb_of_cores,
