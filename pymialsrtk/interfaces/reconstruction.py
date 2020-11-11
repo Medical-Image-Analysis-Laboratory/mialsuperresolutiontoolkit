@@ -108,7 +108,7 @@ class MialsrtkImageReconstruction(BaseInterface):
     >>> srtkImageReconstruction.inputs.bids_dir = '/my_directory'
     >>> srtkImageReconstruction.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz', 'sub-01_ses-01_run-2_T2w.nii.gz', 'sub-01_ses-01_run-3_T2w.nii.gz', 'sub-01_ses-01_run-4_T2w.nii.gz']
     >>> srtkImageReconstruction.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz', 'sub-01_ses-01_run-2_mask.nii.gz', 'sub-01_ses-01_run-3_mask.nii.gz', 'sub-01_ses-01_run-4_mask.nii.gz']
-    >>> srtkImageReconstruction.inputs.stacksOrder = [3,1,2,4]
+    >>> srtkImageReconstruction.inputs.stacks_order = [3,1,2,4]
     >>> srtkImageReconstruction.inputs.sub_ses = 'sub-01_ses-01'
     >>> srtkImageReconstruction.inputs.in_roi = 'mask'
     >>> srtkImageReconstruction.inputs.in_deltat = 0.01
@@ -324,7 +324,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
     >>> srtkTVSuperResolution.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz', 'sub-01_ses-01_run-2_mask.nii.gz', 'sub-01_ses-01_run-3_mask.nii.gz', 'sub-01_ses-01_run-4_mask.nii.gz']
     >>> srtkTVSuperResolution.input_transforms = ['sub-01_ses-01_run-1_transform.txt', 'sub-01_ses-01_run-2_transform.txt', 'sub-01_ses-01_run-3_transform.txt', 'sub-01_ses-01_run-4_transform.txt']
     >>> srtkTVSuperResolution.input_sdi = 'sdi.nii.gz'
-    >>> srtkTVSuperResolution.inputs.stacksOrder = [3,1,2,4]
+    >>> srtkTVSuperResolution.inputs.stacks_order = [3,1,2,4]
     >>> srtkTVSuperResolution.inputs.sub_ses = 'sub-01_ses-01'
     >>> srtkTVSuperResolution.inputs.in_loop = 10
     >>> srtkTVSuperResolution.inputs.in_deltat = 0.01

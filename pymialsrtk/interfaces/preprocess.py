@@ -1349,7 +1349,7 @@ class StacksOrdering(BaseInterface):
     --------
     >>> from pymialsrtk.interfaces.preprocess import StacksOrdering
     >>> stacksOrdering = StacksOrdering()
-    >>> stacksOrdering.inputs.input_images = ['my_image_run-1.nii.gz', 'my_image_run-3.nii.gz', 'my_image_run-2.nii.gz']
+    >>> stacksOrdering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz', 'sub-01_run-4_mask.nii.gz', 'sub-01_run-2_mask.nii.gz']
     >>> stacksOrdering.run() # doctest: +SKIP
 
     """
