@@ -11,6 +11,7 @@ import pkg_resources
 from nipype import config, logging
 # from nipype.interfaces.io import BIDSDataGrabber
 from nipype.interfaces.io import DataGrabber, DataSink, JSONFileSink
+from nipype.interfaces.utility import IdentityInterface
 # from nipype.pipeline import Node, MapNode, Workflow
 from nipype.pipeline import Node, Workflow
 
@@ -246,6 +247,10 @@ class AnatomicalPipeline:
 
         if self.compute_stacks_order:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(), name='stackOrdering')
+        else:
+            stacksOrdering = Node(interface=IdentityInterface(fields=['stacks_order']), name='stackOrdering')
+            stacksOrdering.inputs.stacks_order = self.p_stacks_order
+
 
 
         nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
@@ -296,15 +301,10 @@ class AnatomicalPipeline:
 
         srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
         srtkImageReconstruction.inputs.bids_dir = self.bids_dir
-        if not self.compute_stacks_order:
-            srtkImageReconstruction.inputs.stacks_order = self.p_stacks_order
-
         srtkImageReconstruction.inputs.sub_ses = sub_ses
 
         srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(), name='srtkTVSuperResolution')
         srtkTVSuperResolution.inputs.bids_dir = self.bids_dir
-        if not self.compute_stacks_order:
-            srtkTVSuperResolution.inputs.stacks_order = self.p_stacks_order
         srtkTVSuperResolution.inputs.sub_ses = sub_ses
         srtkTVSuperResolution.inputs.in_loop = self.primal_dual_loops
         srtkTVSuperResolution.inputs.in_deltat = self.deltatTV
@@ -410,8 +410,7 @@ class AnatomicalPipeline:
             self.wf.connect(dg, "masks", srtkImageReconstruction, "input_masks")
         else:
             self.wf.connect(brainMask, "masks", srtkImageReconstruction, "input_masks")
-        if self.compute_stacks_order:
-            self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
+        self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
 
         self.wf.connect(srtkIntensityStandardization02, "output_images", srtkTVSuperResolution, "input_images")
         self.wf.connect(srtkImageReconstruction, "output_transforms", srtkTVSuperResolution, "input_transforms")
@@ -419,8 +418,7 @@ class AnatomicalPipeline:
             self.wf.connect(dg, "masks", srtkTVSuperResolution, "input_masks")
         else:
             self.wf.connect(brainMask, "masks", srtkTVSuperResolution, "input_masks")
-        if self.compute_stacks_order:
-            self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
+        self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
 
         self.wf.connect(srtkIntensityStandardization02, "output_images", srtkRefineHRMaskByIntersection, "input_images")
