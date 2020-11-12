@@ -168,7 +168,7 @@ if __name__ == '__main__':
     openmp_nb_of_cores, nipype_nb_of_cores = check_and_return_valid_nb_of_cores(openmp_nb_of_cores,
                                                                                 nipype_nb_of_cores)
 
-    os.environ['OMP_NUM_THREADS'] = openmp_nb_of_cores
+    os.environ['OMP_NUM_THREADS'] = str(openmp_nb_of_cores)
     print('Environment variable OMP_NUM_THREADS has been set to {}'.format(os.environ['OMP_NUM_THREADS']))
 
     print(args.param_file)
