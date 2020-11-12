@@ -50,11 +50,11 @@ def return_default_nb_of_cores(nb_of_cores, openmp_proportion=2):
     return openmp_nb_of_cores, nipype_nb_of_cores
 
 
-def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores):
+def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, openmp_proportion=2):
     """Function that checks and returns a valid number of cores used by OpenMP and Nipype.
 
-    If the number of cores available is exceeded by one of these variables or by the addition of the two, ``openmp_nb_of_cores`` and 
-    ``nipype_nb_of_cores`` are reset to the following:
+    If the number of cores available is exceeded by one of these variables or by the multiplication of the two,
+    ``openmp_nb_of_cores`` and ``nipype_nb_of_cores`` are reset by the :func:`return_default_nb_of_cores()` to the following:
 
     .. code-block:: python
 
@@ -83,7 +83,7 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores):
     # and make the correction if needed.
     if openmp_nb_of_cores == 0 and nipype_nb_of_cores == 0:
 
-        openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores)
+        openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
 
     elif openmp_nb_of_cores > 0 and nipype_nb_of_cores == 0:
 
@@ -115,22 +115,22 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores):
             if openmp_nb_of_cores >= nb_of_cores:
                 print(f'WARNING: Value of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
                       f'"--nipype_nb_of_cores" are bigger than the number of cores available ({nb_of_cores}) and will be reset.')
-                openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores)
+                openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
             else:
                 if openmp_nb_of_cores * nipype_nb_of_cores > nb_of_cores:
                     print(f'WARNING: Addition of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
                           f'"--nipype_nb_of_cores" are bigger than the number of cores available ({nb_of_cores}) and will be reset.')
-                    openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores)
+                    openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
         else:
             if openmp_nb_of_cores >= nb_of_cores:
                 print(f'WARNING: Value of {openmp_nb_of_cores} set by "--nipype_nb_of_cores" are bigger'
                       f'than the number of cores available ({nb_of_cores}) and will be reset.')
-                openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores)
+                openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
             else:
                 if openmp_nb_of_cores * nipype_nb_of_cores > nb_of_cores:
                     print(f'WARNING: Addition of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
                           f'"--nipype_nb_of_cores" are bigger than the number of cores available ({nb_of_cores}) and will be reset.')
-                    openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores)
+                    openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
 
     return openmp_nb_of_cores, nipype_nb_of_cores
 
