@@ -483,7 +483,7 @@ class AnatomicalPipeline:
         """
 
         if(number_of_cores != 1):
-            res = self.wf.run(plugin='MultiProc', plugin_args={'n_procs': self.number_of_cores})
+            res = self.wf.run(plugin='MultiProc', plugin_args={'n_procs': number_of_cores})
             self.dictsink.run()
         else:
             res = self.wf.run()
