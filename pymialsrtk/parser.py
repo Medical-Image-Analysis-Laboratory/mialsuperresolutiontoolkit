@@ -42,6 +42,20 @@ def get_parser():
                         'information and super-resolution total variation parameters.',
                    default='/bids_dir/code/participants_param.json', type=str)
 
+    p.add_argument('--openmp_nb_of_cores',
+                   help='Specify number of cores used by OpenMP threads'
+                        'Especially useful for NLM denoising and slice-to-volume registration.'
+                        'Default: 0, meaning it will be determined automatically',
+                   default=0, type=int)
+
+    p.add_argument('--nipype_nb_of_cores',
+                   help='Specify number of cores used by the Niype workflow library to distribute'
+                        'the execution of independent processing workflow nodes (i.e. interfaces)'
+                        '(Especially useful in the case of slice-by-slice bias field correction and'
+                        'intensity standardization steps for example).'
+                        'Default: 0, meaning it will be determined automatically',
+                   default=0, type=int)
+
     p.add_argument('--manual',
                    help='Use manual brain masks found in '
                         '<output_dir>/manual_masks/ directory',

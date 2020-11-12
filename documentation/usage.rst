@@ -50,7 +50,7 @@ where:
 
 Participant Level Analysis
 ===========================
-To run the docker image in participant level mode (for one participant):
+To run the BIDS App for one participant (participant level mode):
 
   .. parsed-literal::
 
@@ -60,7 +60,8 @@ To run the docker image in participant level mode (for one participant):
             sebastientourbier/mialsuperresolutiontoolkit-bidsapp:|release| \\
             /bids_dir /output_dir participant --participant_label 01 \\(--session_label 01 \\)
             --param_file /bids_dir/code/participants_params.json \\
-            (--number_of_cores 1)
+            (--openmp_number_of_cores 4) \\
+            (--nipype_number_of_cores 4)
 
 .. note:: The local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process have to be mapped to the folders ``/bids_dir`` and ``/output_dir`` respectively using the `-v` docker run option. 
 
