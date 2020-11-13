@@ -56,7 +56,7 @@ class AnatomicalPipeline:
         Number of primal/dual loops used in the optimization of the total-variation
         super-resolution algorithm.
 
-    srID <string>
+    sr_id <string>
         ID of the reconstruction useful to distinguish when multiple reconstructions
         with different order of stacks are run on the same subject
 
@@ -98,13 +98,13 @@ class AnatomicalPipeline:
     deltatTV = "0.75"
     lambdaTV = "0.001"
     primal_dual_loops = "20"
-    srID = "01"
+    sr_id = "01"
     session = None
     p_stacks_order = None
     use_manual_masks = False
 
     def __init__(self, bids_dir, output_dir, subject,
-                 p_stacks_order, srID, session=None, paramTV=None,
+                 p_stacks_order, sr_id, session=None, paramTV=None,
                  use_manual_masks=False):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -112,7 +112,7 @@ class AnatomicalPipeline:
         self.bids_dir = bids_dir
         self.output_dir = output_dir
         self.subject = subject
-        self.srID = srID
+        self.sr_id = sr_id
         self.session = session
         self.p_stacks_order = p_stacks_order
 
@@ -146,7 +146,7 @@ class AnatomicalPipeline:
             wf_base_dir = os.path.join(self.output_dir,
                                        "nipype",
                                        self.subject,
-                                       "rec-{}".format(self.srID))
+                                       "rec-{}".format(self.sr_id))
             final_res_dir = os.path.join(self.output_dir,
                                          '-'.join(["pymialsrtk", __version__]),
                                          self.subject)
@@ -155,14 +155,14 @@ class AnatomicalPipeline:
                                        "nipype",
                                        self.subject,
                                        self.session,
-                                       "rec-{}".format(self.srID))
+                                       "rec-{}".format(self.sr_id))
             final_res_dir = os.path.join(self.output_dir,
                                          '-'.join(["pymialsrtk", __version__]),
                                          self.subject,
                                          self.session)
 
-        # #if self.srID is not None:
-        # wf_base_dir = os.path.join(wf_base_dir, self.srID)
+        # #if self.sr_id is not None:
+        # wf_base_dir = os.path.join(wf_base_dir, self.sr_id)
 
         if not os.path.exists(wf_base_dir):
             os.makedirs(wf_base_dir)
@@ -324,7 +324,7 @@ class AnatomicalPipeline:
 
         finalFilenamesGeneration = Node(postprocess.FilenamesGeneration(), name='filenames_gen')
         finalFilenamesGeneration.inputs.sub_ses = sub_ses
-        finalFilenamesGeneration.inputs.sr_id = self.srID
+        finalFilenamesGeneration.inputs.sr_id = self.sr_id
 
         datasink = Node(DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
@@ -342,7 +342,7 @@ class AnatomicalPipeline:
         self.dictsink = JSONFileSink(name='json_sinker')
         self.dictsink.inputs.in_dict = output_dict
 
-        self.dictsink.inputs.out_file = os.path.join(final_res_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+str(self.srID)+'_T2w.json')
+        self.dictsink.inputs.out_file = os.path.join(final_res_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+str(self.sr_id)+'_T2w.json')
 
         # Nodes ready - Linking now
         if self.use_manual_masks:
