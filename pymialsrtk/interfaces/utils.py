@@ -49,3 +49,21 @@ def run(command, env=None, cwd=None):
                              env=merged_env,
                              cwd=cwd)
     return process
+
+
+def sort_ascending(p_files):
+    """Function used to sort images at the input of a nipype node.
+
+    Parameters
+    ----------
+    p_files <list<string>>
+        List of image paths to be sorting in ascending order
+
+    Examples
+    --------
+    >>> in_files = ['sub-01_run-2_T2w.nii.gz', 'sub-01_run-5_T2w.nii.gz', 'sub-01_run-3_T2w.nii.gz', 'sub-01_run-1_T2w.nii.gz']
+    >>> sort_ascending(in_files)
+
+    """
+    p_files.sort()
+    return p_files
