@@ -113,8 +113,8 @@ class BtkNLMDenoising(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import BtkNLMDenoising
     >>> nlmDenoise = BtkNLMDenoising()
     >>> nlmDenoise.inputs.bids_dir = '/my_directory'
-    >>> nlmDenoise.inputs.in_file = 'my_image.nii.gz'
-    >>> nlmDenoise.inputs.in_mask = 'my_mask.nii.gz'
+    >>> nlmDenoise.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> nlmDenoise.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> nlmDenoise.inputs.weight = 0.2
     >>> nlmDenoise.run() # doctest: +SKIP
 
@@ -214,8 +214,8 @@ class MultipleBtkNLMDenoising(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleBtkNLMDenoising
     >>> multiNlmDenoise = MultipleBtkNLMDenoising()
     >>> multiNlmDenoise.inputs.bids_dir = '/my_directory'
-    >>> multiNlmDenoise.inputs.in_file = ['my_image_run-1.nii.gz', 'my_image_run-2.nii.gz']
-    >>> multiNlmDenoise.inputs.in_mask = ['my_mask_run-1.nii.gz', 'my_mask_run-2.nii.gz']
+    >>> multiNlmDenoise.inputs.in_file = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-1_2w.nii.gz']
+    >>> multiNlmDenoise.inputs.in_mask = ['sub-01_acq-haste_run-1_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
     >>> multiNlmDenoise.run() # doctest: +SKIP
 
     See Also
@@ -313,8 +313,8 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkCorrectSliceIntensity
     >>> sliceIntensityCorr = MialsrtkCorrectSliceIntensity()
     >>> sliceIntensityCorr.inputs.bids_dir = '/my_directory'
-    >>> sliceIntensityCorr.inputs.in_file = 'my_image.nii.gz'
-    >>> sliceIntensityCorr.inputs.in_mask = 'my_mask.nii.gz'
+    >>> sliceIntensityCorr.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> sliceIntensityCorr.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> sliceIntensityCorr.run() # doctest: +SKIP
 
     """
@@ -398,8 +398,8 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkCorrectSliceIntensity
     >>> multiSliceIntensityCorr = MialsrtkCorrectSliceIntensity()
     >>> multiSliceIntensityCorr.inputs.bids_dir = '/my_directory'
-    >>> multiSliceIntensityCorr.inputs.in_file = ['my_image_run-1.nii.gz', 'my_image_run-2.nii.gz']
-    >>> multiSliceIntensityCorr.inputs.in_mask = ['my_mask_run-1.nii.gz', 'my_mask_run-2.nii.gz']
+    >>> multiSliceIntensityCorr.inputs.in_file = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> multiSliceIntensityCorr.inputs.in_mask = ['sub-01_acq-haste_run-2_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
     >>> multiSliceIntensityCorr.run() # doctest: +SKIP
 
     See also
@@ -505,8 +505,8 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
     >>> N4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> N4biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> N4biasFieldCorr.inputs.in_file = 'my_image.nii.gz'
-    >>> N4biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
+    >>> N4biasFieldCorr.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> N4biasFieldCorr.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> N4biasFieldCorr.run() # doctest: +SKIP
 
     """
@@ -612,8 +612,8 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkSliceBySliceN4BiasFieldCorrection
     >>> multiN4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> multiN4biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> multiN4biasFieldCorr.inputs.input_images = ['my_image_run-1.nii.gz', 'my_image_run-2.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.inputs_masks = ['my_mask_run-1.nii.gz', 'my_mask_run-2.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.inputs_masks = ['sub-01_acq-haste_run-1_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
     >>> multiN4biasFieldCorr.run() # doctest: +SKIP
 
     See also
@@ -706,9 +706,9 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceCorrectBiasField
     >>> biasFieldCorr = MialsrtkSliceBySliceCorrectBiasField()
     >>> biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> biasFieldCorr.inputs.in_file = 'my_image.nii.gz'
-    >>> biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
-    >>> biasFieldCorr.inputs.in_field = 'my_field.nii.gz'
+    >>> biasFieldCorr.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> biasFieldCorr.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
+    >>> biasFieldCorr.inputs.in_field = 'sub-01_acq-haste_run-1_field.nii.gz'
     >>> biasFieldCorr.run() # doctest: +SKIP
 
     """
@@ -797,9 +797,9 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkSliceBySliceN4BiasFieldCorrection
     >>> multiN4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> multiN4biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> multiN4biasFieldCorr.inputs.input_images = ['my_image_run-1.nii.gz', 'my_image_run-2.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.input_masks = ['my_mask_run-1.nii.gz', 'my_mask_run-2.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.input_fields = ['my_field_run-1.nii.gz', 'my_field_run-2.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.input_masks = ['sub-01_acq-haste_run-1_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.input_fields = ['sub-01_acq-haste_run-1_field.nii.gz', 'sub-01_acq-haste_run-2_field.nii.gz']
     >>> multiN4biasFieldCorr.run() # doctest: +SKIP
 
     See also
@@ -890,7 +890,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkIntensityStandardization
     >>> intensityStandardization= MialsrtkIntensityStandardization()
     >>> intensityStandardization.inputs.bids_dir = '/my_directory'
-    >>> intensityStandardization.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
+    >>> intensityStandardization.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz','sub-01_acq-haste_run-2_T2w.nii.gz']
     >>> intensityStandardization.run() # doctest: +SKIP
 
     """
@@ -988,8 +988,8 @@ class MialsrtkHistogramNormalization(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkHistogramNormalization
     >>> histNorm = MialsrtkHistogramNormalization()
     >>> histNorm.inputs.bids_dir = '/my_directory'
-    >>> histNorm.inputs.input_images = ['image_run-1.nii.gz','image_run-2.nii.gz']
-    >>> histNorm.inputs.input_masks = ['mask_run-1.nii.gz','mask_run-2.nii.gz']
+    >>> histNorm.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz','sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> histNorm.inputs.input_masks = ['sub-01_acq-haste_run-1_mask.nii.gz','sub-01_acq-haste_run-2_mask.nii.gz']
     >>> histNorm.run()  # doctest: +SKIP
 
     """
@@ -1087,8 +1087,8 @@ class MialsrtkMaskImage(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkMaskImage
     >>> maskImg = MialsrtkMaskImage()
     >>> maskImg.inputs.bids_dir = '/my_directory'
-    >>> maskImg.inputs.in_file = 'my_image.nii.gz'
-    >>> maskImg.inputs.in_mask = 'my_mask.nii.gz'
+    >>> maskImg.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> maskImg.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> maskImg.inputs.out_im_postfix = '_masked'
     >>> maskImg.run() # doctest: +SKIP
 
@@ -1177,8 +1177,8 @@ class MultipleMialsrtkMaskImage(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkMaskImage
     >>> multiMaskImg = MultipleMialsrtkMaskImage()
     >>> multiMaskImg.inputs.bids_dir = '/my_directory'
-    >>> multiMaskImg.inputs.in_file = ['my_image_run-2.nii.gz', 'my_image_run-1.nii.gz']
-    >>> multiMaskImg.inputs.in_mask = ['my_mask_run-2.nii.gz', 'my_mask_run-1.nii.gz']
+    >>> multiMaskImg.inputs.in_file = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> multiMaskImg.inputs.in_mask = ['sub-01_acq-haste_run-1_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
     >>> multiMaskImg.inputs.out_im_postfix = '_masked'
     >>> multiMaskImg.run() # doctest: +SKIP
 
@@ -1405,15 +1405,15 @@ class StacksOrdering(BaseInterface):
         for f in in_files:
             motion_ind.append(self._compute_motion_index(f))
 
-        vp_defined = not -1 in [f.find('vp') for f in in_files]
+        vp_defined = -1 not in [f.find('vp') for f in in_files]
         if vp_defined:
             orientations_ = []
             for f in in_files:
                 orientations_.append((f.split('_vp-')[1]).split('_')[0])
-            motion_ind_sorted, images_ordered, orientations_ordered = (list(t) for t in zip(
+            _, images_ordered, orientations_ordered = (list(t) for t in zip(
                 *sorted(zip(motion_ind, in_files, orientations_))))
         else:
-            motion_ind_sorted, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, in_files))))
+            _, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, in_files))))
 
         run_order = [int(f.split('run-')[1].split('_')[0]) for f in images_ordered]
 
@@ -1521,7 +1521,7 @@ class BrainExtraction(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import BrainExtraction
     >>> brainMask = BrainExtraction()
     >>> brainmask.inputs.base_dir = '/my_directory'
-    >>> brainmask.inputs.in_file = 'my_image.nii.gz'
+    >>> brainmask.inputs.in_file = 'sub-01_acq-haste_run-1_2w.nii.gz'
     >>> brainmask.inputs.in_ckpt_loc = 'my_loc_checkpoint'
     >>> brainmask.inputs.threshold_loc = 0.49
     >>> brainmask.inputs.in_ckpt_seg = 'my_seg_checkpoint'
