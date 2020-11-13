@@ -354,8 +354,8 @@ class FilenamesGeneration(BaseInterface):
 
     """
 
-    input_spec = MialsrtkN4BiasFieldCorrectionInputSpec
-    output_spec = MialsrtkN4BiasFieldCorrectionOutputSpec
+    input_spec = FilenamesGenerationInputSpec
+    output_spec = FilenamesGenerationOutputSpec
 
     m_substitutions = []
 
