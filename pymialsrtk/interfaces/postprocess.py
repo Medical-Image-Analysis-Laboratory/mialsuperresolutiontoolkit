@@ -118,9 +118,9 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     >>> from pymialsrtk.interfaces.postprocess import MialsrtkRefineHRMaskByIntersection
     >>> refMask = MialsrtkRefineHRMaskByIntersection()
     >>> refMask.inputs.bids_dir = '/my_directory'
-    >>> refMask.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
-    >>> refMask.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
-    >>> refMask.inputs.input_transforms = ['transform1.txt','transform2.nii.gz']
+    >>> refMask.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz','sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> refMask.inputs.input_masks = ['sub-01_acq-haste_run-1_mask.nii.gz','sub-01_acq-haste_run-2_mask.nii.gz']
+    >>> refMask.inputs.input_transforms = ['sub-01_acq-haste_run-1_transform.txt','sub-01_acq-haste_run-2_transform.nii.gz']
     >>> refMask.inputs.input_sr = 'sr_image.nii.gz'
     >>> refMask.run()  # doctest: +SKIP
 
@@ -253,8 +253,8 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
     >>> N4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> N4biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> N4biasFieldCorr.inputs.input_image = 'my_image.nii.gz'
-    >>> N4biasFieldCorr.inputs.input_mask = 'my_mask.nii.gz'
+    >>> N4biasFieldCorr.inputs.input_image = 'sub-01_acq-haste_run-1_SR.nii.gz'
+    >>> N4biasFieldCorr.inputs.input_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> N4biasFieldCorr.run() # doctest: +SKIP
 
     """
