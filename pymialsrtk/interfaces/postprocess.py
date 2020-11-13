@@ -339,7 +339,7 @@ class FilenamesGenerationOutputSpec(TraitedSpec):
 
     """
 
-    substitution = traits.List(desc='Correspondence old/new filenames')
+    substitutions = traits.List(desc='Correspondence old/new filenames')
 
 
 class FilenamesGeneration(BaseInterface):
@@ -424,6 +424,6 @@ class FilenamesGeneration(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['substitution'] = self.m_substitutions
+        outputs['substitutions'] = self.m_substitutions
 
         return outputs
