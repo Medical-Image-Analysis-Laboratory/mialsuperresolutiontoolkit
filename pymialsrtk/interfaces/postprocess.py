@@ -321,7 +321,7 @@ class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
 
     sub_ses = traits.Str(mandatory=True)
     stacks_order = traits.List(mandatory=True)
-    sr_id = traits.Str(mandatory=True)
+    sr_id = traits.Int(mandatory=True)
     use_manual_masks = traits.List(mandatory=True)
 
 
@@ -351,7 +351,7 @@ class FilenamesGeneration(BaseInterface):
     >>> filenamesGen = FilenamesGeneration()
     >>> filenamesGen.inputs.sub_ses = 'sub-01'
     >>> filenamesGen.inputs.stacks_order = [3,1,4]
-    >>> filenamesGen.inputs.sr_id = '3'
+    >>> filenamesGen.inputs.sr_id = 3
     >>> filenamesGen.inputs.use_manual_masks = False
     >>> filenamesGen.run() # doctest: +SKIP
 
