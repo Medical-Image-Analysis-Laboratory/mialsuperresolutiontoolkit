@@ -357,7 +357,7 @@ class AnatomicalPipeline:
 
 
         self.wf.connect(stacksOrdering, "stacks_order", t2ws_filtered, "stacks_id")
-        self.wf.connect(brainMask, "masks", t2ws_filtered, "input_files")
+        self.wf.connect(dg, "T2ws", t2ws_filtered, "input_files")
 
         self.wf.connect(stacksOrdering, "stacks_order", masks_filtered, "stacks_id")
         self.wf.connect(brainMask, "masks", masks_filtered, "input_files")
