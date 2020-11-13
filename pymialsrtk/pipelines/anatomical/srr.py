@@ -98,7 +98,7 @@ class AnatomicalPipeline:
     deltatTV = "0.75"
     lambdaTV = "0.001"
     primal_dual_loops = "20"
-    sr_id = "01"
+    sr_id = 1
     session = None
     p_stacks_order = None
     use_manual_masks = False
