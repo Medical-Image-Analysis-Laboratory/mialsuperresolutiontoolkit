@@ -1026,6 +1026,11 @@ class MialsrtkHistogramNormalization(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_images'] = glob(os.path.abspath(''.join(["*", self.inputs.out_postfix, ".nii.gz"])))
+        print()
+        print('HistogramNormalization outputs')
+
+        for f in outputs['output_images']:
+            print(os.path.exists(f), '     ', f)
         return outputs
 
 
@@ -1273,7 +1278,15 @@ class FilteringByRunid(BaseInterface):
 
     def _run_interface(self, runtime):
         try:
-            self._filter_by_runid()
+            print()
+            print()
+            print('stacksFiltering')
+            print(self.inputs.stacks_id)
+            print(self.inputs.input_files)
+            self.m_output_files = self._filter_by_runid(self.inputs.input_files, self.inputs.stacks_id)
+            print()
+            print(self.m_output_files)
+            print()
         except Exception:
             print('Failed')
         return runtime
@@ -1283,12 +1296,13 @@ class FilteringByRunid(BaseInterface):
         outputs['output_files'] = self.m_output_files
         return outputs
 
-    def _filter_by_runid(self):
-        for f in self.inputs.input_files:
+    def _filter_by_runid(self, input_files, p_stacks_id):
+        output_files = []
+        for f in input_files:
             f_id = int(f.split('_run-')[1].split('_')[0])
-            if f_id in self.inputs.stacks_id:
-                self.m_output_files.append(f)
-        return
+            if f_id in p_stacks_id:
+                output_files.append(f)
+        return output_files
 
 
 class StacksOrderingInputSpec(BaseInterfaceInputSpec):

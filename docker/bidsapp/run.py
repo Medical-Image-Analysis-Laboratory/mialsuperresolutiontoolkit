@@ -159,7 +159,7 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, nu
     session <string>
         Session ID if applicable (in the form ``ses-YY``)
 
-    paramTV dict<'deltatTV': float, 'lambdaTV': float, 'primal_dual_loops': int>>
+    paramTV dict <'deltatTV': float, 'lambdaTV': float, 'primal_dual_loops': int>>
         Dictionary of Total-Variation super-resolution optimizer parameters
 
     number_of_cores <int>
