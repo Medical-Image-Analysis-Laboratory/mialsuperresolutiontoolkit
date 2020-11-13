@@ -322,6 +322,10 @@ class AnatomicalPipeline:
         srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(), name='srtkMaskImage02')
         srtkMaskImage02.inputs.bids_dir = self.bids_dir
 
+        finalFilenamesGeneration = Node(postprocess.FilenamesGeneration(), name='filenames_gen')
+        finalFilenamesGeneration.inputs.sub_ses = sub_ses
+        finalFilenamesGeneration.inputs.sr_id = self.srID
+
         datasink = Node(DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
 
@@ -341,10 +345,10 @@ class AnatomicalPipeline:
         self.dictsink.inputs.out_file = os.path.join(final_res_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+str(self.srID)+'_T2w.json')
 
         # Nodes ready - Linking now
-        if not self.use_manual_masks:
-            self.wf.connect(dg, "T2ws", brainMask, "input_images")
-        else:
+        if self.use_manual_masks:
             self.wf.connect(dg, "masks", brainMask, "masks")
+        else:
+            self.wf.connect(dg, "T2ws", brainMask, "input_images")
 
         self.wf.connect(dg, "T2ws", nlmDenoise, "input_images")
         # self.wf.connect(dg, "masks", nlmDenoise, "input_masks")  ## Comment to match docker process
@@ -406,65 +410,9 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkMaskImage02, "in_file")
         self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", srtkMaskImage02, "in_mask")
 
-        #
-        ## - TODO: The following will fail in the case of automatic stacks ordering!
-        # Saving files
-        substitutions = []
-
-        for stack in self.p_stacks_order:
-            print(sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz',
-                  '    --->     ',
-                  sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-preprocSDI_T2w.nii.gz')
-            substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz',
-                                 sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-preprocSDI_T2w.nii.gz'))
-
-            if not self.use_manual_masks:
-                print(sub_ses+'_run-'+str(stack)+'_T2w_brainMask.nii.gz',
-                      '    --->     ',
-                      sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-brain_mask.nii.gz')
-                substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_brainMask.nii.gz',
-                                     sub_ses+'_run-'+str(stack)+'_desc-brain_mask.nii.gz'))
-
-            print(sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm.nii.gz',
-                  '    --->     ',
-                  sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-preprocSR_T2w.nii.gz')
-            substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm.nii.gz',
-                                 sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_desc-preprocSR_T2w.nii.gz'))
-
-            print(sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(self.p_stacks_order))+'V.txt',
-                  '    --->     ',
-                  sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt')
-            substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_nlm_uni_bcorr_histnorm_transform_'+str(len(self.p_stacks_order))+'V.txt',
-                                 sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_T2w_from-origin_to-SDI_mode-image_xfm.txt'))
-
-            print(sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
-                  '    --->     ',
-                  sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_T2w_desc-brain_mask.nii.gz')
-            substitutions.append((sub_ses+'_run-'+str(stack)+'_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
-                                 sub_ses+'_run-'+str(stack)+'_id-'+str(self.srID)+'_T2w_desc-brain_mask.nii.gz'))
-
-        print('SDI_'+sub_ses+'_'+str(len(self.p_stacks_order))+'V_rad1.nii.gz',
-              '    --->     ',
-              sub_ses+'_rec-SDI'+'_id-'+str(self.srID)+'_T2w.nii.gz')
-        substitutions.append(('SDI_'+sub_ses+'_'+str(len(self.p_stacks_order))+'V_rad1.nii.gz',
-                             sub_ses+'_rec-SDI'+'_id-'+str(self.srID)+'_T2w.nii.gz'))
-
-        print('SRTV_'+sub_ses+'_'+str(len(self.p_stacks_order))+'V_rad1_gbcorr.nii.gz',
-              '    --->     ',
-              sub_ses+'_rec-SR'+'_id-'+str(self.srID)+'_T2w.nii.gz')
-        substitutions.append(('SRTV_'+sub_ses+'_'+str(len(self.p_stacks_order))+'V_rad1_gbcorr.nii.gz',
-                             sub_ses+'_rec-SR'+'_id-'+str(self.srID)+'_T2w.nii.gz'))
-
-        print(sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz',
-              '    --->     ',
-              sub_ses+'_rec-SR'+'_id-'+str(self.srID)+'_T2w_desc-brain_mask.nii.gz')
-        substitutions.append((sub_ses+'_T2w_uni_bcorr_histnorm_srMask.nii.gz',
-                             sub_ses+'_rec-SR'+'_id-'+str(self.srID)+'_T2w_desc-brain_mask.nii.gz'))
-
-        datasink.inputs.substitutions = substitutions
-
-        if not self.use_manual_masks:
-            self.wf.connect(brainMask, ("masks", utils.sort_ascending), datasink, 'anat.@LRmasks')
+        self.wf.connect(stacksOrdering, "stacks_order", finalFilenamesGeneration, "stacks_order")
+        self.wf.connect(finalFilenamesGeneration, "substitutions", datasink, "substitutions")
+        self.wf.connect(brainMask, ("masks", utils.sort_ascending), datasink, 'anat.@LRmasks')
 
         self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsPreproc')
         self.wf.connect(srtkMaskImage01, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsDenoised')
@@ -473,6 +421,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat.@SDI')
         self.wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
         self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", datasink, 'anat.@SRmask')
+
 
     def run(self, number_of_cores=1):
         """Execute the workflow of the super-resolution reconstruction pipeline.
