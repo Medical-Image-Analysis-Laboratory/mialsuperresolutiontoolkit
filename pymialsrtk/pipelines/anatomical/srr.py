@@ -248,13 +248,14 @@ class AnatomicalPipeline:
                                                                            "data/Network_checkpoints/Network_checkpoints_segmentation/Unet.ckpt-20000")
             brainMask.inputs.threshold_seg = 0.5
 
+        t2ws_filtered = Node(interface=preprocess.FilteringByRunid(), name='t2ws_filtered')
+        masks_filtered = Node(interface=preprocess.FilteringByRunid(), name='masks_filtered')
+
         if self.compute_stacks_order:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(), name='stackOrdering')
         else:
             stacksOrdering = Node(interface=IdentityInterface(fields=['stacks_order']), name='stackOrdering')
             stacksOrdering.inputs.stacks_order = self.p_stacks_order
-
-
 
         nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
         nlmDenoise.inputs.bids_dir = self.bids_dir
@@ -344,63 +345,71 @@ class AnatomicalPipeline:
 
         self.dictsink.inputs.out_file = os.path.join(final_res_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+str(self.sr_id)+'_T2w.json')
 
+
         # Nodes ready - Linking now
         if self.use_manual_masks:
             self.wf.connect(dg, "masks", brainMask, "masks")
         else:
             self.wf.connect(dg, "T2ws", brainMask, "input_images")
 
-        self.wf.connect(dg, "T2ws", nlmDenoise, "input_images")
-        # self.wf.connect(dg, "masks", nlmDenoise, "input_masks")  ## Comment to match docker process
-
         if self.compute_stacks_order:
             self.wf.connect(dg, "masks", stacksOrdering, "input_masks")
 
-        self.wf.connect(nlmDenoise, ("output_images", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "input_images")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "input_masks")
 
-        self.wf.connect(dg, ("T2ws", utils.sort_ascending), srtkCorrectSliceIntensity01, "input_images")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkCorrectSliceIntensity01, "input_masks")
+        self.wf.connect(stacksOrdering, "stacks_order", t2ws_filtered, "stacks_id")
+        self.wf.connect(brainMask, "masks", t2ws_filtered, "input_files")
+
+        self.wf.connect(stacksOrdering, "stacks_order", masks_filtered, "stacks_id")
+        self.wf.connect(brainMask, "masks", masks_filtered, "input_files")
+
+        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "input_images")
+        # self.wf.connect(dg, "masks", nlmDenoise, "input_masks")  ## Comment to match docker process
+
+        self.wf.connect(nlmDenoise, ("output_images", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "input_images")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "input_masks")
+
+        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "input_images")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "input_masks")
 
         self.wf.connect(srtkCorrectSliceIntensity01_nlm, ("output_images", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "input_images")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "input_masks")
 
         self.wf.connect(srtkCorrectSliceIntensity01, ("output_images", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "input_images")
         self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("output_fields", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "input_fields")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "input_masks")
         self.wf.connect(srtkSliceBySliceCorrectBiasField, ("output_images", utils.sort_ascending), srtkCorrectSliceIntensity02, "input_images")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkCorrectSliceIntensity02, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02, "input_masks")
 
         self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("output_images", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "input_images")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "input_masks")
         self.wf.connect(srtkCorrectSliceIntensity02, ("output_images", utils.sort_ascending), srtkIntensityStandardization01, "input_images")
 
         self.wf.connect(srtkCorrectSliceIntensity02_nlm, ("output_images", utils.sort_ascending), srtkIntensityStandardization01_nlm, "input_images")
 
         self.wf.connect(srtkIntensityStandardization01, ("output_images", utils.sort_ascending), srtkHistogramNormalization, "input_images")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkHistogramNormalization, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHistogramNormalization, "input_masks")
         self.wf.connect(srtkIntensityStandardization01_nlm, ("output_images", utils.sort_ascending), srtkHistogramNormalization_nlm, "input_images")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkHistogramNormalization_nlm, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHistogramNormalization_nlm, "input_masks")
         self.wf.connect(srtkHistogramNormalization, ("output_images", utils.sort_ascending), srtkIntensityStandardization02, "input_images")
         self.wf.connect(srtkHistogramNormalization_nlm, ("output_images", utils.sort_ascending), srtkIntensityStandardization02_nlm, "input_images")
 
         self.wf.connect(srtkIntensityStandardization02_nlm, ("output_images", utils.sort_ascending), srtkMaskImage01, "input_images")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkMaskImage01, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkMaskImage01, "input_masks")
 
         self.wf.connect(srtkMaskImage01, ("output_images", utils.sort_ascending), srtkImageReconstruction, "input_images")
 
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkImageReconstruction, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkImageReconstruction, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
 
         self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkTVSuperResolution, "input_images")
         self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkTVSuperResolution, "input_transforms")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkTVSuperResolution, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkTVSuperResolution, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
 
         self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_images")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_masks")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_masks")
         self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_transforms")
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkRefineHRMaskByIntersection, "input_sr")
 
@@ -412,7 +421,7 @@ class AnatomicalPipeline:
 
         self.wf.connect(stacksOrdering, "stacks_order", finalFilenamesGeneration, "stacks_order")
         self.wf.connect(finalFilenamesGeneration, "substitutions", datasink, "substitutions")
-        self.wf.connect(brainMask, ("masks", utils.sort_ascending), datasink, 'anat.@LRmasks')
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), datasink, 'anat.@LRmasks')
 
         self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsPreproc')
         self.wf.connect(srtkMaskImage01, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsDenoised')

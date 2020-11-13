@@ -1208,8 +1208,87 @@ class MultipleMialsrtkMaskImage(BaseInterface):
 
 
 ####################
-# Stacks ordering
+# Stacks ordering and filtering
 ####################
+
+
+class FilteringByRunidInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the FilteringByRunid interface.
+
+    Attributes
+    -----------
+    input_files <list<string>>
+        Input brain masks on which motion is computed.
+
+    stacks_id <list<string>>
+        List of stacks id to be kept
+
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.FilteringByRunid
+
+    """
+
+    input_files = InputMultiPath(File(desc='Input files', mandatory=True))
+    stacks_id = traits.List()
+
+
+class FilteringByRunidOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the FilteringByRunid interface.
+
+    Attributes
+    -----------
+    output_files <list<string>>
+        Filtered files.
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.FilteringByRunid
+
+    """
+
+    output_files = traits.List(desc='Order of stacks')
+
+
+class FilteringByRunid(BaseInterface):
+    """Runs a filtering of files.
+
+    This module filters the input files matching the specified run-ids. Other files are discarded.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import FilteringByRunid
+    >>> stacksFiltering = FilteringByRunid()
+    >>> stacksFiltering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz', 'sub-01_run-4_mask.nii.gz', 'sub-01_run-2_mask.nii.gz']
+    >>> stacksFiltering.inputs.stacks_id = [1,2]
+    >>> stacksFiltering.run() # doctest: +SKIP
+
+    """
+
+    input_spec = FilteringByRunidInputSpec
+    output_spec = FilteringByRunidOutputSpec
+
+    m_output_files = []
+
+    def _run_interface(self, runtime):
+        try:
+            self._filter_by_runid()
+        except Exception:
+            print('Failed')
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_files'] = self.m_output_files
+        return outputs
+
+    def _filter_by_runid(self):
+        for f in self.inputs.input_files:
+            f_id = int(f.split('_run-')[1].split('_')[0])
+            if f_id in self.inputs.stacks_id:
+                self.m_output_files.append(f)
+        return
 
 
 class StacksOrderingInputSpec(BaseInterfaceInputSpec):
