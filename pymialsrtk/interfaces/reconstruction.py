@@ -14,7 +14,7 @@ from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
-from pymialsrtk.interfaces.utils import run
+from pymialsrtk.interfaces.utils import run, reorder_by_run_ids
 
 
 ########################
@@ -125,34 +125,21 @@ class MialsrtkImageReconstruction(BaseInterface):
         params = []
         params.append(''.join(["--", self.inputs.in_roi]))
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_images.append(int(cut_apr))
+        input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
+        input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
 
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-
-            _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[index_img]))
+        for in_image, in_mask in zip(input_images, input_masks):
+            _, name, ext = split_filename(os.path.abspath(in_image))
             transf_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                        ''.join([name, self.inputs.out_transf_postfix, '_',
                                                 str(len(self.inputs.stacks_order)), 'V', '.txt']))
 
             params.append("-i")
-            params.append(self.inputs.input_images[index_img])
+            params.append(in_image)
 
             if self.inputs.in_roi == "mask":
-                index_mask = run_nb_masks.index(order)
-
                 params.append("-m")
-                params.append(self.inputs.input_masks[index_mask])
+                params.append(in_mask)
 
             params.append("-t")
             params.append(transf_file)
@@ -340,32 +327,14 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         cmd = ['mialsrtkTVSuperResolution']
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_images.append(int(cut_apr))
+        input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
+        input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
+        input_transforms = reorder_by_run_ids(self.inputs.input_transforms, self.inputs.stacks_order)
 
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        run_nb_transforms = []
-        for in_transform in self.inputs.input_transforms:
-            cut_avt = in_transform.split('run-')[1]
-            cut_apr = cut_avt.replace('.','_').split('_')[0]
-            run_nb_transforms.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            index_mask = run_nb_masks.index(order)
-            index_tranform = run_nb_transforms.index(order)
-
-            cmd += ['-i', self.inputs.input_images[index_img]]
-            cmd += ['-m', self.inputs.input_masks[index_mask]]
-            cmd += ['-t', self.inputs.input_transforms[index_tranform]]
+        for in_image, in_mask, in_transform in zip(input_images, input_masks, input_transforms):
+            cmd += ['-i', in_image]
+            cmd += ['-m', in_mask]
+            cmd += ['-t', in_transform]
 
         _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
         out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
