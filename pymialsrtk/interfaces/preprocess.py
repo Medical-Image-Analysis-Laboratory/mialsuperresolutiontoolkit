@@ -1026,11 +1026,6 @@ class MialsrtkHistogramNormalization(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_images'] = glob(os.path.abspath(''.join(["*", self.inputs.out_postfix, ".nii.gz"])))
-        print()
-        print('HistogramNormalization outputs')
-
-        for f in outputs['output_images']:
-            print(os.path.exists(f), '     ', f)
         return outputs
 
 

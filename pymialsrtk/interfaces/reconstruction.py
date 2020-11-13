@@ -123,7 +123,15 @@ class MialsrtkImageReconstruction(BaseInterface):
     output_spec = MialsrtkImageReconstructionOutputSpec
 
     def _run_interface(self, runtime):
+        print()
+        print('ImageReconstruction inputs')
 
+        for f in self.inputs.input_images:
+            print(os.path.exists(f), '     ', f)
+        print()
+        for f in self.inputs.input_masks:
+            print(os.path.exists(f), '     ', f)
+        print()
         params = []
         params.append(''.join(["--", self.inputs.in_roi]))
 
