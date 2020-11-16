@@ -16,7 +16,7 @@ from glob import glob
 
 import numpy as np
 import nibabel
-# import cv2
+import cv2
 import skimage.measure
 
 import scipy.ndimage as snd

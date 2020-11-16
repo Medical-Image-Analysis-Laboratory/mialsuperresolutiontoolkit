@@ -406,8 +406,8 @@ class AnatomicalPipeline:
         self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
 
         self.wf.connect(srtkIntensityStandardization02, "output_images", srtkTVSuperResolution, "input_images")
-        self.wf.connect(srtkImageReconstruction, "output_transforms", utils.sort_ascending, srtkTVSuperResolution, "input_transforms")
-        self.wf.connect(masks_filtered, "output_files", utils.sort_ascending, srtkTVSuperResolution, "input_masks")
+        self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkTVSuperResolution, "input_transforms")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkTVSuperResolution, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
