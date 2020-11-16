@@ -16,7 +16,7 @@ from glob import glob
 
 import numpy as np
 import nibabel
-import cv2
+# import cv2
 import skimage.measure
 
 import scipy.ndimage as snd
@@ -1273,17 +1273,10 @@ class FilteringByRunid(BaseInterface):
 
     def _run_interface(self, runtime):
         try:
-            print()
-            print()
-            print('stacksFiltering')
-            print(self.inputs.stacks_id)
-            print(self.inputs.input_files)
             self.m_output_files = self._filter_by_runid(self.inputs.input_files, self.inputs.stacks_id)
-            print()
-            print(self.m_output_files)
-            print()
-        except Exception:
+        except Exception as e:
             print('Failed')
+            print(e)
         return runtime
 
     def _list_outputs(self):
@@ -1356,10 +1349,9 @@ class StacksOrdering(BaseInterface):
     def _run_interface(self, runtime):
         try:
             self.m_stack_order = self._compute_stack_order(self.inputs.input_masks)
-        except Exception:
+        except Exception as e:
             print('Failed')
-
-            print(traceback.format_exc())
+            print(e)
         return runtime
 
     def _list_outputs(self):
@@ -1443,7 +1435,6 @@ class StacksOrdering(BaseInterface):
 
             firsts.pop(ind_)
             ind_ = firsts.index(min(firsts))
-
             run_order.append(int(images_ordered[firsts[ind_]].split('run-')[1].split('_')[0]))
 
             others = [e for e in run_tmp if e not in run_order]

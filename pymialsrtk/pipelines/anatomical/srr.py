@@ -326,16 +326,21 @@ class AnatomicalPipeline:
         finalFilenamesGeneration = Node(postprocess.FilenamesGeneration(), name='filenames_gen')
         finalFilenamesGeneration.inputs.sub_ses = sub_ses
         finalFilenamesGeneration.inputs.sr_id = self.sr_id
+        finalFilenamesGeneration.inputs.use_manual_masks = self.use_manual_masks
 
         datasink = Node(DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
+
+
+        # Todo:
+        #   [] Set json fields when stacks order is automatically computed
 
         # JSON file SRTV
         output_dict = {}
         output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation Super-Resolution algorithm provided by MIALSRTK"
         output_dict["Input sources run order"] = self.p_stacks_order
         output_dict["CustomMetaData"] = {}
-        output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.p_stacks_order))
+        # output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.p_stacks_order))
         output_dict["CustomMetaData"]["TV regularization weight lambda"] = self.lambdaTV
         output_dict["CustomMetaData"]["Optimization time step"] = self.deltatTV
         output_dict["CustomMetaData"]["Primal/dual loops"] = self.primal_dual_loops
@@ -363,7 +368,7 @@ class AnatomicalPipeline:
         self.wf.connect(brainMask, "masks", masks_filtered, "input_files")
 
         self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "input_images")
-        # self.wf.connect(dg, "masks", nlmDenoise, "input_masks")  ## Comment to match docker process
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "input_masks")  ## Comment to match docker process
 
         self.wf.connect(nlmDenoise, ("output_images", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "input_images")
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "input_masks")
@@ -396,14 +401,13 @@ class AnatomicalPipeline:
         self.wf.connect(srtkIntensityStandardization02_nlm, ("output_images", utils.sort_ascending), srtkMaskImage01, "input_images")
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkMaskImage01, "input_masks")
 
-        self.wf.connect(srtkMaskImage01, ("output_images", utils.sort_ascending), srtkImageReconstruction, "input_images")
-
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkImageReconstruction, "input_masks")
+        self.wf.connect(srtkMaskImage01, "output_images", srtkImageReconstruction, "input_images")
+        self.wf.connect(masks_filtered, "output_files", srtkImageReconstruction, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
 
-        self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkTVSuperResolution, "input_images")
-        self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkTVSuperResolution, "input_transforms")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkTVSuperResolution, "input_masks")
+        self.wf.connect(srtkIntensityStandardization02, "output_images", srtkTVSuperResolution, "input_images")
+        self.wf.connect(srtkImageReconstruction, "output_transforms", utils.sort_ascending, srtkTVSuperResolution, "input_transforms")
+        self.wf.connect(masks_filtered, "output_files", utils.sort_ascending, srtkTVSuperResolution, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")

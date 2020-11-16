@@ -322,7 +322,7 @@ class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
     sub_ses = traits.Str(mandatory=True)
     stacks_order = traits.List(mandatory=True)
     sr_id = traits.Int(mandatory=True)
-    use_manual_masks = traits.List(mandatory=True)
+    use_manual_masks = traits.Bool(mandatory=True)
 
 
 class FilenamesGenerationOutputSpec(TraitedSpec):

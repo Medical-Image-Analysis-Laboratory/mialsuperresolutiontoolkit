@@ -102,4 +102,4 @@ def reorder_by_run_ids(p_files, p_order):
     #     remainings.sort()
     #     id_and_files_ordered = id_and_files_ordered + remainings
 
-    return [i[0] for i in id_and_files_ordered]
+    return [i[1] for i in id_and_files_ordered]

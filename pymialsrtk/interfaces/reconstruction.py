@@ -123,15 +123,6 @@ class MialsrtkImageReconstruction(BaseInterface):
     output_spec = MialsrtkImageReconstructionOutputSpec
 
     def _run_interface(self, runtime):
-        print()
-        print('ImageReconstruction inputs')
-
-        for f in self.inputs.input_images:
-            print(os.path.exists(f), '     ', f)
-        print()
-        for f in self.inputs.input_masks:
-            print(os.path.exists(f), '     ', f)
-        print()
         params = []
         params.append(''.join(["--", self.inputs.in_roi]))
 
@@ -182,7 +173,6 @@ class MialsrtkImageReconstruction(BaseInterface):
         outputs['output_transforms'] = glob(os.path.abspath("*.txt"))
 
         _, _, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-
         outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                              ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
                                                        str(len(self.inputs.stacks_order)),'V_rad', str(int(self.inputs.input_rad_dilatation)), ext])))
