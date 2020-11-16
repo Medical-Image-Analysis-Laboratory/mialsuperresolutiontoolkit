@@ -40,7 +40,7 @@ def get_parser():
     p.add_argument('--param_file',
                    help='Path to a JSON file containing subjects\' exams '
                         'information and super-resolution total variation parameters.',
-                   default='/bids_dir/code/participants_param.json',
+                   default='/bids_dir/code/participants_params.json',
                    type=str)
 
     p.add_argument('--openmp_nb_of_cores',
