@@ -24,14 +24,24 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
 
     {
       "01": [
-        { "sr-id":1,
+        { "sr-id": 1,
+          ("session": 01,)
           "stacksOrder": [1, 3, 5, 2, 4, 6],
+          "paramTV": { 
+            "lambdaTV": 0.75, 
+            "deltatTV": 0.01 }
+        }],
+      "01": [
+        { "sr-id": 2,
+          ("session": 01,)
+          "stacksOrder": [2, 3, 5, 4],
           "paramTV": { 
             "lambdaTV": 0.75, 
             "deltatTV": 0.01 }
         }]
       "02": [
-        { "sr-id":1,
+        { "sr-id": 1,
+          ("session": 01,)
           "stacksOrder": [3, 1, 2, 4],
           "paramTV": { 
             "lambdaTV": 0.7, 
@@ -41,9 +51,14 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
     } 
 
 where:
-    * `stacksOrder` define the list and order od scans to be used in the reconstruction
+    * ``"sr-id"`` allows to distinguish between runs with different configurations of the same acquisition set.
 
-    * `lambdaTV` (regularization) and `deltaTV` (optimization time step) are parameters of the TV super-resolution algorithm
+    * ``"stacksOrder"`` defines the list and order od scans to be used in the reconstruction.
+
+    * ``"lambdaTV"`` (regularization) and `deltaTV` (optimization time step) are parameters of the TV super-resolution algorithm.
+
+    * ``"session"`` MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
+
 
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
