@@ -73,7 +73,7 @@ To run the BIDS App for one participant (participant level mode):
             -v /home/localadmin/data/ds001:/bids_dir \\
             -v /media/localadmin/data/ds001/derivatives:/output_dir \\
             sebastientourbier/mialsuperresolutiontoolkit-bidsapp:|release| \\
-            /bids_dir /output_dir participant --participant_label 01 \\(--session_label 01 \\)
+            /bids_dir /output_dir participant --participant_label 01 \\
             --param_file /bids_dir/code/participants_params.json \\
             (--openmp_nb_of_cores 4) \\
             (--nipype_nb_of_cores 4)
