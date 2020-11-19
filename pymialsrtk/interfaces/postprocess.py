@@ -330,7 +330,7 @@ class FilenamesGenerationOutputSpec(TraitedSpec):
 
     Attributes
     -----------
-    output_image <list<string>, list<string>>
+    substitutions <list<string>, list<string>>
         Output correspondance between old and new filenames.
 
     See also
@@ -418,7 +418,8 @@ class FilenamesGeneration(BaseInterface):
         print(self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
               '    --->     ',
               self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz')
-        self.m_substitutions.append((self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz', self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz'))
+        self.m_substitutions.append((self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
+                                     self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz'))
 
         return runtime
 

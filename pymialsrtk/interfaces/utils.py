@@ -57,7 +57,7 @@ def sort_ascending(p_files):
     Parameters
     ----------
     p_files <list<string>>
-        List of image paths to be sorting in ascending order
+        List of image paths to be sorted in ascending order
 
     Examples
     --------
