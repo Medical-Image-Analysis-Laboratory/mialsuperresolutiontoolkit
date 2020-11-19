@@ -12,7 +12,7 @@ def get_parser():
     """Create and return the parser object of the BIDS App."""
 
     import argparse
-    p = argparse.ArgumentParser(description='Entrypoint script to the MIALsrtk pipeline')
+    p = argparse.ArgumentParser(description='Argument parser of the MIALSRTK BIDS App')
 
     p.add_argument('bids_dir',
                    help='The directory with the input dataset '
@@ -21,7 +21,7 @@ def get_parser():
     p.add_argument('output_dir',
                    help='The directory where the output files '
                         'should be stored. If you are running group level analysis '
-                        'this folder should be prepopulated with the results of the'
+                        'this folder should be prepopulated with the results of the '
                         'participant level analysis.')
 
     p.add_argument('analysis_level',
@@ -40,27 +40,30 @@ def get_parser():
     p.add_argument('--param_file',
                    help='Path to a JSON file containing subjects\' exams '
                         'information and super-resolution total variation parameters.',
-                   default='/bids_dir/code/participants_param.json', type=str)
+                   default='/bids_dir/code/participants_params.json',
+                   type=str)
 
     p.add_argument('--openmp_nb_of_cores',
-                   help='Specify number of cores used by OpenMP threads'
-                        'Especially useful for NLM denoising and slice-to-volume registration.'
-                        'Default: 0, meaning it will be determined automatically',
-                   default=0, type=int)
+                   help='Specify number of cores used by OpenMP threads '
+                        'Especially useful for NLM denoising and slice-to-volume registration. '
+                        '(Default: 0, meaning it will be determined automatically)',
+                   default=0,
+                   type=int)
 
     p.add_argument('--nipype_nb_of_cores',
-                   help='Specify number of cores used by the Niype workflow library to distribute'
-                        'the execution of independent processing workflow nodes (i.e. interfaces)'
-                        '(Especially useful in the case of slice-by-slice bias field correction and'
-                        'intensity standardization steps for example).'
-                        'Default: 0, meaning it will be determined automatically',
-                   default=0, type=int)
+                   help='Specify number of cores used by the Niype workflow library to distribute '
+                        'the execution of independent processing workflow nodes (i.e. interfaces) '
+                        '(Especially useful in the case of slice-by-slice bias field correction and '
+                        'intensity standardization steps for example). '
+                        '(Default: 0, meaning it will be determined automatically)',
+                   default=0,
+                   type=int)
 
     p.add_argument('--manual',
                    help='Use manual brain masks found in '
-                        '<output_dir>/manual_masks/ directory',
+                        '``<output_dir>/manual_masks/ directory`` directory',
                    action='store_true')
-    p.add_argument('-v', '--version', action='version',
-                   version='BIDS-App MIALSRTK version {} (Released: {})'.format(__version__,
-                                                                                __release_date__))
+    p.add_argument('-v', '--version',
+                   action='version',
+                   version=f'BIDS-App MIALSRTK version {__version__} (Released: {__release_date__})')
     return p
