@@ -58,10 +58,10 @@ def create_docker_cmd(args):
 
     # MIALSRTK BIDS App inputs
     cmd += '--param_file /bids_dir/code/participants_params.json '
-    cmd += f'--openmp_nb_of_cores {args.openmp_nb_of_cores} '
-    cmd += f'--nipype_nb_of_cores {args.nipype_nb_of_cores} '
     if args.manual:
         cmd += f'--manual '
+    cmd += f'--openmp_nb_of_cores {args.openmp_nb_of_cores} '
+    cmd += f'--nipype_nb_of_cores {args.nipype_nb_of_cores}'
 
     return cmd
 
