@@ -142,8 +142,8 @@ jobs:
                 sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
-                --openmp_nb_of_cores 2 \
-                --nipype_nb_of_cores 2 \
+                --openmp_nb_of_cores 4 \
+                --nipype_nb_of_cores 1 \
                 --manual 
 
             # Rename log
@@ -182,7 +182,9 @@ jobs:
                 -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
                 sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
                 /bids_dir /output_dir participant --participant_label 01 \
-                --param_file /bids_dir/code/participants_params.json
+                --param_file /bids_dir/code/participants_params.json \
+                --openmp_nb_of_cores 4 \
+                --nipype_nb_of_cores 1
 
             # Rename log
             mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_log.txt
