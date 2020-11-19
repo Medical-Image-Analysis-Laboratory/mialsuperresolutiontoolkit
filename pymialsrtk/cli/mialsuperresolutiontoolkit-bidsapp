@@ -42,7 +42,7 @@ def create_docker_cmd(args):
     """
     # Docker run command prelude
     cmd = 'docker run -t --rm '
-    cmd += f'-u {os.geteuid()}:{os.getegid()} '
+    cmd += '-u $(id -u):$(id -g) '
     cmd += f'-v {args.bids_dir}:/bids_dir '
     cmd += f'-v {args.output_dir}:/output_dir '
     cmd += f'-v {args.param_file}:/bids_dir/code/participants_params.json '
