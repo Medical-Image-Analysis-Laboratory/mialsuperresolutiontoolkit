@@ -182,11 +182,11 @@ class AnatomicalPipeline:
                                   'stop_on_first_crash': True,
                                   'stop_on_first_rerun': False,
                                   'crashfile_format': "txt",
-                                  'write_provenance': True},
+                                  'write_provenance': False},
                               'monitoring': {'enabled': True}
                               })
 
-        config.enable_provenance()
+        # config.enable_provenance()
 
         logging.update_logging(config)
         iflogger = logging.getLogger('nipype.interface')
