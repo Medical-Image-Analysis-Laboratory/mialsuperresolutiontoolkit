@@ -63,9 +63,35 @@ where:
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
 
-Participant Level Analysis
-===========================
-To run the BIDS App for one participant (participant level mode):
+
+Running the `MIALSRTK BIDS App`
+==================================
+
+You can run the `MIALSRTK BIDS App` using a lightweight wrapper we created for convenience or
+you can interact directly with the Docker Engine via the docker run command line.
+
+
+Running `MIALSRTK BIDS App` with the ``mialsuperresolutiontoolkit-bidsapp`` wrapper
+-----------------------------------------------------------------------------------
+
+When you run ``mialsuperresolutiontoolkit-bidsapp``, it will generate a Docker command line for you,
+print it out for reporting purposes, and then execute it without further action needed, e.g.:
+
+    .. code-block:: console
+
+       $ mialsuperresolutiontoolkit-bidsapp \\
+            /home/localadmin/data/ds001 /media/localadmin/data/ds001/derivatives \\
+            participant --participant_label 01 \\
+            --param_file /home/localadmin/data/ds001/code/participants_params.json \\
+            (--openmp_nb_of_cores 4) \\
+            (--nipype_nb_of_cores 4)
+
+
+Running `MIALSRTK BIDS App` directly with the Docker Engine
+-------------------------------------------------------------
+
+If you need a finer control over the container execution, or you feel comfortable with the Docker Engine,
+avoiding the extra software layer of the wrapper might be a good decision.
 
   .. parsed-literal::
 
@@ -79,6 +105,7 @@ To run the BIDS App for one participant (participant level mode):
             (--nipype_nb_of_cores 4)
 
 .. note:: The local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process have to be mapped to the folders ``/bids_dir`` and ``/output_dir`` respectively using the `-v` docker run option. 
+
 
 Debugging
 =========
