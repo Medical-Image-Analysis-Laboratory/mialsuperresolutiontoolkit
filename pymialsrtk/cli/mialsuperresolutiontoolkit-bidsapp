@@ -40,21 +40,28 @@ def create_docker_cmd(args):
     cmd : string
         String containing the command to be run via `subprocess.run()`
     """
+    # Docker run command prelude
     cmd = 'docker run -t --rm '
     cmd += f'-u {os.geteuid()}:{os.getegid()} '
     cmd += f'-v {args.bids_dir}:/bids_dir '
     cmd += f'-v {args.output_dir}:/output_dir '
     cmd += f'-v {args.param_file}:/bids_dir/code/participants_params.json '
     cmd += f'sebastientourbier/mialsuperresolutiontoolkit-bidsapp:v{__version__} '
+
+    # Standard BIDS App inputs
     cmd += '/bids_dir '
     cmd += '/output_dir '
     cmd += f'{args.analysis_level} '
     cmd += '--participant_label '
     for label in args.participant_label:
         cmd += f'{label} '
+
+    # MIALSRTK BIDS App inputs
     cmd += '--param_file /bids_dir/code/participants_params.json '
     cmd += f'--openmp_nb_of_cores {args.openmp_nb_of_cores} '
     cmd += f'--nipype_nb_of_cores {args.nipype_nb_of_cores}'
+    if args.manual:
+        cmd += f'--manual '
 
     return cmd
 
