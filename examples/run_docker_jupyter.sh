@@ -5,7 +5,7 @@ data_dir="/home/hkebiri/mialsuperresolutiontoolkit/data"
 
 port=8888
 
-version=v2.0.0-beta-20190906
+version=v2.0.0
 
 cmd="docker run --rm"
 cmd="$cmd -v "${mialsrtk_dir}/notebooks":/app/notebooks"
