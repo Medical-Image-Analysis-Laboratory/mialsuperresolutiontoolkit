@@ -66,13 +66,8 @@ def create_docker_cmd(args):
     return cmd
 
 
-def main(args=None):
+def main():
     """Main function that creates and executes the BIDS App (Docker or Singularity) command.
-
-    Parameters
-    ----------
-    args : dict
-        Dictionary of parsed input argument in the form {'key': 'value'}
 
     Returns
     -------
@@ -81,12 +76,9 @@ def main(args=None):
         - '0' that indicates completion without error
         - '1' that indicates there was an error
     """
-    #if args is None:
-    #    args = sys.argv[1:]
-
     # Create and parse arguments
     parser = get_parser()
-    args = parser.parse_args(args)
+    args = parser.parse_args()
 
     cmd = create_docker_cmd(args)
 
@@ -103,5 +95,4 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-
     sys.exit(main())
