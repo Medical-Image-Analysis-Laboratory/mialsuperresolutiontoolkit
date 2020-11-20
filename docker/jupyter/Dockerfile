@@ -32,10 +32,13 @@ COPY . /app/notebooks
 
 WORKDIR /app/notebooks
 
-RUN printf "#!/bin/bash \n %s && jupyter-notebook --allow-root --no-browser --ip=\"0.0.0.0\" --NotebookApp.token=\'mial\'" "$CONDA_ACTIVATE" > /app/launch_jupyter_notebook.sh
-RUN chmod 755 /app/launch_jupyter_notebook.sh
+# RUN printf "#!/bin/bash \n %s && jupyter-notebook --allow-root --no-browser --ip=\"0.0.0.0\" --NotebookApp.token=\'mial\'" "$CONDA_ACTIVATE" > /app/launch_jupyter_notebook.sh
+RUN printf "#!/bin/bash \n %s && jupyter-lab --allow-root --no-browser --ip=\"0.0.0.0\" --NotebookApp.token=\'mial\'" "$CONDA_ACTIVATE" > /app/launch_jupyter_lab.sh
+# RUN chmod 755 /app/launch_jupyter_notebook.sh
+RUN chmod 755 /app/launch_jupyter_lab.sh
 
-ENTRYPOINT ["/app/launch_jupyter_notebook.sh"]
+# ENTRYPOINT ["/app/launch_jupyter_notebook.sh"]
+ENTRYPOINT ["/app/launch_jupyter_lab.sh"]
 
 #ENTRYPOINT ["/opt/mialsuperresolutiontoolkit/run.py"]
 
