@@ -238,16 +238,19 @@ if __name__ == '__main__':
                     ses = sr_params["session"] if "session" in sr_params.keys() else None
 
                     print('sr_params')
-                    if ("stacksOrder" not in sr_params.keys()) or ("sr-id" not in sr_params.keys()):
+                    if ("sr-id" not in sr_params.keys()):
                         print('Do not process subjects %s because of missing parameters.' % sub)
                         continue
+
+                    stacks_order = sr_params['stacksOrder'] if 'stacksOrder' in sr_params.keys() else None
+                    print('BINGO pour stacks_order qui est.....:', stacks_order)
 
                     if 'paramTV' in sr_params.keys():
 
                         res = main(bids_dir=args.bids_dir,
                                    output_dir=args.output_dir,
                                    subject=sub,
-                                   p_stacksOrder=sr_params['stacksOrder'],
+                                   p_stacksOrder=stacks_order,
                                    session=ses,
                                    paramTV=sr_params['paramTV'],
                                    srID=sr_params['sr-id'],
@@ -261,7 +264,7 @@ if __name__ == '__main__':
                         res = main(bids_dir=args.bids_dir,
                                    output_dir=args.output_dir,
                                    subject=sub,
-                                   p_stacksOrder=sr_params['stacksOrder'],
+                                   p_stacksOrder=stacks_order,
                                    session=ses,
                                    srID=sr_params['sr-id'],
                                    use_manual_masks=args.manual,
