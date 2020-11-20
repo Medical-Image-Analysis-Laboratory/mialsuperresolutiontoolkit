@@ -69,11 +69,12 @@ where:
 Running the `MIALSRTK BIDS App`
 ==================================
 
-You can run the `MIALSRTK BIDS App` using a lightweight wrapper we created for convenience or you can interact directly with the Docker Engine via the docker run command line. (See installation instructions in :ref:`manual-install-wrapper`)
+You can run the `MIALSRTK BIDS App` using a lightweight wrapper we created for convenience or you can interact directly with the Docker Engine via the docker run command line. (See :ref:`installation`)
 
+.. _wrapperusage:
 
-Running `MIALSRTK BIDS App` with the ``mialsuperresolutiontoolkit_bidsapp`` wrapper
------------------------------------------------------------------------------------
+With the ``mialsuperresolutiontoolkit_bidsapp`` wrapper
+--------------------------------------------------------
 
 When you run ``mialsuperresolutiontoolkit_bidsapp``, it will generate a Docker command line for you,
 print it out for reporting purposes, and then execute it without further action needed, e.g.:
@@ -88,11 +89,10 @@ print it out for reporting purposes, and then execute it without further action 
             (--nipype_nb_of_cores 4)
 
 
-Running `MIALSRTK BIDS App` directly with the Docker Engine
--------------------------------------------------------------
+Directly with the Docker Engine
+--------------------------------
 
-If you need a finer control over the container execution, or you feel comfortable with the Docker Engine,
-avoiding the extra software layer of the wrapper might be a good decision.
+If you need a finer control over the container execution, or you feel comfortable with the Docker Engine, avoiding the extra software layer of the wrapper might be a good decision. In this case, previous call to the ``mialsuperresolutiontoolkit_bidsapp`` wrapper corresponds to:
 
   .. parsed-literal::
 

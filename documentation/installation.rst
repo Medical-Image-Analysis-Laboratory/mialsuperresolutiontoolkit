@@ -107,7 +107,7 @@ Once Python3 is installed, the ``mialsuperresolutiontoolkit_bidsapp`` could be i
 
      $ pip install -e git+https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit#egg=pymialsrtk
 
-* You are ready to use the ``mialsuperresolutiontoolkit_bidsapp`` wrapper. See its `commandline usage <usage.html>`_.
+* You are ready to use the ``mialsuperresolutiontoolkit_bidsapp`` wrapper. See its `commandline usage <wrapperusage>`_.
 
 Help/Questions
 --------------
