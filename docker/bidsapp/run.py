@@ -236,14 +236,12 @@ if __name__ == '__main__':
                 for sr_params in sr_list:
 
                     ses = sr_params["session"] if "session" in sr_params.keys() else None
+                    stacks_order = sr_params['stacksOrder'] if 'stacksOrder' in sr_params.keys() else None
 
                     print('sr_params')
                     if ("sr-id" not in sr_params.keys()):
                         print('Do not process subjects %s because of missing parameters.' % sub)
                         continue
-
-                    stacks_order = sr_params['stacksOrder'] if 'stacksOrder' in sr_params.keys() else None
-                    print('BINGO pour stacks_order qui est.....:', stacks_order)
 
                     if 'paramTV' in sr_params.keys():
 

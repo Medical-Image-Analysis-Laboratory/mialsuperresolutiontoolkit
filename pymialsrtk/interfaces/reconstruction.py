@@ -287,8 +287,11 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     output_sr <string>
         Output super-resolution reconstruction file
 
+    output_dict <dict>
+        Super-resolution reconstruction parameters summarized in a python dictionary
+
     output_json <string>
-        Super-resolution reconstruction parameters summarized in a json file
+        Emplacement where should be saved <output_dict>
 
     See also
     --------------
@@ -297,7 +300,8 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     """
 
     output_sr = File(desc='Super-resolution reconstruction output image')
-    output_json = File(desc='Super-resolution reconstruction output json file')
+    output_dict = Dict(desc='Super-resolution reconstruction parameter dictionary')
+    output_json_path = File(desc='')
 
 
 class MialsrtkTVSuperResolution(BaseInterface):
@@ -382,7 +386,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         output_json_path = ''.join([self.m_out_files, '.json'])
         with open(output_json_path, 'w') as outfile:
                 json.dump(self.m_output_dict, outfile)
-        
+
         try:
             cmd = ' '.join(cmd)
             run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
@@ -398,6 +402,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         outputs = self._outputs().get()
         _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
         outputs['output_sr'] = ''.join([self.m_out_files, ext])
-        outputs['output_json'] = ''.join([self.m_out_files, '.json'])
+        outputs['output_dict'] = self.m_output_dict
+        outputs['output_json_path'] = ''.join([self.m_out_files, '.json'])
 
         return outputs
