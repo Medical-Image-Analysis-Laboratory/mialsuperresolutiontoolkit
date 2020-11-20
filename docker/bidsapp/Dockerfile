@@ -43,7 +43,7 @@ WORKDIR /app
 # Use tcmalloc instead of malloc in TensorFLow
 # that suffers less from fragmentation when
 # allocating and deallocating large objects
-RUN apt-fast install google-perftools4
+RUN apt-get update && apt-get install -y google-perftools
 ENV LD_PRELOAD=/usr/lib/libtcmalloc.so.4
 
 # # Create entrypoint script
