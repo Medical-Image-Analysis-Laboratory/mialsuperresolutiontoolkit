@@ -77,9 +77,16 @@ bin
 bin-dbg
 Bin
 RECON
+dist
+*egg-info/*
 
 # Data derivatives  #
 #####################
 data/derivatives/mialsrtk*
 data/derivatives/nipype*
 data/derivatives/pymialsrtk*
+
+# Editors  #
+#####################
+.idea/*
+
