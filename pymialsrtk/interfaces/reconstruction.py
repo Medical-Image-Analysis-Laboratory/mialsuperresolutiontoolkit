@@ -7,6 +7,7 @@
 import os
 
 from glob import glob
+import json
 
 from traits.api import *
 
@@ -286,13 +287,17 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     output_sr <string>
         Output super-resolution reconstruction file
 
+    output_json <string>
+        Super-resolution reconstruction parameters summarized in a json file
+
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MialsrtkTVSuperResolution
 
     """
 
-    output_sr = File(desc='Super-resolution reconstruction output')
+    output_sr = File(desc='Super-resolution reconstruction output image')
+    output_json = File(desc='Super-resolution reconstruction output json file')
 
 
 class MialsrtkTVSuperResolution(BaseInterface):
@@ -326,6 +331,9 @@ class MialsrtkTVSuperResolution(BaseInterface):
     input_spec = MialsrtkTVSuperResolutionInputSpec
     output_spec = MialsrtkTVSuperResolutionOutputSpec
 
+    m_out_files = ''
+    m_output_dict = {}
+
     def _run_interface(self, runtime):
 
         cmd = ['mialsrtkTVSuperResolution']
@@ -340,13 +348,13 @@ class MialsrtkTVSuperResolution(BaseInterface):
             cmd += ['-t', in_transform]
 
         _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
+        self.m_out_files = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                 ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_',
                                           str(len(self.inputs.stacks_order)),'V_rad',
-                                          str(int(self.inputs.input_rad_dilatation)), ext])))
+                                          str(int(self.inputs.input_rad_dilatation))])))
 
         cmd += ['-r', self.inputs.input_sdi]
-        cmd += ['-o', out_file]
+        cmd += ['-o', ''.join([self.m_out_files, ext])]
 
         if self.inputs.deblurring:
             cmd += ['--debluring']
@@ -362,10 +370,26 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
         cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
 
+        # JSON file SRTV
+        self.m_output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation Super-Resolution algorithm provided by MIALSRTK"
+        self.m_output_dict["Input sources run order"] = self.inputs.stacks_order
+        self.m_output_dict["CustomMetaData"] = {}
+        self.m_output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.inputs.stacks_order))
+        self.m_output_dict["CustomMetaData"]["TV regularization weight lambda"] = self.inputs.in_lambda
+        self.m_output_dict["CustomMetaData"]["Optimization time step"] = self.inputs.in_deltat
+        self.m_output_dict["CustomMetaData"]["Primal/dual loops"] = self.inputs.in_loop
+
+        output_json_path = ''.join([self.m_out_files, '.json'])
+
+
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
             run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+
+            with open(output_json_path, 'w') as outfile:
+                json.dump(self.m_output_dict, outfile)
+
         except Exception as e:
             print('Failed')
             print(e)
@@ -375,9 +399,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
-        outputs['output_sr'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                            ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                                      str(len(self.inputs.stacks_order)),'V_rad',
-                                                      str(int(self.inputs.input_rad_dilatation)), ext])))
+        outputs['output_sr'] = ''.join([self.m_out_files, ext])
+        outputs['output_json'] = ''.join([self.m_out_files, '.json'])
 
         return outputs
