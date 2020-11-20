@@ -40,6 +40,12 @@ RUN /bin/bash -c '$CONDA_ACTIVATE && python setup.py install'
 
 WORKDIR /app
 
+# Use tcmalloc instead of malloc in TensorFLow
+# that suffers less from fragmentation when
+# allocating and deallocating large objects
+RUN apt-fast install google-perftools4
+ENV LD_PRELOAD=/usr/lib/libtcmalloc.so.4
+
 # # Create entrypoint script
 # RUN echo '#! /bin/bash \n \
 # 			$CONDA_ACTIVATE \
