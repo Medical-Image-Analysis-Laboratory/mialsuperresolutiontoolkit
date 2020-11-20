@@ -106,7 +106,8 @@ Contents
 .. toctree::
    :maxdepth: 5
    :caption: API Documentation
-   
+
+   api_commandlineinterface
    api_preprocess
    api_postprocess
    api_reconstruction
