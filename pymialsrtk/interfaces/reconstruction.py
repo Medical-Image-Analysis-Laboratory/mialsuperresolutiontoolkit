@@ -380,15 +380,13 @@ class MialsrtkTVSuperResolution(BaseInterface):
         self.m_output_dict["CustomMetaData"]["Primal/dual loops"] = self.inputs.in_loop
 
         output_json_path = ''.join([self.m_out_files, '.json'])
-
-
+        with open(output_json_path, 'w') as outfile:
+                json.dump(self.m_output_dict, outfile)
+        
         try:
-            print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
             run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
 
-            with open(output_json_path, 'w') as outfile:
-                json.dump(self.m_output_dict, outfile)
 
         except Exception as e:
             print('Failed')

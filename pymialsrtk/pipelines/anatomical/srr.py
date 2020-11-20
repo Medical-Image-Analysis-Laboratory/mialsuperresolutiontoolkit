@@ -332,24 +332,7 @@ class AnatomicalPipeline:
         datasink.inputs.base_directory = final_res_dir
 
 
-        # Todo:
-        #   [] Set json fields when stacks order is automatically computed
-
-        # JSON file SRTV
-        output_dict = {}
-        output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation Super-Resolution algorithm provided by MIALSRTK"
-        output_dict["Input sources run order"] = self.p_stacks_order
-        output_dict["CustomMetaData"] = {}
-        # output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.p_stacks_order))
-        output_dict["CustomMetaData"]["TV regularization weight lambda"] = self.lambdaTV
-        output_dict["CustomMetaData"]["Optimization time step"] = self.deltatTV
-        output_dict["CustomMetaData"]["Primal/dual loops"] = self.primal_dual_loops
-
-        self.dictsink = JSONFileSink(name='json_sinker')
-        self.dictsink.inputs.in_dict = output_dict
-
-        self.dictsink.inputs.out_file = os.path.join(final_res_dir, 'anat', sub_ses+'_rec-SR'+'_id-'+str(self.sr_id)+'_T2w.json')
-
+        # - Build workflow : connections of the nodes
 
         # Nodes ready - Linking now
         if self.use_manual_masks:
