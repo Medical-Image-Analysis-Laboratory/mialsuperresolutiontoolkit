@@ -25,15 +25,14 @@ def create_docker_cmd(args):
     Parameters
     ----------
     args : dict
-        Dictionary of parsed input argument in the form:
-        {
-            'bids_dir': "/path/to/bids/dataset/directory",
-            'output_dir': "/path/to/output/directory",
-            'analysis_level': "participant",
-            'participant_label': ['01', '02', '03'],
-            'openmp_nb_of_cores': 1,
-            'nipype_nb_of_cores': 1
-        }
+        Dictionary of parsed input argument in the form::
+
+            {'bids_dir': "/path/to/bids/dataset/directory",
+             'output_dir': "/path/to/output/directory",
+             'analysis_level': "participant",
+             'participant_label': ['01', '02', '03'],
+             'openmp_nb_of_cores': 1,
+             'nipype_nb_of_cores': 1}
 
     Returns
     -------
