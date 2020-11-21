@@ -49,7 +49,7 @@ print(f'Install requires: {install_requires}')
 print(f'Dependency links: {dependency_links}')
 
 
-def main(**extra_args):
+def main():
     """Main function of the PyMIALSRTK ``setup.py``"""
     setuptools.setup(name='pymialsrtk',
           version=__version__,
@@ -82,9 +82,8 @@ def main(**extra_args):
           package_data=package_data,
           install_requires=install_requires,
           dependency_links=dependency_links,
-          python_requires='==3.6',
-          **extra_args)
+          python_requires='==3.6')
 
 
 if __name__ == "__main__":
-    main(**extra_args)
+    main()
