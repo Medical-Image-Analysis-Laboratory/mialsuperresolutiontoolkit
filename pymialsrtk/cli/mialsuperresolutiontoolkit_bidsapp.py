@@ -30,10 +30,12 @@ def create_docker_cmd(args):
             {
                 'bids_dir': "/path/to/bids/dataset/directory",
                 'output_dir': "/path/to/output/directory",
+                'param_file': "/path/to/configuration/parameter/file",
                 'analysis_level': "participant",
                 'participant_label': ['01', '02', '03'],
                 'openmp_nb_of_cores': 1,
-                'nipype_nb_of_cores': 1
+                'nipype_nb_of_cores': 1,
+                'manual': True
             }
 
     Returns
@@ -68,7 +70,7 @@ def create_docker_cmd(args):
 
 
 def main():
-    """Main function that creates and executes the BIDS App (Docker or Singularity) command.
+    """Main function that creates and executes the BIDS App docker command.
 
     Returns
     -------
@@ -83,8 +85,10 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
+    # Create the docker run command
     cmd = create_docker_cmd(args)
 
+    # Execute the docker run command
     try:
         print(f'... cmd: {cmd}')
         run(cmd)
