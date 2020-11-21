@@ -81,11 +81,11 @@ print it out for reporting purposes, and then execute it without further action 
 
     .. code-block:: console
 
-       $ mialsuperresolutiontoolkit_bidsapp \\
-            /home/localadmin/data/ds001 /media/localadmin/data/ds001/derivatives \\
-            participant --participant_label 01 \\
-            --param_file /home/localadmin/data/ds001/code/participants_params.json \\
-            (--openmp_nb_of_cores 4) \\
+       $ mialsuperresolutiontoolkit_bidsapp \
+            /home/localadmin/data/ds001 /media/localadmin/data/ds001/derivatives \
+            participant --participant_label 01 \
+            --param_file /home/localadmin/data/ds001/code/participants_params.json \
+            (--openmp_nb_of_cores 4) \
             (--nipype_nb_of_cores 4)
 
 
