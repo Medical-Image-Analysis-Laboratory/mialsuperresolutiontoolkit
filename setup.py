@@ -5,6 +5,8 @@
 import os
 import setuptools
 
+from pymialsrtk.info import __version__
+
 
 directory = os.path.dirname(os.path.abspath(__file__))
 
