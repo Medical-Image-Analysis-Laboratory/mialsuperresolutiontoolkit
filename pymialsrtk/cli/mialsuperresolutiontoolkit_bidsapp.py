@@ -27,12 +27,14 @@ def create_docker_cmd(args):
     args : dict
         Dictionary of parsed input argument in the form::
 
-            {'bids_dir': "/path/to/bids/dataset/directory",
-             'output_dir': "/path/to/output/directory",
-             'analysis_level': "participant",
-             'participant_label': ['01', '02', '03'],
-             'openmp_nb_of_cores': 1,
-             'nipype_nb_of_cores': 1}
+            {
+                'bids_dir': "/path/to/bids/dataset/directory",
+                'output_dir': "/path/to/output/directory",
+                'analysis_level': "participant",
+                'participant_label': ['01', '02', '03'],
+                'openmp_nb_of_cores': 1,
+                'nipype_nb_of_cores': 1
+            }
 
     Returns
     -------
@@ -70,10 +72,12 @@ def main():
 
     Returns
     -------
-    exit_code : 0 or 1
-        An exit code given to sys.exit() with:
-        - '0' that indicates completion without error
-        - '1' that indicates there was an error
+    exit_code : {0, 1}
+        An exit code given to `sys.exit()` that can be:
+
+            * '0' in case of successful completion
+
+            * '1' in case of an error
     """
     # Create and parse arguments
     parser = get_parser()
