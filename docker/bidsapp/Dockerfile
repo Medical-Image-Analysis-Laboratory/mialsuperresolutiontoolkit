@@ -121,12 +121,11 @@ ARG VERSION
 LABEL org.label-schema.build-date=$BUILD_DATE
 LABEL org.label-schema.name="MIAL Super-Resolution ToolKit BIDS App"
 LABEL org.label-schema.description="Docker image of the MIAL Super-Resolution BIDS App based on Ubuntu 14.04."
-LABEL org.label-schema.url="https://mialsuperresolutiontoolkit.readthedocs.io"
+LABEL org.label-schema.url="https://mialsrtk.readthedocs.io"
 LABEL org.label-schema.vcs-ref=$VCS_REF
 LABEL org.label-schema.vcs-url="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit"
 LABEL org.label-schema.version=$VERSION
 LABEL org.label-schema.maintainer="Sebastien Tourbier <sebastien.tourbier@alumni.epfl.ch>"
 LABEL org.label-schema.vendor="Centre Hospitalier Universitaire Vaudois (CHUV), Lausanne, Switzerland"
 LABEL org.label-schema.schema-version="1.0"
-LABEL org.label-schema.docker.cmd="docker run --rm -v ~/data/bids_dataset:/tmp -t sebastientourbier/mialsuperresolutiontoolkit-ubuntu16.04:${VERSION}"
-
+LABEL org.label-schema.docker.cmd="docker run -t --rm -u $(id -u):$(id -g) -v /home/localadmin/data/ds001:/bids_dir -v /media/localadmin/data/ds001/derivatives:/output_dir sebastientourbier/mialsuperresolutiontoolkit-bidsapp:${VERSION} /bids_dir /output_dir participant --participant_label 01 --param_file /bids_dir/code/participants_params.json (--openmp_nb_of_cores 4) (--nipype_nb_of_cores 4)"
