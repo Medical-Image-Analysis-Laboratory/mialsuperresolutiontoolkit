@@ -1,5 +1,6 @@
 FROM ubuntu:14.04
 
+# Ubuntu system setup
 RUN apt-get update && \
     apt-get install software-properties-common -y && \
     apt-add-repository ppa:saiarcot895/myppa -y && \
@@ -42,17 +43,17 @@ RUN apt-get update && \
     rm -rf /tmp/miniconda.sh && \
     apt-get clean
 
-
+# Setup and update miniconda
 ENV PATH /opt/conda/bin:$PATH
-
 RUN conda update conda && \
     conda clean --all --yes
 
+# User/group creation
 RUN groupadd -r -g 1000 mialsrtk && \
     useradd -r -M -u 1000 -g mialsrtk mialsrtk
 
+# Compile C++ MIALSRTK tools
 WORKDIR /opt/mialsuperresolutiontoolkit
-
 COPY . /opt/mialsuperresolutiontoolkit
 
 RUN mkdir build
@@ -67,6 +68,7 @@ ENV PATH ${BIN_DIR}:$PATH
 
 ENV DISPLAY :0
 
+# Arguments passed to the docker build command
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
@@ -75,7 +77,7 @@ ARG VERSION
 LABEL org.label-schema.build-date=$BUILD_DATE
 LABEL org.label-schema.name="MIAL Super-Resolution ToolKit Ubuntu 14.04"
 LABEL org.label-schema.description="Computing environment of the MIAL Super-Resolution BIDS App based on Ubuntu 14.04."
-LABEL org.label-schema.url="https://mialsuperresolutiontoolkit.readthedocs.io"
+LABEL org.label-schema.url="https://mialsrtk.readthedocs.io"
 LABEL org.label-schema.vcs-ref=$VCS_REF
 LABEL org.label-schema.vcs-url="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit"
 LABEL org.label-schema.version=$VERSION
@@ -83,4 +85,3 @@ LABEL org.label-schema.maintainer="Sebastien Tourbier <sebastien.tourbier@alumni
 LABEL org.label-schema.vendor="Centre Hospitalier Universitaire Vaudois (CHUV), Lausanne, Switzerland"
 LABEL org.label-schema.schema-version="1.0"
 LABEL org.label-schema.docker.cmd="docker run --rm -v ~/data/bids_dataset:/tmp -t sebastientourbier/mialsuperresolutiontoolkit-ubuntu16.04:${VERSION}"
-
