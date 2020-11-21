@@ -35,7 +35,7 @@ COPY environment.yml /app/environment.yml
 RUN conda env create -f /app/environment.yml
 
 # Install pymialsrtk
-WORKDIR /opt/mialsuperresolutiontoolkit/docker/bidsapp
+WORKDIR /opt/mialsuperresolutiontoolkit
 RUN /bin/bash -c '$CONDA_ACTIVATE && python setup.py install'
 
 WORKDIR /app
