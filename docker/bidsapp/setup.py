@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""``Setup.py`` for PyMIALSRTK wrapper that does not contain package_data with network checkpoints."""
+"""``Setup.py`` for PyMIALSRTK."""
 
 import os
 import setuptools
@@ -94,7 +94,7 @@ def main(**extra_args):
                  ]
           },
           license='Modified BSD License',
-          #package_data=package_data,
+          package_data=package_data,
           classifiers=[c.strip() for c in """\
             Development Status :: 4 - Beta
             Intended Audience :: Developers
