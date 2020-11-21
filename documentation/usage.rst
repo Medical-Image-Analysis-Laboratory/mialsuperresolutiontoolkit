@@ -105,7 +105,7 @@ If you need a finer control over the container execution, or you feel comfortabl
             (--openmp_nb_of_cores 4) \\
             (--nipype_nb_of_cores 4)
 
-.. note:: We use the `-v /path/to/local/folder:/path/inside/container` docker run option to access local files and folders inside the container such that the local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process are mapped to the folders ``/bids_dir`` and ``/output_dir`` respectively. 
+.. note:: We use the `-v /path/to/local/folder:/path/inside/container` docker run option to access local files and folders inside the container such that the local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process are mapped to the folders ``/bids_dir`` and ``/output_dir`` respectively.
 
 
 Debugging
