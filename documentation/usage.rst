@@ -89,10 +89,10 @@ print it out for reporting purposes, and then execute it without further action 
             (--nipype_nb_of_cores 4)
 
 
-Directly with the Docker Engine
+With the Docker Engine
 --------------------------------
 
-If you need a finer control over the container execution, or you feel comfortable with the Docker Engine, avoiding the extra software layer of the wrapper might be a good decision. In this case, previous call to the ``mialsuperresolutiontoolkit_bidsapp`` wrapper corresponds to:
+If you need a finer control over the container execution, or you feel comfortable with the Docker Engine, avoiding the extra software layer of the wrapper might be a good decision. For instance, previous call to the ``mialsuperresolutiontoolkit_bidsapp`` wrapper corresponds to:
 
   .. parsed-literal::
 
@@ -105,7 +105,7 @@ If you need a finer control over the container execution, or you feel comfortabl
             (--openmp_nb_of_cores 4) \\
             (--nipype_nb_of_cores 4)
 
-.. note:: The local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process have to be mapped to the folders ``/bids_dir`` and ``/output_dir`` respectively using the `-v` docker run option. 
+.. note:: We use the `-v /path/to/local/folder:/path/inside/container` docker run option to access local files and folders inside the container such that the local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process are mapped to the folders ``/bids_dir`` and ``/output_dir`` respectively. 
 
 
 Debugging
