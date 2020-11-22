@@ -13,6 +13,12 @@ directory = os.path.dirname(os.path.abspath(__file__))
 if os.path.exists('MANIFEST'):
     os.remove('MANIFEST')
 
+packages = ["pymialsrtk",
+            "pymialsrtk.cli",
+            "pymialsrtk.interfaces",
+            "pymialsrtk.pipelines",
+            "pymialsrtk.pipelines.anatomical"]
+
 package_data = {"pymialsrtk":
                 ['data/Network_checkpoints/Network_checkpoints_localization/*',
                  'data/Network_checkpoints/Network_checkpoints_segmentation/*'],
@@ -80,11 +86,14 @@ def main():
             """.splitlines() if len(c.split()) > 0],
           maintainer='Medical Image Analysis Laboratory, University Hospital of Lausanne and the MIALSRTK developers',
           maintainer_email='sebastien.tourbier@alumni.epfl.ch',
-          packages=setuptools.find_packages(),
+          # package_dir={"": "."},  # tell distutils packages are under src
+          packages=packages,
+          include_package_data=True,
           package_data=package_data,
+          # exclude_package_data={"": ["README.txt"]},
           install_requires=install_requires,
           dependency_links=dependency_links,
-          python_requires='==3.6')
+          python_requires='>=3.6')
 
 
 if __name__ == "__main__":
