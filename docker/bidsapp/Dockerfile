@@ -56,7 +56,7 @@ WORKDIR /app
 # allocating and deallocating large objects
 ##############################################################
 RUN apt-get update && apt-get install -y google-perftools && \
-    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 ENV LD_PRELOAD=/usr/lib/libtcmalloc.so.4
 
 ##############################################################

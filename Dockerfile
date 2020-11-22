@@ -34,16 +34,11 @@ RUN apt-get update && \
         python-vtkgdcm \
         libncurses5  \
         libncurses5-dev \
-    libann-dev \
-    python-qt4 \
-    python-nibabel \
-    python-numpy \
-    python-scipy \
-    python-matplotlib && \
+    libann-dev && \
     curl -sSL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh && \
     bash /tmp/miniconda.sh -bfp /opt/conda && \
     rm -rf /tmp/miniconda.sh && \
-    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
 ##############################################################
 # Setup and update miniconda
