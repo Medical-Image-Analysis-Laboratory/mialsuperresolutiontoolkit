@@ -1,5 +1,6 @@
 ##############################################################
-# Use an initial image, where all MIAL Super-Resolution BIDSApp dependencies are installed, as a parent image
+# Use an initial image where all MIAL Super-Resolution BIDSApp
+# dependencies are installed, as a parent image
 ##############################################################
 ARG MAIN_DOCKER
 FROM "${MAIN_DOCKER}"
@@ -20,8 +21,16 @@ RUN mkdir /output_dir && \
     chmod -R 777 /output_dir
 
 ##############################################################
+# Create .cache and set right permissions for generated
+# Python egg cache
+##############################################################
+RUN mkdir /.cache && \
+    chmod -R 777 /.cache
+
+##############################################################
 # Installation of pyMIALSRTK
 ##############################################################
+# Set the working directory to /app
 WORKDIR /app
 
 # Store command related variables
@@ -34,18 +43,25 @@ ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
 COPY environment.yml /app/environment.yml
 RUN conda env create -f /app/environment.yml
 
-# Install pymialsrtk
+# Set the working directory to /opt/mialsuperresolutiontoolkit and install pymialsrtk
 WORKDIR /opt/mialsuperresolutiontoolkit
-RUN /bin/bash -c '$CONDA_ACTIVATE && python setup.py install'
+RUN /bin/bash -c 'ls -al && $CONDA_ACTIVATE && pip install .'
 
+# Set the working directory back to /app
 WORKDIR /app
 
+##############################################################
 # Use tcmalloc instead of malloc in TensorFLow
 # that suffers less from fragmentation when
 # allocating and deallocating large objects
-RUN apt-get update && apt-get install -y google-perftools
+##############################################################
+RUN apt-get update && apt-get install -y google-perftools && \
+    apt-get clean
 ENV LD_PRELOAD=/usr/lib/libtcmalloc.so.4
 
+##############################################################
+# Create entrypoint scripts
+##############################################################
 # # Create entrypoint script
 # RUN echo '#! /bin/bash \n \
 # 			$CONDA_ACTIVATE \
@@ -83,19 +99,15 @@ ENV content_cov="${content_cov} coverage json -o /bids_dir/code/coverage.json"
 RUN printf "$content_cov" > /app/run_srr_coverage.sh
 RUN cat /app/run_srr_coverage.sh
 
-## FOR DEBUG
-# RUN echo '#! /bin/bash \n \
-# 			echo "User: $USER" \
-# 			&& echo "Group:"$(id -g -n $USER) \
-# 			&& export && $CONDA_ACTIVATE \
-# 			&& xvfb-run -a python /opt/mialsuperresolutiontoolkit/pymialsrtk/pipelines/anatomical/srr.py $@' > /app/run_srr.sh
-
-# Set the working directory back to /app
+##############################################################
 # Acquire script to be executed
+##############################################################
 RUN chmod 775 /app/run_srr.sh
 RUN chmod 775 /app/run_srr_coverage.sh
 
-# Display all environment variables 
+##############################################################
+# Display all environment variables
+##############################################################
 RUN export
 
 ##############################################################
