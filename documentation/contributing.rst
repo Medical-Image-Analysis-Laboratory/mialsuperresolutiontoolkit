@@ -102,6 +102,21 @@ How to build the BIDS App locally
 
 Note that the tag of the version of the image will be extracted from ``pymialsrtk/info.py`` where you might need to change the version to not overwrite an other existing image with the same version.
 
+.. _instructions_pymialsrtk_install:
+
+How to install `pyMIALSTK` locally
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Install the `MIALSRTK` conda environment `pymialsrtk-env` that provides a Python 3.6 environment::
+
+    cd mialsuperresolutiontoolkit
+    conda env create -f docker/bidsapp/environment.yml
+
+2. Activate the `pymialsrtk-env` conda environment and install `pymialsrtk` ::
+
+    conda activate pymialsrtk-env
+    pip install .
+
 .. _instructions_docs_build:
 
 How to build the documentation locally
@@ -115,7 +130,7 @@ How to build the documentation locally
 2. Activate the MIALSRTK conda environment `pymialsrtk-env` and install `pymialsrtk` ::
 
     conda activate pymialsrtk-env
-    python setup.py install
+    pip install .
 
 3. Run the script `build_sphinx_docs.sh` to generate the HTML documentation in ``documentation/_build/html``::
 
