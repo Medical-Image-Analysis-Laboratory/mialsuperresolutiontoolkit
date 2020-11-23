@@ -10,7 +10,6 @@
 """This module defines the mialsuperresolutiontoolkit-bidsapp script that wraps calls to the BIDS APP."""
 
 # General imports
-import os
 import sys
 
 # Own imports

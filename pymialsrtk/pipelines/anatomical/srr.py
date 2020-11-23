@@ -238,10 +238,16 @@ class AnatomicalPipeline:
             brainMask = Node(interface = preprocess.MultipleBrainExtraction(), name='Multiple_Brain_extraction')
             brainMask.inputs.bids_dir = self.bids_dir
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk",
-                                                                           "data/Network_checkpoints/Network_checkpoints_localization/Unet.ckpt-88000.index").split('.index')[0]
+                                                                           os.path.join("data",
+                                                                                        "Network_checkpoints",
+                                                                                        "Network_checkpoints_localization"
+                                                                                        "Unet.ckpt-88000.index")).split('.index')[0]
             brainMask.inputs.threshold_loc = 0.49
             brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename("pymialsrtk",
-                                                                           "data/Network_checkpoints/Network_checkpoints_segmentation/Unet.ckpt-20000.index").split('.index')[0]
+                                                                           os.path.join("data",
+                                                                                        "Network_checkpoints",
+                                                                                        "Network_checkpoints_segmentation",
+                                                                                        "Unet.ckpt-20000.index")).split('.index')[0]
             brainMask.inputs.threshold_seg = 0.5
 
         nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
