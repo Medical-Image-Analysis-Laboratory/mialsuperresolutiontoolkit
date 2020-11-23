@@ -240,7 +240,7 @@ class AnatomicalPipeline:
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk",
                                                                            os.path.join("data",
                                                                                         "Network_checkpoints",
-                                                                                        "Network_checkpoints_localization"
+                                                                                        "Network_checkpoints_localization",
                                                                                         "Unet.ckpt-88000.index")).split('.index')[0]
             brainMask.inputs.threshold_loc = 0.49
             brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename("pymialsrtk",
