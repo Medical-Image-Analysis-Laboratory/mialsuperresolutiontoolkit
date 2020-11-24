@@ -318,6 +318,7 @@ class AnatomicalPipeline:
         srtkTVSuperResolution.inputs.in_loop = self.primal_dual_loops
         srtkTVSuperResolution.inputs.in_deltat = self.deltatTV
         srtkTVSuperResolution.inputs.in_lambda = self.lambdaTV
+        srtkTVSuperResolution.inputs.use_manual_masks = self.use_manual_masks
 
         srTVdictSink = Node(JSONFileSink(),name='srtv_json_sinker')
 

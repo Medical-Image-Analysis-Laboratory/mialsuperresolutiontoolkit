@@ -277,6 +277,7 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     input_rad_dilatation = traits.Float(1.0, usedefault=True)
 
     sub_ses = traits.Str("x", usedefault=True)
+    use_manual_masks = traits.Bool(False, usedefault=True)
 
 
 class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
@@ -379,9 +380,11 @@ class MialsrtkTVSuperResolution(BaseInterface):
         self.m_output_dict["Input sources run order"] = self.inputs.stacks_order
         self.m_output_dict["CustomMetaData"] = {}
         self.m_output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.inputs.stacks_order))
+        self.m_output_dict["CustomMetaData"]["Masks used"] = 'Manual' if self.inputs.use_manual_masks else 'Automatic'
         self.m_output_dict["CustomMetaData"]["TV regularization weight lambda"] = self.inputs.in_lambda
         self.m_output_dict["CustomMetaData"]["Optimization time step"] = self.inputs.in_deltat
         self.m_output_dict["CustomMetaData"]["Primal/dual loops"] = self.inputs.in_loop
+
 
         output_json_path = ''.join([self.m_out_files, '.json'])
         with open(output_json_path, 'w') as outfile:
