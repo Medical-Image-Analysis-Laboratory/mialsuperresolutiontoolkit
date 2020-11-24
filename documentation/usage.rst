@@ -6,6 +6,7 @@ Commandline Usage
 
 `MIALSRTK BIDS App` adopts the :abbr:`BIDS (Brain Imaging Data Structure)` standard for data organization and takes as principal input the path of the dataset that is to be processed. The input dataset is required to be in *valid BIDS format*, and it must include *at least one T2w scan with anisotropic resolution per anatomical direction*. See :ref:`BIDS and BIDS App standards <cmpbids>` page that provides links for more information about BIDS and BIDS-Apps as well as an example for dataset organization and naming.
 
+
 Commandline Arguments
 =============================
 
@@ -14,6 +15,7 @@ The command to run the `MIALSRTK BIDS App` follows the `BIDS-Apps <https://githu
 .. argparse::
 		:ref: pymialsrtk.parser.get_parser
 		:prog: mialsuperresolutiontoolkit-bidsapp
+
 
 .. _config:
 
@@ -63,9 +65,34 @@ where:
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
 
-Participant Level Analysis
-===========================
-To run the BIDS App for one participant (participant level mode):
+
+Running the `MIALSRTK BIDS App`
+==================================
+
+You can run the `MIALSRTK BIDS App` using a lightweight wrapper we created for convenience or you can interact directly with the Docker Engine via the docker run command line. (See :ref:`installation`)
+
+.. _wrapperusage:
+
+With the ``mialsuperresolutiontoolkit_bidsapp`` wrapper
+--------------------------------------------------------
+
+When you run ``mialsuperresolutiontoolkit_bidsapp``, it will generate a Docker command line for you,
+print it out for reporting purposes, and then execute it without further action needed, e.g.:
+
+    .. code-block:: console
+
+       $ mialsuperresolutiontoolkit_bidsapp \
+            /home/localadmin/data/ds001 /media/localadmin/data/ds001/derivatives \
+            participant --participant_label 01 \
+            --param_file /home/localadmin/data/ds001/code/participants_params.json \
+            (--openmp_nb_of_cores 4) \
+            (--nipype_nb_of_cores 4)
+
+
+With the Docker Engine
+--------------------------------
+
+If you need a finer control over the container execution, or you feel comfortable with the Docker Engine, avoiding the extra software layer of the wrapper might be a good decision. For instance, previous call to the ``mialsuperresolutiontoolkit_bidsapp`` wrapper corresponds to:
 
   .. parsed-literal::
 
@@ -78,13 +105,15 @@ To run the BIDS App for one participant (participant level mode):
             (--openmp_nb_of_cores 4) \\
             (--nipype_nb_of_cores 4)
 
-.. note:: The local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process have to be mapped to the folders ``/bids_dir`` and ``/output_dir`` respectively using the `-v` docker run option. 
+.. note:: We use the `-v /path/to/local/folder:/path/inside/container` docker run option to access local files and folders inside the container such that the local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process are mapped to the folders ``/bids_dir`` and ``/output_dir`` in the container respectively.
+
 
 Debugging
 =========
 
 Logs are outputted into
 ``<output dir>/nipype/sub-<participant_label>/anatomical_pipeline/rec<srId>/pypeline.log``.
+
 
 Support, bugs and new feature requests
 =======================================
