@@ -162,6 +162,7 @@ nipype/sub-01/rec-1/srr_pipeline/srtkTVSuperResolution/_inputs.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkTVSuperResolution/_node.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkTVSuperResolution/_report/report.rst
 nipype/sub-01/rec-1/srr_pipeline/srtkTVSuperResolution/result_srtkTVSuperResolution.pklz
+nipype/sub-01/rec-1/srr_pipeline/srtkTVSuperResolution/SRTV_sub-01_3V_rad1.json
 nipype/sub-01/rec-1/srr_pipeline/srtkTVSuperResolution/SRTV_sub-01_3V_rad1.nii.gz
 nipype/sub-01/rec-1/srr_pipeline/t2ws_filtered/_inputs.pklz
 nipype/sub-01/rec-1/srr_pipeline/t2ws_filtered/_node.pklz
