@@ -185,11 +185,11 @@ class AnatomicalPipeline:
                                   'stop_on_first_crash': True,
                                   'stop_on_first_rerun': False,
                                   'crashfile_format': "txt",
-                                  'write_provenance': True},
+                                  'write_provenance': False},
                               'monitoring': {'enabled': True}
                               })
 
-        config.enable_provenance()
+        # config.enable_provenance()
 
         logging.update_logging(config)
         iflogger = logging.getLogger('nipype.interface')
@@ -241,10 +241,16 @@ class AnatomicalPipeline:
             brainMask = Node(interface = preprocess.MultipleBrainExtraction(), name='Multiple_Brain_extraction')
             brainMask.inputs.bids_dir = self.bids_dir
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk",
-                                                                           "data/Network_checkpoints/Network_checkpoints_localization/Unet.ckpt-88000")
+                                                                           os.path.join("data",
+                                                                                        "Network_checkpoints",
+                                                                                        "Network_checkpoints_localization",
+                                                                                        "Unet.ckpt-88000.index")).split('.index')[0]
             brainMask.inputs.threshold_loc = 0.49
             brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename("pymialsrtk",
-                                                                           "data/Network_checkpoints/Network_checkpoints_segmentation/Unet.ckpt-20000")
+                                                                           os.path.join("data",
+                                                                                        "Network_checkpoints",
+                                                                                        "Network_checkpoints_segmentation",
+                                                                                        "Unet.ckpt-20000.index")).split('.index')[0]
             brainMask.inputs.threshold_seg = 0.5
 
         t2ws_filtered = Node(interface=preprocess.FilteringByRunid(), name='t2ws_filtered')
@@ -445,7 +451,7 @@ class AnatomicalPipeline:
 
         """
 
-        if(number_of_cores != 1):
+        if number_of_cores > 1:
             res = self.wf.run(plugin='MultiProc', plugin_args={'n_procs': number_of_cores})
 
         else:

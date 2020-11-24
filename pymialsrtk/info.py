@@ -3,7 +3,7 @@
 _version_major = 2
 _version_minor = 0
 _version_micro = 0
-_version_extra = ''
+_version_extra = 'b1'
 
 __release_date__ = '01.07.2020'
 
