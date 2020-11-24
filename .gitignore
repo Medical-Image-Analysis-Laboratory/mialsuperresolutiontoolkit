@@ -85,8 +85,9 @@ dist
 data/derivatives/mialsrtk*
 data/derivatives/nipype*
 data/derivatives/pymialsrtk*
+data/derivatives/manual_masks*
+data/sub-ctrl*
 
 # Editors  #
 #####################
 .idea/*
-

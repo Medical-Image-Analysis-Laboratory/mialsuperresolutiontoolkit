@@ -14,9 +14,10 @@ import os
 import traceback
 from glob import glob
 
+import numpy as np
 import nibabel
 import cv2
-# from medpy.io import load
+import skimage.measure
 
 import scipy.ndimage as snd
 from skimage import morphology
@@ -29,12 +30,10 @@ except ImportError:
 
 try:
     import tflearn
-    # from tflearn.layers.core import input_data, dropout, fully_connected
     from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
 except ImportError:
     print("tflearn not available. Can not run brain extraction")
 
-import numpy as np
 
 from traits.api import *
 
@@ -114,8 +113,8 @@ class BtkNLMDenoising(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import BtkNLMDenoising
     >>> nlmDenoise = BtkNLMDenoising()
     >>> nlmDenoise.inputs.bids_dir = '/my_directory'
-    >>> nlmDenoise.inputs.in_file = 'my_image.nii.gz'
-    >>> nlmDenoise.inputs.in_mask = 'my_mask.nii.gz'
+    >>> nlmDenoise.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> nlmDenoise.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> nlmDenoise.inputs.weight = 0.2
     >>> nlmDenoise.run() # doctest: +SKIP
 
@@ -169,9 +168,6 @@ class MultipleBtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
     weight <float>
         smoothing parameter (high beta produces smoother result, default is 0.1)
 
-    stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
-
     See Also
     ----------
     pymialsrtk.interfaces.preprocess.MultipleBtkNLMDenoising
@@ -183,7 +179,6 @@ class MultipleBtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
     input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
     weight = traits.Float(0.1, desc='NLM smoothing parameter (0.1 by default)', usedefault=True)
     out_postfix = traits.Str("_nlm", desc='Suffix to be added to input image filenames to construst denoised output filenames',usedefault=True)
-    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 
 class MultipleBtkNLMDenoisingOutputSpec(TraitedSpec):
@@ -219,9 +214,8 @@ class MultipleBtkNLMDenoising(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleBtkNLMDenoising
     >>> multiNlmDenoise = MultipleBtkNLMDenoising()
     >>> multiNlmDenoise.inputs.bids_dir = '/my_directory'
-    >>> multiNlmDenoise.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
-    >>> multiNlmDenoise.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
-    >>> multiNlmDenoise.stacks_order = [1,0]
+    >>> multiNlmDenoise.inputs.in_file = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-1_2w.nii.gz']
+    >>> multiNlmDenoise.inputs.in_mask = ['sub-01_acq-haste_run-1_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
     >>> multiNlmDenoise.run() # doctest: +SKIP
 
     See Also
@@ -235,39 +229,22 @@ class MultipleBtkNLMDenoising(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        # ToDo: self.inputs.stacks_order not tested
-        if not self.inputs.stacks_order:
-            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
-
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        if self.inputs.input_masks:
-            run_nb_masks = []
-            for in_mask in self.inputs.input_masks:
-                cut_avt = in_mask.split('run-')[1]
-                cut_apr = cut_avt.split('_')[0]
-                run_nb_masks.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            if len(self.inputs.input_masks) > 0:
-                index_mask = run_nb_masks.index(order)
+        if len(self.inputs.input_masks) > 0:
+            for in_image, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
                 ax = BtkNLMDenoising(bids_dir=self.inputs.bids_dir,
-                                     in_file=self.inputs.input_images[index_img],
-                                     in_mask=self.inputs.input_masks[index_mask],
+                                     in_file=in_image,
+                                     in_mask=in_mask,
                                      out_postfix=self.inputs.out_postfix,
                                      weight=self.inputs.weight)
-            else:
+                ax.run()
+        else:
+            for in_image in self.inputs.input_images:
                 ax = BtkNLMDenoising(bids_dir=self.inputs.bids_dir,
-                                     in_file=self.inputs.input_images[index_img],
+                                     in_file=in_image,
                                      out_postfix=self.inputs.out_postfix,
                                      weight=self.inputs.weight)
 
-            ax.run()
+                ax.run()
 
         return runtime
 
@@ -336,8 +313,8 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkCorrectSliceIntensity
     >>> sliceIntensityCorr = MialsrtkCorrectSliceIntensity()
     >>> sliceIntensityCorr.inputs.bids_dir = '/my_directory'
-    >>> sliceIntensityCorr.inputs.in_file = 'my_image.nii.gz'
-    >>> sliceIntensityCorr.inputs.in_mask = 'my_mask.nii.gz'
+    >>> sliceIntensityCorr.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> sliceIntensityCorr.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> sliceIntensityCorr.run() # doctest: +SKIP
 
     """
@@ -382,9 +359,6 @@ class MultipleMialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     out_postfix <string>
         suffix added to images files to construct output filenames (default is '')
 
-    stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
-
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MultipleMialsrtkCorrectSliceIntensity
@@ -395,7 +369,6 @@ class MultipleMialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     input_images = InputMultiPath(File(desc='Input image filenames to be corrected for slice intensity', mandatory=True))
     input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
     out_postfix = traits.Str("", desc='Suffix to be added to input image filenames to construct corrected output filenames',usedefault=True)
-    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 
 class MultipleMialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
@@ -425,8 +398,8 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkCorrectSliceIntensity
     >>> multiSliceIntensityCorr = MialsrtkCorrectSliceIntensity()
     >>> multiSliceIntensityCorr.inputs.bids_dir = '/my_directory'
-    >>> multiSliceIntensityCorr.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
-    >>> multiSliceIntensityCorr.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
+    >>> multiSliceIntensityCorr.inputs.in_file = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> multiSliceIntensityCorr.inputs.in_mask = ['sub-01_acq-haste_run-2_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
     >>> multiSliceIntensityCorr.run() # doctest: +SKIP
 
     See also
@@ -440,36 +413,19 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        # ToDo: self.inputs.stacks_order not tested
-        if not self.inputs.stacks_order:
-            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
-
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        if self.inputs.input_masks:
-            run_nb_masks = []
-            for in_mask in self.inputs.input_masks:
-                cut_avt = in_mask.split('run-')[1]
-                cut_apr = cut_avt.split('_')[0]
-                run_nb_masks.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            if len(self.inputs.input_masks) > 0:
-                index_mask = run_nb_masks.index(order)
+        if len(self.inputs.input_masks) > 0:
+            for in_image, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
                 ax = MialsrtkCorrectSliceIntensity(bids_dir=self.inputs.bids_dir,
-                                                   in_file=self.inputs.input_images[index_img],
-                                                   in_mask=self.inputs.input_masks[index_mask],
+                                                   in_file=in_image,
+                                                   in_mask=in_mask,
                                                    out_postfix=self.inputs.out_postfix)
-            else:
+                ax.run()
+        else:
+            for in_image in self.inputs.input_images:
                 ax = MialsrtkCorrectSliceIntensity(bids_dir=self.inputs.bids_dir,
-                                                   in_file=self.inputs.input_images[index_img],
+                                                   in_file=in_image,
                                                    out_postfix=self.inputs.out_postfix)
-            ax.run()
+                ax.run()
         return runtime
 
     def _list_outputs(self):
@@ -549,8 +505,8 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
     >>> N4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> N4biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> N4biasFieldCorr.inputs.in_file = 'my_image.nii.gz'
-    >>> N4biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
+    >>> N4biasFieldCorr.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> N4biasFieldCorr.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> N4biasFieldCorr.run() # doctest: +SKIP
 
     """
@@ -608,9 +564,6 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceIn
     out_fld_postfix <string>
         suffix added to image filename to construct output bias field image filename (default is '_n4bias')
 
-    stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
-
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MultipleMialsrtkSliceBySliceN4BiasFieldCorrection
@@ -622,7 +575,6 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceIn
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=True))
     out_im_postfix = traits.Str("_bcorr", desc='Suffix to be added to input image filenames to construct corrected output filenames', usedefault=True)
     out_fld_postfix = traits.Str("_n4bias", desc='Suffix to be added to input image filenames to construct output bias field filenames', usedefault=True)
-    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
@@ -631,10 +583,10 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     Attributes
     -----------
     output_images list<<string>>
-        Output N4 bias field corrected images
+        Output N4 bias field corrected images (required)
 
     output_fields list<<string>>
-        Output bias fields
+        Output bias fields (required)
 
     See also
     --------------
@@ -660,9 +612,8 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkSliceBySliceN4BiasFieldCorrection
     >>> multiN4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> multiN4biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> multiN4biasFieldCorr.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.stacks_order = [0,1]
+    >>> multiN4biasFieldCorr.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.inputs_masks = ['sub-01_acq-haste_run-1_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
     >>> multiN4biasFieldCorr.run() # doctest: +SKIP
 
     See also
@@ -675,30 +626,10 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     output_spec = MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec
 
     def _run_interface(self, runtime):
-
-        # ToDo: self.inputs.stacks_order not tested
-        if not self.inputs.stacks_order:
-            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
-
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            index_mask = run_nb_masks.index(order)
-
+        for in_image, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
             ax = MialsrtkSliceBySliceN4BiasFieldCorrection(bids_dir=self.inputs.bids_dir,
-                                                           in_file=self.inputs.input_images[index_img],
-                                                           in_mask=self.inputs.input_masks[index_mask],
+                                                           in_file=in_image,
+                                                           in_mask=in_mask,
                                                            out_im_postfix=self.inputs.out_im_postfix,
                                                            out_fld_postfix=self.inputs.out_fld_postfix)
             ax.run()
@@ -775,9 +706,9 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceCorrectBiasField
     >>> biasFieldCorr = MialsrtkSliceBySliceCorrectBiasField()
     >>> biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> biasFieldCorr.inputs.in_file = 'my_image.nii.gz'
-    >>> biasFieldCorr.inputs.in_mask = 'my_mask.nii.gz'
-    >>> biasFieldCorr.inputs.in_field = 'my_field.nii.gz'
+    >>> biasFieldCorr.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> biasFieldCorr.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
+    >>> biasFieldCorr.inputs.in_field = 'sub-01_acq-haste_run-1_field.nii.gz'
     >>> biasFieldCorr.run() # doctest: +SKIP
 
     """
@@ -824,9 +755,6 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSp
     out_im_postfix <string>
         suffix added to image filename to construct output corrected image filename (default is '_bcorr')
 
-    stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
-
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MultipleMialsrtkSliceBySliceCorrectBiasField
@@ -838,7 +766,6 @@ class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSp
     input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=True))
     input_fields = InputMultiPath(File(desc='field to remove', mandatory=True))
     out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to bias field corrected input_images', usedefault=True)
-    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
@@ -870,9 +797,9 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkSliceBySliceN4BiasFieldCorrection
     >>> multiN4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> multiN4biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> multiN4biasFieldCorr.inputs.in_file = ['my_image01.nii.gz', 'my_image02.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.in_mask = ['my_mask01.nii.gz', 'my_mask02.nii.gz']
-    >>> multiN4biasFieldCorr.inputs.stacks_order = [0,1]
+    >>> multiN4biasFieldCorr.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.input_masks = ['sub-01_acq-haste_run-1_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
+    >>> multiN4biasFieldCorr.inputs.input_fields = ['sub-01_acq-haste_run-1_field.nii.gz', 'sub-01_acq-haste_run-2_field.nii.gz']
     >>> multiN4biasFieldCorr.run() # doctest: +SKIP
 
     See also
@@ -886,36 +813,11 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        # ToDo: self.inputs.stacks_order not tested
-        if not self.inputs.stacks_order:
-            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
-
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        run_nb_fields = []
-        for in_mask in self.inputs.input_fields:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_fields.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            index_mask = run_nb_masks.index(order)
-            index_fld = run_nb_fields.index(order)
+        for in_image, in_mask, in_field in zip(self.inputs.input_images, self.inputs.input_masks, self.inputs.input_fields):
             ax = MialsrtkSliceBySliceCorrectBiasField(bids_dir=self.inputs.bids_dir,
-                                                      in_file=self.inputs.input_images[index_img],
-                                                      in_mask=self.inputs.input_masks[index_mask],
-                                                      in_field=self.inputs.input_fields[index_fld],
+                                                      in_file=in_image,
+                                                      in_mask=in_mask,
+                                                      in_field=in_field,
                                                       out_im_postfix=self.inputs.out_im_postfix)
             ax.run()
         return runtime
@@ -988,7 +890,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkIntensityStandardization
     >>> intensityStandardization= MialsrtkIntensityStandardization()
     >>> intensityStandardization.inputs.bids_dir = '/my_directory'
-    >>> intensityStandardization.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
+    >>> intensityStandardization.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz','sub-01_acq-haste_run-2_T2w.nii.gz']
     >>> intensityStandardization.run() # doctest: +SKIP
 
     """
@@ -1042,9 +944,6 @@ class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
     out_postfix <string>
         suffix added to image filenames to construct output normalized image filenames (default is '_histnorm')
 
-    stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
-
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MialsrtkHistogramNormalization
@@ -1056,7 +955,6 @@ class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
     input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
     out_postfix = traits.Str("_histnorm", desc='Suffix to be added to normalized input image filenames to construct ouptut normalized image filenames',
                              usedefault=True)
-    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 
 class MialsrtkHistogramNormalizationOutputSpec(TraitedSpec):
@@ -1090,10 +988,8 @@ class MialsrtkHistogramNormalization(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkHistogramNormalization
     >>> histNorm = MialsrtkHistogramNormalization()
     >>> histNorm.inputs.bids_dir = '/my_directory'
-    >>> histNorm.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
-    >>> histNorm.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
-    >>> histNorm.inputs.out_postfix = '_histnorm'
-    >>> histNorm.inputs.stacks_order = [0,1]
+    >>> histNorm.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz','sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> histNorm.inputs.input_masks = ['sub-01_acq-haste_run-1_mask.nii.gz','sub-01_acq-haste_run-2_mask.nii.gz']
     >>> histNorm.run()  # doctest: +SKIP
 
     """
@@ -1105,32 +1001,19 @@ class MialsrtkHistogramNormalization(BaseInterface):
 
         cmd = 'python /usr/local/bin/mialsrtkHistogramNormalization.py '
 
-        # ToDo: self.inputs.stacks_order not tested
-        if not self.inputs.stacks_order:
-            self.inputs.stacks_order = list(range(0, len(self.inputs.input_images)))
+        if len(self.inputs.input_masks) > 0:
+            for in_file, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
+                _, name, ext = split_filename(os.path.abspath(in_file))
+                out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_images.append(int(cut_apr))
+                cmd = cmd + ' -i "{}" -o "{}" -m "{}" '.format(in_file, out_file, in_mask)
+        else:
+            for in_file in self.inputs.input_images:
+                _, name, ext = split_filename(os.path.abspath(in_file))
+                out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
+                                        ''.join((name, self.inputs.out_postfix, ext)))
 
-        if self.inputs.input_masks:
-            run_nb_masks = []
-            for in_mask in self.inputs.input_masks:
-                cut_avt = in_mask.split('run-')[1]
-                cut_apr = cut_avt.split('_')[0]
-                run_nb_masks.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[index_img]))
-            out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
-            if len(self.inputs.input_masks) > 0:
-                index_mask = run_nb_masks.index(order)
-                cmd = cmd + ' -i "{}" -o "{}" -m "{}" '.format(self.inputs.input_images[index_img], out_file, self.inputs.input_masks[index_mask])
-            else:
-                cmd = cmd + ' -i "{}" -o "{}"" '.format(self.inputs.input_images[index_img], out_file)
+                cmd = cmd + ' -i "{}" -o "{}"" '.format(in_file, out_file)
         try:
             print('... cmd: {}'.format(cmd))
             run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
@@ -1204,8 +1087,8 @@ class MialsrtkMaskImage(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkMaskImage
     >>> maskImg = MialsrtkMaskImage()
     >>> maskImg.inputs.bids_dir = '/my_directory'
-    >>> maskImg.inputs.in_file = 'my_image.nii.gz'
-    >>> maskImg.inputs.in_mask = 'my_mask.nii.gz'
+    >>> maskImg.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> maskImg.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> maskImg.inputs.out_im_postfix = '_masked'
     >>> maskImg.run() # doctest: +SKIP
 
@@ -1254,9 +1137,6 @@ class MultipleMialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     out_im_postfix <string>
         suffix added to image filename to construct output masked image filenames (default is '')
 
-    stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
-
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MultipleMialsrtkMaskImage
@@ -1267,7 +1147,6 @@ class MultipleMialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     input_images = InputMultiPath(File(desc='Input image filenames to be corrected for intensity', mandatory=True))
     input_masks = InputMultiPath(File(desc='Input mask filenames ', mandatory=True))
     out_im_postfix = traits.Str("", desc='Suffix to be added to masked input_images', usedefault=True)
-    stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask', mandatory=False)
 
 
 class MultipleMialsrtkMaskImageOutputSpec(TraitedSpec):
@@ -1298,10 +1177,9 @@ class MultipleMialsrtkMaskImage(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MultipleMialsrtkMaskImage
     >>> multiMaskImg = MultipleMialsrtkMaskImage()
     >>> multiMaskImg.inputs.bids_dir = '/my_directory'
-    >>> multiMaskImg.inputs.in_file = ['my_image02.nii.gz', 'my_image01.nii.gz']
-    >>> multiMaskImg.inputs.in_mask = ['my_mask02.nii.gz', 'my_mask01.nii.gz']
+    >>> multiMaskImg.inputs.in_file = ['sub-01_acq-haste_run-1_T2w.nii.gz', 'sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> multiMaskImg.inputs.in_mask = ['sub-01_acq-haste_run-1_mask.nii.gz', 'sub-01_acq-haste_run-2_mask.nii.gz']
     >>> multiMaskImg.inputs.out_im_postfix = '_masked'
-    >>> multiMaskImg.inputs.stacks_order = [0,1]
     >>> multiMaskImg.run() # doctest: +SKIP
 
     See also
@@ -1315,25 +1193,10 @@ class MultipleMialsrtkMaskImage(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_images.append(int(cut_apr))
-
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            index_mask = run_nb_masks.index(order)
-
+        for in_file, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
             ax = MialsrtkMaskImage(bids_dir=self.inputs.bids_dir,
-                                   in_file=self.inputs.input_images[index_img],
-                                   in_mask=self.inputs.input_masks[index_mask],
+                                   in_file=in_file,
+                                   in_mask=in_mask,
                                    out_im_postfix=self.inputs.out_im_postfix)
             ax.run()
         return runtime
@@ -1342,6 +1205,243 @@ class MultipleMialsrtkMaskImage(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
         return outputs
+
+
+####################
+# Stacks ordering and filtering
+####################
+
+
+class FilteringByRunidInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the FilteringByRunid interface.
+
+    Attributes
+    -----------
+    input_files <list<string>>
+        Input brain masks on which motion is computed.
+
+    stacks_id <list<string>>
+        List of stacks id to be kept
+
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.FilteringByRunid
+
+    """
+
+    input_files = InputMultiPath(File(desc='Input files', mandatory=True))
+    stacks_id = traits.List()
+
+
+class FilteringByRunidOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the FilteringByRunid interface.
+
+    Attributes
+    -----------
+    output_files <list<string>>
+        Filtered files.
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.FilteringByRunid
+
+    """
+
+    output_files = traits.List(desc='Order of stacks')
+
+
+class FilteringByRunid(BaseInterface):
+    """Runs a filtering of files.
+
+    This module filters the input files matching the specified run-ids. Other files are discarded.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import FilteringByRunid
+    >>> stacksFiltering = FilteringByRunid()
+    >>> stacksFiltering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz', 'sub-01_run-4_mask.nii.gz', 'sub-01_run-2_mask.nii.gz']
+    >>> stacksFiltering.inputs.stacks_id = [1,2]
+    >>> stacksFiltering.run() # doctest: +SKIP
+
+    """
+
+    input_spec = FilteringByRunidInputSpec
+    output_spec = FilteringByRunidOutputSpec
+
+    m_output_files = []
+
+    def _run_interface(self, runtime):
+        try:
+            self.m_output_files = self._filter_by_runid(self.inputs.input_files, self.inputs.stacks_id)
+        except Exception as e:
+            print('Failed')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_files'] = self.m_output_files
+        return outputs
+
+    def _filter_by_runid(self, input_files, p_stacks_id):
+        output_files = []
+        for f in input_files:
+            f_id = int(f.split('_run-')[1].split('_')[0])
+            if f_id in p_stacks_id:
+                output_files.append(f)
+        return output_files
+
+
+class StacksOrderingInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the StacksOrdering interface.
+
+    Attributes
+    -----------
+    input_masks <list<string>>
+        Input brain masks on which motion is computed.
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.StacksOrdering
+
+    """
+
+    input_masks = InputMultiPath(File(desc='Input masks', mandatory=True))
+
+
+class StacksOrderingOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the StacksOrdering interface.
+
+    Attributes
+    -----------
+    stacks_order <string>
+        Order of images' run-id to be used for reconstruction
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.StacksOrdering
+
+    """
+
+    stacks_order = traits.List(desc='Order of stacks')
+
+
+class StacksOrdering(BaseInterface):
+    """Runs the automatic ordering of stacks.
+
+    This module is based on a centroid tracking of the the central of the brain mask.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import StacksOrdering
+    >>> stacksOrdering = StacksOrdering()
+    >>> stacksOrdering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz', 'sub-01_run-4_mask.nii.gz', 'sub-01_run-2_mask.nii.gz']
+    >>> stacksOrdering.run() # doctest: +SKIP
+
+    """
+
+    input_spec = StacksOrderingInputSpec
+    output_spec = StacksOrderingOutputSpec
+
+    m_stack_order = []
+
+    def _run_interface(self, runtime):
+        try:
+            self.m_stack_order = self._compute_stack_order(self.inputs.input_masks)
+        except Exception as e:
+            print('Failed')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['stacks_order'] = self.m_stack_order
+        return outputs
+
+    def _compute_motion_index(self, in_file):
+        """Function to compute the motion index.
+
+        The motion index is computed from the inter-slice displacement of the centroid of the brain mask.
+        """
+        central_third = True
+
+        img = nibabel.load(in_file)
+
+        # Todo: Compute centroid displacement as a distance instead of a number of voxel
+        # voxelspacing = img.header['pixdim'][2]
+        data = img.get_fdata()
+
+        z = np.where(data)[2]
+        data = data[..., int(min(z)):int(max(z) + 1)]
+
+        if central_third:
+            num_z = data.shape[2]
+            center_z = int(num_z / 2.)
+
+            data = data[..., int(center_z - num_z / 6.):int(center_z + num_z / 6.)]
+
+        centroid_coord = np.zeros((data.shape[2], 2))
+
+        for i in range(data.shape[2]):
+            moments = skimage.measure.moments(data[..., i])
+            centroid_coord[i, :] = [moments[0, 1] / moments[0, 0], moments[1, 0] / moments[0, 0]]
+
+        centroid_coord = centroid_coord[~np.isnan(centroid_coord)]
+        centroid_coord = np.reshape(centroid_coord, (int(centroid_coord.shape[0] / 2), 2))
+
+        nSlices = data.shape[2]
+        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / nSlices
+
+        return score
+
+    def _compute_stack_order(self, in_files):
+        """Function to compute the stacks order.
+
+        The motion index is computed for each mask. Stacks are ordered according to their motion index.
+        When the view plane is specified in the filenames (tag `vp`), stacks are ordered such that the 3 first ones are
+        othogonal / in three different orientations.
+        """
+        motion_ind = []
+
+        for f in in_files:
+            motion_ind.append(self._compute_motion_index(f))
+
+        vp_defined = -1 not in [f.find('vp') for f in in_files]
+        if vp_defined:
+            orientations_ = []
+            for f in in_files:
+                orientations_.append((f.split('_vp-')[1]).split('_')[0])
+            _, images_ordered, orientations_ordered = (list(t) for t in zip(
+                *sorted(zip(motion_ind, in_files, orientations_))))
+        else:
+            _, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, in_files))))
+
+        run_order = [int(f.split('run-')[1].split('_')[0]) for f in images_ordered]
+
+        if vp_defined:
+            first_ax = orientations_ordered.index('ax')
+            first_sag = orientations_ordered.index('sag')
+            first_cor = orientations_ordered.index('cor')
+            firsts = [first_ax, first_cor, first_sag]
+
+            run_tmp = run_order
+            run_order = []
+            ind_ = firsts.index(min(firsts))
+            run_order.append(int(images_ordered[firsts[ind_]].split('run-')[1].split('_')[0]))
+
+            firsts.pop(ind_)
+            ind_ = firsts.index(min(firsts))
+            run_order.append(int(images_ordered[firsts[ind_]].split('run-')[1].split('_')[0]))
+
+            firsts.pop(ind_)
+            ind_ = firsts.index(min(firsts))
+            run_order.append(int(images_ordered[firsts[ind_]].split('run-')[1].split('_')[0]))
+
+            others = [e for e in run_tmp if e not in run_order]
+            run_order += others
+
+        return run_order
 
 
 ####################
@@ -1422,7 +1522,7 @@ class BrainExtraction(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import BrainExtraction
     >>> brainMask = BrainExtraction()
     >>> brainmask.inputs.base_dir = '/my_directory'
-    >>> brainmask.inputs.in_file = 'my_image.nii.gz'
+    >>> brainmask.inputs.in_file = 'sub-01_acq-haste_run-1_2w.nii.gz'
     >>> brainmask.inputs.in_ckpt_loc = 'my_loc_checkpoint'
     >>> brainmask.inputs.threshold_loc = 0.49
     >>> brainmask.inputs.in_ckpt_seg = 'my_seg_checkpoint'
@@ -1706,6 +1806,7 @@ class BrainExtraction(BaseInterface):
             upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
             up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
             # Save output mask
+
             _, name, ext = split_filename(os.path.abspath(dataPath))
             save_file = os.path.join(os.getcwd().replace(bidsDir, '/fetaldata'), ''.join((name, out_postfix, ext)))
             nibabel.save(up_mask, save_file)
@@ -1994,3 +2095,4 @@ class MultipleBrainExtraction(BaseInterface):
         outputs = self._outputs().get()
         outputs['masks'] = glob(os.path.abspath("*.nii.gz"))
         return outputs
+

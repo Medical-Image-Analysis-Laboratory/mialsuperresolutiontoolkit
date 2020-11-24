@@ -82,8 +82,6 @@ class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
                                     desc='Suffix to be added to the SR reconstruction filename to construct output SR mask filename',
                                     usedefault=True)
 
-    stacks_order = traits.List(desc='To_be_completed', mandatory=False)
-
 
 class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkRefineHRMaskByIntersection interface.
@@ -120,11 +118,10 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     >>> from pymialsrtk.interfaces.postprocess import MialsrtkRefineHRMaskByIntersection
     >>> refMask = MialsrtkRefineHRMaskByIntersection()
     >>> refMask.inputs.bids_dir = '/my_directory'
-    >>> refMask.inputs.input_images = ['image1.nii.gz','image2.nii.gz']
-    >>> refMask.inputs.input_masks = ['mask1.nii.gz','mask2.nii.gz']
-    >>> refMask.inputs.input_transforms = ['transform1.txt','transform2.nii.gz']
+    >>> refMask.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz','sub-01_acq-haste_run-2_T2w.nii.gz']
+    >>> refMask.inputs.input_masks = ['sub-01_acq-haste_run-1_mask.nii.gz','sub-01_acq-haste_run-2_mask.nii.gz']
+    >>> refMask.inputs.input_transforms = ['sub-01_acq-haste_run-1_transform.txt','sub-01_acq-haste_run-2_transform.nii.gz']
     >>> refMask.inputs.input_sr = 'sr_image.nii.gz'
-    >>> refMask.inputs.stacks_order = [0,1]
     >>> refMask.run()  # doctest: +SKIP
 
     """
@@ -141,34 +138,13 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
         if self.inputs.in_use_staple:
             cmd += ['--use-staple']
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_images.append(int(cut_apr))
+        for in_file, in_mask, in_transform in zip(self.inputs.input_images, self.inputs.input_masks, self.inputs.input_transforms):
 
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_masks.append(int(cut_apr))
+            cmd += ['-i', in_file]
+            cmd += ['-m', in_mask]
+            cmd += ['-t', in_transform]
 
-        run_nb_transforms = []
-        for in_mask in self.inputs.input_transforms:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_transforms.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            index_mask = run_nb_masks.index(order)
-            index_tranform = run_nb_transforms.index(order)
-
-            cmd += ['-i', self.inputs.input_images[index_img]]
-            cmd += ['-m', self.inputs.input_masks[index_mask]]
-            cmd += ['-t', self.inputs.input_transforms[index_tranform]]
-
-            _, name, ext = split_filename(self.inputs.input_images[index_img])
+            _, name, ext = split_filename(in_file)
             out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                     ''.join((name, self.inputs.out_lrmask_postfix, ext)))
             cmd += ['-O', out_file]
@@ -277,8 +253,8 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
     >>> N4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> N4biasFieldCorr.inputs.bids_dir = '/my_directory'
-    >>> N4biasFieldCorr.inputs.input_image = 'my_image.nii.gz'
-    >>> N4biasFieldCorr.inputs.input_mask = 'my_mask.nii.gz'
+    >>> N4biasFieldCorr.inputs.input_image = 'sub-01_acq-haste_run-1_SR.nii.gz'
+    >>> N4biasFieldCorr.inputs.input_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> N4biasFieldCorr.run() # doctest: +SKIP
 
     """
@@ -312,5 +288,149 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
                                                ''.join((name, self.inputs.out_im_postfix, ext)))
         outputs['output_field'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                                ''.join((name, self.inputs.out_fld_postfix, ext)))
+
+        return outputs
+
+
+############################
+# Output filenames settings
+############################
+
+class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the FilenamesGeneration interface.
+
+    Attributes
+    ----------
+    sub_ses <string>
+        Subject and session BIDS identifier to construct output filename.
+
+    stacks_order <list<int>>
+        List of stack run-id that specify the order of the stacks
+
+    sr_id <str>
+        Super-Resolution id
+
+    use_manual_masks <bool>
+        Whether masks were computed or manually performed.
+
+    See Also
+    ----------
+    pymialsrtk.interfaces.preprocess.FilenamesGeneration
+
+    """
+
+    sub_ses = traits.Str(mandatory=True)
+    stacks_order = traits.List(mandatory=True)
+    sr_id = traits.Int(mandatory=True)
+    use_manual_masks = traits.Bool(mandatory=True)
+
+
+class FilenamesGenerationOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the FilenamesGeneration interface.
+
+    Attributes
+    -----------
+    substitutions <list<string>, list<string>>
+        Output correspondance between old and new filenames.
+
+    See also
+    --------------
+    pymialsrtk.interfaces.preprocess.FilenamesGeneration
+
+    """
+
+    substitutions = traits.List(desc='Correspondence old/new filenames')
+
+
+class FilenamesGeneration(BaseInterface):
+    """Generates final filenames from outputs of super-resolution reconstruction.
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.postprocess import FilenamesGeneration
+    >>> filenamesGen = FilenamesGeneration()
+    >>> filenamesGen.inputs.sub_ses = 'sub-01'
+    >>> filenamesGen.inputs.stacks_order = [3,1,4]
+    >>> filenamesGen.inputs.sr_id = 3
+    >>> filenamesGen.inputs.use_manual_masks = False
+    >>> filenamesGen.run() # doctest: +SKIP
+
+    """
+
+    input_spec = FilenamesGenerationInputSpec
+    output_spec = FilenamesGenerationOutputSpec
+
+    m_substitutions = []
+
+    def _run_interface(self, runtime):
+
+        for stack in self.inputs.stacks_order:
+            print(self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_nlm_uni_bcorr_histnorm.nii.gz',
+                  '    --->     ',
+                  self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(self.inputs.sr_id) + '_desc-preprocSDI_T2w.nii.gz')
+            self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_nlm_uni_bcorr_histnorm.nii.gz',
+                                  self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
+                                      self.inputs.sr_id) + '_desc-preprocSDI_T2w.nii.gz'))
+
+            if not self.inputs.use_manual_masks:
+                print(self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_brainMask.nii.gz',
+                      '    --->     ',
+                      self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(self.inputs.sr_id) + '_desc-brain_mask.nii.gz')
+                self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_brainMask.nii.gz',
+                                      self.inputs.sub_ses + '_run-' + str(stack) + '_desc-brain_mask.nii.gz'))
+
+            print(self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_nlm_uni_bcorr_histnorm.nii.gz',
+                  '    --->     ',
+                  self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(self.inputs.sr_id) + '_desc-preprocSR_T2w.nii.gz')
+            self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_uni_bcorr_histnorm.nii.gz',
+                                  self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
+                                      self.inputs.sr_id) + '_desc-preprocSR_T2w.nii.gz'))
+
+            print(self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_nlm_uni_bcorr_histnorm_transform_' + str(
+                len(self.inputs.stacks_order)) + 'V.txt',
+                  '    --->     ',
+                  self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
+                      self.inputs.sr_id) + '_T2w_from-origin_to-SDI_mode-image_xfm.txt')
+            self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_nlm_uni_bcorr_histnorm_transform_' + str(
+                len(self.inputs.stacks_order)) + 'V.txt',
+                                  self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
+                                      self.inputs.sr_id) + '_T2w_from-origin_to-SDI_mode-image_xfm.txt'))
+
+            print(self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
+                  '    --->     ',
+                  self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz')
+            self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) + '_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
+                                  self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
+                                      self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz'))
+
+        print('SDI_' + self.inputs.sub_ses + '_' + str(len(self.inputs.stacks_order)) + 'V_rad1.nii.gz',
+              '    --->     ',
+              self.inputs.sub_ses + '_rec-SDI' + '_id-' + str(self.inputs.sr_id) + '_T2w.nii.gz')
+        self.m_substitutions.append(('SDI_' + self.inputs.sub_ses + '_' + str(len(self.inputs.stacks_order)) + 'V_rad1.nii.gz',
+                              self.inputs.sub_ses + '_rec-SDI' + '_id-' + str(self.inputs.sr_id) + '_T2w.nii.gz'))
+
+        print('SRTV_' + self.inputs.sub_ses + '_' + str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr.nii.gz',
+              '    --->     ',
+              self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w.nii.gz')
+        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' + str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr.nii.gz',
+                              self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w.nii.gz'))
+
+        print('SRTV_' + self.inputs.sub_ses + '_' + str(len(self.inputs.stacks_order)) + 'V_rad1.json',
+              '    --->     ',
+              self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w.json')
+        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' + str(len(self.inputs.stacks_order)) + 'V_rad1.json',
+                              self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w.json'))
+
+        print(self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
+              '    --->     ',
+              self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz')
+        self.m_substitutions.append((self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
+                                     self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz'))
+
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['substitutions'] = self.m_substitutions
 
         return outputs

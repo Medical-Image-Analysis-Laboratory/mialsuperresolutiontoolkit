@@ -7,6 +7,7 @@
 import os
 
 from glob import glob
+import json
 
 from traits.api import *
 
@@ -14,7 +15,7 @@ from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
-from pymialsrtk.interfaces.utils import run
+from pymialsrtk.interfaces.utils import run, reorder_by_run_ids
 
 
 ########################
@@ -54,7 +55,7 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
         suffix added to construct output transformation filenames (default is '_transform')
 
     stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
+        List of stack run-id that specify the order of the stacks
 
     See Also
     ----------
@@ -106,9 +107,11 @@ class MialsrtkImageReconstruction(BaseInterface):
     >>> from pymialsrtk.interfaces.reconstruction import MialsrtkImageReconstruction
     >>> srtkImageReconstruction = MialsrtkTVSuperResolution()
     >>> srtkImageReconstruction.inputs.bids_dir = '/my_directory'
-    >>> srtkImageReconstruction.input_images = ['image01.nii.gz', 'image02.nii.gz', 'image03.nii.gz', 'image04.nii.gz']
-    >>> srtkImageReconstruction.input_masks = ['mask01.nii.gz', 'mask02.nii.gz', 'mask03.nii.gz', 'mask04.nii.gz']
-    >>> srtkImageReconstruction.inputs.stacksOrder = [0,1,2,3]
+    >>> srtkImageReconstruction.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz', 'sub-01_ses-01_run-2_T2w.nii.gz', \
+    'sub-01_ses-01_run-3_T2w.nii.gz', 'sub-01_ses-01_run-4_T2w.nii.gz']
+    >>> srtkImageReconstruction.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz', 'sub-01_ses-01_run-2_mask.nii.gz', \
+    'sub-01_ses-01_run-3_mask.nii.gz', 'sub-01_ses-01_run-4_mask.nii.gz']
+    >>> srtkImageReconstruction.inputs.stacks_order = [3,1,2,4]
     >>> srtkImageReconstruction.inputs.sub_ses = 'sub-01_ses-01'
     >>> srtkImageReconstruction.inputs.in_roi = 'mask'
     >>> srtkImageReconstruction.inputs.in_deltat = 0.01
@@ -121,38 +124,24 @@ class MialsrtkImageReconstruction(BaseInterface):
     output_spec = MialsrtkImageReconstructionOutputSpec
 
     def _run_interface(self, runtime):
-
         params = []
         params.append(''.join(["--", self.inputs.in_roi]))
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_images.append(int(cut_apr))
+        input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
+        input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
 
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-
-            _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[index_img]))
+        for in_image, in_mask in zip(input_images, input_masks):
+            _, name, ext = split_filename(os.path.abspath(in_image))
             transf_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                        ''.join([name, self.inputs.out_transf_postfix, '_',
                                                 str(len(self.inputs.stacks_order)), 'V', '.txt']))
 
             params.append("-i")
-            params.append(self.inputs.input_images[index_img])
+            params.append(in_image)
 
             if self.inputs.in_roi == "mask":
-                index_mask = run_nb_masks.index(order)
-
                 params.append("-m")
-                params.append(self.inputs.input_masks[index_mask])
+                params.append(in_mask)
 
             params.append("-t")
             params.append(transf_file)
@@ -185,7 +174,6 @@ class MialsrtkImageReconstruction(BaseInterface):
         outputs['output_transforms'] = glob(os.path.abspath("*.txt"))
 
         _, _, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-
         outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                              ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
                                                        str(len(self.inputs.stacks_order)),'V_rad', str(int(self.inputs.input_rad_dilatation)), ext])))
@@ -251,7 +239,7 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
         prefix added to construct output super-resolution filename (default is 'SRTV_')
 
     stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
+        List of stack run-id that specify the order of the stacks
 
     input_rad_dilatation <float>
         Radius dilatation used in prior step to construct output filename. (default is 1.0)
@@ -289,6 +277,7 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     input_rad_dilatation = traits.Float(1.0, usedefault=True)
 
     sub_ses = traits.Str("x", usedefault=True)
+    use_manual_masks = traits.Bool(False, usedefault=True)
 
 
 class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
@@ -299,13 +288,21 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     output_sr <string>
         Output super-resolution reconstruction file
 
+    output_dict <dict>
+        Super-resolution reconstruction parameters summarized in a python dictionary
+
+    output_json <string>
+        Emplacement where should be saved <output_dict>
+
     See also
     --------------
     pymialsrtk.interfaces.preprocess.MialsrtkTVSuperResolution
 
     """
 
-    output_sr = File(desc='Super-resolution reconstruction output')
+    output_sr = File(desc='Super-resolution reconstruction output image')
+    output_dict = Dict(desc='Super-resolution reconstruction parameter dictionary')
+    output_json_path = File(desc='')
 
 
 class MialsrtkTVSuperResolution(BaseInterface):
@@ -320,11 +317,14 @@ class MialsrtkTVSuperResolution(BaseInterface):
     >>> from pymialsrtk.interfaces.reconstruction import MialsrtkTVSuperResolution
     >>> srtkTVSuperResolution = MialsrtkTVSuperResolution()
     >>> srtkTVSuperResolution.inputs.bids_dir = '/my_directory'
-    >>> srtkTVSuperResolution.input_images = ['image01.nii.gz', 'image02.nii.gz', 'image03.nii.gz', 'image04.nii.gz']
-    >>> srtkTVSuperResolution.input_masks = ['mask01.nii.gz', 'mask02.nii.gz', 'mask03.nii.gz', 'mask04.nii.gz']
-    >>> srtkTVSuperResolution.input_transforms = ['transform01.txt', 'transform02.txt', 'transform03.txt', 'transform04.txt']
+    >>> srtkTVSuperResolution.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz', 'sub-01_ses-01_run-2_T2w.nii.gz', \
+    'sub-01_ses-01_run-3_T2w.nii.gz', 'sub-01_ses-01_run-4_T2w.nii.gz']
+    >>> srtkTVSuperResolution.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz', 'sub-01_ses-01_run-2_mask.nii.gz', \
+    'sub-01_ses-01_run-3_mask.nii.gz', 'sub-01_ses-01_run-4_mask.nii.gz']
+    >>> srtkTVSuperResolution.input_transforms = ['sub-01_ses-01_run-1_transform.txt', 'sub-01_ses-01_run-2_transform.txt', \
+    'sub-01_ses-01_run-3_transform.txt', 'sub-01_ses-01_run-4_transform.txt']
     >>> srtkTVSuperResolution.input_sdi = 'sdi.nii.gz'
-    >>> srtkTVSuperResolution.inputs.stacksOrder = [0,1,2,3]
+    >>> srtkTVSuperResolution.inputs.stacks_order = [3,1,2,4]
     >>> srtkTVSuperResolution.inputs.sub_ses = 'sub-01_ses-01'
     >>> srtkTVSuperResolution.inputs.in_loop = 10
     >>> srtkTVSuperResolution.inputs.in_deltat = 0.01
@@ -336,45 +336,30 @@ class MialsrtkTVSuperResolution(BaseInterface):
     input_spec = MialsrtkTVSuperResolutionInputSpec
     output_spec = MialsrtkTVSuperResolutionOutputSpec
 
+    m_out_files = ''
+    m_output_dict = {}
+
     def _run_interface(self, runtime):
 
         cmd = ['mialsrtkTVSuperResolution']
 
-        run_nb_images = []
-        for in_file in self.inputs.input_images:
-            cut_avt = in_file.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_images.append(int(cut_apr))
+        input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
+        input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
+        input_transforms = reorder_by_run_ids(self.inputs.input_transforms, self.inputs.stacks_order)
 
-        run_nb_masks = []
-        for in_mask in self.inputs.input_masks:
-            cut_avt = in_mask.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_masks.append(int(cut_apr))
-
-        run_nb_transforms = []
-        for in_transform in self.inputs.input_transforms:
-            cut_avt = in_transform.split('run-')[1]
-            cut_apr = cut_avt.split('_')[0]
-            run_nb_transforms.append(int(cut_apr))
-
-        for order in self.inputs.stacks_order:
-            index_img = run_nb_images.index(order)
-            index_mask = run_nb_masks.index(order)
-            index_tranform = run_nb_transforms.index(order)
-
-            cmd += ['-i', self.inputs.input_images[index_img]]
-            cmd += ['-m', self.inputs.input_masks[index_mask]]
-            cmd += ['-t', self.inputs.input_transforms[index_tranform]]
+        for in_image, in_mask, in_transform in zip(input_images, input_masks, input_transforms):
+            cmd += ['-i', in_image]
+            cmd += ['-m', in_mask]
+            cmd += ['-t', in_transform]
 
         _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
+        self.m_out_files = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                 ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_',
                                           str(len(self.inputs.stacks_order)),'V_rad',
-                                          str(int(self.inputs.input_rad_dilatation)), ext])))
+                                          str(int(self.inputs.input_rad_dilatation))])))
 
         cmd += ['-r', self.inputs.input_sdi]
-        cmd += ['-o', out_file]
+        cmd += ['-o', ''.join([self.m_out_files, ext])]
 
         if self.inputs.deblurring:
             cmd += ['--debluring']
@@ -390,10 +375,27 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
         cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
 
+        # JSON file SRTV
+        self.m_output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation" \
+                                            " Super-Resolution algorithm provided by MIALSRTK"
+        self.m_output_dict["Input sources run order"] = self.inputs.stacks_order
+        self.m_output_dict["CustomMetaData"] = {}
+        self.m_output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.inputs.stacks_order))
+        self.m_output_dict["CustomMetaData"]["Masks used"] = 'Manual' if self.inputs.use_manual_masks else 'Automatic'
+        self.m_output_dict["CustomMetaData"]["TV regularization weight lambda"] = self.inputs.in_lambda
+        self.m_output_dict["CustomMetaData"]["Optimization time step"] = self.inputs.in_deltat
+        self.m_output_dict["CustomMetaData"]["Primal/dual loops"] = self.inputs.in_loop
+
+
+        output_json_path = ''.join([self.m_out_files, '.json'])
+        with open(output_json_path, 'w') as outfile:
+            json.dump(self.m_output_dict, outfile)
+            print('json dumped.')
+
         try:
-            print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
             run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+
         except Exception as e:
             print('Failed')
             print(e)
@@ -403,9 +405,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
-        outputs['output_sr'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                            ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                                      str(len(self.inputs.stacks_order)),'V_rad',
-                                                      str(int(self.inputs.input_rad_dilatation)), ext])))
+        outputs['output_sr'] = ''.join([self.m_out_files, ext])
+        outputs['output_dict'] = self.m_output_dict
+        outputs['output_json_path'] = ''.join([self.m_out_files, '.json'])
 
         return outputs
