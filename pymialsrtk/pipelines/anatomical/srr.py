@@ -407,14 +407,8 @@ class AnatomicalPipeline:
         self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_transforms")
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkRefineHRMaskByIntersection, "input_sr")
 
-        self.wf.connect(srtkTVSuperResolution, "output_dict", srTVdictSink, "in_dict")
-        self.wf.connect(srtkTVSuperResolution, "output_json_path", srTVdictSink, "out_file")
-
-        # self.wf.connect(srtkTVSuperResolution, "output_sr", srtkN4BiasFieldCorrection, "input_image")
-        # self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", srtkN4BiasFieldCorrection, "input_mask")
-        #
-        # self.wf.connect(srtkTVSuperResolution, "output_sr", srtkMaskImage02, "in_file")
-        # self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", srtkMaskImage02, "in_mask")
+        # self.wf.connect(srtkTVSuperResolution, "output_dict", srTVdictSink, "in_dict")
+        # self.wf.connect(srtkTVSuperResolution, "output_json_path", srTVdictSink, "out_file")
 
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkMaskImage02, "in_file")
         self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", srtkMaskImage02, "in_mask")
@@ -432,7 +426,7 @@ class AnatomicalPipeline:
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat.@SDI')
         self.wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
-        self.wf.connect(srTVdictSink, "out_file", datasink, 'anat.@SRjson')
+        # self.wf.connect(srTVdictSink, "out_file", datasink, 'anat.@SRjson')
         self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", datasink, 'anat.@SRmask')
 
 

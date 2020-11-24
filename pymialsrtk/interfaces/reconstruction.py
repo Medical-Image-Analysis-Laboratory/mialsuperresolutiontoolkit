@@ -385,12 +385,12 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         output_json_path = ''.join([self.m_out_files, '.json'])
         with open(output_json_path, 'w') as outfile:
-                json.dump(self.m_output_dict, outfile)
+            json.dump(self.m_output_dict, outfile)
+            print('json dumped.')
 
         try:
             cmd = ' '.join(cmd)
             run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-
 
         except Exception as e:
             print('Failed')
