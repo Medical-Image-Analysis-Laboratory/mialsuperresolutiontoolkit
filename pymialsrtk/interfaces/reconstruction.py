@@ -376,7 +376,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
 
         # JSON file SRTV
-        self.m_output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation Super-Resolution algorithm provided by MIALSRTK"
+        self.m_output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation" \
+                                            " Super-Resolution algorithm provided by MIALSRTK"
         self.m_output_dict["Input sources run order"] = self.inputs.stacks_order
         self.m_output_dict["CustomMetaData"] = {}
         self.m_output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.inputs.stacks_order))

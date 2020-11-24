@@ -1368,7 +1368,8 @@ class StacksOrdering(BaseInterface):
 
         img = nibabel.load(in_file)
 
-        voxelspacing = img.header['pixdim'][2]
+        # Todo: Compute centroid displacement as a distance instead of a number of voxel
+        # voxelspacing = img.header['pixdim'][2]
         data = img.get_fdata()
 
         z = np.where(data)[2]
