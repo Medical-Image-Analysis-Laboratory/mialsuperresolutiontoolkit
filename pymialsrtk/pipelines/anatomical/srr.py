@@ -427,6 +427,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat.@SDI')
         self.wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
         # self.wf.connect(srTVdictSink, "out_file", datasink, 'anat.@SRjson')
+        self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
         self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", datasink, 'anat.@SRmask')
 
 
