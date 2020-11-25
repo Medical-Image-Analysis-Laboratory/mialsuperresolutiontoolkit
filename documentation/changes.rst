@@ -5,7 +5,7 @@ Changes
 Version 2.0.0
 --------------
 
-Date: Month XX, 2020 (To be updated)
+Date: November 25, 2020
 
 This corresponds to the first release of the second version of the MIAL Super-Resolution Toolkit, which has evolved massively over the last years in terms of the underlying codebase and the scope of the functionality provided, following recent advances in standardization of neuroimaging data organization and processing workflows.
 
