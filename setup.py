@@ -68,22 +68,29 @@ def main():
                               to a motion-free isotropic high-resolution image. """,
           author='Sebastien Tourbier',
           author_email='sebastien.tourbier@alumni.epfl.ch',
-          url='http://www.connectomics.org/',
+          url='https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit',
           entry_points={
                  "console_scripts": [
                          'mialsuperresolutiontoolkit_bidsapp = pymialsrtk.cli.mialsuperresolutiontoolkit_bidsapp:main'
                  ]
           },
-          license='Modified BSD License',
-          classifiers=[c.strip() for c in """\
-            Development Status :: 4 - Beta
-            Intended Audience :: Developers
-            Intended Audience :: Science/Research
-            Operating System :: OS Independent
-            Programming Language :: Python
-            Topic :: Scientific/Engineering :: Image Processing
-            Topic :: Software Development
-            """.splitlines() if len(c.split()) > 0],
+          license='BSD-3-Clause',
+          classifiers=[
+            'Development Status :: 5 - Production/Stable',
+            'Intended Audience :: Science/Research',
+            'Intended Audience :: Developers',
+            'License :: OSI Approved',
+            'Programming Language :: C++',
+            'Programming Language :: Python',
+            'Topic :: Software Development',
+            'Topic :: Scientific/Engineering :: Image Processing',
+            'Operating System :: Microsoft :: Windows',
+            'Operating System :: POSIX',
+            'Operating System :: Unix',
+            'Operating System :: MacOS',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
+          ],
           maintainer='Medical Image Analysis Laboratory, University Hospital of Lausanne and the MIALSRTK developers',
           maintainer_email='sebastien.tourbier@alumni.epfl.ch',
           # package_dir={"": "."},  # tell distutils packages are under src
