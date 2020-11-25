@@ -12,8 +12,8 @@ This neuroimaging processing pipeline software is developed by the Medical Image
 
 .. image:: https://img.shields.io/github/v/release/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit?include_prereleases   
   :alt: GitHub release (latest by date including pre-releases)
-.. image:: https://zenodo.org/badge/183162514.svg
-  :target: https://zenodo.org/badge/latestdoi/183162514
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4290209.svg
+   :target: https://doi.org/10.5281/zenodo.4290209
   :alt: Digital Object Identifier
 .. image:: https://img.shields.io/docker/pulls/sebastientourbier/mialsuperresolutiontoolkit-bidsapp?label=docker%20pulls%20%28BIDS%20App%29
   :target: https://hub.docker.com/repository/docker/sebastientourbier/mialsuperresolutiontoolkit-bidsapp
