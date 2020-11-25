@@ -7,7 +7,7 @@ Citing
 .. important::
   * If your are using the MIALSRTK BIDS App, a manuscript is in preparation, but for now, please acknowledge this software with the following three entries:
 
-    1. Tourbier S, Bresson X, Hagmann P, Bach Cuadra M. (2019, March 19). sebastientourbier/mialsuperresolutiontoolkit: MIAL Super-Resolution Toolkit v1.0 (Version v1.0). Zenodo. http://doi.org/10.5281/zenodo.2598448
+    1. Tourbier S, De Dumast P., Kebiri H., Hagmann P., Bach Cuadra M. (2020, November 25). Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit: MIAL Super-Resolution Toolkit (Version v2.0.0). Zenodo. http://doi.org/10.5281/zenodo.4290209
 
     2. Tourbier S, Bresson X, Hagmann P, Meuli R, Bach Cuadra M, *An efficient total variation algorithm for super-resolution in fetal brain MRI with adaptive regularization*, Neuroimage 118 (2015) 584-597. doi:10.1016/j.neuroimage.2015.06.018
 
