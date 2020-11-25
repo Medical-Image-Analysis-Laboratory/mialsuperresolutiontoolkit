@@ -1207,9 +1207,9 @@ class MultipleMialsrtkMaskImage(BaseInterface):
         return outputs
 
 
-####################
+###############################
 # Stacks ordering and filtering
-####################
+###############################
 
 
 class FilteringByRunidInputSpec(BaseInterfaceInputSpec):
@@ -1330,7 +1330,7 @@ class StacksOrderingOutputSpec(TraitedSpec):
 class StacksOrdering(BaseInterface):
     """Runs the automatic ordering of stacks.
 
-    This module is based on a centroid tracking of the the central of the brain mask.
+    This module is based on the tracking of the brain mask centroid slice by slice.
 
     Examples
     --------
