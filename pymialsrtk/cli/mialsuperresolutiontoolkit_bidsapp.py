@@ -34,7 +34,7 @@ def create_docker_cmd(args):
                 'participant_label': ['01', '02', '03'],
                 'openmp_nb_of_cores': 1,
                 'nipype_nb_of_cores': 1,
-                'manual': True
+                'masks_derivatives_dir': 'manual_masks'
             }
 
     Returns
@@ -60,8 +60,8 @@ def create_docker_cmd(args):
 
     # MIALSRTK BIDS App inputs
     cmd += '--param_file /bids_dir/code/participants_params.json '
-    if args.manual:
-        cmd += f'--manual '
+    if args.masks_derivatives_dir != '':
+        cmd += f'--masks_derivatives_dir {args.masks_derivatives_dir} '
     cmd += f'--openmp_nb_of_cores {args.openmp_nb_of_cores} '
     cmd += f'--nipype_nb_of_cores {args.nipype_nb_of_cores}'
 
