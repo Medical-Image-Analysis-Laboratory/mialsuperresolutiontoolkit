@@ -10,7 +10,7 @@ import pkg_resources
 
 from nipype import config, logging
 # from nipype.interfaces.io import BIDSDataGrabber
-from nipype.interfaces.io import DataGrabber, DataSink, JSONFileSink
+from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.interfaces.utility import IdentityInterface
 # from nipype.pipeline import Node, MapNode, Workflow
 from nipype.pipeline import Node, Workflow
