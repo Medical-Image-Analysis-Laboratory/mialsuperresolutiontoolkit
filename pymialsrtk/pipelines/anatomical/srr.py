@@ -66,8 +66,8 @@ class AnatomicalPipeline:
     p_stacks_order list<<int>>
         List of stack indices that specify the order of the stacks
 
-    use_manual_masks <Boolean>
-        If set to True, use manual masks expected to be in ``/output_dir/manual_masks``.
+    m_masks_derivatives_dir <string>
+        directory basename in BIDS directory derivatives where to search for masks (optional)
 
     Examples
     --------
@@ -100,11 +100,13 @@ class AnatomicalPipeline:
     sr_id = 1
     session = None
     p_stacks_order = None
+
+    m_masks_derivatives_dir = None
     use_manual_masks = False
 
     def __init__(self, bids_dir, output_dir, subject,
                  p_stacks_order, sr_id, session=None, paramTV=None,
-                 use_manual_masks=False):
+                 p_masks_derivatives_dir=''):
         """Constructor of AnatomicalPipeline class instance."""
 
         # BIDS processing parameters
@@ -123,8 +125,9 @@ class AnatomicalPipeline:
         self.primal_dual_loops = paramTV["primal_dual_loops"] if "primal_dual_loops" in paramTV.keys() else 10
 
         # Use manual/custom brain masks
-        # By defaut use the automated brain extraction method
-        self.use_manual_masks = use_manual_masks
+        # If masks directory is not specified use the automated brain extraction method.
+        self.m_masks_derivatives_dir = p_masks_derivatives_dir
+        self.use_manual_masks = True if self.m_masks_derivatives_dir == '' else False
 
         self.compute_stacks_order = True if self.p_stacks_order is None else False
 
@@ -206,7 +209,7 @@ class AnatomicalPipeline:
 
             dg.inputs.field_template = dict(T2ws=os.path.join(self.subject, 'anat', sub_ses+'*_run-*_T2w.nii.gz'),
                                             masks=os.path.join('derivatives',
-                                                               'manual_masks',
+                                                               self.m_masks_derivatives_dir,
                                                                self.subject,
                                                                'anat',
                                                                sub_ses+'*_run-*_*mask.nii.gz'))
@@ -216,7 +219,7 @@ class AnatomicalPipeline:
                                                                   'anat',
                                                                   '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])),
                                                 masks=os.path.join('derivatives',
-                                                                   'manual_masks',
+                                                                   self.m_masks_derivatives_dir,
                                                                    self.subject,
                                                                    self.session,
                                                                    'anat',
