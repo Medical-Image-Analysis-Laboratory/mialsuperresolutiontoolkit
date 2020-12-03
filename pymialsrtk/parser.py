@@ -62,7 +62,6 @@ def get_parser():
     p.add_argument('--masks_derivatives_dir',
                    help='Use manual brain masks found in '
                         '``<output_dir>/<masks_derivatives_dir>/ directory`` directory',
-                   action='store_true',
                    default='',
                    type=str)
     p.add_argument('-v', '--version',
