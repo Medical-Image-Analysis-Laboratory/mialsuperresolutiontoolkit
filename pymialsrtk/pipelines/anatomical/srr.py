@@ -127,7 +127,7 @@ class AnatomicalPipeline:
         # Use manual/custom brain masks
         # If masks directory is not specified use the automated brain extraction method.
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
-        self.use_manual_masks = True if self.m_masks_derivatives_dir == '' else False
+        self.use_manual_masks = True if self.m_masks_derivatives_dir != '' else False
 
         self.compute_stacks_order = True if self.p_stacks_order is None else False
 
