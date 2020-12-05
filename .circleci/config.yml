@@ -248,7 +248,7 @@ jobs:
           name: Smoke Test Install
           command: |
             python --version
-            sudo pip3 install pymialsrtk
+            pip install pymialsrtk
 
   deploy_pypi_release:
     docker:
