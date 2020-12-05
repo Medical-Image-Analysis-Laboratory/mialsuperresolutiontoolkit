@@ -241,9 +241,9 @@ jobs:
     steps:
       - checkout
       - run:
-          name: create packages
+          name: Smoke Test Wheel Build
           command: |
-            pip install -e .
+            python3 setup.py sdist bdist_wheel
       - run:
           name: Smoke Test Install
           command: |
