@@ -241,20 +241,20 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Test Install Twine for future deployment
+          name: Test Install Twine
           command: |
             python --version
             pip3 install twine
       - run:
-          name: Smoke Test Wheel Build
+          name: Test Wheel Build
           command: |
             python3 setup.py sdist bdist_wheel
       - run:
-          name: Smoke Test Install 1
+          name: Test Install
           command: |
             pip install -e .
       - run:
-          name: Smoke Test Install 2
+          name: Smoke Test Install
           command: |
             python --version
             pip3 install pymialsrtk
