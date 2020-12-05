@@ -1808,7 +1808,7 @@ class BrainExtraction(BaseInterface):
             # Save output mask
 
             _, name, ext = split_filename(os.path.abspath(dataPath))
-            save_file = os.path.join(os.getcwd().replace(bidsDir, '/fetaldata'), ''.join((name, out_postfix, ext)))
+            save_file = os.path.join(os.getcwd(),''.join((name, out_postfix, ext)))
             nibabel.save(up_mask, save_file)
 
     def _extractLargestCC(self, image):
@@ -1995,8 +1995,9 @@ class BrainExtraction(BaseInterface):
         return crt_stack_pp
 
     def _list_outputs(self):
-
-        return {'out_file': self.inputs.in_file[:-4] + self.inputs.out_postfix}
+        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
+        out_file = os.path.join(os.getcwd(), ''.join((name, self.inputs.out_postfix, ext)))
+        return {'out_file': out_file}
 
 
 class MultipleBrainExtractionInputSpec(BaseInterfaceInputSpec):
