@@ -20,8 +20,8 @@ packages = ["pymialsrtk",
             "pymialsrtk.pipelines.anatomical"]
 
 package_data = {"pymialsrtk":
-                ['data/Network_checkpoints/Network_checkpoints_localization_v2/*',
-                 'data/Network_checkpoints/Network_checkpoints_segmentation_v2/*'],
+                ['data/Network_checkpoints_v2/Network_checkpoints_localization/*',
+                 'data/Network_checkpoints_v2/Network_checkpoints_segmentation/*'],
                 }
 
 # Extract package requirements from Conda environment.yml
