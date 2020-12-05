@@ -250,7 +250,11 @@ jobs:
           command: |
             python3 setup.py sdist bdist_wheel
       - run:
-          name: Smoke Test Install
+          name: Smoke Test Install 1
+          command: |
+            pip install -e .
+      - run:
+          name: Smoke Test Install 2
           command: |
             python --version
             pip3 install pymialsrtk
@@ -276,7 +280,7 @@ jobs:
             echo -e "username = $PYPI_USER" >> ~/.pypirc
             echo -e "password = $PYPI_TOKEN" >> ~/.pypirc
       - run:
-          name: create packages
+          name: Create distribution wheel
           command: |
             python3 setup.py sdist bdist_wheel
       - run:
