@@ -241,6 +241,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: create packages
+          command: |
+            python3 setup.py sdist bdist_wheel
+      - run:
           name: Smoke Test Install
           command: |
             python --version
