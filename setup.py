@@ -3,7 +3,9 @@
 """``Setup.py`` for PyMIALSRTK."""
 
 import os
+import sys
 import setuptools
+from setuptools.command.install import install
 
 from pymialsrtk.info import __version__
 
@@ -57,6 +59,19 @@ print(f'Install requires: {install_requires}')
 print(f'Dependency links: {dependency_links}')
 
 
+class VerifyVersionCommand(install):
+    """Custom command to verify that the git tag matches our version"""
+    description = 'verify that the git tag matches our version'
+
+    def run(self):
+        tag = os.getenv('CIRCLE_TAG')
+        version = f'v{__version__}'
+
+        if tag != version:
+            info = f'Git tag: {tag} does not match the version of this app: {version}'
+            sys.exit(info)
+
+
 def main():
     """Main function of the PyMIALSRTK ``setup.py``"""
     setuptools.setup(name='pymialsrtk',
@@ -100,7 +115,11 @@ def main():
           # exclude_package_data={"": ["README.txt"]},
           install_requires=install_requires,
           dependency_links=dependency_links,
-          python_requires='>=3.6')
+          python_requires='>=3.6',
+          cmdclass={
+            'verify': VerifyVersionCommand,
+          }
+          )
 
 
 if __name__ == "__main__":
