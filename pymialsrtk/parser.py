@@ -61,9 +61,7 @@ def get_parser():
 
     p.add_argument('--masks_derivatives_dir',
                    help='Use manual brain masks found in '
-                        '``<output_dir>/<masks_derivatives_dir>/ directory`` directory',
-                   default='',
-                   type=str)
+                        '``<output_dir>/<masks_derivatives_dir>/ directory`` directory')
     p.add_argument('-v', '--version',
                    action='version',
                    version=f'BIDS-App MIALSRTK version {__version__} (Released: {__release_date__})')

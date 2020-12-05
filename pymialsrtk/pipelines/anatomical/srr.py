@@ -106,7 +106,7 @@ class AnatomicalPipeline:
 
     def __init__(self, bids_dir, output_dir, subject,
                  p_stacks_order, sr_id, session=None, paramTV=None,
-                 p_masks_derivatives_dir=''):
+                 p_masks_derivatives_dir=None):
         """Constructor of AnatomicalPipeline class instance."""
 
         # BIDS processing parameters
@@ -127,7 +127,7 @@ class AnatomicalPipeline:
         # Use manual/custom brain masks
         # If masks directory is not specified use the automated brain extraction method.
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
-        self.use_manual_masks = True if self.m_masks_derivatives_dir != '' else False
+        self.use_manual_masks = True if self.m_masks_derivatives_dir is not None else False
 
         self.compute_stacks_order = True if self.p_stacks_order is None else False
 
@@ -227,7 +227,6 @@ class AnatomicalPipeline:
             brainMask = Node(interface=IdentityInterface(fields=['masks']), name='brain_masks_bypass')
 
         else:
-
             dg = Node(interface=DataGrabber(outfields=['T2ws']), name='data_grabber')
 
             dg.inputs.base_directory = self.bids_dir
@@ -350,7 +349,7 @@ class AnatomicalPipeline:
             self.wf.connect(dg, "T2ws", brainMask, "input_images")
 
         if self.compute_stacks_order:
-            self.wf.connect(dg, "masks", stacksOrdering, "input_masks")
+            self.wf.connect(brainMask, "masks", stacksOrdering, "input_masks")
 
 
         self.wf.connect(stacksOrdering, "stacks_order", t2ws_filtered, "stacks_id")
