@@ -246,6 +246,11 @@ jobs:
             python --version
             pip3 install twine
       - run:
+          name: Smoke Test Install Twine
+          command: |
+            python --version
+            twine upload -h
+      - run:
           name: Test Wheel Build
           command: |
             python3 setup.py sdist bdist_wheel
