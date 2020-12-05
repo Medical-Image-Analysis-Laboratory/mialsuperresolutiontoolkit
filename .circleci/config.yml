@@ -241,6 +241,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Test Install Twine for future deployment
+          command: |
+            python --version
+            pip3 install twine
+      - run:
           name: Smoke Test Wheel Build
           command: |
             python3 setup.py sdist bdist_wheel
@@ -248,7 +253,7 @@ jobs:
           name: Smoke Test Install
           command: |
             python --version
-            pip install pymialsrtk
+            pip3 install pymialsrtk
 
   deploy_pypi_release:
     docker:
@@ -259,7 +264,7 @@ jobs:
           name: Install dependencies
           command: |
             python --version
-            sudo pip3 install twine
+            pip3 install twine
       - run:
           name: verify git tag vs. version
           command: |
