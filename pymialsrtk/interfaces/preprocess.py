@@ -1808,7 +1808,7 @@ class BrainExtraction(BaseInterface):
             # Save output mask
 
             _, name, ext = split_filename(os.path.abspath(dataPath))
-            save_file = os.path.join(os.getcwd(),''.join((name, out_postfix, ext)))
+            save_file = os.path.join(os.getcwd(), ''.join((name, out_postfix, ext)))
             nibabel.save(up_mask, save_file)
 
     def _extractLargestCC(self, image):
