@@ -243,7 +243,7 @@ jobs:
       - run:
           name: create packages
           command: |
-            python3 setup.py sdist bdist_wheel
+            pip install -e .
       - run:
           name: Smoke Test Install
           command: |
