@@ -1614,7 +1614,7 @@ class BrainExtraction(BaseInterface):
         with g.as_default():
 
             with tf.name_scope('inputs'):
-                x = tf.placeholder(tf.float32, [None, width, height, n_channels])
+                x = tf.placeholder(tf.float32, [None, width, height, n_channels], name='image')
 
             conv1 = conv_2d(x, 32, 3, activation='relu', padding='same', regularizer="L2")
             conv1 = conv_2d(conv1, 32, 3, activation='relu', padding='same', regularizer="L2")
@@ -1808,7 +1808,7 @@ class BrainExtraction(BaseInterface):
             # Save output mask
 
             _, name, ext = split_filename(os.path.abspath(dataPath))
-            save_file = os.path.join(os.getcwd(),''.join((name, out_postfix, ext)))
+            save_file = os.path.join(os.getcwd(), ''.join((name, out_postfix, ext)))
             nibabel.save(up_mask, save_file)
 
     def _extractLargestCC(self, image):
