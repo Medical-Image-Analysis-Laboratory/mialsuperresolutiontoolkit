@@ -1,2 +1,0 @@
-model_checkpoint_path: "/Users/sebastientourbier/Softwares/mialsuperresolutiontoolkit/pymialsrtk/data/Network_checkpoints/Network_checkpoints_localization/Unet.ckpt-88000v2"
-all_model_checkpoint_paths: "/Users/sebastientourbier/Softwares/mialsuperresolutiontoolkit/pymialsrtk/data/Network_checkpoints/Network_checkpoints_localization/Unet.ckpt-88000v2"
