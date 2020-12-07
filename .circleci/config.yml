@@ -253,7 +253,7 @@ jobs:
       - run:
           name: Test Wheel Build
           command: |
-            python3 setup.py sdist bdist_wheel
+            python3 setup_pypi.py sdist bdist_wheel
       - run:
           name: Test Install
           command: |
@@ -287,7 +287,7 @@ jobs:
       - run:
           name: Create distribution wheel
           command: |
-            python3 setup.py sdist bdist_wheel
+            python3 setup_pypi.py sdist bdist_wheel
       - run:
           name: upload to pypi
           command: |
