@@ -1614,7 +1614,7 @@ class BrainExtraction(BaseInterface):
         with g.as_default():
 
             with tf.name_scope('inputs'):
-                x = tf.placeholder(tf.float32, [None, width, height, n_channels])
+                x = tf.placeholder(tf.float32, [None, width, height, n_channels], name='image')
 
             conv1 = conv_2d(x, 32, 3, activation='relu', padding='same', regularizer="L2")
             conv1 = conv_2d(conv1, 32, 3, activation='relu', padding='same', regularizer="L2")
