@@ -85,9 +85,7 @@ jobs:
     machine:
       # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
       image: ubuntu-1604:201903-01
-
       working_directory: /tmp/src/mialsuperresolutiontoolkit
-
       steps:
         - checkout:
             path: /home/circleci/src/mialsuperresolutiontoolkit
@@ -139,10 +137,10 @@ jobs:
               docker push localhost:5000/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
               SINGULARITY_NOHTTPS=1 singularity build /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg docker://localhost:5000/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
             no_output_timeout: 5h
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - cache/mialsuperrresolutiontoolkit-bidsapp.simg
+        - persist_to_workspace:
+            root: /tmp
+            paths:
+              - cache/mialsuperrresolutiontoolkit-bidsapp.simg
 
   test:
     machine:
