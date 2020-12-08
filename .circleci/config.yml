@@ -117,7 +117,11 @@ jobs:
       - run:
           name: "Installing Singularity requirements"
           command: |
-            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git
+            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git wget
+            export VERSION=1.13 OS=linux ARCH=amd64
+            wget https://dl.google.com/go/go$VERSION.$OS-$ARCH.tar.gz
+            sudo tar -C /usr/local -xzvf go$VERSION.$OS-$ARCH.tar.gz
+            rm go$VERSION.$OS-$ARCH.tar.gz
       - run:
           name: "Cloning Singularity 3.5.1"
           command: |
@@ -311,7 +315,11 @@ jobs:
       - run:
           name: "Installing Singularity requirements"
           command: |
-            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git
+            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git wget
+            export VERSION=1.13 OS=linux ARCH=amd64
+            wget https://dl.google.com/go/go$VERSION.$OS-$ARCH.tar.gz
+            sudo tar -C /usr/local -xzvf go$VERSION.$OS-$ARCH.tar.gz
+            rm go$VERSION.$OS-$ARCH.tar.gz
       - run:
           name: "Cloning Singularity 3.5.1"
           command: |
