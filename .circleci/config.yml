@@ -315,7 +315,7 @@ jobs:
       - run:
           name: "Cloning Singularity 3.5.1"
           command: |
-            git clone -b 3.5.1 https://github.com/sylabs/singularity
+            git clone -b v3.5.1 https://github.com/hpcng/singularity.git
       - run:
           name: "Setting up Singularity"
           command: |
