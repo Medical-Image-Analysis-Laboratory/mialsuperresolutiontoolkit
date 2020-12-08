@@ -81,6 +81,68 @@ jobs:
             - cache/docker.tar.gz
             - src/mialsuperresolutiontoolkit
 
+  build-singularity:
+    machine:
+      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-1604:201903-01
+
+      working_directory: /tmp/src/mialsuperresolutiontoolkit
+
+      steps:
+        - checkout:
+            path: /home/circleci/src/mialsuperresolutiontoolkit
+        - run:
+            name: Check whether build-singularity job should be skipped
+            command: |
+              cd /home/circleci/src/mialsuperresolutiontoolkit
+              if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?build-singularity]' )" != "" ]]; then
+                echo "Skipping test"
+                circleci step halt
+              fi
+        - attach_workspace:
+            at: /tmp
+        - run:
+            name: "Starting local registry"
+            command: docker run -d -p 5000:5000 --restart=always --name registry registry:2
+        - run:
+            name: "Load Docker image layer cache"
+            no_output_timeout: 30m
+            command: |
+              docker info
+              set +o pipefail
+              if [ -f /tmp/cache/docker.tar.gz ]; then
+                wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+                sudo apt-get update && sudo apt-get -y install pigz
+                pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+                docker images
+              fi
+        - run:
+            name: "Installing Singularity requirements"
+            command: |
+              sudo apt-get update && sudo apt-get install flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev -y
+        - run:
+            name: "Cloning Singularity 2.5.2"
+            command: git clone -b 2.5.2 https://github.com/sylabs/singularity
+        - run:
+            name: "Setting up Singularity"
+            command: |
+              cd singularity
+              ./autogen.sh
+              ./configure --prefix=/usr/local --sysconfdir=/etc
+              make
+              sudo make install
+              cd ..
+        - run:
+            name: "Building Singularity image from Docker image"
+            command: |
+              docker tag sebastientourbier/mialsuperresolutiontoolkit-bidsapp localhost:5000/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
+              docker push localhost:5000/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
+              SINGULARITY_NOHTTPS=1 singularity build /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg docker://localhost:5000/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
+            no_output_timeout: 5h
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - cache/mialsuperrresolutiontoolkit-bidsapp.simg
 
   test:
     machine:
@@ -428,6 +490,13 @@ workflows:
       - build:
           requires:
             - test-python-install
+          filters:
+            tags:
+              only: /.*/
+
+      - build-singularity:
+          requires:
+            - build
           filters:
             tags:
               only: /.*/
