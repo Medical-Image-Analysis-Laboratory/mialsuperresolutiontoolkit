@@ -126,7 +126,7 @@ jobs:
           name: "Setting up Singularity"
           command: |
             cd singularity
-            ./mconfig --prefix=/usr/local
+            ./mconfig --prefix=/usr/local --sysconfdir=/etc
             make -C ./builddir
             sudo make -C ./builddir install
             cd ..
@@ -320,7 +320,7 @@ jobs:
           name: "Setting up Singularity"
           command: |
             cd singularity
-            ./mconfig --prefix=/usr/local
+            ./mconfig --prefix=/usr/local --sysconfdir=/etc
             make -C ./builddir
             sudo make -C ./builddir install
             cd ..
