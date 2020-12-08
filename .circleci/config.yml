@@ -313,9 +313,9 @@ jobs:
           command: |
             sudo apt-get update && sudo apt-get install flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev -y
       - run:
-          name: "Cloning Singularity 2.5.2"
+          name: "Cloning Singularity 3.5.1"
           command: |
-            git clone -b 2.5.2 https://github.com/sylabs/singularity
+            git clone -b 3.5.1 https://github.com/sylabs/singularity
       - run:
           name: "Setting up Singularity"
           command: |
@@ -343,7 +343,7 @@ jobs:
             ls -la  /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives
 
             #Execute BIDS App
-            singularity exec --no-home \
+            singularity exec \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives:/output_dir \
                 /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg /app/run_srr_coverage.sh\
@@ -380,7 +380,7 @@ jobs:
             sudo rm -R /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives/*
 
             #Execute BIDS App
-            singularity exec --no-home \
+            singularity exec \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives:/output_dir \
                 /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg /app/run_srr_coverage.sh\
