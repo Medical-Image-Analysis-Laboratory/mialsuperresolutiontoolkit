@@ -309,6 +309,23 @@ jobs:
       - attach_workspace:
           at: /tmp
       - run:
+          name: "Installing Singularity requirements"
+          command: |
+            sudo apt-get update && sudo apt-get install flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev -y
+      - run:
+          name: "Cloning Singularity 2.5.2"
+          command: |
+            git clone -b 2.5.2 https://github.com/sylabs/singularity
+      - run:
+          name: "Setting up Singularity"
+          command: |
+            cd singularity
+            ./autogen.sh
+            ./configure --prefix=/usr/local --sysconfdir=/etc
+            make
+            sudo make install
+            cd ..
+      - run:
           name: Create the data/test and data/singularity-derivatives folders
           no_output_timeout: 1h
           command: |
