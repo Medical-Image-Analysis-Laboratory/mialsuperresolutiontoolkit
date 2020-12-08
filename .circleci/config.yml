@@ -117,18 +117,18 @@ jobs:
       - run:
           name: "Installing Singularity requirements"
           command: |
-            sudo apt-get update && sudo apt-get install flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev -y
+            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools libgpgme-dev uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git cryptsetup-bin
       - run:
-          name: "Cloning Singularity 2.5.2"
-          command: git clone -b 2.5.2 https://github.com/sylabs/singularity
+          name: "Cloning Singularity 3.5.1"
+          command: |
+            git clone -b v3.5.1 https://github.com/hpcng/singularity.git
       - run:
           name: "Setting up Singularity"
           command: |
             cd singularity
-            ./autogen.sh
-            ./configure --prefix=/usr/local --sysconfdir=/etc
-            make
-            sudo make install
+            ./mconfig --prefix=/usr/local
+            make -C ./builddir
+            sudo make -C ./builddir install
             cd ..
       - run:
           name: "Building Singularity image from Docker image"
@@ -311,7 +311,7 @@ jobs:
       - run:
           name: "Installing Singularity requirements"
           command: |
-            sudo apt-get update && sudo apt-get install flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev -y
+            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools libgpgme-dev uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git cryptsetup-bin
       - run:
           name: "Cloning Singularity 3.5.1"
           command: |
@@ -320,10 +320,9 @@ jobs:
           name: "Setting up Singularity"
           command: |
             cd singularity
-            ./autogen.sh
-            ./configure --prefix=/usr/local --sysconfdir=/etc
-            make
-            sudo make install
+            ./mconfig --prefix=/usr/local
+            make -C ./builddir
+            sudo make -C ./builddir install
             cd ..
       - run:
           name: Create the data/test and data/singularity-derivatives folders
