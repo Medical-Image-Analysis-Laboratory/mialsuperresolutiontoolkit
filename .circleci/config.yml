@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   coverage-reporter: codacy/coverage-reporter@11.0.1
+  singularity: singularity/singularity@1.0.4
 
 jobs:
 
