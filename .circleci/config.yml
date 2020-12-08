@@ -117,7 +117,7 @@ jobs:
       - run:
           name: "Installing Singularity requirements"
           command: |
-            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools libgpgme-dev uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git cryptsetup-bin
+            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git
       - run:
           name: "Cloning Singularity 3.5.1"
           command: |
@@ -311,7 +311,7 @@ jobs:
       - run:
           name: "Installing Singularity requirements"
           command: |
-            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools libgpgme-dev uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git cryptsetup-bin
+            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git
       - run:
           name: "Cloning Singularity 3.5.1"
           command: |
