@@ -57,6 +57,9 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     stacks_order <list<int>>
         List of stack run-id that specify the order of the stacks
 
+    no_reg <bool>
+        No registration is performed. The image is with the identity transform.
+
     See Also
     ----------
     pymialsrtk.interfaces.preprocess.MialsrtkImageReconstruction
@@ -72,7 +75,7 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     out_sdi_prefix = traits.Str("SDI_", usedefault=True)
     out_transf_postfix = traits.Str("_transform", usedefault=True)
     stacks_order = traits.List(mandatory=True)
-
+    no_reg = traits.Bool(default=False, desc = "No registration is performed")
 
 class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkImageReconstruction interface.
@@ -154,15 +157,15 @@ class MialsrtkImageReconstruction(BaseInterface):
         params.append("-o")
         params.append(out_file)
 
+        if self.inputs.no_reg:
+            params.append("--noreg")
+
         cmd = ["mialsrtkImageReconstruction"]
         cmd += params
 
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            print("")
-            print(cmd)
-            print("")
             run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
