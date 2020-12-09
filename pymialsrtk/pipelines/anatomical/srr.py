@@ -63,8 +63,8 @@ class AnatomicalPipeline:
     session <string>
         Session ID if applicable (in the form ``ses-YY``)
 
-    m_stacks_order list<<int>>
-        List of stack indices that specify the order of the stacks
+    m_stacks list<<int>>
+        List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
 
     m_masks_derivatives_dir <string>
         directory basename in BIDS directory derivatives where to search for masks (optional)
@@ -77,6 +77,10 @@ class AnatomicalPipeline:
 
     m_skip_nlm_denoising <bool>
         Weither the NLM denoising preprocessing should be skipped. (default is False)
+
+    m_skip_stacks_ordering <bool> (optional)
+        Weither the automatic stacks ordering should be skipped. (default is False)
+
 
     Examples
     --------
@@ -108,18 +112,20 @@ class AnatomicalPipeline:
     primal_dual_loops = "20"
     sr_id = 1
     session = None
-    m_stacks_order = None
+
+    m_stacks = None
 
     m_skip_svr = False
     m_do_refine_hr_mask = False
     m_skip_nlm_denoising = False
+    m_skip_stacks_ordering = False
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
 
-    def __init__(self, bids_dir, output_dir, subject,
-                 p_stacks_order, sr_id, session=None, paramTV=None,
-                 p_masks_derivatives_dir=None, p_skip_svr=False, p_do_refine_hr_mask=False, p_skip_nlm_denoising=False):
+    def __init__(self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
+                 session=None, paramTV=None, p_masks_derivatives_dir=None,
+                 p_skip_svr=False, p_do_refine_hr_mask=False, p_skip_nlm_denoising=False, p_skip_stacks_ordering=False):
         """Constructor of AnatomicalPipeline class instance."""
 
         # BIDS processing parameters
@@ -128,7 +134,7 @@ class AnatomicalPipeline:
         self.subject = subject
         self.sr_id = sr_id
         self.session = session
-        self.m_stacks_order = p_stacks_order
+        self.m_stacks = p_stacks
 
         # (default) sr tv parameters
         if paramTV is None:
@@ -147,7 +153,7 @@ class AnatomicalPipeline:
         self.m_do_refine_hr_mask = p_do_refine_hr_mask
         self.m_skip_nlm_denoising = p_skip_nlm_denoising
 
-        self.compute_stacks_order = True if self.m_stacks_order is None else False
+        self.m_skip_stacks_ordering = p_skip_stacks_ordering if self.m_stacks is not None else False
 
 
     def create_workflow(self):
@@ -258,6 +264,11 @@ class AnatomicalPipeline:
                 dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
                                                                   self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
 
+            if self.m_stacks is not None:
+                print('if is not self.m_stacks !!! ')
+                t2ws_filter_prior_masks = Node(interface=preprocess.FilteringByRunid(), name='t2ws_filter_prior_masks')
+                t2ws_filter_prior_masks.inputs.stacks_id = self.m_stacks
+
             brainMask = Node(interface = preprocess.MultipleBrainExtraction(), name='Multiple_Brain_extraction')
             brainMask.inputs.bids_dir = self.bids_dir
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk",
@@ -276,11 +287,12 @@ class AnatomicalPipeline:
         t2ws_filtered = Node(interface=preprocess.FilteringByRunid(), name='t2ws_filtered')
         masks_filtered = Node(interface=preprocess.FilteringByRunid(), name='masks_filtered')
 
-        if self.compute_stacks_order:
+
+        if not self.m_skip_stacks_ordering:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(), name='stackOrdering')
         else:
             stacksOrdering = Node(interface=IdentityInterface(fields=['stacks_order']), name='stackOrdering')
-            stacksOrdering.inputs.stacks_order = self.m_stacks_order
+            stacksOrdering.inputs.stacks_order = self.m_stacks
 
         if not self.m_skip_nlm_denoising:
             nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
@@ -375,9 +387,13 @@ class AnatomicalPipeline:
         if self.use_manual_masks:
             self.wf.connect(dg, "masks", brainMask, "masks")
         else:
-            self.wf.connect(dg, "T2ws", brainMask, "input_images")
+            if self.m_stacks is not None:
+                self.wf.connect(dg, "T2ws", t2ws_filter_prior_masks, "input_files")
+                self.wf.connect(t2ws_filter_prior_masks, "output_files", brainMask, "input_images")
+            else:
+                self.wf.connect(dg, "T2ws", brainMask, "input_images")
 
-        if self.compute_stacks_order:
+        if not self.m_skip_stacks_ordering:
             self.wf.connect(brainMask, "masks", stacksOrdering, "input_masks")
 
         self.wf.connect(stacksOrdering, "stacks_order", t2ws_filtered, "stacks_id")
