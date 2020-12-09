@@ -389,7 +389,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         output_json_path = ''.join([self.m_out_files, '.json'])
         with open(output_json_path, 'w') as outfile:
-            json.dump(self.m_output_dict, outfile)
+            json.dump(self.m_output_dict, outfile, indent=4)
             print('json dumped.')
 
         try:
