@@ -14,11 +14,11 @@ ENV LC_ALL C.UTF-8
 ##############################################################
 # Create input and output directories of the BIDS App
 ##############################################################
-# RUN mkdir /bids_dir && \
-#     chmod -R 777 /bids_dir
+RUN mkdir /bids_dir && \
+    chmod -R 777 /bids_dir
 
-# RUN mkdir /output_dir && \
-#     chmod -R 777 /output_dir
+RUN mkdir /output_dir && \
+    chmod -R 777 /output_dir
 
 ##############################################################
 # Create .cache and set right permissions for generated
@@ -74,29 +74,25 @@ ENV LD_PRELOAD=/usr/lib/libtcmalloc.so.4
 # 			/opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py $@\
 # 			&& coverage html -d /bids_dir/code/coverage_html' > /app/run_srr_coverage.sh
 
-# Create content of entrypoint script
-ENV content="#!/bin/bash\n"
-ENV content="${content}echo User: \$(id -un \$USER) && echo Group: \$(id -gn \$USER) &&"
-ENV content="${content} . activate \"${MY_CONDA_PY3ENV}\" &&"
-ENV content="${content} xvfb-run -a python /opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py \$@" 
-
-# Write content to BIDSapp entrypoint script
-RUN printf "$content" > /app/run_srr.sh
+# Create and write content to BIDSapp entrypoint script
+RUN export content="echo User: \$(id -un \$USER) && echo Group: \$(id -gn \$USER) &&" \
+    export content="${content} . activate \"${MY_CONDA_PY3ENV}\" &&" \
+    export content="${content} xvfb-run -a python /opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py \$@" \
+    printf "$content" > /app/run_srr.sh \
+    && unset content
 RUN cat /app/run_srr.sh
 
-# Create content of entrypoint script with coverage
-ENV content_cov="#!/bin/bash\n"
-ENV content_cov="${content_cov}echo User: \$(id -un \$USER) && echo Group: \$(id -gn \$USER) &&"
-ENV content_cov="${content_cov} . activate \"${MY_CONDA_PY3ENV}\" &&"
-ENV content_cov="${content_cov} xvfb-run -a coverage run --source=pymialsrtk \
+# Create  and write content to BIDSapp entrypoint script
+RUN export content_cov="echo User: \$(id -un \$USER) && echo Group: \$(id -gn \$USER) &&" && \
+    export content_cov="${content_cov} . activate \"${MY_CONDA_PY3ENV}\" &&" && \
+    export content_cov="${content_cov} xvfb-run -a coverage run --source=pymialsrtk \
 /opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py \$@ \
-|& tee /bids_dir/code/log.txt &&"
-ENV content_cov="${content_cov} coverage html -d /bids_dir/code/coverage_html &&"
-ENV content_cov="${content_cov} coverage xml -o /bids_dir/code/coverage.xml &&"
-ENV content_cov="${content_cov} coverage json -o /bids_dir/code/coverage.json"
-
-# Write content to BIDSapp entrypoint script
-RUN printf "$content_cov" > /app/run_srr_coverage.sh
+|& tee /bids_dir/code/log.txt &&" && \
+    export content_cov="${content_cov} coverage html -d /bids_dir/code/coverage_html &&" && \
+    export content_cov="${content_cov} coverage xml -o /bids_dir/code/coverage.xml &&" && \
+    export content_cov="${content_cov} coverage json -o /bids_dir/code/coverage.json" && \
+    printf "$content_cov" > /app/run_srr_coverage.sh \
+    && unset content_cov
 RUN cat /app/run_srr_coverage.sh
 
 ##############################################################
