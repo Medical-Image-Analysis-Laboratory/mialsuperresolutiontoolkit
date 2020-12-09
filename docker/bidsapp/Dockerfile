@@ -75,9 +75,9 @@ ENV LD_PRELOAD=/usr/lib/libtcmalloc.so.4
 # 			&& coverage html -d /bids_dir/code/coverage_html' > /app/run_srr_coverage.sh
 
 # Create and write content to BIDSapp entrypoint script
-RUN export content="echo User: \$(id -un \$USER) && echo Group: \$(id -gn \$USER) &&" \
-    export content="${content} . activate \"${MY_CONDA_PY3ENV}\" &&" \
-    export content="${content} xvfb-run -a python /opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py \$@" \
+RUN export content="echo User: \$(id -un \$USER) && echo Group: \$(id -gn \$USER) &&" && \
+    export content="${content} . activate \"${MY_CONDA_PY3ENV}\" &&" && \
+    export content="${content} xvfb-run -a python /opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py \$@" && \
     printf "$content" > /app/run_srr.sh \
     && unset content
 RUN cat /app/run_srr.sh
