@@ -318,10 +318,10 @@ jobs:
             ls -la  /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives
 
             #Execute BIDS App
-            singularity exec \
+            singularity exec --contain \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives:/output_dir \
-                /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg /app/run_srr_coverage.sh\
+                /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg /app/run_srr_coverage.sh \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
@@ -355,10 +355,10 @@ jobs:
             sudo rm -R /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives/*
 
             #Execute BIDS App
-            singularity exec \
+            singularity exec --contain \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives:/output_dir \
-                /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg /app/run_srr_coverage.sh\
+                /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg /app/run_srr_coverage.sh \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
