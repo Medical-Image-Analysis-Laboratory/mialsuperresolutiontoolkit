@@ -136,7 +136,8 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
     return openmp_nb_of_cores, nipype_nb_of_cores
 
 
-def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, number_of_cores=1, srID=None, masks_derivatives_dir='', skip_svr=False):
+def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, number_of_cores=1, srID=None,
+         masks_derivatives_dir='', skip_svr=False, do_refine_hr_mask=False):
     """Main function that creates and executes the workflow of the BIDS App on one subject.
 
     It creates an instance of the class :class:`pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline`,
@@ -192,7 +193,8 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, nu
                                   session,
                                   paramTV,
                                   masks_derivatives_dir,
-                                  skip_svr)
+                                  skip_svr,
+                                  do_refine_hr_mask)
     # Create the super resolution Nipype workflow
     pipeline.create_workflow()
 
@@ -240,6 +242,7 @@ if __name__ == '__main__':
                     stacks_order = sr_params['stacksOrder'] if 'stacksOrder' in sr_params.keys() else None
                     paramTV = sr_params['paramTV'] if 'paramTV' in sr_params.keys() else None
                     skip_svr = sr_params['skip_svr'] if 'skip_svr' in sr_params.keys() else False
+                    do_refine_hr_mask = sr_params['do_refine_hr_mask'] if 'do_refine_hr_mask' in sr_params.keys() else False
 
                     if ("sr-id" not in sr_params.keys()):
                         print('Do not process subjects %s because of missing parameters.' % sub)
@@ -254,7 +257,8 @@ if __name__ == '__main__':
                                srID=sr_params['sr-id'],
                                masks_derivatives_dir=args.masks_derivatives_dir,
                                number_of_cores=nipype_nb_of_cores,
-                               skip_svr=skip_svr)
+                               skip_svr=skip_svr,
+                               do_refine_hr_mask=do_refine_hr_mask)
 
     else:
         print('ERROR: Processing of all dataset not implemented yet\n At least one participant label should be provided')

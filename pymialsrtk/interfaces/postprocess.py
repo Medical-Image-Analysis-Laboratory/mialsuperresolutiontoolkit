@@ -149,9 +149,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
                                     ''.join((name, self.inputs.out_lrmask_postfix, ext)))
             cmd += ['-O', out_file]
 
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-        run_id = (name.split('run-')[1]).split('_')[0]
-        name = name.replace('_run-'+run_id+'_', '_')
+        _, name, ext = split_filename(os.path.abspath(self.inputs.input_sr))
         out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                 ''.join((name, self.inputs.out_srmask_postfix, ext)))
 
@@ -170,9 +168,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-        run_id = (name.split('run-')[1]).split('_')[0]
-        name = name.replace('_run-'+run_id+'_', '_')
+        _, name, ext = split_filename(os.path.abspath(self.inputs.input_sr))
         outputs['output_srmask'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
                                                 ''.join((name, self.inputs.out_srmask_postfix, ext)))
         outputs['output_lrmasks'] = glob(os.path.abspath(''.join(["*", self.inputs.out_lrmask_postfix, ext])))
@@ -421,10 +417,10 @@ class FilenamesGeneration(BaseInterface):
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' + str(len(self.inputs.stacks_order)) + 'V_rad1.json',
                               self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w.json'))
 
-        print(self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
+        print('SRTV_' + self.inputs.sub_ses + '_' + str(len(self.inputs.stacks_order)) + 'V_rad1_srMask.nii.gz',
               '    --->     ',
               self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz')
-        self.m_substitutions.append((self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
+        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' + str(len(self.inputs.stacks_order)) + 'V_rad1_srMask.nii.gz',
                                      self.inputs.sub_ses + '_rec-SR' + '_id-' + str(self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz'))
 
         return runtime
@@ -434,3 +430,21 @@ class FilenamesGeneration(BaseInterface):
         outputs['substitutions'] = self.m_substitutions
 
         return outputs
+
+
+
+def binarize_image(input_image):
+    import nibabel as nib
+    import os
+    from nipype.utils.filemanip import split_filename
+
+    im = nib.load(input_image)
+
+    out = nib.Nifti1Image(dataobj=(im.get_fdata() > 0.01).astype(int), affine=im.affine)
+    out._header = im.header
+
+    _,name,ext = split_filename(input_image)
+    output_mask = name + '_srMask' + ext
+    nib.save(filename=output_mask, img=out)
+
+    return os.path.abspath(output_mask)

@@ -11,7 +11,7 @@ import pkg_resources
 from nipype import config, logging
 # from nipype.interfaces.io import BIDSDataGrabber
 from nipype.interfaces.io import DataGrabber, DataSink
-from nipype.interfaces.utility import IdentityInterface
+from nipype.interfaces.utility import IdentityInterface, Function
 # from nipype.pipeline import Node, MapNode, Workflow
 from nipype.pipeline import Node, Workflow
 
@@ -101,14 +101,15 @@ class AnatomicalPipeline:
     session = None
     m_stacks_order = None
 
-    m_skip_svr = False
+    m_skip_svr = None
+    m_do_refine_hr_mask = None
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
 
     def __init__(self, bids_dir, output_dir, subject,
                  p_stacks_order, sr_id, session=None, paramTV=None,
-                 p_masks_derivatives_dir=None, p_skip_svr=False):
+                 p_masks_derivatives_dir=None, p_skip_svr=False, p_do_refine_hr_mask=False):
         """Constructor of AnatomicalPipeline class instance."""
 
         # BIDS processing parameters
@@ -131,7 +132,9 @@ class AnatomicalPipeline:
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
         self.use_manual_masks = True if self.m_masks_derivatives_dir is not None else False
 
+        # Custom interfaces
         self.m_skip_svr = p_skip_svr
+        self.m_do_refine_hr_mask = p_do_refine_hr_mask
 
         self.compute_stacks_order = True if self.m_stacks_order is None else False
 
@@ -317,7 +320,7 @@ class AnatomicalPipeline:
         srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
         srtkImageReconstruction.inputs.bids_dir = self.bids_dir
         srtkImageReconstruction.inputs.sub_ses = sub_ses
-        srtkImageReconstruction.inputs.noreg = self.m_skip_svr
+        srtkImageReconstruction.inputs.no_reg = self.m_skip_svr
 
         srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(), name='srtkTVSuperResolution')
         srtkTVSuperResolution.inputs.bids_dir = self.bids_dir
@@ -327,11 +330,15 @@ class AnatomicalPipeline:
         srtkTVSuperResolution.inputs.in_lambda = self.lambdaTV
         srtkTVSuperResolution.inputs.use_manual_masks = self.use_manual_masks
 
-        srtkRefineHRMaskByIntersection = Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(), name='srtkRefineHRMaskByIntersection')
-        srtkRefineHRMaskByIntersection.inputs.bids_dir = self.bids_dir
-
         srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(), name='srtkN4BiasFieldCorrection')
         srtkN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
+
+        if self.m_do_refine_hr_mask:
+            srtkRefineHRMaskByIntersection = Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(), name='srtkRefineHRMaskByIntersection')
+            srtkRefineHRMaskByIntersection.inputs.bids_dir = self.bids_dir
+        else:
+            srtkRefineHRMaskByIntersection = Node(interface=Function(input_names=["input_image"], output_names=["output_srmask"],
+                                    function=postprocess.binarize_image), name='srtkHRMask')
 
         srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(), name='srtkMaskImage02')
         srtkMaskImage02.inputs.bids_dir = self.bids_dir
@@ -408,15 +415,20 @@ class AnatomicalPipeline:
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
 
-        self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_images")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_masks")
-        self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_transforms")
-        self.wf.connect(srtkTVSuperResolution, "output_sr", srtkRefineHRMaskByIntersection, "input_sr")
+
+        if self.m_do_refine_hr_mask:
+            self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_images")
+            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_masks")
+            self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkRefineHRMaskByIntersection, "input_transforms")
+            self.wf.connect(srtkTVSuperResolution, "output_sr", srtkRefineHRMaskByIntersection, "input_sr")
+        else:
+            self.wf.connect(srtkTVSuperResolution, "output_sr", srtkRefineHRMaskByIntersection, "input_image")
 
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkMaskImage02, "in_file")
         self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", srtkMaskImage02, "in_mask")
 
-        self.wf.connect(srtkMaskImage02, "out_im_file", srtkN4BiasFieldCorrection, "input_image")
+
+        self.wf.connect(srtkTVSuperResolution, "output_sr", srtkN4BiasFieldCorrection, "input_image")
         self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", srtkN4BiasFieldCorrection, "input_mask")
 
         self.wf.connect(stacksOrdering, "stacks_order", finalFilenamesGeneration, "stacks_order")
