@@ -83,6 +83,11 @@ nipype/sub-01/rec-1/srr_pipeline/srtkHistogramNormalization/result_srtkHistogram
 nipype/sub-01/rec-1/srr_pipeline/srtkHistogramNormalization/sub-01_run-1_T2w_uni_bcorr_histnorm.nii.gz
 nipype/sub-01/rec-1/srr_pipeline/srtkHistogramNormalization/sub-01_run-3_T2w_uni_bcorr_histnorm.nii.gz
 nipype/sub-01/rec-1/srr_pipeline/srtkHistogramNormalization/sub-01_run-5_T2w_uni_bcorr_histnorm.nii.gz
+nipype/sub-01/rec-1/srr_pipeline/srtkHRMask/_inputs.pklz
+nipype/sub-01/rec-1/srr_pipeline/srtkHRMask/_node.pklz
+nipype/sub-01/rec-1/srr_pipeline/srtkHRMask/_report/report.rst
+nipype/sub-01/rec-1/srr_pipeline/srtkHRMask/result_srtkHRMask.pklz
+nipype/sub-01/rec-1/srr_pipeline/srtkHRMask/SRTV_sub-01_3V_rad1_srMask.nii.gz
 nipype/sub-01/rec-1/srr_pipeline/srtkImageReconstruction/_inputs.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkImageReconstruction/_node.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkImageReconstruction/_report/report.rst
@@ -136,11 +141,6 @@ nipype/sub-01/rec-1/srr_pipeline/srtkN4BiasFieldCorrection/_node.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkN4BiasFieldCorrection/_report/report.rst
 nipype/sub-01/rec-1/srr_pipeline/srtkN4BiasFieldCorrection/result_srtkN4BiasFieldCorrection.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkN4BiasFieldCorrection/SRTV_sub-01_3V_rad1_gbcorr.nii.gz
-nipype/sub-01/rec-1/srr_pipeline/srtkRefineHRMaskByIntersection/_inputs.pklz
-nipype/sub-01/rec-1/srr_pipeline/srtkRefineHRMaskByIntersection/_node.pklz
-nipype/sub-01/rec-1/srr_pipeline/srtkRefineHRMaskByIntersection/_report/report.rst
-nipype/sub-01/rec-1/srr_pipeline/srtkRefineHRMaskByIntersection/result_srtkRefineHRMaskByIntersection.pklz
-nipype/sub-01/rec-1/srr_pipeline/srtkRefineHRMaskByIntersection/sub-01_T2w_uni_bcorr_histnorm_srMask.nii.gz
 nipype/sub-01/rec-1/srr_pipeline/srtkSliceBySliceCorrectBiasField/_inputs.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkSliceBySliceCorrectBiasField/_node.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkSliceBySliceCorrectBiasField/_report/report.rst
