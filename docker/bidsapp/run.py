@@ -170,8 +170,8 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, nu
         ID of the reconstruction useful to distinguish when multiple reconstructions
         with different order of stacks are run on the same subject
 
-    use_manual_masks <Boolean>
-        If set to True, use manual masks expected to be in ``/output_dir/manual_masks``.
+    masks_derivatives_dir <string>
+        directory basename in BIDS directory derivatives where to search for masks (optional)
 
     """
 

@@ -39,7 +39,9 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
           "stacksOrder": [2, 3, 5, 4],
           "paramTV": { 
             "lambdaTV": 0.75, 
-            "deltatTV": 0.01 }
+            "deltatTV": 0.01 },
+          "skip_svr": true,
+          "do_refine_hr_mask": false
         }]
       "02": [
         { "sr-id": 1,
@@ -53,13 +55,17 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
     } 
 
 where:
-    * ``"sr-id"`` allows to distinguish between runs with different configurations of the same acquisition set.
+    * ``"sr-id"`` (mandatoy) allows to distinguish between runs with different configurations of the same acquisition set.
 
-    * ``"stacksOrder"`` defines the list and order od scans to be used in the reconstruction.
+    * ``"stacksOrder"`` (optional) defines the list and order of scans to be used in the reconstruction.
 
-    * ``"lambdaTV"`` (regularization) and `deltaTV` (optimization time step) are parameters of the TV super-resolution algorithm.
+    * ``"paramTV"`` (optional): ``"lambdaTV"`` (regularization) and ``"deltaTV"`` (optimization time step) are parameters of the TV super-resolution algorithm.
 
-    * ``"session"`` MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
+    * ``"session"`` (optional) It MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
+
+    * ``"skip_svr"`` (optional) indicates weither the Slice-to-Volume Registration should be skipped in the image reconstruction.
+
+    * ``"do_refine_hr_mask"`` (optional) indicates weither a refinement of the HR mask should be performed
 
 
 .. important:: 
