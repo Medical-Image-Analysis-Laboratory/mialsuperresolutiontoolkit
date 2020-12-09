@@ -43,7 +43,7 @@ def create_singularity_cmd(args):
         String containing the command to be run via `subprocess.run()`
     """
     # Docker run command prelude
-    cmd = 'singularity run --no-home '
+    cmd = 'singularity run --contain '
     cmd += f'--bind {args.bids_dir}:/bids_dir '
     cmd += f'--bind {args.output_dir}:/output_dir '
     cmd += f'--bind {args.param_file}:/bids_dir/code/participants_params.json '
