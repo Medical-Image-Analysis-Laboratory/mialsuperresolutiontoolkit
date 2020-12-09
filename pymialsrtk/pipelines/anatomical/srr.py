@@ -69,6 +69,13 @@ class AnatomicalPipeline:
     m_masks_derivatives_dir <string>
         directory basename in BIDS directory derivatives where to search for masks (optional)
 
+    m_skip_svr <bool>
+        Weither the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
+
+    m_do_refine_hr_mask <bool>
+        Weither a refinement of the HR mask should be performed. (default is False)
+
+
     Examples
     --------
     >>> from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
