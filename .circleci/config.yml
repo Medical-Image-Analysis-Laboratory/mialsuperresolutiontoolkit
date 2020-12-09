@@ -114,8 +114,9 @@ jobs:
               pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
               docker images
             fi
-      - singularity/install_debian_3:
+      - singularity/install-go:
           go-version: '1.13'
+      - singularity/debian-install-3:
           singularity-version: 3.5.1
       - run:
           name: "Building Singularity image from Docker image"
@@ -295,8 +296,9 @@ jobs:
             fi
       - attach_workspace:
           at: /tmp
-      - singularity/install_debian_3:
+      - singularity/install-go:
           go-version: '1.13'
+      - singularity/debian-install-3:
           singularity-version: 3.5.1
       - run:
           name: "Create the data/test and data/singularity-derivatives folders"
