@@ -114,28 +114,9 @@ jobs:
               pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
               docker images
             fi
-      - run:
-          name: "Installing Singularity requirements"
-          command: |
-            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git wget
-            export VERSION=1.13 OS=linux ARCH=amd64
-            wget https://dl.google.com/go/go$VERSION.$OS-$ARCH.tar.gz
-            sudo tar -C /usr/local -xzvf go$VERSION.$OS-$ARCH.tar.gz
-            rm go$VERSION.$OS-$ARCH.tar.gz
-            echo 'export PATH=/usr/local/go/bin:$PATH' >> ~/.bashrc
-            source ~/.bashrc
-      - run:
-          name: "Cloning Singularity 3.5.1"
-          command: |
-            git clone -b v3.5.1 https://github.com/hpcng/singularity.git
-      - run:
-          name: "Setting up Singularity"
-          command: |
-            cd singularity
-            ./mconfig --prefix=/usr/local --sysconfdir=/etc
-            make -C ./builddir
-            sudo make -C ./builddir install
-            cd ..
+      - singularity/install_debian_3:
+          go-version: '1.13'
+          singularity-version: 3.5.1
       - run:
           name: "Building Singularity image from Docker image"
           command: |
@@ -314,28 +295,9 @@ jobs:
             fi
       - attach_workspace:
           at: /tmp
-      - run:
-          name: "Installing Singularity requirements"
-          command: |
-            sudo apt-get update && sudo apt-get install -y build-essential flawfinder squashfs-tools uuid-dev libuuid1 libffi-dev libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev git wget
-            export VERSION=1.13 OS=linux ARCH=amd64
-            wget https://dl.google.com/go/go$VERSION.$OS-$ARCH.tar.gz
-            sudo tar -C /usr/local -xzvf go$VERSION.$OS-$ARCH.tar.gz
-            rm go$VERSION.$OS-$ARCH.tar.gz
-            echo 'export PATH=/usr/local/go/bin:$PATH' >> ~/.bashrc
-            source ~/.bashrc
-      - run:
-          name: "Cloning Singularity 3.5.1"
-          command: |
-            git clone -b v3.5.1 https://github.com/hpcng/singularity.git
-      - run:
-          name: "Setting up Singularity"
-          command: |
-            cd singularity
-            ./mconfig --prefix=/usr/local --sysconfdir=/etc
-            make -C ./builddir
-            sudo make -C ./builddir install
-            cd ..
+      - singularity/install_debian_3:
+          go-version: '1.13'
+          singularity-version: 3.5.1
       - run:
           name: "Create the data/test and data/singularity-derivatives folders"
           no_output_timeout: 1h
