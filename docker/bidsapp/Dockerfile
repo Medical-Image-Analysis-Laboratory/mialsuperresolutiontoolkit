@@ -14,11 +14,11 @@ ENV LC_ALL C.UTF-8
 ##############################################################
 # Create input and output directories of the BIDS App
 ##############################################################
-RUN mkdir /bids_dir && \
-    chmod -R 777 /bids_dir
+# RUN mkdir /bids_dir && \
+#     chmod -R 777 /bids_dir
 
-RUN mkdir /output_dir && \
-    chmod -R 777 /output_dir
+# RUN mkdir /output_dir && \
+#     chmod -R 777 /output_dir
 
 ##############################################################
 # Create .cache and set right permissions for generated
@@ -108,7 +108,7 @@ RUN chmod 775 /app/run_srr_coverage.sh
 ##############################################################
 # Display all environment variables
 ##############################################################
-RUN export
+# RUN export
 
 ##############################################################
 # Make singularity happy
