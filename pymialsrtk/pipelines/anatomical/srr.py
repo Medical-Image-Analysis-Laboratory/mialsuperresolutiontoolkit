@@ -63,7 +63,7 @@ class AnatomicalPipeline:
     session <string>
         Session ID if applicable (in the form ``ses-YY``)
 
-    p_stacks_order list<<int>>
+    m_stacks_order list<<int>>
         List of stack indices that specify the order of the stacks
 
     m_masks_derivatives_dir <string>
@@ -99,14 +99,16 @@ class AnatomicalPipeline:
     primal_dual_loops = "20"
     sr_id = 1
     session = None
-    p_stacks_order = None
+    m_stacks_order = None
+
+    m_skip_svr = False
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
 
     def __init__(self, bids_dir, output_dir, subject,
                  p_stacks_order, sr_id, session=None, paramTV=None,
-                 p_masks_derivatives_dir=None):
+                 p_masks_derivatives_dir=None, p_skip_svr=False):
         """Constructor of AnatomicalPipeline class instance."""
 
         # BIDS processing parameters
@@ -115,7 +117,7 @@ class AnatomicalPipeline:
         self.subject = subject
         self.sr_id = sr_id
         self.session = session
-        self.p_stacks_order = p_stacks_order
+        self.m_stacks_order = p_stacks_order
 
         # (default) sr tv parameters
         if paramTV is None:
@@ -129,7 +131,9 @@ class AnatomicalPipeline:
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
         self.use_manual_masks = True if self.m_masks_derivatives_dir is not None else False
 
-        self.compute_stacks_order = True if self.p_stacks_order is None else False
+        self.m_skip_svr = p_skip_svr
+
+        self.compute_stacks_order = True if self.m_stacks_order is None else False
 
 
     def create_workflow(self):
@@ -262,7 +266,7 @@ class AnatomicalPipeline:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(), name='stackOrdering')
         else:
             stacksOrdering = Node(interface=IdentityInterface(fields=['stacks_order']), name='stackOrdering')
-            stacksOrdering.inputs.stacks_order = self.p_stacks_order
+            stacksOrdering.inputs.stacks_order = self.m_stacks_order
 
         nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
         nlmDenoise.inputs.bids_dir = self.bids_dir
@@ -313,6 +317,7 @@ class AnatomicalPipeline:
         srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
         srtkImageReconstruction.inputs.bids_dir = self.bids_dir
         srtkImageReconstruction.inputs.sub_ses = sub_ses
+        srtkImageReconstruction.inputs.noreg = self.m_skip_svr
 
         srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(), name='srtkTVSuperResolution')
         srtkTVSuperResolution.inputs.bids_dir = self.bids_dir
