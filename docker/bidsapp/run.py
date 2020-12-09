@@ -173,8 +173,14 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, nu
     masks_derivatives_dir <string>
         directory basename in BIDS directory derivatives where to search for masks (optional)
 
-    skip_nlm_denoising <bool>
+    skip_svr <bool> (optional)
+        Weither the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
 
+    do_refine_hr_mask <bool> (optional)
+        Weither a refinement of the HR mask should be performed. (default is False)
+
+    skip_nlm_denoising <bool> (optional)
+        Weither the NLM denoising preprocessing should be skipped. (default is False)
 
     """
 

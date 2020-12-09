@@ -63,10 +63,11 @@ where:
 
     * ``"session"`` (optional) It MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
 
-    * ``"skip_svr"`` (optional) indicates weither the Slice-to-Volume Registration should be skipped in the image reconstruction.
+    * ``"skip_svr"`` (optional) indicates weither the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
 
-    * ``"do_refine_hr_mask"`` (optional) indicates weither a refinement of the HR mask should be performed
+    * ``"do_refine_hr_mask"`` (optional) indicates weither a refinement of the HR mask should be performed. (default is False)
 
+    * ``"skip_nlm_denoising"`` (optional) indicates weither the NLM denoising preprocessing should be skipped. (default is False)
 
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.

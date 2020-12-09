@@ -75,6 +75,8 @@ class AnatomicalPipeline:
     m_do_refine_hr_mask <bool>
         Weither a refinement of the HR mask should be performed. (default is False)
 
+    m_skip_nlm_denoising <bool>
+        Weither the NLM denoising preprocessing should be skipped. (default is False)
 
     Examples
     --------
@@ -108,9 +110,9 @@ class AnatomicalPipeline:
     session = None
     m_stacks_order = None
 
-    m_skip_svr = None
-    m_do_refine_hr_mask = None
-    m_skip_nlm_denoising = None
+    m_skip_svr = False
+    m_do_refine_hr_mask = False
+    m_skip_nlm_denoising = False
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
