@@ -417,7 +417,7 @@ jobs:
             python --version
             pip3 install pymialsrtk
 
-  deploy_pypi_release:
+  deploy-pypi-release:
     docker:
       - image: circleci/python:3.6
     steps:
@@ -491,7 +491,7 @@ jobs:
   #     - store_artifacts:
   #         path: /home/circleci/out/docs
 
-  deploy_docker_release:
+  deploy-docker-release:
     machine:
       # Ubuntu 14.04 with Docker 17.10.0-ce
       image: ubuntu-1604:201903-01
@@ -530,7 +530,7 @@ jobs:
               fi
             fi
 
-  deploy_docker_latest:
+  deploy-docker-latest:
     machine:
       # Ubuntu 14.04 with Docker 17.10.0-ce
       image: ubuntu-1604:201903-01
@@ -567,9 +567,77 @@ jobs:
               docker push sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
             fi
 
+  deploy-singularity-latest:
+    machine:
+      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-1604:201903-01
+    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
+    steps:
+      - checkout:
+          path: /home/circleci/src/mialsuperresolutiontoolkit
+      - run:
+          name: "Check whether test should be skipped"
+          command: |
+            cd /home/circleci/src/mialsuperresolutiontoolkit
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?deploy-singularity]' )" != "" ]]; then
+              echo "Skipping singularity deployment"
+              circleci step halt
+            fi
+      - attach_workspace:
+          at: /tmp
+      - singularity/install-go:
+          go-version: '1.13'
+      - singularity/debian-install-3:
+          singularity-version: 3.5.1
+      - run:
+          name: 'Write Sylabs.io TOKEN'
+          command: |
+            echo "${SINGULARITY_TOKEN}" > ~/.singularity/sylabs-token
+            cat ~/.singularity/sylabs-token
+      - run:
+          name: 'Deploy simg with latest tag to Sylabs.io'
+          command: |
+            singularity push /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg library://tourbier/default/mialsuperrresolutiontoolkit-bidsapp:latest
+
+  deploy-singularity-release:
+    machine:
+      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-1604:201903-01
+    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
+    steps:
+      - checkout:
+          path: /home/circleci/src/mialsuperresolutiontoolkit
+      - run:
+          name: "Check whether test should be skipped"
+          command: |
+            cd /home/circleci/src/mialsuperresolutiontoolkit
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?deploy-singularity]' )" != "" ]]; then
+              echo "Skipping singularity deployment"
+              circleci step halt
+            fi
+      - attach_workspace:
+          at: /tmp
+      - singularity/install-go:
+          go-version: '1.13'
+      - singularity/debian-install-3:
+          singularity-version: 3.5.1
+      - run:
+          name: 'Write Sylabs.io TOKEN'
+          command: |
+            echo "${SINGULARITY_TOKEN}" > ~/.singularity/sylabs-token
+            cat ~/.singularity/sylabs-token
+      - run:
+          name: 'Deploy simg with version tag to Sylabs.io'
+          command: |
+            # Get version, update files.
+            THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            echo "THISVERSION : ${THISVERSION}"
+            echo "CIRCLE_TAG : ${CIRCLE_TAG}"
+            singularity push /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg library://tourbier/default/mialsuperrresolutiontoolkit-bidsapp:"${CIRCLE_TAG}"
+
 workflows:
   version: 2
-  build_test_deploy:
+  build-test-deploy:
     jobs:
       - test-python-install:
           version: "3.6"
@@ -633,7 +701,7 @@ workflows:
               tags:
                 only: /.*/
 
-      - deploy_pypi_release:
+      - deploy-pypi-release:
           requires:
             - test-python-install
             - build-docker
@@ -651,7 +719,7 @@ workflows:
             tags:
               only: /^v.*/
 
-      - deploy_docker_release:
+      - deploy-docker-release:
           requires:
             - build-docker
             # - build_docs
@@ -666,11 +734,37 @@ workflows:
             tags:
               only: /^v.*/
       
-      - deploy_docker_latest:
+      - deploy-docker-latest:
           requires:
             - build-docker
             # - build_docs
             - test-docker
+            - codacy-coverage-report
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              only: master
+
+      - deploy-singularity-release:
+          requires:
+            - build-singularity
+            # - build_docs
+            - test-singularity
+            - codacy-coverage-report
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              ignore: /.*/
+              # only: master
+            # only act on version tags
+            tags:
+              only: /^v.*/
+
+      - deploy-singularity-latest:
+          requires:
+            - build-singularity
+            # - build_docs
+            - test-singularity
             - codacy-coverage-report
           filters:
             # ignore any commit on any branch by default
