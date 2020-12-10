@@ -327,9 +327,6 @@ jobs:
                 --openmp_nb_of_cores 1 \
                 --nipype_nb_of_cores 1 \
                 --masks_derivatives_dir 'manual_masks'
-
-            # Rename log
-            mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_log.txt
       - run:
           name: "Test-03 - Checking outputs of MIALSRTK BIDS App run"
           command: |
@@ -360,9 +357,6 @@ jobs:
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
                 --nipype_nb_of_cores 1
-
-            # Rename log
-            mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_log.txt
       - run:
           name: "Test-04 - Checking outputs of MIALSRTK BIDS App run"
           command: |
