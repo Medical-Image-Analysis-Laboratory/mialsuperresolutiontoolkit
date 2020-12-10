@@ -129,6 +129,8 @@ jobs:
           root: /tmp
           paths:
             - cache/mialsuperrresolutiontoolkit-bidsapp.simg
+      - store_artifacts:
+          path: cache/mialsuperrresolutiontoolkit-bidsapp.simg
 
   test-docker:
     machine:
