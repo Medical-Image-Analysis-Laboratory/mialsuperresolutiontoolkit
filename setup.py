@@ -86,7 +86,8 @@ def main():
           url='https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit',
           entry_points={
                  "console_scripts": [
-                         'mialsuperresolutiontoolkit_bidsapp = pymialsrtk.cli.mialsuperresolutiontoolkit_bidsapp:main'
+                         'mialsuperresolutiontoolkit_bidsapp_docker = pymialsrtk.cli.mialsuperresolutiontoolkit_bidsapp_docker:main',
+                         'mialsuperresolutiontoolkit_bidsapp_singularity = pymialsrtk.cli.mialsuperresolutiontoolkit_bidsapp_singularity:main'
                  ]
           },
           license='BSD-3-Clause',
