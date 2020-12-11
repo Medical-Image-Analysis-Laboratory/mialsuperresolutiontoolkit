@@ -62,53 +62,20 @@ ENV LD_PRELOAD=/usr/lib/libtcmalloc.so.4
 ##############################################################
 # Create entrypoint scripts
 ##############################################################
-# # Create entrypoint script
-# RUN echo '#! /bin/bash \n \
-# 			$CONDA_ACTIVATE \
-# 			&& xvfb-run -a python /opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py $@' > /app/run_srr.sh
-
-# # Create entrypoint script
-# RUN echo '#! /bin/bash \n \
-# 			$CONDA_ACTIVATE \
-# 			&& xvfb-run -a coverage run --source=pymialsrtk \
-# 			/opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py $@\
-# 			&& coverage html -d /bids_dir/code/coverage_html' > /app/run_srr_coverage.sh
-
-# Create content of entrypoint script
-ENV content="#! /bin/bash\n"
-ENV content="${content}echo User: \$(id -un \$USER) && echo Group: \$(id -gn \$USER) &&"
-ENV content="${content} . activate \"${MY_CONDA_PY3ENV}\" &&"
-ENV content="${content} xvfb-run -a python /opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py \$@" 
-
-# Write content to BIDSapp entrypoint script
-RUN printf "$content" > /app/run_srr.sh
+# Copy main BIDSapp entrypoint script
+COPY entrypoints/run_srr.sh /app/run_srr.sh
+RUN chmod 775 /app/run_srr.sh
 RUN cat /app/run_srr.sh
 
-# Create content of entrypoint script with coverage
-ENV content_cov="#! /bin/bash\n"
-ENV content_cov="${content_cov}echo User: \$(id -un \$USER) && echo Group: \$(id -gn \$USER) &&"
-ENV content_cov="${content_cov} . activate \"${MY_CONDA_PY3ENV}\" &&"
-ENV content_cov="${content_cov} xvfb-run -a coverage run --source=pymialsrtk \
-/opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py \$@ \
-|& tee /bids_dir/code/log.txt &&"
-ENV content_cov="${content_cov} coverage html -d /bids_dir/code/coverage_html &&"
-ENV content_cov="${content_cov} coverage xml -o /bids_dir/code/coverage.xml &&"
-ENV content_cov="${content_cov} coverage json -o /bids_dir/code/coverage.json"
-
-# Write content to BIDSapp entrypoint script
-RUN printf "$content_cov" > /app/run_srr_coverage.sh
-RUN cat /app/run_srr_coverage.sh
-
-##############################################################
-# Acquire script to be executed
-##############################################################
-RUN chmod 775 /app/run_srr.sh
+# Copy BIDSapp entrypoint script with coverage
+COPY entrypoints/run_srr_coverage.sh /app/run_srr_coverage.sh
 RUN chmod 775 /app/run_srr_coverage.sh
+RUN cat /app/run_srr_coverage.sh
 
 ##############################################################
 # Display all environment variables
 ##############################################################
-RUN export
+# RUN export
 
 ##############################################################
 # Make singularity happy
