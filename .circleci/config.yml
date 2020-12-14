@@ -597,7 +597,7 @@ jobs:
       - run:
           name: 'Deploy simg with latest tag to Sylabs.io'
           command: |
-            singularity push /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg library://tourbier/default/mialsuperrresolutiontoolkit-bidsapp:latest
+            singularity push -U /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg library://tourbier/default/mialsuperrresolutiontoolkit-bidsapp:latest
 
   deploy-singularity-release:
     machine:
@@ -633,7 +633,7 @@ jobs:
             THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_TAG : ${CIRCLE_TAG}"
-            singularity push /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg library://tourbier/default/mialsuperrresolutiontoolkit-bidsapp:"${CIRCLE_TAG}"
+            singularity push -U tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg library://tourbier/default/mialsuperrresolutiontoolkit-bidsapp:"${CIRCLE_TAG}"
 
 workflows:
   version: 2
