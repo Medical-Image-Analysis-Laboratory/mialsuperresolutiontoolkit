@@ -12,7 +12,7 @@ Installation Instructions for Users
              provision of patient care.
 
 Installation of the `MIALSRTK` processing tools and pipelines has been facilitated through the distribution of a BIDSApp relying on
-the Docker and Singularity software container technologies, so in order to run `MIALSRTK`, Docker or Singularity must be installed (see instructions in :ref:`manual-install-docker`).
+the `Docker <https://www.docker.com/>`_ and `Singularity <https://sylabs.io/>`_ software container technologies, so in order to run `MIALSRTK`, Docker or Singularity must be installed (see instructions in :ref:`manual-install-docker`).
 
 Once Docker or Singularity is installed, the recommended way to run `MIALSRTK` is to use the corresponding ``mialsuperresolutiontoolkit`` wrapper.
 Installation instructions for the wrappers can be found in :ref:`manual-install-wrapper`, which requires as prerequisites having Python3 (see :ref:`manual-install-python`) installed and an Internet connection.
@@ -29,6 +29,9 @@ To run `MIALSRTK` you will need to have either Docker or Singularity containeriz
 
 While Docker enables `MIALSRTK` to be run on all major operating systems where you have root privileges, Singularity allows you to run `MIALSRTK` on Linux systems where you might not have root privileges such as a High Performance Computing cluster.
 
+Please check https://docs.docker.com/get-started/overview/ and https://sylabs.io/guides/3.7/user-guide/introduction.html If you want to learn more about Docker and Singularity.
+
+
 Installation of Docker Engine
 ------------------------------
 
@@ -41,7 +44,6 @@ Installation of Docker Engine
   * For Windows (>=10), get the installer from https://store.docker.com/editions/community/docker-ce-desktop-windows
 
 .. note:: The MIALSRTK BIDSApp has been tested only on Ubuntu and MacOSX. For Windows users, it might be required to make few patches in the Dockerfile.
-
 
 * Set Docker to be managed as a non-root user
 
@@ -109,8 +111,8 @@ Running Singularity?
 * You are ready to use the Singularity image of `MIALSRTK`. See its `commandline usage <usage.html>`_.
 
 
-The lightweight MIALSRTK BIDSApp wrappers
-==========================================
+The lightweight MIALSRTK wrappers
+==================================
 
 .. _manual-install-python:
 
@@ -121,8 +123,8 @@ The wrappers requires a Python3 environment. We recommend you tu use miniconda3 
 
 .. _manual-install-wrapper:
 
-Installation
--------------
+Wrappers Installation
+---------------------
 
 Once Python3 is installed, the ``mialsuperresolutiontoolkit_docker`` and ``mialsuperresolutiontoolkit_singularity`` wrappers can be installed via `pip` as follows:
 
