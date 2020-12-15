@@ -49,53 +49,23 @@ from pymialsrtk.interfaces.utils import run
 ###############
 
 class BtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the BtkNLMDenoising interface.
-
-    Attributes
-    ----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    in_file <string>
-        Input image file (required)
-
-    in_mask <string>
-        Mask of the input image
-
-    out_postfix <string>
-        suffix added to input image filename to construct output filename (default is '_nlm')
-
-    weight <float>
-        smoothing parameter (high beta produces smoother result, default is 0.1)
-
-    See Also
-    ----------
-    pymialsrtk.interfaces.preprocess.BtkNLMDenoising
-
-    """
+    """Class used to represent inputs of the BtkNLMDenoising interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image filename', mandatory=True)
     in_mask = File(desc='Input mask filename', mandatory=False)
-    out_postfix = traits.Str("_nlm", desc='Suffix to be added to input image filename to construst denoised output filename', usedefault=True)
-    weight = traits.Float(0.1, desc='NLM smoothing parameter (0.1 by default)', usedefault=True)
+    out_postfix = traits.Str("_nlm",
+                             desc='Suffix to be added to input image filename to construst denoised output filename',
+                             usedefault=True)
+    weight = traits.Float(0.1,
+                          desc='NLM smoothing parameter (high beta produces smoother result)',
+                          usedefault=True)
 
 
 class BtkNLMDenoisingOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the BtkNLMDenoising interface.
+    """Class used to represent outputs of the BtkNLMDenoising interface."""
 
-    Attributes
-    -----------
-    out_file <string>
-        Output denoised image file
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.BtkNLMDenoising
-
-    """
-
-    out_file = File(desc='Output denoised image')
+    out_file = File(desc='Output denoised image file')
 
 
 class BtkNLMDenoising(BaseInterface):
@@ -149,53 +119,23 @@ class BtkNLMDenoising(BaseInterface):
 
 
 class MultipleBtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MultipleBtkNLMDenoising interface.
-
-    Attributes
-    ----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_images <list<string>>
-        Input image files (required)
-
-    input_masks <list<string>>
-        Masks of the input images
-
-    out_postfix <string>
-        suffix added to images files to construct output filenames (default is '_nlm')
-
-    weight <float>
-        smoothing parameter (high beta produces smoother result, default is 0.1)
-
-    See Also
-    ----------
-    pymialsrtk.interfaces.preprocess.MultipleBtkNLMDenoising
-
-    """
+    """Class used to represent inputs of the MultipleBtkNLMDenoising interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='Input image filenames to be denoised', mandatory=True))
-    input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
-    weight = traits.Float(0.1, desc='NLM smoothing parameter (0.1 by default)', usedefault=True)
-    out_postfix = traits.Str("_nlm", desc='Suffix to be added to input image filenames to construst denoised output filenames',usedefault=True)
+    input_images = InputMultiPath(File(mandatory=True), desc='Input image filenames to be denoised')
+    input_masks = InputMultiPath(File(mandatory=False), desc='Input mask filenames')
+    weight = traits.Float(0.1,
+                          desc='NLM smoothing parameter (high beta produces smoother result)',
+                          usedefault=True)
+    out_postfix = traits.Str("_nlm",
+                             desc='Suffix to be added to input image filenames to construst denoised output filenames',
+                             usedefault=True)
 
 
 class MultipleBtkNLMDenoisingOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MultipleBtkNLMDenoising interface.
+    """Class used to represent outputs of the MultipleBtkNLMDenoising interface."""
 
-    Attributes
-    -----------
-    output_images list<<string>>
-        Output denoised images
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleBtkNLMDenoising
-
-    """
-
-    output_images = OutputMultiPath(File(desc='Output denoised images'))
+    output_images = OutputMultiPath(File(), desc='Output denoised images')
 
 
 class MultipleBtkNLMDenoising(BaseInterface):
@@ -259,54 +199,24 @@ class MultipleBtkNLMDenoising(BaseInterface):
 #############################
 
 class MialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MialsrtkCorrectSliceIntensity interface.
-
-    Attributes
-    ----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    in_file <string>
-        Input image file (required)
-
-    in_mask <string>
-        Masks of the input image
-
-    out_postfix <string>
-        suffix added to image filename to construct output filename (default is '')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkCorrectSliceIntensity
-
-    """
+    """Class used to represent inputs of the MialsrtkCorrectSliceIntensity interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image filename', mandatory=True)
     in_mask = File(desc='Input mask filename', mandatory=False)
-    out_postfix = traits.Str("", desc='Suffix to be added to input image file to construct corrected output filename', usedefault=True)
+    out_postfix = traits.Str("",
+                             desc='Suffix to be added to input image file to construct corrected output filename',
+                             usedefault=True)
 
 
 class MialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MialsrtkCorrectSliceIntensity interface.
-
-    Attributes
-    -----------
-    out_file <string>
-        Output corrected image file
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkCorrectSliceIntensity
-
-    """
+    """Class used to represent outputs of the MialsrtkCorrectSliceIntensity interface."""
 
     out_file = File(desc='Output image with corrected slice intensities')
 
 
 class MialsrtkCorrectSliceIntensity(BaseInterface):
-    """
-    Runs the MIAL SRTK mean slice intensity correction module.
+    """Runs the MIAL SRTK mean slice intensity correction module.
 
     Example
     =======
@@ -343,55 +253,28 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
 
 
 class MultipleMialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MultipleMialsrtkCorrectSliceIntensity interface.
-
-    Attributes
-    -----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_images <list<string>>
-        Input image files (required)
-
-    input_masks <list<string>>
-        Masks of the input images
-
-    out_postfix <string>
-        suffix added to images files to construct output filenames (default is '')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleMialsrtkCorrectSliceIntensity
-
-    """
+    """Class used to represent inputs of the MultipleMialsrtkCorrectSliceIntensity interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='Input image filenames to be corrected for slice intensity', mandatory=True))
-    input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
-    out_postfix = traits.Str("", desc='Suffix to be added to input image filenames to construct corrected output filenames',usedefault=True)
+    input_images = InputMultiPath(File(mandatory=True),
+                                  desc='Input image filenames to be corrected for slice intensity')
+    input_masks = InputMultiPath(File(mandatory=False),
+                                 desc='Input mask filenames')
+    out_postfix = traits.Str("",
+                             desc='Suffix to be added to input image filenames to construct corrected output filenames',
+                             usedefault=True)
 
 
 class MultipleMialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MultipleMialsrtkCorrectSliceIntensity interface.
+    """Class used to represent outputs of the MultipleMialsrtkCorrectSliceIntensity interface."""
 
-    Attributes
-    -----------
-    output_images list<<string>>
-        Output slice intensity corrected images
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleMialsrtkCorrectSliceIntensity
-
-    """
-
-    output_images = OutputMultiPath(File(desc='Output slice intensity corrected images'))
+    output_images = OutputMultiPath(File(), desc='Output slice intensity corrected images')
 
 
 class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
-    """
-    Apply the MIAL SRTK slice intensity correction module on multiple images.
-    Calls MialsrtkCorrectSliceIntensity interface with a list of images/masks.
+    """Apply the MIAL SRTK slice intensity correction module on multiple images.
+
+    It calls MialsrtkCorrectSliceIntensity interface with a list of images/masks.
 
     Example
     =======
@@ -439,53 +322,21 @@ class MultipleMialsrtkCorrectSliceIntensity(BaseInterface):
 ##########################################
 
 class MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MialsrtkSliceBySliceN4BiasFieldCorrection interface.
-
-    Attributes
-    -----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    in_file <string>
-        Input image file (required)
-
-    in_mask <string>
-        Masks of the input image (required)
-
-    out_im_postfix <string>
-        suffix added to image filename to construct output corrected image filename (default is '_bcorr')
-
-    out_fld_postfix <string>
-        suffix added to image filename to construct output bias field image filename (default is '_n4bias')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkSliceBySliceN4BiasFieldCorrection
-
-    """
+    """Class used to represent inputs of the MialsrtkSliceBySliceN4BiasFieldCorrection interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image', mandatory=True)
     in_mask = File(desc='Input mask', mandatory=True)
-    out_im_postfix = traits.Str("_bcorr", desc='Suffix to be added to input image filename to construct corrected output filename', usedefault=True)
-    out_fld_postfix = traits.Str("_n4bias", desc='Suffix to be added to input image filename to construct output bias field filename', usedefault=True)
+    out_im_postfix = traits.Str("_bcorr",
+                                desc='Suffix to be added to input image filename to construct corrected output filename',
+                                usedefault=True)
+    out_fld_postfix = traits.Str("_n4bias",
+                                 desc='Suffix to be added to input image filename to construct output bias field filename',
+                                 usedefault=True)
 
 
 class MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MialsrtkSliceBySliceN4BiasFieldCorrection interface.
-
-    Attributes
-    -----------
-    out_im_file <string>
-        Output N4 bias field corrected image file
-    out_fld_file <string>
-        Output bias field
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkSliceBySliceN4BiasFieldCorrection
-
-    """
+    """Class used to represent outputs of the MialsrtkSliceBySliceN4BiasFieldCorrection interface."""
 
     out_im_file = File(desc='Filename of corrected output image from N4 bias field (slice by slice).')
     out_fld_file = File(desc='Filename bias field extracted slice by slice from input image.')
@@ -545,57 +396,24 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
 
 
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MultipleMialsrtkSliceBySliceN4BiasFieldCorrection interface.
-
-    Attributes
-    ----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_images <list<string>>
-        Input image files (required)
-
-    input_masks <list<string>>
-        Masks of the input images (required)
-
-    out_im_postfix <string>
-        suffix added to image filename to construct output corrected image filename (default is '_bcorr')
-
-    out_fld_postfix <string>
-        suffix added to image filename to construct output bias field image filename (default is '_n4bias')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleMialsrtkSliceBySliceN4BiasFieldCorrection
-
-    """
+    """Class used to represent inputs of the MultipleMialsrtkSliceBySliceN4BiasFieldCorrection interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
-    input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=True))
-    out_im_postfix = traits.Str("_bcorr", desc='Suffix to be added to input image filenames to construct corrected output filenames', usedefault=True)
-    out_fld_postfix = traits.Str("_n4bias", desc='Suffix to be added to input image filenames to construct output bias field filenames', usedefault=True)
+    input_images = InputMultiPath(File(mandatory=True), desc='files to be corrected for intensity')
+    input_masks = InputMultiPath(File(mandatory=True), desc='mask of files to be corrected for intensity')
+    out_im_postfix = traits.Str("_bcorr",
+                                desc='Suffix to be added to input image filenames to construct corrected output filenames',
+                                usedefault=True)
+    out_fld_postfix = traits.Str("_n4bias",
+                                 desc='Suffix to be added to input image filenames to construct output bias field filenames',
+                                 usedefault=True)
 
 
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MultipleMialsrtkSliceBySliceN4BiasFieldCorrection interface.
+    """Class used to represent outputs of the MultipleMialsrtkSliceBySliceN4BiasFieldCorrection interface."""
 
-    Attributes
-    -----------
-    output_images list<<string>>
-        Output N4 bias field corrected images (required)
-
-    output_fields list<<string>>
-        Output bias fields (required)
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleMialsrtkSliceBySliceN4BiasFieldCorrection
-
-    """
-
-    output_images = OutputMultiPath(File(desc='Output N4 bias field corrected images'))
-    output_fields = OutputMultiPath(File(desc='Output bias fields'))
+    output_images = OutputMultiPath(File(), desc='Output N4 bias field corrected images')
+    output_fields = OutputMultiPath(File(), desc='Output bias fields')
 
 
 class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
@@ -647,53 +465,19 @@ class MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
 #####################################
 
 class MialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent outputs of the MialsrtkSliceBySliceCorrectBiasField interface.
-
-    Attributes
-    ----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    in_file <string>
-        Input image file (required)
-
-    in_mask <string>
-        Masks of the input image (required)
-
-    in_field <string>
-        Bias field to correct in the input image (required)
-
-    out_im_postfix <string>
-        suffix added to image filename to construct output corrected image filename (default is '_bcorr')
-
-    out_fld_postfix <string>
-        suffix added to image filename to construct output bias field image filename (default is '_n4bias')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkSliceBySliceCorrectBiasField
-
-    """
+    """Class used to represent outputs of the MialsrtkSliceBySliceCorrectBiasField interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    in_file = File(desc='Input image', mandatory=True)
-    in_mask = File(desc='Input mask', mandatory=True)
-    in_field = File(desc='Input bias field', mandatory=True)
-    out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to bias field corrected in_file', usedefault=True)
+    in_file = File(desc='Input image file', mandatory=True)
+    in_mask = File(desc='Input mask file', mandatory=True)
+    in_field = File(desc='Input bias field file', mandatory=True)
+    out_im_postfix = traits.Str("_bcorr",
+                                desc='Suffix to be added to bias field corrected `in_file`',
+                                usedefault=True)
 
 
 class MialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MialsrtkSliceBySliceCorrectBiasField interface.
-
-    Attributes
-    -----------
-    out_im_file <string>
-        Output bias field corrected image file
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkSliceBySliceCorrectBiasField
-    """
+    """Class used to represent outputs of the MialsrtkSliceBySliceCorrectBiasField interface."""
 
     out_im_file = File(desc='Bias field corrected image')
 
@@ -736,58 +520,25 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
         return outputs
 
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MultipleMialsrtkSliceBySliceCorrectBiasField interface.
-
-    Attributes
-    -----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_images <list<string>>
-        Input image files (required)
-
-    input_masks <list<string>>
-        Masks of the input images (required)
-
-    input_fields <list<string>>
-        Bias fields to correct in the input images (required)
-
-    out_im_postfix <string>
-        suffix added to image filename to construct output corrected image filename (default is '_bcorr')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleMialsrtkSliceBySliceCorrectBiasField
-
-    """
+    """Class used to represent inputs of the MultipleMialsrtkSliceBySliceCorrectBiasField interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
-    input_masks = InputMultiPath(File(desc='mask of files to be corrected for intensity', mandatory=True))
-    input_fields = InputMultiPath(File(desc='field to remove', mandatory=True))
-    out_im_postfix = traits.Str("_bcorr", desc='Suffixe to be added to bias field corrected input_images', usedefault=True)
+    input_images = InputMultiPath(File(mandatory=True), desc='Files to be corrected for intensity')
+    input_masks = InputMultiPath(File(mandatory=True), desc='Mask files to be corrected for intensity')
+    input_fields = InputMultiPath(File(mandatory=True), desc='Bias field files to be removed', )
+    out_im_postfix = traits.Str("_bcorr",
+                                desc='Suffix to be added to bias field corrected input_images',
+                                usedefault=True)
 
 
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MultipleMialsrtkSliceBySliceCorrectBiasField interface.
+    """Class used to represent outputs of the MultipleMialsrtkSliceBySliceCorrectBiasField interface."""
 
-    Attributes
-    -----------
-    output_images list<<string>>
-        Output bias field corrected images
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleMialsrtkSliceBySliceCorrectBiasField
-
-    """
-
-    output_images = OutputMultiPath(File(desc='Output bias field corrected images'))
+    output_images = OutputMultiPath(File(), desc='Output bias field corrected images')
 
 
 class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
-    """
-    Runs the MIAL SRTK slice by slice bias field correction module on multiple images.
+    """Runs the MIAL SRTK slice by slice bias field correction module on multiple images.
 
     It calls :class:`pymialsrtk.interfaces.preprocess.MialsrtkSliceBySliceCorrectBiasField` interface
     with a list of images/masks/fields.
@@ -833,30 +584,10 @@ class MultipleMialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 #############################
 
 class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MialsrtkIntensityStandardization interface.
-
-    Attributes
-    -----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_images <list<string>>
-        Input image filenames (required)
-
-    in_max <float>
-        Maximum intensity (default is 255)
-
-    out_postfix <string>
-        suffix added to image filenames to construct output standardized image filenames (default is '')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkIntensityStandardization
-
-    """
+    """Class used to represent inputs of the MialsrtkIntensityStandardization interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='files to be corrected for intensity', mandatory=True))
+    input_images = InputMultiPath(File(mandatory=True), desc='Files to be corrected for intensity')
     out_postfix = traits.Str("", desc='Suffix to be added to intensity corrected input_images', usedefault=True)
     in_max = traits.Float(desc='Maximal intensity', usedefault=False)
     stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask',
@@ -864,20 +595,9 @@ class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
 
 
 class MialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MialsrtkIntensityStandardization interface.
+    """Class used to represent outputs of the MialsrtkIntensityStandardization interface."""
 
-    Attributes
-    -----------
-    output_images list<<string>>
-        Output intensity standardized images
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkIntensityStandardization
-
-    """
-
-    output_images = OutputMultiPath(File(desc='Images corrected for intensity'))
+    output_images = OutputMultiPath(File(), desc='Intensity-standardized images')
 
 
 class MialsrtkIntensityStandardization(BaseInterface):
@@ -928,50 +648,20 @@ class MialsrtkIntensityStandardization(BaseInterface):
 ###########################
 
 class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent outputs of the MialsrtkHistogramNormalization interface.
-
-    Attributes
-    -----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_images <list<string>>
-        Input image filenames (required)
-
-    input_masks <list<string>>
-        Masks of the input images
-
-    out_postfix <string>
-        suffix added to image filenames to construct output normalized image filenames (default is '_histnorm')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkHistogramNormalization
-
-    """
+    """Class used to represent outputs of the MialsrtkHistogramNormalization interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='Input image filenames to be normalized', mandatory=True))
-    input_masks = InputMultiPath(File(desc='Input mask filenames', mandatory=False))
-    out_postfix = traits.Str("_histnorm", desc='Suffix to be added to normalized input image filenames to construct ouptut normalized image filenames',
+    input_images = InputMultiPath(File(mandatory=True), desc='Input image filenames to be normalized')
+    input_masks = InputMultiPath(File(mandatory=False), desc='Input mask filenames')
+    out_postfix = traits.Str("_histnorm",
+                             desc='Suffix to be added to normalized input image filenames to construct ouptut normalized image filenames',
                              usedefault=True)
 
 
 class MialsrtkHistogramNormalizationOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MialsrtkHistogramNormalization interface.
+    """Class used to represent outputs of the MialsrtkHistogramNormalization interface."""
 
-    Attributes
-    -----------
-    output_images list<<string>>
-        Output histogram normalized images
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkHistogramNormalization
-
-    """
-
-    output_images = OutputMultiPath(File(desc='Histogram normalized images'))
+    output_images = OutputMultiPath(File(), desc='Histogram-normalized images')
 
 
 class MialsrtkHistogramNormalization(BaseInterface):
@@ -1034,27 +724,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
 ##############
 
 class MialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MialsrtkMaskImage interface.
-
-    Attributes
-    -----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    in_file <string>
-        Input image file (required)
-
-    in_mask <string>
-        Masks of the input image (required)
-
-    out_im_postfix <string>
-        suffix added to image filename to construct output masked image filename (default is '')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkMaskImage
-
-    """
+    """Class used to represent inputs of the MialsrtkMaskImage interface."""
 
     bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     in_file = File(desc='Input image filename to be masked',mandatory=True)
@@ -1063,18 +733,7 @@ class MialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
 
 
 class MialsrtkMaskImageOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MialsrtkMaskImage interface.
-
-    Attributes
-    -----------
-    out_im_file <string>
-        Output masked image
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkMaskImage
-
-    """
+    """Class used to represent outputs of the MialsrtkMaskImage interface."""
 
     out_im_file = File(desc='Masked image')
 
@@ -1118,52 +777,19 @@ class MialsrtkMaskImage(BaseInterface):
 
 
 class MultipleMialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent outputs of the MultipleMialsrtkMaskImage interface.
-
-    Attributes
-    -----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_images <list<string>>
-        Input image files (required)
-
-    input_masks <list<string>>
-        Masks of the input images (required)
-
-    input_fields <list<string>>
-        Bias fields to correct in the input images (required)
-
-    out_im_postfix <string>
-        suffix added to image filename to construct output masked image filenames (default is '')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleMialsrtkMaskImage
-
-    """
+    """Class used to represent outputs of the MultipleMialsrtkMaskImage interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='Input image filenames to be corrected for intensity', mandatory=True))
-    input_masks = InputMultiPath(File(desc='Input mask filenames ', mandatory=True))
+    input_images = InputMultiPath(File(mandatory=True),
+                                  desc='Input image filenames to be corrected for intensity')
+    input_masks = InputMultiPath(File(mandatory=True), desc='Input mask filenames ')
     out_im_postfix = traits.Str("", desc='Suffix to be added to masked input_images', usedefault=True)
 
 
 class MultipleMialsrtkMaskImageOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MultipleMialsrtkMaskImage interface.
+    """Class used to represent outputs of the MultipleMialsrtkMaskImage interface."""
 
-    Attributes
-    -----------
-    output_images list<<string>>
-        Output masked images
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleMialsrtkMaskImage
-
-    """
-
-    output_images = OutputMultiPath(File(desc='Output masked image filenames'))
+    output_images = OutputMultiPath(File(), desc='Output masked image filenames')
 
 
 class MultipleMialsrtkMaskImage(BaseInterface):
@@ -1213,42 +839,17 @@ class MultipleMialsrtkMaskImage(BaseInterface):
 
 
 class FilteringByRunidInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the FilteringByRunid interface.
+    """Class used to represent inputs of the FilteringByRunid interface."""
 
-    Attributes
-    -----------
-    input_files <list<string>>
-        Input brain masks on which motion is computed.
-
-    stacks_id <list<string>>
-        List of stacks id to be kept
-
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.FilteringByRunid
-
-    """
-
-    input_files = InputMultiPath(File(desc='Input files', mandatory=True))
-    stacks_id = traits.List()
+    input_files = InputMultiPath(File(mandatory=True),
+                                 desc='Input files on which motion is computed')
+    stacks_id = traits.List(desc='List of stacks id to be kept')
 
 
 class FilteringByRunidOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the FilteringByRunid interface.
+    """Class used to represent outputs of the FilteringByRunid interface."""
 
-    Attributes
-    -----------
-    output_files <list<string>>
-        Filtered files.
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.FilteringByRunid
-
-    """
-
-    output_files = traits.List(desc='Order of stacks')
+    output_files = traits.List(desc='Filtered list of stack files')
 
 
 class FilteringByRunid(BaseInterface):
@@ -1294,37 +895,16 @@ class FilteringByRunid(BaseInterface):
 
 
 class StacksOrderingInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the StacksOrdering interface.
+    """Class used to represent inputs of the StacksOrdering interface."""
 
-    Attributes
-    -----------
-    input_masks <list<string>>
-        Input brain masks on which motion is computed.
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.StacksOrdering
-
-    """
-
-    input_masks = InputMultiPath(File(desc='Input masks', mandatory=True))
+    input_masks = InputMultiPath(File(mandatory=True),
+                                 desc='Input brain masks on which motion is computed')
 
 
 class StacksOrderingOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the StacksOrdering interface.
+    """Class used to represent outputs of the StacksOrdering interface."""
 
-    Attributes
-    -----------
-    stacks_order <string>
-        Order of images' run-id to be used for reconstruction
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.StacksOrdering
-
-    """
-
-    stacks_order = traits.List(desc='Order of stacks')
+    stacks_order = traits.List(desc='Order of image `run-id` to be used for reconstruction')
 
 
 class StacksOrdering(BaseInterface):
@@ -1450,61 +1030,21 @@ class StacksOrdering(BaseInterface):
 
 
 class BrainExtractionInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent outputs of the BrainExtraction interface.
-
-    Attributes
-    -----------
-    base_dir <string>
-        BIDS root directory (required)
-
-    in_file <string>
-        Input image file (required)
-
-    in_ckpt_loc <string>
-        Network_checkpoint for localization (required)
-
-    threshold_loc <Float>
-         Threshold determining cutoff probability (default is 0.49)
-
-    in_ckpt_seg <string>
-        Network_checkpoint for segmentation
-
-    threshold_seg <Float>
-         Threshold determining cutoff probability (default is 0.5)
-
-    out_postfix <string>
-        Suffix of the automatically generated mask (default is '_brainMask.nii.gz')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.BrainExtraction
-
-    """
+    """Class used to represent outputs of the BrainExtraction interface."""
 
     bids_dir = Directory(desc='Root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image', mandatory=True)
     in_ckpt_loc = File(desc='Network_checkpoint for localization', mandatory=True)
     threshold_loc = traits.Float(0.49, desc='Threshold determining cutoff probability (0.49 by default)')
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
-    threshold_seg = traits.Float(0.5, desc='Threshold determining cutoff probability (0.5 by default)')
+    threshold_seg = traits.Float(0.5, desc='Threshold for cutoff probability (0.5 by default)')
     out_postfix = traits.Str("_brainMask.nii.gz", desc='Suffix of the automatically generated mask', usedefault=True)
 
 
 class BrainExtractionOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the BrainExtraction interface.
+    """Class used to represent outputs of the BrainExtraction interface."""
 
-    Attributes
-    -----------
-    out_file <string>
-        Brain mask output image
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.BrainExtraction
-
-    """
-
-    out_file = File(desc='Brain mask image')
+    out_file = File(desc='Output brain mask image')
 
 
 class BrainExtraction(BaseInterface):
@@ -2001,61 +1541,21 @@ class BrainExtraction(BaseInterface):
 
 
 class MultipleBrainExtractionInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent outputs of the MultipleBrainExtraction interface.
-
-    Attributes
-    -----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_images list<<string>>
-        List of input image file (required)
-
-    in_ckpt_loc <string>
-        Network_checkpoint for localization (required)
-
-    threshold_loc <Float>
-         Threshold determining cutoff probability (default is 0.49)
-
-    in_ckpt_seg <string>
-        Network_checkpoint for segmentation
-
-    threshold_seg <Float>
-         Threshold determining cutoff probability (default is 0.5)
-
-    out_postfix <string>
-        Suffix of the automatically generated mask (default is '_brainMask')
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleBrainExtraction
-
-    """
+    """Class used to represent outputs of the MultipleBrainExtraction interface."""
 
     bids_dir = Directory(desc='Root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='MRI Images', mandatory=True))
+    input_images = InputMultiPath(File(mandatory=True), desc='MRI Images')
     in_ckpt_loc = File(desc='Network_checkpoint for localization', mandatory=True)
     threshold_loc = traits.Float(0.49, desc='Threshold determining cutoff probability (0.49 by default)')
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
     threshold_seg = traits.Float(0.5, desc='Threshold determining cutoff probability (0.5 by default)')
-    out_postfix = traits.Str("_brainMask", desc='Suffixe of the automatically generated mask', usedefault=True)
+    out_postfix = traits.Str("_brainMask", desc='Suffix of the automatically generated mask', usedefault=True)
 
 
 class MultipleBrainExtractionOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MultipleBrainExtraction interface.
+    """Class used to represent outputs of the MultipleBrainExtraction interface."""
 
-    Attributes
-    -----------
-    output_images list<<string>>
-        Output masks
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MultipleBrainExtraction
-
-    """
-
-    masks = OutputMultiPath(File(desc='Output masks'))
+    masks = OutputMultiPath(File(), desc='Output masks')
 
 
 class MultipleBrainExtraction(BaseInterface):
