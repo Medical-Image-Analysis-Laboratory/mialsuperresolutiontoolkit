@@ -156,13 +156,15 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MialsrtkTVSuperResolution interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='Input image filenames for super-resolution', mandatory=True))
-    input_masks = InputMultiPath(File(desc='Masks of input images for super-resolution', mandatory=True))
+    input_images = InputMultiPath(File(mandatory=True),
+                                  desc='Input image filenames for super-resolution')
+    input_masks = InputMultiPath(File(mandatory=True),
+                                 desc='Masks of input images for super-resolution')
     input_transforms = InputMultiPath(File(mandatory=True),
                                       desc='Estimated slice-by-slice ITK transforms of input images')
-    input_sdi = File(File(desc='Reconstructed image for initialization. '
-                               'Typically the output of MialsrtkImageReconstruction is used',
-                          mandatory=True))
+    input_sdi = File(desc='Reconstructed image for initialization. '
+                          'Typically the output of MialsrtkImageReconstruction is used',
+                     mandatory=True)
     deblurring = traits.Bool(False,
                              desc='Flag to set deblurring PSF during SR (double the neighborhood)',
                              usedefault=True)
