@@ -12,25 +12,27 @@ Installation Instructions for Users
              provision of patient care.
 
 Installation of the `MIALSRTK` processing tools and pipelines has been facilitated through the distribution of a BIDSApp relying on
-the Docker software container technology, so in order to run the `MIALSRTK BIDS App`, Docker must be installed (see instructions in :ref:`manual-install-docker`).
+the Docker and Singularity software container technologies, so in order to run `MIALSRTK`, Docker or Singularity must be installed (see instructions in :ref:`manual-install-docker`).
 
-Once Docker is installed, the recommended way to run the `MIALSRTK BIDS App` is to use the ``mialsuperresolutiontoolkit_bidsapp`` wrapper.
-Installation instructions for the wrapper are found in :ref:`manual-install-wrapper`, which requires Python (see :ref:`manual-install-python`) and an Internet connection.
+Once Docker or Singularity is installed, the recommended way to run `MIALSRTK` is to use the corresponding ``mialsuperresolutiontoolkit`` wrapper.
+Installation instructions for the wrappers can be found in :ref:`manual-install-wrapper`, which requires as prerequisites having Python3 (see :ref:`manual-install-python`) installed and an Internet connection.
 
-If you need a finer control over the Docker container execution, or you feel comfortable with the Docker Engine, download instructions for the `MIALSRTK BIDS App` can be found in :ref:`manual-install-bidsapp`.
+If you need a finer control over the Docker/Singularity container execution, or you feel comfortable with the Docker/Singularity Engine, download instructions for the `MIALSRTK BIDS App` can be found in :ref:`manual-install-bidsapp`.
 
-Make sure that you have installed all the following prerequisites.
-
-
-The MIALSRTK BIDSApp
-===============================
 
 .. _manual-install-docker:
 
 Prerequisites
--------------
+==============
 
-* Installed Docker Engine corresponding to your system:
+To run `MIALSRTK` you will need to have either Docker or Singularity containerization engine installed.
+
+While Docker enables `MIALSRTK` to be run on all major operating systems where you have root privileges, Singularity allows you to run `MIALSRTK` on Linux systems where you might not have root privileges such as a High Performance Computing cluster.
+
+Installation of Docker Engine
+------------------------------
+
+* Install Docker Engine corresponding to your system:
 
   * For Ubuntu 14.04/16.04/18.04, follow the instructions from https://docs.docker.com/install/linux/docker-ce/ubuntu/
 
@@ -41,7 +43,7 @@ Prerequisites
 .. note:: The MIALSRTK BIDSApp has been tested only on Ubuntu and MacOSX. For Windows users, it might be required to make few patches in the Dockerfile.
 
 
-* Docker managed as a non-root user
+* Set Docker to be managed as a non-root user
 
   * Open a terminal
 
@@ -60,10 +62,22 @@ Prerequisites
       $ docker run hello-world
 
 
+Installation of Singularity Engine
+-----------------------------------
+
+* Install singularity following instructions from the official documentation webpage at https://sylabs.io/guides/3.7/user-guide/quick_start.html#quick-installation-steps
+
+.. note::
+    If you need to make the request to install Singularity on your HPC, Singularity provides a nice template at https://singularity.lbl.gov/install-request#installation-request to facilitate it.
+
+
 .. _manual-install-bidsapp:
 
-Installation of the BIDS App
------------------------------
+MIALSRTK Container Image Download
+==================================
+
+Running Docker?
+---------------
 
 * Open a terminal
 
@@ -71,33 +85,46 @@ Installation of the BIDS App
 
   .. parsed-literal::
 
-    $ docker pull sebastientourbier/mialsuperresolutiontoolkit-bidsapp:|release|
+    $ docker pull sebastientourbier/mialsuperresolutiontoolkit:|release|
 
 * To display all docker images available::
 
   $ docker images
 
- You should see the docker image "mialsuperresolutiontoolkit-bidsapp" with tag "|release|" is now available.
+ You should see the docker image "mialsuperresolutiontoolkit" with tag "|release|" is now available.
 
-* You are ready to use the MIALSRTK BIDS App from the terminal. See its `commandline usage <usage.html>`_.
+* You are ready to use the Docker image of `MIALSRTK` from the terminal. See its `commandline usage <usage.html>`_.
+
+Running Singularity?
+--------------------
+
+* Open a terminal
+
+* Get the latest release (|release|) of the BIDS App:
+
+  .. parsed-literal::
+
+    $ singularity pull library://tourbier/default/mialsuperresolutiontoolkit:|release|
+
+* You are ready to use the Singularity image of `MIALSRTK`. See its `commandline usage <usage.html>`_.
 
 
-The lightweight MIALSRTK BIDSApp wrapper
-========================================
+The lightweight MIALSRTK BIDSApp wrappers
+==========================================
 
 .. _manual-install-python:
 
 Prerequisites
 ---------------
 
-The wrapper requires a Python3 environment. We recommend you tu use miniconda3 for which the installer corresponding to your 32/64bits MacOSX/Linux/Win system can be downloaded from https://conda.io/miniconda.html.
+The wrappers requires a Python3 environment. We recommend you tu use miniconda3 for which the installer corresponding to your 32/64bits MacOSX/Linux/Win system can be downloaded from https://conda.io/miniconda.html.
 
 .. _manual-install-wrapper:
 
 Installation
 -------------
 
-Once Python3 is installed, the ``mialsuperresolutiontoolkit_bidsapp`` could be installed via `pip` as follows:
+Once Python3 is installed, the ``mialsuperresolutiontoolkit_docker`` and ``mialsuperresolutiontoolkit_singularity`` wrappers can be installed via `pip` as follows:
 
 * Open a terminal
 
@@ -107,7 +134,7 @@ Once Python3 is installed, the ``mialsuperresolutiontoolkit_bidsapp`` could be i
 
      $ pip install -e git+https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit#egg=pymialsrtk
 
-* You are ready to use the ``mialsuperresolutiontoolkit_bidsapp`` wrapper. See its `commandline usage <wrapperusage>`_.
+* You are ready to use the ``mialsuperresolutiontoolkit_docker`` and ``mialsuperresolutiontoolkit_singularity`` wrappers. See their `commandline usages <wrapperusage>`_.
 
 Help/Questions
 --------------

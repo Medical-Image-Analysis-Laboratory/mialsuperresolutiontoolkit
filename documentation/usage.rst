@@ -4,13 +4,13 @@
 Commandline Usage
 ***********************
 
-`MIALSRTK BIDS App` adopts the :abbr:`BIDS (Brain Imaging Data Structure)` standard for data organization and takes as principal input the path of the dataset that is to be processed. The input dataset is required to be in *valid BIDS format*, and it must include *at least one T2w scan with anisotropic resolution per anatomical direction*. See :ref:`BIDS and BIDS App standards <cmpbids>` page that provides links for more information about BIDS and BIDS-Apps as well as an example for dataset organization and naming.
+`MIALSRTK` adopts the :abbr:`BIDS (Brain Imaging Data Structure)` standard for data organization and takes as principal input the path of the dataset that is to be processed. The input dataset is required to be in *valid BIDS format*, and it must include *at least one T2w scan with anisotropic resolution per anatomical direction*. See :ref:`BIDS and BIDS App standards <cmpbids>` page that provides links for more information about BIDS and BIDS-Apps as well as an example for dataset organization and naming.
 
 
 Commandline Arguments
 =============================
 
-The command to run the `MIALSRTK BIDS App` follows the `BIDS-Apps <https://github.com/BIDS-Apps>`_ definition standard with an additional option for loading the pipeline configuration file.
+The command to run the `MIALSRTK` follows the `BIDS-Apps <https://github.com/BIDS-Apps>`_ definition standard with an additional option for loading the pipeline configuration file.
 
 .. argparse::
 		:ref: pymialsrtk.parser.get_parser
@@ -66,22 +66,35 @@ where:
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
 
 
-Running the `MIALSRTK BIDS App`
-==================================
+Running `MIALSRTK`
+===================
 
-You can run the `MIALSRTK BIDS App` using a lightweight wrapper we created for convenience or you can interact directly with the Docker Engine via the docker run command line. (See :ref:`installation`)
+You can run the `MIALSRTK` using the lightweight Docker or Singularity wrappers we created for convenience or you can interact directly with the Docker / SIngularity Engine via the docker or singularity run command. (See :ref:`installation`)
 
 .. _wrapperusage:
 
-With the ``mialsuperresolutiontoolkit_bidsapp`` wrapper
---------------------------------------------------------
+With the ``mialsuperresolutiontoolkit_docker`` wrapper
+----------------------------------------------------------
 
-When you run ``mialsuperresolutiontoolkit_bidsapp``, it will generate a Docker command line for you,
-print it out for reporting purposes, and then execute it without further action needed, e.g.:
+When you run ``mialsuperresolutiontoolkit_docker``, it will generate a Docker command line for you, print it out for reporting purposes, and then execute it without further action needed, e.g.:
 
     .. code-block:: console
 
-       $ mialsuperresolutiontoolkit_bidsapp \
+       $ mialsuperresolutiontoolkit_docker \
+            /home/localadmin/data/ds001 /media/localadmin/data/ds001/derivatives \
+            participant --participant_label 01 \
+            --param_file /home/localadmin/data/ds001/code/participants_params.json \
+            (--openmp_nb_of_cores 4) \
+            (--nipype_nb_of_cores 4)
+
+With the ``mialsuperresolutiontoolkit_singularity`` wrapper
+-------------------------------------------------------------
+
+When you run ``mialsuperresolutiontoolkit_singularity``, it will generate a Singularity command line for you, print it out for reporting purposes, and then execute it without further action needed, e.g.:
+
+    .. code-block:: console
+
+       $ mialsuperresolutiontoolkit_singularity \
             /home/localadmin/data/ds001 /media/localadmin/data/ds001/derivatives \
             participant --participant_label 01 \
             --param_file /home/localadmin/data/ds001/code/participants_params.json \
@@ -89,23 +102,40 @@ print it out for reporting purposes, and then execute it without further action 
             (--nipype_nb_of_cores 4)
 
 
-With the Docker Engine
---------------------------------
+With the Docker / Singularity Engine
+--------------------------------------
 
-If you need a finer control over the container execution, or you feel comfortable with the Docker Engine, avoiding the extra software layer of the wrapper might be a good decision. For instance, previous call to the ``mialsuperresolutiontoolkit_bidsapp`` wrapper corresponds to:
+If you need a finer control over the container execution, or you feel comfortable with the Docker or Singularity Engine, avoiding the extra software layer of the wrapper might be a good decision.
+
+For instance, the previous call to the ``mialsuperresolutiontoolkit_docker`` wrapper corresponds to:
 
   .. parsed-literal::
 
     $ docker run -t --rm -u $(id -u):$(id -g) \\
             -v /home/localadmin/data/ds001:/bids_dir \\
             -v /media/localadmin/data/ds001/derivatives:/output_dir \\
-            sebastientourbier/mialsuperresolutiontoolkit-bidsapp:|release| \\
+            sebastientourbier/mialsuperresolutiontoolkit:|release| \\
             /bids_dir /output_dir participant --participant_label 01 \\
             --param_file /bids_dir/code/participants_params.json \\
             (--openmp_nb_of_cores 4) \\
             (--nipype_nb_of_cores 4)
 
 .. note:: We use the `-v /path/to/local/folder:/path/inside/container` docker run option to access local files and folders inside the container such that the local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process are mapped to the folders ``/bids_dir`` and ``/output_dir`` in the container respectively.
+
+The previous call to the ``mialsuperresolutiontoolkit_singularity`` wrapper corresponds to:
+
+  .. parsed-literal::
+
+    $ singularity run --containall \\
+            --bind /home/localadmin/data/ds001:/bids_dir \\
+            --bind /media/localadmin/data/ds001/derivatives:/output_dir \\
+            library://tourbier/default/mialsuperresolutiontoolkit:|release| \\
+            /bids_dir /output_dir participant --participant_label 01 \\
+            --param_file /bids_dir/code/participants_params.json \\
+            (--openmp_nb_of_cores 4) \\
+            (--nipype_nb_of_cores 4)
+
+.. note:: Similarly as with Docker, we use the `--bind /path/to/local/folder:/path/inside/container` singularity run option to access local files and folders inside the container such that the local directory of the input BIDS dataset (here: ``/home/localadmin/data/ds001``) and the output directory (here: ``/media/localadmin/data/ds001/derivatives``) used to process are mapped to the folders ``/bids_dir`` and ``/output_dir`` in the container respectively.
 
 
 Debugging
@@ -124,7 +154,7 @@ All bugs, concerns and enhancement requests for this software are managed on Git
 Not running on a local machine? - Data transfer
 ===============================================
 
-If you intend to run the `MIALSRTK BIDS App` on a remote system, you will need to
+If you intend to run `MIALSRTK` on a remote system, you will need to
 make your data available within that system first. Comprehensive solutions such as `Datalad
 <http://www.datalad.org/>`_ will handle data transfers with the appropriate
 settings and commands. Datalad also performs version control over your data.
