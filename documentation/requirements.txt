@@ -1,5 +1,6 @@
 sphinx-argparse
 nbsphinx
-traits
+traits==5.1.2
 grabbit
 pybids
+nipype==1.5.1

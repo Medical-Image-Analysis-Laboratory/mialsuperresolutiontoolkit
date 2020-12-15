@@ -55,13 +55,19 @@ extensions = ['sphinx.ext.autosectionlabel',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
               'sphinxarg.ext',
-              'nbsphinx']
+              'sphinx.ext.inheritance_diagram',
+              'sphinxcontrib.apidoc',
+              'nbsphinx',
+              'nipype.sphinxext.plot_workflow',
+              'nipype.sphinxext.apidoc',
+              'nipype.sphinxext.documenter',
+              ]
 
 # autodoc_default_options = {
 #    'autosummary': True,
 # }
 
-autodoc_mock_imports = ['nipype','cv2', 'skimage']
+autodoc_mock_imports = ['cv2', 'skimage']
 
 # Allow errors in notebooks for doc
 nbsphinx_allow_errors = True
