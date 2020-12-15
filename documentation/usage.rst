@@ -73,8 +73,8 @@ You can run the `MIALSRTK` using the lightweight Docker or Singularity wrappers 
 
 .. _wrapperusage:
 
-With the ``mialsuperresolutiontoolkit_docker`` wrapper
-----------------------------------------------------------
+With the wrappers
+-------------------
 
 When you run ``mialsuperresolutiontoolkit_docker``, it will generate a Docker command line for you, print it out for reporting purposes, and then execute it without further action needed, e.g.:
 
@@ -87,8 +87,6 @@ When you run ``mialsuperresolutiontoolkit_docker``, it will generate a Docker co
             (--openmp_nb_of_cores 4) \
             (--nipype_nb_of_cores 4)
 
-With the ``mialsuperresolutiontoolkit_singularity`` wrapper
--------------------------------------------------------------
 
 When you run ``mialsuperresolutiontoolkit_singularity``, it will generate a Singularity command line for you, print it out for reporting purposes, and then execute it without further action needed, e.g.:
 
