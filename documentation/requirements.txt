@@ -1,5 +1,7 @@
 sphinx-argparse
 nbsphinx
+sphinxcontrib-apidoc
+sphinxcontrib-napoleon
 traits==5.1.2
 grabbit
 pybids
