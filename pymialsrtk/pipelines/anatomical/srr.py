@@ -243,7 +243,7 @@ class AnatomicalPipeline:
                                                                   self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
 
             brainMask = MapNode(interface = preprocess.BrainExtraction(),
-                                name='Multiple_Brain_extraction',
+                                name='brainExtraction',
                                 iterfield=['in_file'])
             brainMask.inputs.bids_dir = self.bids_dir
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk",
