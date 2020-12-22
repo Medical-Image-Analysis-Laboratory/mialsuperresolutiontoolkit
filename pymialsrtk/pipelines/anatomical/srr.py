@@ -115,17 +115,19 @@ class AnatomicalPipeline:
 
     m_stacks = None
 
-    m_skip_svr = False
-    m_do_refine_hr_mask = False
-    m_skip_nlm_denoising = False
-    m_skip_stacks_ordering = False
+    # Custom interfaces options
+    m_skip_svr = None
+    m_skip_nlm_denoising = None
+    m_skip_stacks_ordering = None
+    m_do_refine_hr_mask = None
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
 
     def __init__(self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
                  session=None, paramTV=None, p_masks_derivatives_dir=None,
-                 p_skip_svr=False, p_do_refine_hr_mask=False, p_skip_nlm_denoising=False, p_skip_stacks_ordering=False):
+                 p_dict_custom_interfaces = None):
+                 # p_skip_svr=False, p_do_refine_hr_mask=False, p_skip_nlm_denoising=False, p_skip_stacks_ordering=False):
         """Constructor of AnatomicalPipeline class instance."""
 
         # BIDS processing parameters
@@ -148,13 +150,19 @@ class AnatomicalPipeline:
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
         self.use_manual_masks = True if self.m_masks_derivatives_dir is not None else False
 
-        # Custom interfaces
-        self.m_skip_svr = p_skip_svr
-        self.m_do_refine_hr_mask = p_do_refine_hr_mask
-        self.m_skip_nlm_denoising = p_skip_nlm_denoising
+        # Custom interfaces and default values.
+        if p_dict_custom_interfaces is not None:
+            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] if 'skip_svr' in  p_dict_custom_interfaces.keys() else False
+            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] if 'do_refine_hr_mask' in  p_dict_custom_interfaces.keys() else False
+            self.m_skip_nlm_denoising = p_dict_custom_interfaces['skip_nlm_denoising'] if 'skip_nlm_denoising' in  p_dict_custom_interfaces.keys() else False
 
-        self.m_skip_stacks_ordering = p_skip_stacks_ordering if self.m_stacks is not None else False
-
+            self.m_skip_stacks_ordering = p_dict_custom_interfaces['skip_stacks_ordering'] if \
+                ((self.m_stacks is not None) and ('skip_stacks_ordering' in p_dict_custom_interfaces.keys())) else False
+        else:
+            self.m_skip_svr = False
+            self.m_do_refine_hr_mask = False
+            self.m_skip_nlm_denoising =  False
+            self.m_skip_stacks_ordering = False
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.

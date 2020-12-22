@@ -6,6 +6,9 @@
 		"paramTV": { 
 			"lambdaTV": 0.75, 
 			"deltatTV": 0.01 },
-		"skip_stacks_ordering": true
+		"custom_interfaces": {
+			"skip_stacks_ordering": true,
+			"skip_svr": false
+		}
 	}]
 }
