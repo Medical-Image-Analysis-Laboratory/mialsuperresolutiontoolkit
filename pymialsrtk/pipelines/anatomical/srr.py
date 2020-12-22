@@ -12,8 +12,8 @@ from nipype import config, logging
 # from nipype.interfaces.io import BIDSDataGrabber
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.interfaces.utility import IdentityInterface
-# from nipype.pipeline import Node, MapNode, Workflow
-from nipype.pipeline import Node, Workflow
+from nipype.pipeline import Node, MapNode, Workflow
+# from nipype.pipeline import Node, Workflow
 
 # Import the implemented interface from pymialsrtk
 import pymialsrtk.interfaces.preprocess as preprocess
@@ -224,7 +224,9 @@ class AnatomicalPipeline:
                                                                    self.session,
                                                                    'anat',
                                                                    '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])))
-            brainMask = Node(interface=IdentityInterface(fields=['masks']), name='brain_masks_bypass')
+            brainMask = MapNode(interface=IdentityInterface(fields=['out_file']),
+                                name='brain_masks_bypass',
+                                iterfield=['out_file'])
 
         else:
             dg = Node(interface=DataGrabber(outfields=['T2ws']), name='data_grabber')
@@ -240,7 +242,9 @@ class AnatomicalPipeline:
                 dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
                                                                   self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
 
-            brainMask = Node(interface = preprocess.MultipleBrainExtraction(), name='Multiple_Brain_extraction')
+            brainMask = MapNode(interface = preprocess.BrainExtraction(),
+                                name='Multiple_Brain_extraction',
+                                iterfield=['in_file'])
             brainMask.inputs.bids_dir = self.bids_dir
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk",
                                                                            os.path.join("data",
@@ -264,29 +268,42 @@ class AnatomicalPipeline:
             stacksOrdering = Node(interface=IdentityInterface(fields=['stacks_order']), name='stackOrdering')
             stacksOrdering.inputs.stacks_order = self.p_stacks_order
 
-        nlmDenoise = Node(interface=preprocess.MultipleBtkNLMDenoising(), name='nlmDenoise')
+        nlmDenoise = MapNode(interface=preprocess.BtkNLMDenoising(),
+                          name='nlmDenoise',
+                             iterfield=['in_file', 'in_mask'])
         nlmDenoise.inputs.bids_dir = self.bids_dir
 
         # Sans le mask le premier correct slice intensity...
-        srtkCorrectSliceIntensity01_nlm = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01_nlm')
+        srtkCorrectSliceIntensity01_nlm = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
+                                                  name='srtkCorrectSliceIntensity01_nlm',
+                                                  iterfield=['in_file', 'in_mask'])
         srtkCorrectSliceIntensity01_nlm.inputs.bids_dir = self.bids_dir
         srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
 
-        srtkCorrectSliceIntensity01 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity01')
+        srtkCorrectSliceIntensity01 = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
+                                              name='srtkCorrectSliceIntensity01',
+                                                  iterfield=['in_file', 'in_mask'])
         srtkCorrectSliceIntensity01.inputs.bids_dir = self.bids_dir
         srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
 
-        srtkSliceBySliceN4BiasFieldCorrection = Node(interface=preprocess.MultipleMialsrtkSliceBySliceN4BiasFieldCorrection(),
-                                                     name='srtkSliceBySliceN4BiasFieldCorrection')
+        srtkSliceBySliceN4BiasFieldCorrection = MapNode(interface=preprocess.MialsrtkSliceBySliceN4BiasFieldCorrection(),
+                                                     name='srtkSliceBySliceN4BiasFieldCorrection',
+                                                        iterfield=['in_file', 'in_mask'])
         srtkSliceBySliceN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
 
-        srtkSliceBySliceCorrectBiasField = Node(interface=preprocess.MultipleMialsrtkSliceBySliceCorrectBiasField(), name='srtkSliceBySliceCorrectBiasField')
+        srtkSliceBySliceCorrectBiasField = MapNode(interface=preprocess.MialsrtkSliceBySliceCorrectBiasField(),
+                                                   name='srtkSliceBySliceCorrectBiasField',
+                                                   iterfield=['in_file', 'in_mask', 'in_field'])
         srtkSliceBySliceCorrectBiasField.inputs.bids_dir = self.bids_dir
 
-        srtkCorrectSliceIntensity02_nlm = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity02_nlm')
+        srtkCorrectSliceIntensity02_nlm = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
+                                                  name='srtkCorrectSliceIntensity02_nlm',
+                                                  iterfield=['in_file','in_mask'])
         srtkCorrectSliceIntensity02_nlm.inputs.bids_dir = self.bids_dir
 
-        srtkCorrectSliceIntensity02 = Node(interface=preprocess.MultipleMialsrtkCorrectSliceIntensity(), name='srtkCorrectSliceIntensity02')
+        srtkCorrectSliceIntensity02 = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
+                                              name='srtkCorrectSliceIntensity02',
+                                              iterfield=['in_file', 'in_mask'])
         srtkCorrectSliceIntensity02.inputs.bids_dir = self.bids_dir
 
         srtkIntensityStandardization01 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization01')
@@ -307,7 +324,9 @@ class AnatomicalPipeline:
         srtkIntensityStandardization02_nlm = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02_nlm')
         srtkIntensityStandardization02_nlm.inputs.bids_dir = self.bids_dir
 
-        srtkMaskImage01 = Node(interface=preprocess.MultipleMialsrtkMaskImage(), name='srtkMaskImage01')
+        srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
+                                  name='srtkMaskImage01',
+                                  iterfield=['in_file', 'in_mask'])
         srtkMaskImage01.inputs.bids_dir = self.bids_dir
 
         srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
@@ -344,43 +363,42 @@ class AnatomicalPipeline:
 
         # Nodes ready - Linking now
         if self.use_manual_masks:
-            self.wf.connect(dg, "masks", brainMask, "masks")
+            self.wf.connect(dg, "masks", brainMask, "out_file")
         else:
-            self.wf.connect(dg, "T2ws", brainMask, "input_images")
+            self.wf.connect(dg, "T2ws", brainMask, "in_file")
 
         if self.compute_stacks_order:
-            self.wf.connect(brainMask, "masks", stacksOrdering, "input_masks")
+            self.wf.connect(brainMask, "out_file", stacksOrdering, "input_masks")
 
 
         self.wf.connect(stacksOrdering, "stacks_order", t2ws_filtered, "stacks_id")
         self.wf.connect(dg, "T2ws", t2ws_filtered, "input_files")
 
         self.wf.connect(stacksOrdering, "stacks_order", masks_filtered, "stacks_id")
-        self.wf.connect(brainMask, "masks", masks_filtered, "input_files")
+        self.wf.connect(brainMask, "out_file", masks_filtered, "input_files")
+        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_file")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_mask")  ## Comment to match docker process
 
-        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "input_images")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "input_masks")  ## Comment to match docker process
+        self.wf.connect(nlmDenoise, ("out_file", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_file")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_mask")
 
-        self.wf.connect(nlmDenoise, ("output_images", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "input_images")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "input_masks")
+        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_file")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_mask")
 
-        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "input_images")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "input_masks")
+        self.wf.connect(srtkCorrectSliceIntensity01_nlm, ("out_file", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_file")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_mask")
 
-        self.wf.connect(srtkCorrectSliceIntensity01_nlm, ("output_images", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "input_images")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "input_masks")
+        self.wf.connect(srtkCorrectSliceIntensity01, ("out_file", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_file")
+        self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("out_fld_file", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_field")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_mask")
+        self.wf.connect(srtkSliceBySliceCorrectBiasField, ("out_im_file", utils.sort_ascending), srtkCorrectSliceIntensity02, "in_file")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02, "in_mask")
 
-        self.wf.connect(srtkCorrectSliceIntensity01, ("output_images", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "input_images")
-        self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("output_fields", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "input_fields")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "input_masks")
-        self.wf.connect(srtkSliceBySliceCorrectBiasField, ("output_images", utils.sort_ascending), srtkCorrectSliceIntensity02, "input_images")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02, "input_masks")
+        self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("out_im_file", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "in_file")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "in_mask")
+        self.wf.connect(srtkCorrectSliceIntensity02, ("out_file", utils.sort_ascending), srtkIntensityStandardization01, "input_images")
 
-        self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("output_images", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "input_images")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "input_masks")
-        self.wf.connect(srtkCorrectSliceIntensity02, ("output_images", utils.sort_ascending), srtkIntensityStandardization01, "input_images")
-
-        self.wf.connect(srtkCorrectSliceIntensity02_nlm, ("output_images", utils.sort_ascending), srtkIntensityStandardization01_nlm, "input_images")
+        self.wf.connect(srtkCorrectSliceIntensity02_nlm, ("out_file", utils.sort_ascending), srtkIntensityStandardization01_nlm, "input_images")
 
         self.wf.connect(srtkIntensityStandardization01, ("output_images", utils.sort_ascending), srtkHistogramNormalization, "input_images")
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHistogramNormalization, "input_masks")
@@ -389,10 +407,10 @@ class AnatomicalPipeline:
         self.wf.connect(srtkHistogramNormalization, ("output_images", utils.sort_ascending), srtkIntensityStandardization02, "input_images")
         self.wf.connect(srtkHistogramNormalization_nlm, ("output_images", utils.sort_ascending), srtkIntensityStandardization02_nlm, "input_images")
 
-        self.wf.connect(srtkIntensityStandardization02_nlm, ("output_images", utils.sort_ascending), srtkMaskImage01, "input_images")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkMaskImage01, "input_masks")
+        self.wf.connect(srtkIntensityStandardization02_nlm, ("output_images", utils.sort_ascending), srtkMaskImage01, "in_file")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkMaskImage01, "in_mask")
 
-        self.wf.connect(srtkMaskImage01, "output_images", srtkImageReconstruction, "input_images")
+        self.wf.connect(srtkMaskImage01, "out_im_file", srtkImageReconstruction, "input_images")
         self.wf.connect(masks_filtered, "output_files", srtkImageReconstruction, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
 
@@ -419,13 +437,15 @@ class AnatomicalPipeline:
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), datasink, 'anat.@LRmasks')
 
         self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsPreproc')
-        self.wf.connect(srtkMaskImage01, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsDenoised')
+        self.wf.connect(srtkMaskImage01, ("out_im_file", utils.sort_ascending), datasink, 'anat.@LRsDenoised')
         self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), datasink, 'xfm.@transforms')
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat.@SDI')
         self.wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
         self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
         self.wf.connect(srtkRefineHRMaskByIntersection, "output_srmask", datasink, 'anat.@SRmask')
+
+        return
 
 
     def run(self, number_of_cores=1):
