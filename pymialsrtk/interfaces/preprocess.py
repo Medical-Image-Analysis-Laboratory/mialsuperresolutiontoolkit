@@ -93,10 +93,16 @@ class BtkNLMDenoising(BaseInterface):
     input_spec = BtkNLMDenoisingInputSpec
     output_spec = BtkNLMDenoisingOutputSpec
 
+    def _gen_filename(self, name):
+        if name == 'out_file':
+            _, name, ext = split_filename(self.inputs.in_file)
+            output = name + self.inputs.out_postfix + ext
+            return os.path.abspath(output)
+        return None
+
     def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                ''.join((name, self.inputs.out_postfix, ext)))
+        out_file = self._gen_filename('out_file')
 
         if self.inputs.in_mask:
             cmd = 'btkNLMDenoising -i "{}" -m "{}" -o "{}" -b {}'.format(self.inputs.in_file, self.inputs.in_mask, out_file, self.inputs.weight)
@@ -105,7 +111,7 @@ class BtkNLMDenoising(BaseInterface):
 
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd , env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -113,8 +119,7 @@ class BtkNLMDenoising(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        outputs['out_file'] = os.path.join(self.inputs.bids_dir, ''.join((name, self.inputs.out_postfix, ext)))
+        outputs['out_file'] = self._gen_filename('out_file')
         return outputs
 
 
@@ -232,9 +237,17 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
     input_spec = MialsrtkCorrectSliceIntensityInputSpec
     output_spec = MialsrtkCorrectSliceIntensityOutputSpec
 
+
+    def _gen_filename(self, name):
+        if name == 'out_file':
+            _, name, ext = split_filename(self.inputs.in_file)
+            output = name + self.inputs.out_postfix + ext
+            return os.path.abspath(output)
+        return None
+
     def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+        out_file = self._gen_filename('out_file')
 
         cmd = 'mialsrtkCorrectSliceIntensity "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_file)
         try:
@@ -247,8 +260,7 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        outputs['out_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+        outputs['out_file'] = self._gen_filename('out_file')
         return outputs
 
 
@@ -365,12 +377,23 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     input_spec = MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec
     output_spec = MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec
 
+    def _gen_filename(self, name):
+        if name == 'out_im_file':
+            _, name, ext = split_filename(self.inputs.in_file)
+            output = name + self.inputs.out_im_postfix + ext
+            return os.path.abspath(output)
+        elif name == 'out_fld_file':
+            _, name, ext = split_filename(self.inputs.in_file)
+            output = name + self.inputs.out_fld_postfix + ext
+            if "_uni" in output:
+                output.replace('_uni', '')
+            return os.path.abspath(output)
+        return None
+
     def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        out_im_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
-        out_fld_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_fld_postfix, ext)))
-        if "_uni" in out_fld_file:
-            out_fld_file.replace('_uni', '')
+        out_im_file = self._gen_filename('out_im_file')
+        out_fld_file = self._gen_filename('out_fld_file')
 
         cmd = 'mialsrtkSliceBySliceN4BiasFieldCorrection "{}" "{}" "{}" "{}"'.format(self.inputs.in_file,
                                                                                      self.inputs.in_mask,
@@ -385,13 +408,8 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        outputs['out_im_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
-
-        out_fld_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_fld_postfix, ext)))
-        if "_uni" in out_fld_file:
-            out_fld_file.replace('_uni', '')
-        outputs['out_fld_file'] = out_fld_file
+        outputs['out_im_file'] = self._gen_filename('out_im_file')
+        outputs['out_fld_file'] = self._gen_filename('out_fld_file')
         return outputs
 
 
@@ -500,9 +518,16 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     input_spec = MialsrtkSliceBySliceCorrectBiasFieldInputSpec
     output_spec = MialsrtkSliceBySliceCorrectBiasFieldOutputSpec
 
+    def _gen_filename(self, name):
+        if name == 'out_im_file':
+            _, name, ext = split_filename(self.inputs.in_file)
+            output = name + self.inputs.out_im_postfix + ext
+            return os.path.abspath(output)
+        return None
+
     def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        out_im_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
+        out_im_file = self._gen_filename('out_im_file')
 
         cmd = 'mialsrtkSliceBySliceCorrectBiasField "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, self.inputs.in_field, out_im_file)
         try:
@@ -515,8 +540,7 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        outputs['out_im_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
+        outputs['out_im_file'] = self._gen_filename('out_im_file')
         return outputs
 
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
@@ -618,12 +642,19 @@ class MialsrtkIntensityStandardization(BaseInterface):
     input_spec = MialsrtkIntensityStandardizationInputSpec
     output_spec = MialsrtkIntensityStandardizationOutputSpec
 
+
+    def _gen_filename(self, orig, name):
+        if name == 'output_images':
+            _, name, ext = split_filename(orig)
+            output = name + self.inputs.out_postfix + ext
+            return os.path.abspath(output)
+        return None
+
     def _run_interface(self, runtime):
 
         cmd = 'mialsrtkIntensityStandardization'
         for input_image in self.inputs.input_images:
-            _, name, ext = split_filename(os.path.abspath(input_image))
-            out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
+            out_file = self._gen_filename(input_image, 'output_images')
             cmd = cmd + ' --input "{}" --output "{}"'.format(input_image, out_file)
 
         if self.inputs.in_max:
@@ -639,7 +670,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_images'] = glob(os.path.abspath("*.nii.gz"))
+        outputs['output_images'] = [self._gen_filename(input_image, 'output_images') for input_image in self.inputs.input_images]
         return outputs
 
 
@@ -687,22 +718,24 @@ class MialsrtkHistogramNormalization(BaseInterface):
     input_spec = MialsrtkHistogramNormalizationInputSpec
     output_spec = MialsrtkHistogramNormalizationOutputSpec
 
+    def _gen_filename(self, orig, name):
+        if name == 'output_images':
+            _, name, ext = split_filename(orig)
+            output = name + self.inputs.out_postfix + ext
+            return os.path.abspath(output)
+        return None
+
     def _run_interface(self, runtime):
 
         cmd = 'python /usr/local/bin/mialsrtkHistogramNormalization.py '
 
         if len(self.inputs.input_masks) > 0:
             for in_file, in_mask in zip(self.inputs.input_images, self.inputs.input_masks):
-                _, name, ext = split_filename(os.path.abspath(in_file))
-                out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_postfix, ext)))
-
+                out_file = self._gen_filename(in_file, 'output_images')
                 cmd = cmd + ' -i "{}" -o "{}" -m "{}" '.format(in_file, out_file, in_mask)
         else:
             for in_file in self.inputs.input_images:
-                _, name, ext = split_filename(os.path.abspath(in_file))
-                out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                        ''.join((name, self.inputs.out_postfix, ext)))
-
+                out_file = self._gen_filename(in_file, 'output_images')
                 cmd = cmd + ' -i "{}" -o "{}"" '.format(in_file, out_file)
         try:
             print('... cmd: {}'.format(cmd))
@@ -715,7 +748,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_images'] = glob(os.path.abspath(''.join(["*", self.inputs.out_postfix, ".nii.gz"])))
+        outputs['output_images'] = [self._gen_filename(in_file, 'output_images') for in_file in self.inputs.input_images]
         return outputs
 
 
@@ -756,9 +789,15 @@ class MialsrtkMaskImage(BaseInterface):
     input_spec = MialsrtkMaskImageInputSpec
     output_spec = MialsrtkMaskImageOutputSpec
 
+    def _gen_filename(self, name):
+        if name == 'out_im_file':
+            _, name, ext = split_filename(self.inputs.in_file)
+            output = name + self.inputs.out_im_postfix + ext
+            return os.path.abspath(output)
+        return None
+
     def _run_interface(self, runtime):
-        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        out_im_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
+        out_im_file = self._gen_filename('out_im_file')
 
         cmd = 'mialsrtkMaskImage -i "{}" -m "{}" -o "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file)
         try:
@@ -771,8 +810,7 @@ class MialsrtkMaskImage(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        outputs['out_im_file'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'), ''.join((name, self.inputs.out_im_postfix, ext)))
+        outputs['out_im_file'] = self._gen_filename('out_im_file')
         return outputs
 
 
@@ -880,11 +918,6 @@ class FilteringByRunid(BaseInterface):
             print(e)
         return runtime
 
-    def _list_outputs(self):
-        outputs = self._outputs().get()
-        outputs['output_files'] = self.m_output_files
-        return outputs
-
     def _filter_by_runid(self, input_files, p_stacks_id):
         output_files = []
         for f in input_files:
@@ -892,6 +925,11 @@ class FilteringByRunid(BaseInterface):
             if f_id in p_stacks_id:
                 output_files.append(f)
         return output_files
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_files'] = self.m_output_files
+        return outputs
 
 
 class StacksOrderingInputSpec(BaseInterfaceInputSpec):
@@ -1038,7 +1076,7 @@ class BrainExtractionInputSpec(BaseInterfaceInputSpec):
     threshold_loc = traits.Float(0.49, desc='Threshold determining cutoff probability (0.49 by default)')
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
     threshold_seg = traits.Float(0.5, desc='Threshold for cutoff probability (0.5 by default)')
-    out_postfix = traits.Str("_brainMask.nii.gz", desc='Suffix of the automatically generated mask', usedefault=True)
+    out_postfix = traits.Str("_brainMask", desc='Suffix of the automatically generated mask', usedefault=True)
 
 
 class BrainExtractionOutputSpec(TraitedSpec):
@@ -1075,17 +1113,24 @@ class BrainExtraction(BaseInterface):
     input_spec = BrainExtractionInputSpec
     output_spec = BrainExtractionOutputSpec
 
+    def _gen_filename(self, name):
+        if name == 'out_file':
+            _, name, ext = split_filename(self.inputs.in_file)
+            output = name + self.inputs.out_postfix + ext
+            return os.path.abspath(output)
+        return None
+
     def _run_interface(self, runtime):
 
         try:
             self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
-                               self.inputs.in_ckpt_seg, self.inputs.threshold_seg, self.inputs.bids_dir, self.inputs.out_postfix)
+                               self.inputs.in_ckpt_seg, self.inputs.threshold_seg) #, self.inputs.bids_dir, self.inputs.out_postfix)
         except Exception:
             print('Failed')
             print(traceback.format_exc())
         return runtime
 
-    def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc, modelCkptSeg, thresholdSeg, bidsDir, out_postfix):
+    def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc, modelCkptSeg, thresholdSeg): #, bidsDir, out_postfix):
         """Generate a brain mask by passing the input image(s) through two networks.
 
         The first network localizes the brain by a coarse-grained segmentation while the
@@ -1347,8 +1392,7 @@ class BrainExtraction(BaseInterface):
             up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
             # Save output mask
 
-            _, name, ext = split_filename(os.path.abspath(dataPath))
-            save_file = os.path.join(os.getcwd(), ''.join((name, out_postfix, ext)))
+            save_file = self._gen_filename('out_file')
             nibabel.save(up_mask, save_file)
 
     def _extractLargestCC(self, image):
@@ -1535,9 +1579,9 @@ class BrainExtraction(BaseInterface):
         return crt_stack_pp
 
     def _list_outputs(self):
-        _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
-        out_file = os.path.join(os.getcwd(), ''.join((name, self.inputs.out_postfix, ext)))
-        return {'out_file': out_file}
+        outputs = self._outputs().get()
+        outputs['out_file'] = self._gen_filename('out_file')
+        return outputs
 
 
 class MultipleBrainExtractionInputSpec(BaseInterfaceInputSpec):

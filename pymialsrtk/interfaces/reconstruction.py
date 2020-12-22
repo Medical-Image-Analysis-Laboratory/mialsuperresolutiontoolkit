@@ -90,6 +90,22 @@ class MialsrtkImageReconstruction(BaseInterface):
     input_spec = MialsrtkImageReconstructionInputSpec
     output_spec = MialsrtkImageReconstructionOutputSpec
 
+    def _gen_filename(self, orig, name):
+        if name == 'output_sdi':
+            _, _, ext = split_filename(orig)
+            output = ''.join([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
+                      str(len(self.inputs.stacks_order)), 'V_rad',
+                      str(int(self.inputs.input_rad_dilatation)), ext])
+            return os.path.abspath(output)
+
+        elif name == 'output_transforms':
+            _, name, _ = split_filename(self.inputs.input_image)
+            output = ''.join([name, self.inputs.out_transf_postfix, '_',
+                     str(len(self.inputs.stacks_order)), 'V', '.txt'])
+
+            return os.path.abspath(output)
+        return None
+
     def _run_interface(self, runtime):
         params = []
         params.append(''.join(["--", self.inputs.in_roi]))
@@ -98,10 +114,8 @@ class MialsrtkImageReconstruction(BaseInterface):
         input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
 
         for in_image, in_mask in zip(input_images, input_masks):
-            _, name, ext = split_filename(os.path.abspath(in_image))
-            transf_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                       ''.join([name, self.inputs.out_transf_postfix, '_',
-                                                str(len(self.inputs.stacks_order)), 'V', '.txt']))
+
+            transf_file = self._gen_filename(in_image, 'output_transforms')
 
             params.append("-i")
             params.append(in_image)
@@ -113,10 +127,7 @@ class MialsrtkImageReconstruction(BaseInterface):
             params.append("-t")
             params.append(transf_file)
 
-        out_file = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
-                                          str(len(self.inputs.stacks_order)), 'V_rad',
-                                          str(int(self.inputs.input_rad_dilatation)), ext])))
+        out_file = self._gen_filename(self.inputs.input_images[0], 'output_sdi')
 
         params.append("-o")
         params.append(out_file)
@@ -138,13 +149,8 @@ class MialsrtkImageReconstruction(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_transforms'] = glob(os.path.abspath("*.txt"))
-
-        _, _, ext = split_filename(os.path.abspath(self.inputs.input_images[0]))
-        outputs['output_sdi'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                             ''.join(([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
-                                                       str(len(self.inputs.stacks_order)),'V_rad', str(int(self.inputs.input_rad_dilatation)), ext])))
-
+        outputs['output_transforms'] = [self._gen_filename(in_image, 'output_transforms') for in_image in self.inputs.input_images]
+        outputs['output_sdi'] = self._gen_filename(self.inputs.input_images[0], 'output_transforms')
         return outputs
 
 
@@ -217,7 +223,7 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkTVSuperResolution interface."""
 
     output_sr = File(desc='Output super-resolution image file')
-    output_dict = Dict(desc='Super-resolution reconstruction parameters summarized in a python dictionary')
+    # output_dict = Dict(desc='Super-resolution reconstruction parameters summarized in a python dictionary')
     output_json_path = File(desc='Output path where `output_dict` should be saved ')
 
 
@@ -255,6 +261,24 @@ class MialsrtkTVSuperResolution(BaseInterface):
     m_out_files = ''
     m_output_dict = {}
 
+
+    def _gen_filename(self, orig, name):
+        if name == 'output_sr':
+            _, _, ext = split_filename(self.inputs.input_sdi)
+            output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
+                                                      str(len(self.inputs.stacks_order)), 'V_rad',
+                                                      str(int(self.inputs.input_rad_dilatation)), ext])
+            return os.path.abspath(output)
+
+        elif name == 'output_json_path':
+            output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
+                                                      str(len(self.inputs.stacks_order)), 'V_rad',
+                                                      str(int(self.inputs.input_rad_dilatation)), '.json'])
+
+            return os.path.abspath(output)
+
+        return None
+
     def _run_interface(self, runtime):
 
         cmd = ['mialsrtkTVSuperResolution']
@@ -268,14 +292,10 @@ class MialsrtkTVSuperResolution(BaseInterface):
             cmd += ['-m', in_mask]
             cmd += ['-t', in_transform]
 
-        _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
-        self.m_out_files = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                ''.join(([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                          str(len(self.inputs.stacks_order)),'V_rad',
-                                          str(int(self.inputs.input_rad_dilatation))])))
+        out_sr = self._gen_filename('output_zr')
 
         cmd += ['-r', self.inputs.input_sdi]
-        cmd += ['-o', ''.join([self.m_out_files, ext])]
+        cmd += ['-o', out_sr]
 
         if self.inputs.deblurring:
             cmd += ['--debluring']
@@ -303,7 +323,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         self.m_output_dict["CustomMetaData"]["Primal/dual loops"] = self.inputs.in_loop
 
 
-        output_json_path = ''.join([self.m_out_files, '.json'])
+        output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
             json.dump(self.m_output_dict, outfile)
             print('json dumped.')
@@ -321,8 +341,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
-        outputs['output_sr'] = ''.join([self.m_out_files, ext])
-        outputs['output_dict'] = self.m_output_dict
-        outputs['output_json_path'] = ''.join([self.m_out_files, '.json'])
+        outputs['output_sr'] = self._gen_filename('output_sr')
+        # outputs['output_dict'] = self.m_output_dict
+        outputs['output_json_path'] = self._gen_filename('output_json_path')
 
         return outputs
