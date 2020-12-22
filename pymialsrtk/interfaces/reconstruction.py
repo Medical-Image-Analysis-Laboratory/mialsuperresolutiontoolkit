@@ -150,7 +150,7 @@ class MialsrtkImageReconstruction(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_transforms'] = [self._gen_filename(in_image, 'output_transforms') for in_image in self.inputs.input_images]
-        outputs['output_sdi'] = self._gen_filename(self.inputs.input_images[0], 'output_transforms')
+        outputs['output_sdi'] = self._gen_filename(self.inputs.input_images[0], 'output_sdi')
         return outputs
 
 
@@ -292,7 +292,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
             cmd += ['-m', in_mask]
             cmd += ['-t', in_transform]
 
-        out_sr = self._gen_filename('output_zr')
+        out_sr = self._gen_filename('output_sr')
 
         cmd += ['-r', self.inputs.input_sdi]
         cmd += ['-o', out_sr]
