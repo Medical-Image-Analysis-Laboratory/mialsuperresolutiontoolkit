@@ -40,9 +40,11 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
           "paramTV": { 
             "lambdaTV": 0.75, 
             "deltatTV": 0.01 },
-          "skip_svr": true,
-          "do_refine_hr_mask": false,
-          "skip_stacks_ordering": false
+          "custom_interfaces":
+            {
+            "skip_svr": true,
+            "do_refine_hr_mask": false,
+            "skip_stacks_ordering": false }
         }]
       "02": [
         { "sr-id": 1,
@@ -64,13 +66,15 @@ where:
 
     * ``"session"`` (optional) It MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
 
-    * ``"skip_svr"`` (optional) indicates weither the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
+    * ``"custom_interfaces"`` (optional): indicates weither optional interfaces of the pipeline should be performed.
 
-    * ``"do_refine_hr_mask"`` (optional) indicates weither a refinement of the HR mask should be performed. (default is False)
+        * ``"skip_svr"`` (optional) the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
 
-    * ``"skip_nlm_denoising"`` (optional) indicates weither the NLM denoising preprocessing should be skipped. (default is False)
+        * ``"do_refine_hr_mask"`` (optional) indicates weither a refinement of the HR mask should be performed. (default is False)
 
-    * ``"skip_stacks_ordering"`` (optional) indicates weither the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
+        * ``"skip_nlm_denoising"`` (optional) indicates weither the NLM denoising preprocessing should be skipped. (default is False)
+
+        * ``"skip_stacks_ordering"`` (optional) indicates weither the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
 
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.

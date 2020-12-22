@@ -127,7 +127,6 @@ class AnatomicalPipeline:
     def __init__(self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
                  session=None, paramTV=None, p_masks_derivatives_dir=None,
                  p_dict_custom_interfaces = None):
-                 # p_skip_svr=False, p_do_refine_hr_mask=False, p_skip_nlm_denoising=False, p_skip_stacks_ordering=False):
         """Constructor of AnatomicalPipeline class instance."""
 
         # BIDS processing parameters

@@ -259,11 +259,6 @@ if __name__ == '__main__':
 
                     dict_custom_interfaces = sr_params['custom_interfaces'] if 'custom_interfaces' in sr_params.keys() else None
 
-                    # skip_svr = sr_params['skip_svr'] if 'skip_svr' in sr_params.keys() else False
-                    # do_refine_hr_mask = sr_params['do_refine_hr_mask'] if 'do_refine_hr_mask' in sr_params.keys() else False
-                    # skip_nlm_denoising = sr_params['skip_nlm_denoising'] if 'skip_nlm_denoising' in sr_params.keys() else False
-                    # skip_stacks_ordering = sr_params['skip_stacks_ordering'] if 'skip_stacks_ordering' in sr_params.keys() else False
-
                     if ("sr-id" not in sr_params.keys()):
                         print('Do not process subjects %s because of missing parameters.' % sub)
                         continue
@@ -278,10 +273,6 @@ if __name__ == '__main__':
                                masks_derivatives_dir=args.masks_derivatives_dir,
                                number_of_cores=nipype_nb_of_cores,
                                dict_custom_interfaces = dict_custom_interfaces)
-                               # skip_svr=skip_svr,
-                               # do_refine_hr_mask=do_refine_hr_mask,
-                               # skip_nlm_denoising=skip_nlm_denoising,
-                               # skip_stacks_ordering=skip_stacks_ordering)
 
     else:
         print('ERROR: Processing of all dataset not implemented yet\n At least one participant label should be provided')
