@@ -262,7 +262,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
     m_output_dict = {}
 
 
-    def _gen_filename(self, orig, name):
+    def _gen_filename(self, name):
         if name == 'output_sr':
             _, _, ext = split_filename(self.inputs.input_sdi)
             output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
