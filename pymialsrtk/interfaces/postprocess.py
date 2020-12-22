@@ -82,11 +82,11 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
             _, name, ext = split_filename(orig)
             run_id = (name.split('run-')[1]).split('_')[0]
             name = name.replace('_run-' + run_id + '_', '_')
-            output = name + self.inputs.out_lrmask_postfix + ext
+            output = name + self.inputs.out_srmask_postfix + ext
             return os.path.abspath(output)
         elif name == 'output_lrmasks':
             _, name, ext = split_filename(orig)
-            output = name + self.inputs.out_srmask_postfix + ext
+            output = name + self.inputs.out_lrmask_postfix + ext
             return os.path.abspath(output)
         return None
 
