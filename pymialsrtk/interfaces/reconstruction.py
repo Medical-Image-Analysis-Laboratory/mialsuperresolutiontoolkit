@@ -99,7 +99,7 @@ class MialsrtkImageReconstruction(BaseInterface):
             return os.path.abspath(output)
 
         elif name == 'output_transforms':
-            _, name, _ = split_filename(self.inputs.input_image)
+            _, name, _ = split_filename(orig)
             output = ''.join([name, self.inputs.out_transf_postfix, '_',
                      str(len(self.inputs.stacks_order)), 'V', '.txt'])
 
