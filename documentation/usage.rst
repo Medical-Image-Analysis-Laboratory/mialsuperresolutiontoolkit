@@ -28,7 +28,7 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
       "01": [
         { "sr-id": 1,
           ("session": 01,)
-          "stacksOrder": [1, 3, 5, 2, 4, 6],
+          "stacks": [1, 3, 5, 2, 4, 6],
           "paramTV": { 
             "lambdaTV": 0.75, 
             "deltatTV": 0.01 }
@@ -36,15 +36,20 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
       "01": [
         { "sr-id": 2,
           ("session": 01,)
-          "stacksOrder": [2, 3, 5, 4],
+          "stacks": [2, 3, 5, 4],
           "paramTV": { 
             "lambdaTV": 0.75, 
-            "deltatTV": 0.01 }
+            "deltatTV": 0.01 },
+          "custom_interfaces":
+            {
+            "skip_svr": true,
+            "do_refine_hr_mask": false,
+            "skip_stacks_ordering": false }
         }]
       "02": [
         { "sr-id": 1,
           ("session": 01,)
-          "stacksOrder": [3, 1, 2, 4],
+          "stacks": [3, 1, 2, 4],
           "paramTV": { 
             "lambdaTV": 0.7, 
             "deltatTV": 0.01 }
@@ -53,14 +58,23 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
     } 
 
 where:
-    * ``"sr-id"`` allows to distinguish between runs with different configurations of the same acquisition set.
+    * ``"sr-id"`` (mandatoy) allows to distinguish between runs with different configurations of the same acquisition set.
 
-    * ``"stacksOrder"`` defines the list and order od scans to be used in the reconstruction.
+    * ``"stacks"`` (optional) defines the list of scans to be used in the reconstruction. The specified order is considered if ``"skip_stacks_ordering"`` is False
 
-    * ``"lambdaTV"`` (regularization) and `deltaTV` (optimization time step) are parameters of the TV super-resolution algorithm.
+    * ``"paramTV"`` (optional): ``"lambdaTV"`` (regularization) and ``"deltaTV"`` (optimization time step) are parameters of the TV super-resolution algorithm.
 
-    * ``"session"`` MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
+    * ``"session"`` (optional) It MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
 
+    * ``"custom_interfaces"`` (optional): indicates weither optional interfaces of the pipeline should be performed.
+
+        * ``"skip_svr"`` (optional) the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
+
+        * ``"do_refine_hr_mask"`` (optional) indicates weither a refinement of the HR mask should be performed. (default is False)
+
+        * ``"skip_nlm_denoising"`` (optional) indicates weither the NLM denoising preprocessing should be skipped. (default is False)
+
+        * ``"skip_stacks_ordering"`` (optional) indicates weither the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
 
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
