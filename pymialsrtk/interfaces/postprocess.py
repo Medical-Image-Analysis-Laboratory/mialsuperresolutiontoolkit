@@ -27,50 +27,12 @@ from pymialsrtk.interfaces.utils import run
 #######################
 
 class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MialsrtkRefineHRMaskByIntersection interface.
-
-    Attributes
-    ----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_images <list<string>>
-        Input image filenames (required)
-
-    input_masks <list<string>>
-        Mask of the input images (required)
-
-    input_transforms <list<string>>
-        Input transformation filenames (required)
-
-    input_sr <string>
-        SR reconstruction filename (required)
-
-    input_rad_dilatation <float>
-        Radius of the structuring element (ball) used for binary  morphological dilation (default is 1)
-
-    in_use_staple <bool>
-        Use STAPLE for voting (default is True). If STAPLE is not used, Majority Voting is used instead.
-
-    out_lrmask_postfix <string>
-        suffix added to construct output low-resolution mask filenames (default is '_LRmask')
-
-    out_srmask_postfix <string>
-        suffix added to construct output super-resolution mask filename (default is '_srMask')
-
-    stacks_order <list<int>>
-        order of images index. To ensure images are processed with their correct corresponding mask.
-
-    See Also
-    ----------
-    pymialsrtk.interfaces.preprocess.MialsrtkRefineHRMaskByIntersection
-
-    """
+    """Class used to represent inputs of the MialsrtkRefineHRMaskByIntersection interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
-    input_images = InputMultiPath(File(desc='Image filenames used in SR reconstruction', mandatory=True))
-    input_masks = InputMultiPath(File(desc='Mask filenames', mandatory=True))
-    input_transforms = InputMultiPath(File(desc='Transformation filenames', mandatory=True))
+    input_images = InputMultiPath(File(mandatory=True), desc='Image filenames used in SR reconstruction')
+    input_masks = InputMultiPath(File(mandatory=True), desc='Mask filenames')
+    input_transforms = InputMultiPath(File(mandatory=True), desc='Transformation filenames')
     input_sr = File(desc='SR image filename', mandatory=True)
 
     input_rad_dilatation = traits.Int(1,desc='Radius of the structuring element (ball)', usedefault=True)
@@ -84,24 +46,10 @@ class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
 
 
 class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MialsrtkRefineHRMaskByIntersection interface.
-
-    Attributes
-    -----------
-    output_lrmasks <string>
-        Output refined low-resolution mask file
-
-    output_srmask <string>
-        Output refined high-resolution mask file
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkRefineHRMaskByIntersection
-
-    """
+    """Class used to represent outputs of the MialsrtkRefineHRMaskByIntersection interface."""
 
     output_srmask = File(desc='Output super-resolution reconstruction refined mask')
-    output_lrmasks = OutputMultiPath(File(desc='Output low-resolution reconstruction refined masks'))
+    output_lrmasks = OutputMultiPath(File(), desc='Output low-resolution reconstruction refined masks')
 
 
 class MialsrtkRefineHRMaskByIntersection(BaseInterface):
@@ -180,30 +128,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 ############################
 
 class MialsrtkN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MialsrtkN4BiasFieldCorrection interface.
-
-    Attributes
-    ----------
-    bids_dir <string>
-        BIDS root directory (required)
-
-    input_image <string>
-        Input image filename (required)
-
-    input_mask <string>
-        Mask of the input image
-
-    out_im_postfix <string>
-        suffix added to construct output image corrected filename (default is '_gbcorr')
-
-    out_fld_postfix <string>
-        suffix added to construct output bias field filename (default is '_gbcorrfield')
-
-    See Also
-    ----------
-    pymialsrtk.interfaces.preprocess.MialsrtkN4BiasFieldCorrection
-
-    """
+    """Class used to represent inputs of the MialsrtkN4BiasFieldCorrection interface."""
 
     bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_image = File(desc='Input image filename to be normalized', mandatory=True)
@@ -214,21 +139,7 @@ class MialsrtkN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
 
 
 class MialsrtkN4BiasFieldCorrectionOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MialsrtkN4BiasFieldCorrection interface.
-
-    Attributes
-    -----------
-    output_image <string>
-        Output corrected image file
-
-    output_field <string>
-        Output field file
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.MialsrtkN4BiasFieldCorrection
-
-    """
+    """Class used to represent outputs of the MialsrtkN4BiasFieldCorrection interface."""
 
     output_image = File(desc='Output corrected image')
     output_field = File(desc='Output bias field extracted from input image')
@@ -293,49 +204,18 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
 ############################
 
 class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the FilenamesGeneration interface.
+    """Class used to represent inputs of the FilenamesGeneration interface."""
 
-    Attributes
-    ----------
-    sub_ses <string>
-        Subject and session BIDS identifier to construct output filename.
-
-    stacks_order <list<int>>
-        List of stack run-id that specify the order of the stacks
-
-    sr_id <str>
-        Super-Resolution id
-
-    use_manual_masks <bool>
-        Whether masks were computed or manually performed.
-
-    See Also
-    ----------
-    pymialsrtk.interfaces.preprocess.FilenamesGeneration
-
-    """
-
-    sub_ses = traits.Str(mandatory=True)
-    stacks_order = traits.List(mandatory=True)
-    sr_id = traits.Int(mandatory=True)
-    use_manual_masks = traits.Bool(mandatory=True)
+    sub_ses = traits.Str(mandatory=True, desc='Subject and session BIDS identifier to construct output filename.')
+    stacks_order = traits.List(mandatory=True, desc='List of stack run-id that specify the order of the stacks')
+    sr_id = traits.Int(mandatory=True, desc='Super-Resolution id')
+    use_manual_masks = traits.Bool(mandatory=True, desc='Whether masks were computed or manually performed.')
 
 
 class FilenamesGenerationOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the FilenamesGeneration interface.
+    """Class used to represent outputs of the FilenamesGeneration interface."""
 
-    Attributes
-    -----------
-    substitutions <list<string>, list<string>>
-        Output correspondance between old and new filenames.
-
-    See also
-    --------------
-    pymialsrtk.interfaces.preprocess.FilenamesGeneration
-
-    """
-
-    substitutions = traits.List(desc='Correspondence old/new filenames')
+    substitutions = traits.List(desc='Output correspondance between old and new filenames.')
 
 
 class FilenamesGeneration(BaseInterface):
