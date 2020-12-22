@@ -327,3 +327,21 @@ class FilenamesGeneration(BaseInterface):
         outputs['substitutions'] = self.m_substitutions
 
         return outputs
+
+
+
+def binarize_image(input_image):
+    import nibabel as nib
+    import os
+    from nipype.utils.filemanip import split_filename
+
+    im = nib.load(input_image)
+
+    out = nib.Nifti1Image(dataobj=(im.get_fdata() > 0.01).astype(int), affine=im.affine)
+    out._header = im.header
+
+    _,name,ext = split_filename(input_image)
+    output_mask = name + '_srMask' + ext
+    nib.save(filename=output_mask, img=out)
+
+    return os.path.abspath(output_mask)

@@ -54,6 +54,8 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that specify the order of the stacks')
 
+    no_reg = traits.Bool(default=False, desc="Skip slice-to-volume registration.")
+
 
 class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkImageReconstruction interface."""
@@ -132,15 +134,15 @@ class MialsrtkImageReconstruction(BaseInterface):
         params.append("-o")
         params.append(out_file)
 
+        if self.inputs.no_reg:
+            params.append("--noreg")
+
         cmd = ["mialsrtkImageReconstruction"]
         cmd += params
 
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            print("")
-            print(cmd)
-            print("")
             run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
@@ -325,7 +327,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
-            json.dump(self.m_output_dict, outfile)
+            json.dump(self.m_output_dict, outfile, indent=4)
             print('json dumped.')
 
         try:
