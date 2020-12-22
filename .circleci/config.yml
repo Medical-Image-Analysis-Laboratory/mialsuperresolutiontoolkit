@@ -63,7 +63,7 @@ jobs:
             # Build CMP BIDS App docker image
             ls -la ./docker/bidsapp
             e=1 && for i in {1..5}; do
-              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-bidsapp --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit-bidsapp ./docker/bidsapp \
+              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit ./docker/bidsapp \
               && e=0 && break || sleep 15
             done && [ "$e" -eq "0" ]
       - run:
@@ -73,7 +73,7 @@ jobs:
             # Get version, update files.
             THISVERSION=$( python get_version.py )
             mkdir -p /tmp/cache
-            docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
+            docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit \
             | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
       - persist_to_workspace:
           root: /tmp
@@ -121,16 +121,16 @@ jobs:
       - run:
           name: "Building Singularity image from Docker image"
           command: |
-            docker tag sebastientourbier/mialsuperresolutiontoolkit-bidsapp localhost:5000/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
-            docker push localhost:5000/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
-            SINGULARITY_NOHTTPS=1 singularity build /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg docker://localhost:5000/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
+            docker tag sebastientourbier/mialsuperresolutiontoolkit localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
+            docker push localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
+            SINGULARITY_NOHTTPS=1 singularity build /tmp/cache/mialsuperresolutiontoolkit.simg docker://localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
           no_output_timeout: 5h
       - persist_to_workspace:
           root: /tmp
           paths:
-            - cache/mialsuperrresolutiontoolkit-bidsapp.simg
+            - cache/mialsuperresolutiontoolkit.simg
       - store_artifacts:
-          path: /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg
+          path: /tmp/cache/mialsuperresolutiontoolkit.simg
 
   test-docker:
     machine:
@@ -188,7 +188,7 @@ jobs:
             docker run -it --rm --entrypoint /app/run_srr_coverage.sh \
                 -v /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
-                sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
+                sebastientourbier/mialsuperresolutiontoolkit \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
@@ -229,7 +229,7 @@ jobs:
             docker run -it --rm --entrypoint /app/run_srr_coverage.sh \
                 -v /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
-                sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
+                sebastientourbier/mialsuperresolutiontoolkit \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
@@ -323,7 +323,7 @@ jobs:
             singularity run --containall \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives:/output_dir \
-                /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg \
+                /tmp/cache/mialsuperresolutiontoolkit.simg \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
@@ -354,7 +354,7 @@ jobs:
             singularity run --containall \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 --bind /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives:/output_dir \
-                /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg \
+                /tmp/cache/mialsuperresolutiontoolkit.simg \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
@@ -525,8 +525,8 @@ jobs:
             if [[ -n "$DOCKER_PASS" ]]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               if [[ -n "$CIRCLE_TAG" ]]; then
-                docker tag sebastientourbier/mialsuperresolutiontoolkit-bidsapp sebastientourbier/mialsuperresolutiontoolkit-bidsapp:$CIRCLE_TAG
-                docker push sebastientourbier/mialsuperresolutiontoolkit-bidsapp:$CIRCLE_TAG
+                docker tag sebastientourbier/mialsuperresolutiontoolkit sebastientourbier/mialsuperresolutiontoolkit:$CIRCLE_TAG
+                docker push sebastientourbier/mialsuperresolutiontoolkit:$CIRCLE_TAG
               fi
             fi
 
@@ -563,8 +563,8 @@ jobs:
 
             if [[ -n "$DOCKER_PASS" ]]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker tag sebastientourbier/mialsuperresolutiontoolkit-bidsapp sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
-              docker push sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
+              docker tag sebastientourbier/mialsuperresolutiontoolkit sebastientourbier/mialsuperresolutiontoolkit:latest
+              docker push sebastientourbier/mialsuperresolutiontoolkit:latest
             fi
 
   deploy-singularity-latest:
@@ -597,7 +597,7 @@ jobs:
       - run:
           name: 'Deploy simg with latest tag to Sylabs.io'
           command: |
-            singularity push -U /tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg library://tourbier/default/mialsuperrresolutiontoolkit-bidsapp:latest
+            singularity push -U /tmp/cache/mialsuperresolutiontoolkit.simg library://tourbier/default/mialsuperresolutiontoolkit:latest
 
   deploy-singularity-release:
     machine:
@@ -633,7 +633,7 @@ jobs:
             THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_TAG : ${CIRCLE_TAG}"
-            singularity push -U tmp/cache/mialsuperrresolutiontoolkit-bidsapp.simg library://tourbier/default/mialsuperrresolutiontoolkit-bidsapp:"${CIRCLE_TAG}"
+            singularity push -U tmp/cache/mialsuperresolutiontoolkit.simg library://tourbier/default/mialsuperresolutiontoolkit:"${CIRCLE_TAG}"
 
 workflows:
   version: 2
