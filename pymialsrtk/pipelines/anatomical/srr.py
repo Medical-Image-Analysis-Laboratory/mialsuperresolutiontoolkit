@@ -514,9 +514,6 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
-        return
-
-
     def run(self, number_of_cores=1):
         """Execute the workflow of the super-resolution reconstruction pipeline.
 
