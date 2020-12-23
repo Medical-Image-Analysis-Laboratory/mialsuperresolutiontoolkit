@@ -7,7 +7,7 @@
 			"lambdaTV": 0.75, 
 			"deltatTV": 0.01 },
 		"custom_interfaces": {
-			"skip_stacks_ordering": true,
+			"skip_stacks_ordering": false,
 			"skip_svr": false
 		}
 	}]
