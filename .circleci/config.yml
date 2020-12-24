@@ -633,7 +633,7 @@ jobs:
             THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_TAG : ${CIRCLE_TAG}"
-            singularity push -U tmp/cache/mialsuperresolutiontoolkit.simg library://tourbier/default/mialsuperresolutiontoolkit:"${CIRCLE_TAG}"
+            singularity push -U /tmp/cache/mialsuperresolutiontoolkit.simg library://tourbier/default/mialsuperresolutiontoolkit:"${CIRCLE_TAG}"
 
 workflows:
   version: 2
