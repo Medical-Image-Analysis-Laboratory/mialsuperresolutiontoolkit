@@ -72,8 +72,19 @@ The BIDS App of MIALSRTK has the following command line arguments:
                             Path to a JSON file containing subjects' exams
                             information and super-resolution total variation
                             parameters.
-      --manual              Use manual brain masks found in
-                            <output_dir>/manual_masks/ directory
+      --openmp_nb_of_cores  Specify number of cores used by OpenMP threads.
+                            Especially useful for NLM denoising and slice-to-volume
+                            registration.
+                            (Default: 0, meaning it will be determined automatically)      
+                            Specify number of cores used by the Niype workflow
+                            library to distribute the execution of independent
+                            processing workflow nodes (i.e. interfaces).
+      --nipype_nb_of_cores  Especially useful in the case of slice-by-slice bias
+                            field correction and intensity standardization steps
+                            for example.
+                            (Default: 0, meaning it will be determined automatically)
+      --masks_derivatives_dir
+                            Use manual brain masks found in the specified directory
       -v, --version         show program's version number and exit
 
 ## Credits 
