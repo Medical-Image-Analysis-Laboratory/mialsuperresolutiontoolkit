@@ -51,17 +51,22 @@ sys.path.insert(0, os.path.abspath('../pymialsrtk'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autosectionlabel',
               'sphinx.ext.autodoc',
-              'sphinx.ext.napoleon',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
               'sphinxarg.ext',
-              'nbsphinx']
+              'sphinx.ext.inheritance_diagram',
+              'sphinxcontrib.apidoc',
+              'nbsphinx',
+              'nipype.sphinxext.plot_workflow',
+              'nipype.sphinxext.apidoc',
+              'nipype.sphinxext.documenter',
+              ]
 
 # autodoc_default_options = {
 #    'autosummary': True,
 # }
 
-autodoc_mock_imports = ['nipype','cv2', 'skimage']
+autodoc_mock_imports = ['cv2', 'skimage']
 
 # Allow errors in notebooks for doc
 nbsphinx_allow_errors = True

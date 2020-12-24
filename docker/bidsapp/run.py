@@ -136,7 +136,8 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
     return openmp_nb_of_cores, nipype_nb_of_cores
 
 
-def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, number_of_cores=1, srID=None, masks_derivatives_dir=''):
+def main(bids_dir, output_dir, subject, p_stacks, session, paramTV=None, number_of_cores=1, srID=None,
+         masks_derivatives_dir='', dict_custom_interfaces=None): #skip_svr=False, do_refine_hr_mask=False, skip_nlm_denoising=False, skip_stacks_ordering=False):
     """Main function that creates and executes the workflow of the BIDS App on one subject.
 
     It creates an instance of the class :class:`pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline`,
@@ -153,8 +154,8 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, nu
     subject <string>
         Subject ID (in the form ``sub-XX``)
 
-    p_stacks_order list<<int>>
-        List of stack indices that specify the order of the stacks
+    p_stacks list<<int>>
+        List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
 
     session <string>
         Session ID if applicable (in the form ``ses-YY``)
@@ -169,8 +170,20 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, nu
         ID of the reconstruction useful to distinguish when multiple reconstructions
         with different order of stacks are run on the same subject
 
-    use_manual_masks <Boolean>
-        If set to True, use manual masks expected to be in ``/output_dir/manual_masks``.
+    masks_derivatives_dir <string>
+        directory basename in BIDS directory derivatives where to search for masks (optional)
+
+    skip_svr <bool> (optional)
+        Weither the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
+
+    do_refine_hr_mask <bool> (optional)
+        Weither a refinement of the HR mask should be performed. (default is False)
+
+    skip_nlm_denoising <bool> (optional)
+        Weither the NLM denoising preprocessing should be skipped. (default is False)
+
+    skip_stacks_ordering <bool> (optional)
+        Weither the automatic stacks ordering should be skipped. (default is False)
 
     """
 
@@ -187,11 +200,16 @@ def main(bids_dir, output_dir, subject, p_stacksOrder, session, paramTV=None, nu
     pipeline = AnatomicalPipeline(bids_dir,
                                   output_dir,
                                   subject,
-                                  p_stacksOrder,
+                                  p_stacks,
                                   srID,
                                   session,
                                   paramTV,
-                                  masks_derivatives_dir)
+                                  masks_derivatives_dir,
+                                  p_dict_custom_interfaces=dict_custom_interfaces)
+                                  # skip_svr,
+                                  # do_refine_hr_mask,
+                                  # p_skip_nlm_denoising=skip_nlm_denoising,
+                                  # p_skip_stacks_ordering=skip_stacks_ordering)
     # Create the super resolution Nipype workflow
     pipeline.create_workflow()
 
@@ -236,40 +254,26 @@ if __name__ == '__main__':
                 for sr_params in sr_list:
 
                     ses = sr_params["session"] if "session" in sr_params.keys() else None
-                    stacks_order = sr_params['stacksOrder'] if 'stacksOrder' in sr_params.keys() else None
+                    stacks = sr_params['stacks'] if 'stacks' in sr_params.keys() else None
+                    paramTV = sr_params['paramTV'] if 'paramTV' in sr_params.keys() else None
 
-                    print('sr_params')
+                    dict_custom_interfaces = sr_params['custom_interfaces'] if 'custom_interfaces' in sr_params.keys() else None
+
                     if ("sr-id" not in sr_params.keys()):
                         print('Do not process subjects %s because of missing parameters.' % sub)
                         continue
 
-                    if 'paramTV' in sr_params.keys():
+                    res = main(bids_dir=args.bids_dir,
+                               output_dir=args.output_dir,
+                               subject=sub,
+                               p_stacks=stacks,
+                               session=ses,
+                               paramTV=paramTV,
+                               srID=sr_params['sr-id'],
+                               masks_derivatives_dir=args.masks_derivatives_dir,
+                               number_of_cores=nipype_nb_of_cores,
+                               dict_custom_interfaces = dict_custom_interfaces)
 
-                        res = main(bids_dir=args.bids_dir,
-                                   output_dir=args.output_dir,
-                                   subject=sub,
-                                   p_stacksOrder=stacks_order,
-                                   session=ses,
-                                   paramTV=sr_params['paramTV'],
-                                   srID=sr_params['sr-id'],
-                                   masks_derivatives_dir=args.masks_derivatives_dir,
-                                   number_of_cores=nipype_nb_of_cores)
-
-                        # sys.exit(0)
-
-                    else:
-
-                        res = main(bids_dir=args.bids_dir,
-                                   output_dir=args.output_dir,
-                                   subject=sub,
-                                   p_stacksOrder=stacks_order,
-                                   session=ses,
-                                   srID=sr_params['sr-id'],
-                                   masks_derivatives_dir=args.masks_derivatives_dir,
-                                   number_of_cores=nipype_nb_of_cores
-                                   )
-
-                        # sys.exit(0)
     else:
         print('ERROR: Processing of all dataset not implemented yet\n At least one participant label should be provided')
         sys.exit(2)

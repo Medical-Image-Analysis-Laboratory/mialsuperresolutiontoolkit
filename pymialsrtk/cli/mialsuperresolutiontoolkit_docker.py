@@ -7,7 +7,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""This module defines the mialsuperresolutiontoolkit-bidsapp script that wraps calls to the BIDS APP."""
+"""This module defines the `mialsuperresolutiontoolkit_bidsapp_docker` script that wraps calls to the Docker BIDS APP image."""
 
 # General imports
 import sys

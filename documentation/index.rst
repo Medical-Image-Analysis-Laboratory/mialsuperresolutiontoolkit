@@ -15,12 +15,9 @@ This neuroimaging processing pipeline software is developed by the Medical Image
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4290209.svg
   :target: https://doi.org/10.5281/zenodo.4290209
   :alt: Digital Object Identifier
-.. image:: https://img.shields.io/docker/pulls/sebastientourbier/mialsuperresolutiontoolkit-bidsapp?label=docker%20pulls%20%28BIDS%20App%29
-  :target: https://hub.docker.com/repository/docker/sebastientourbier/mialsuperresolutiontoolkit-bidsapp
-  :alt: Docker Pulls (BIDS App)
 .. image:: https://img.shields.io/docker/pulls/sebastientourbier/mialsuperresolutiontoolkit?label=docker%20pulls%20%28v1%29
   :target: https://hub.docker.com/repository/docker/sebastientourbier/mialsuperresolutiontoolkit
-  :alt: Docker Pulls (v1)
+  :alt: Docker Pulls
 .. image:: https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit.svg?branch=master
   :target: https://travis-ci.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit
   :alt: TravisCI Status (C++)

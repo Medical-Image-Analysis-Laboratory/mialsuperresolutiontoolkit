@@ -2,10 +2,11 @@ version: 2.1
 
 orbs:
   coverage-reporter: codacy/coverage-reporter@11.0.1
+  singularity: singularity/singularity@1.0.10
 
 jobs:
 
-  build:
+  build-docker:
     environment:
       TZ: "/usr/share/zoneinfo/Europe/Zurich"
       SCRATCH: "/scratch"
@@ -14,7 +15,7 @@ jobs:
     working_directory: tmp/src/mialsuperresolutiontoolkit
     steps:
       - run:
-          name: Install parallel gzip and python2
+          name: "Install parallel gzip and python2"
           command: |
             apk add --no-cache pigz python2
       - restore_cache:
@@ -29,7 +30,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: false
       - run:
-          name: Load Docker image layer cache
+          name: "Load Docker image layer cache"
           no_output_timeout: 30m
           command: |
             docker info
@@ -39,7 +40,7 @@ jobs:
               docker images
             fi
       - run:
-          name: Build Docker image
+          name: "Build Docker image"
           no_output_timeout: 120m
           command: |
             # Get version, update files.
@@ -62,17 +63,17 @@ jobs:
             # Build CMP BIDS App docker image
             ls -la ./docker/bidsapp
             e=1 && for i in {1..5}; do
-              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-bidsapp --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit-bidsapp ./docker/bidsapp \
+              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit ./docker/bidsapp \
               && e=0 && break || sleep 15
             done && [ "$e" -eq "0" ]
       - run:
-          name: Save Docker Images
+          name: "Save Docker Images"
           no_output_timeout: 40m
           command: |
             # Get version, update files.
             THISVERSION=$( python get_version.py )
             mkdir -p /tmp/cache
-            docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
+            docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit \
             | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
       - persist_to_workspace:
           root: /tmp
@@ -80,19 +81,67 @@ jobs:
             - cache/docker.tar.gz
             - src/mialsuperresolutiontoolkit
 
-
-  test:
+  build-singularity:
     machine:
       # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
       image: ubuntu-1604:201903-01
-
-    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
-
+    working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - checkout:
           path: /home/circleci/src/mialsuperresolutiontoolkit
       - run:
-          name: Check whether test should be skipped
+          name: "Check whether build-singularity job should be skipped"
+          command: |
+            cd /home/circleci/src/mialsuperresolutiontoolkit
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?build-singularity]' )" != "" ]]; then
+              echo "Skipping test"
+              circleci step halt
+            fi
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: "Starting local registry"
+          command: docker run -d -p 5000:5000 --restart=always --name registry registry:2
+      - run:
+          name: "Load Docker image layer cache"
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+              sudo apt-get update && sudo apt-get -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - singularity/install-go:
+          go-version: '1.13'
+      - singularity/debian-install-3:
+          singularity-version: 3.5.1
+      - run:
+          name: "Building Singularity image from Docker image"
+          command: |
+            docker tag sebastientourbier/mialsuperresolutiontoolkit localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
+            docker push localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
+            SINGULARITY_NOHTTPS=1 singularity build /tmp/cache/mialsuperresolutiontoolkit.simg docker://localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
+          no_output_timeout: 5h
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - cache/mialsuperresolutiontoolkit.simg
+      - store_artifacts:
+          path: /tmp/cache/mialsuperresolutiontoolkit.simg
+
+  test-docker:
+    machine:
+      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-1604:201903-01
+    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
+    steps:
+      - checkout:
+          path: /home/circleci/src/mialsuperresolutiontoolkit
+      - run:
+          name: "Check whether test should be skipped"
           command: |
             cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?test]' )" != "" ]]; then
@@ -108,7 +157,7 @@ jobs:
       #       - ds-sample-derivatives-master
       #       - ds-sample-derivatives-
       - run:
-          name: Load Docker image layer cache
+          name: "Load Docker image layer cache"
           no_output_timeout: 30m
           command: |
             docker info
@@ -120,12 +169,12 @@ jobs:
               docker images
             fi
       - run:
-          name: Create the data/test folder
+          name: "Create the data/test folder"
           no_output_timeout: 1h
           command: |
             mkdir -p /tmp/src/mialsuperresolutiontoolkit/data/test
       - run:
-          name: Test-01 - Run super-resolution pipelines on sample testing dataset with manual masks
+          name: "Test-01 - Run super-resolution pipelines on sample testing dataset with manual masks"
           no_output_timeout: 6h
           command: |
             # Get version, update files.
@@ -139,7 +188,7 @@ jobs:
             docker run -it --rm --entrypoint /app/run_srr_coverage.sh \
                 -v /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
-                sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
+                sebastientourbier/mialsuperresolutiontoolkit \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
@@ -156,14 +205,14 @@ jobs:
       #    paths:
       #       - /tmp/data/ds-sample/derivatives
       - run:
-          name: Test-01 - Checking outputs of MIALSRTK BIDS App run
+          name: "Test-01 - Checking outputs of MIALSRTK BIDS App run"
           command: |
             # Get all files in derivatives except the _*.json interface hash generated by nipype (find) / remove the full path of the derivatives (sed) / sort the files and write it to a text file
             sudo find /tmp/src/mialsuperresolutiontoolkit/data/derivatives -path */figures -prune -o -not -name "_*.json" -type f -print | sed s+/tmp/src/mialsuperresolutiontoolkit/data/derivatives/++ | sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
             diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-01_outputs.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
             exit $?
       - run:
-          name: Test-02 - Run super-resolution pipelines on sample testing dataset with automatic brain extraction
+          name: "Test-02 - Run super-resolution pipelines on sample testing dataset with automatic brain extraction"
           no_output_timeout: 6h
           command: |
             # Get version, update files.
@@ -180,7 +229,7 @@ jobs:
             docker run -it --rm --entrypoint /app/run_srr_coverage.sh \
                 -v /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
                 -v /tmp/src/mialsuperresolutiontoolkit/data/derivatives:/output_dir \
-                sebastientourbier/mialsuperresolutiontoolkit-bidsapp \
+                sebastientourbier/mialsuperresolutiontoolkit \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
@@ -192,14 +241,14 @@ jobs:
             # Rename partial coverage
             mv /tmp/src/mialsuperresolutiontoolkit/data/code/coverage.xml /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_coverage.xml
       - run:
-          name: Test-02 - Checking outputs of MIALSRTK BIDS App run
+          name: "Test-02 - Checking outputs of MIALSRTK BIDS App run"
           command: |
             # Get all files in derivatives except the _*.json interface hash generated by nipype (find) / remove the full path of the derivatives (sed) / sort the files and write it to a text file
             sudo find /tmp/src/mialsuperresolutiontoolkit/data/derivatives -path */figures -prune -o -not -name "_*.json" -type f -print | sed s+/tmp/src/mialsuperresolutiontoolkit/data/derivatives/++ | sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
             diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-02_outputs.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
             exit $?
       - run:
-          name: Clean working directory
+          name: "Clean working directory"
           when: always
           command: |
             sudo chown $(id -un):$(id -gn) -R /tmp/src/mialsuperresolutiontoolkit/data
@@ -230,6 +279,173 @@ jobs:
           # coverage-reports: '/tmp/src/mialsuperresolutiontoolkit/data/test/test-01_coverage.xml'
           coverage-reports: '/tmp/src/mialsuperresolutiontoolkit/data/test/test-01_coverage.xml,/tmp/src/mialsuperresolutiontoolkit/data/test/test-02_coverage.xml'
           project-token: ${CODACY_PROJECT_TOKEN}
+
+  test-singularity:
+    machine:
+      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-1604:201903-01
+    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
+    steps:
+      - checkout:
+          path: /home/circleci/src/mialsuperresolutiontoolkit
+      - run:
+          name: "Check whether test should be skipped"
+          command: |
+            cd /home/circleci/src/mialsuperresolutiontoolkit
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?test-singularity]' )" != "" ]]; then
+              echo "Skipping singularity test"
+              circleci step halt
+            fi
+      - attach_workspace:
+          at: /tmp
+      - singularity/install-go:
+          go-version: '1.13'
+      - singularity/debian-install-3:
+          singularity-version: 3.5.1
+      - run:
+          name: "Create the data/test and data/singularity-derivatives folders"
+          no_output_timeout: 1h
+          command: |
+            mkdir -p /tmp/src/mialsuperresolutiontoolkit/data/test
+            cp -R /tmp/src/mialsuperresolutiontoolkit/data/derivatives /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives
+      - run:
+          name: "Test-03 - Run super-resolution pipeline on sample testing dataset with manual masks"
+          no_output_timeout: 6h
+          command: |
+            # Get version, update files.
+            #THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            #echo "THISVERSION : ${THISVERSION}"
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data/code
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives
+
+            #Execute BIDS App
+            singularity run --containall \
+                --bind /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
+                --bind /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives:/output_dir \
+                /tmp/cache/mialsuperresolutiontoolkit.simg \
+                /bids_dir /output_dir participant --participant_label 01 \
+                --param_file /bids_dir/code/participants_params.json \
+                --openmp_nb_of_cores 1 \
+                --nipype_nb_of_cores 1 \
+                --masks_derivatives_dir 'manual_masks'
+      - run:
+          name: "Test-03 - Checking outputs of MIALSRTK BIDS App run"
+          command: |
+            # Get all files in derivatives except the _*.json interface hash generated by nipype (find) / remove the full path of the derivatives (sed) / sort the files and write it to a text file
+            sudo find /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives -path */figures -prune -o -not -name "_*.json" -type f -print | sed s+/tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives/++ | sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
+            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-03_outputs.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
+            exit $?
+      - run:
+          name: "Test-04 - Run super-resolution pipelines on sample testing dataset with automatic brain extraction"
+          no_output_timeout: 6h
+          command: |
+            # Get version, update files.
+            #THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            #echo "THISVERSION : ${THISVERSION}"
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data/code
+            ls -la  /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives
+
+            # Remove existing derivatives produced by test-03
+            sudo rm -R /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives/*
+
+            #Execute BIDS App
+            singularity run --containall \
+                --bind /tmp/src/mialsuperresolutiontoolkit/data:/bids_dir \
+                --bind /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives:/output_dir \
+                /tmp/cache/mialsuperresolutiontoolkit.simg \
+                /bids_dir /output_dir participant --participant_label 01 \
+                --param_file /bids_dir/code/participants_params.json \
+                --openmp_nb_of_cores 1 \
+                --nipype_nb_of_cores 1
+      - run:
+          name: "Test-04 - Checking outputs of MIALSRTK BIDS App run"
+          command: |
+            # Get all files in derivatives except the _*.json interface hash generated by nipype (find) / remove the full path of the derivatives (sed) / sort the files and write it to a text file
+            sudo find /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives -path */figures -prune -o -not -name "_*.json" -type f -print | sed s+/tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives/++ | sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
+            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-04_outputs.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
+            exit $?
+      - run:
+          name: "Clean working directory"
+          when: always
+          command: |
+            sudo chown $(id -un):$(id -gn) -R /tmp/src/mialsuperresolutiontoolkit/data
+            find /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives -not -name "*.svg" -not -name "*.png" -not -name "*.html"  -not -name "*.nii.gz" -not -name "*.rst" \
+                -not -name "*.mat" -not -name "*.gpickle" -not -name "*.lta" -not -name "*.json" -not -name "*.txt" -not -name "*.pklz" -type f -delete
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - src/mialsuperresolutiontoolkit/data/test
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/code
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives
+
+  test-python-install:
+    parameters:
+      version:
+        type: string
+        default: latest
+    docker:
+      - image: circleci/python:<< parameters.version >>
+    steps:
+      - checkout
+      - run:
+          name: "Test Install Twine"
+          command: |
+            python --version
+            pip3 install twine
+      - run:
+          name: "Smoke Test Install Twine"
+          command: |
+            python --version
+            twine upload -h
+      - run:
+          name: "Test Wheel Build"
+          command: |
+            python3 setup_pypi.py sdist bdist_wheel
+      - run:
+          name: "Test Install"
+          command: |
+            pip install -e .
+      - run:
+          name: "Smoke Test Install"
+          command: |
+            python --version
+            pip3 install pymialsrtk
+
+  deploy-pypi-release:
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      - run:
+          name: "Install dependencies"
+          command: |
+            python --version
+            pip3 install twine
+      - run:
+          name: "Verify git tag vs. version"
+          command: |
+            python3 setup.py verify
+      - run:
+          name: "init .pypirc"
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = $PYPI_USER" >> ~/.pypirc
+            echo -e "password = $PYPI_TOKEN" >> ~/.pypirc
+      - run:
+          name: "Create distribution wheel"
+          command: |
+            python3 setup_pypi.py sdist bdist_wheel
+      - run:
+          name: "Upload to pypi"
+          command: |
+            twine upload dist/*
+
   # build_docs:
   #   machine:
   #     # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
@@ -275,7 +491,7 @@ jobs:
   #     - store_artifacts:
   #         path: /home/circleci/out/docs
 
-  deploy_docker_release:
+  deploy-docker-release:
     machine:
       # Ubuntu 14.04 with Docker 17.10.0-ce
       image: ubuntu-1604:201903-01
@@ -286,7 +502,7 @@ jobs:
       - attach_workspace:
           at: /tmp
       - run:
-          name: Load Docker image layer cache
+          name: "Load Docker image layer cache"
           no_output_timeout: 30m
           command: |
             docker info
@@ -298,7 +514,7 @@ jobs:
               docker images
             fi
       - run:
-          name: Deploy release with version tag to Docker Hub
+          name: "Deploy release with version tag to Docker Hub"
           no_output_timeout: 40m
           command: |
             # Get version, update files.
@@ -309,12 +525,12 @@ jobs:
             if [[ -n "$DOCKER_PASS" ]]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               if [[ -n "$CIRCLE_TAG" ]]; then
-                docker tag sebastientourbier/mialsuperresolutiontoolkit-bidsapp sebastientourbier/mialsuperresolutiontoolkit-bidsapp:$CIRCLE_TAG
-                docker push sebastientourbier/mialsuperresolutiontoolkit-bidsapp:$CIRCLE_TAG
+                docker tag sebastientourbier/mialsuperresolutiontoolkit sebastientourbier/mialsuperresolutiontoolkit:$CIRCLE_TAG
+                docker push sebastientourbier/mialsuperresolutiontoolkit:$CIRCLE_TAG
               fi
             fi
 
-  deploy_docker_latest:
+  deploy-docker-latest:
     machine:
       # Ubuntu 14.04 with Docker 17.10.0-ce
       image: ubuntu-1604:201903-01
@@ -325,7 +541,7 @@ jobs:
       - attach_workspace:
           at: /tmp
       - run:
-          name: Load Docker image layer cache
+          name: "Load Docker image layer cache"
           no_output_timeout: 30m
           command: |
             docker info
@@ -337,7 +553,7 @@ jobs:
               docker images
             fi
       - run:
-          name: Deploy latest master to Docker Hub
+          name: "Deploy latest master to Docker Hub"
           no_output_timeout: 40m
           command: |
             # Get version, update files.
@@ -347,15 +563,98 @@ jobs:
 
             if [[ -n "$DOCKER_PASS" ]]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker tag sebastientourbier/mialsuperresolutiontoolkit-bidsapp sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
-              docker push sebastientourbier/mialsuperresolutiontoolkit-bidsapp:latest
+              docker tag sebastientourbier/mialsuperresolutiontoolkit sebastientourbier/mialsuperresolutiontoolkit:latest
+              docker push sebastientourbier/mialsuperresolutiontoolkit:latest
             fi
+
+  deploy-singularity-latest:
+    machine:
+      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-1604:201903-01
+    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
+    steps:
+      - checkout:
+          path: /home/circleci/src/mialsuperresolutiontoolkit
+      - run:
+          name: "Check whether test should be skipped"
+          command: |
+            cd /home/circleci/src/mialsuperresolutiontoolkit
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?deploy-singularity]' )" != "" ]]; then
+              echo "Skipping singularity deployment"
+              circleci step halt
+            fi
+      - attach_workspace:
+          at: /tmp
+      - singularity/install-go:
+          go-version: '1.13'
+      - singularity/debian-install-3:
+          singularity-version: 3.5.1
+      - run:
+          name: 'Write Sylabs.io TOKEN'
+          command: |
+            echo "${SINGULARITY_TOKEN}" > ~/.singularity/sylabs-token
+            cat ~/.singularity/sylabs-token
+      - run:
+          name: 'Deploy simg with latest tag to Sylabs.io'
+          command: |
+            singularity push -U /tmp/cache/mialsuperresolutiontoolkit.simg library://tourbier/default/mialsuperresolutiontoolkit:latest
+
+  deploy-singularity-release:
+    machine:
+      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-1604:201903-01
+    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
+    steps:
+      - checkout:
+          path: /home/circleci/src/mialsuperresolutiontoolkit
+      - run:
+          name: "Check whether test should be skipped"
+          command: |
+            cd /home/circleci/src/mialsuperresolutiontoolkit
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?deploy-singularity]' )" != "" ]]; then
+              echo "Skipping singularity deployment"
+              circleci step halt
+            fi
+      - attach_workspace:
+          at: /tmp
+      - singularity/install-go:
+          go-version: '1.13'
+      - singularity/debian-install-3:
+          singularity-version: 3.5.1
+      - run:
+          name: 'Write Sylabs.io TOKEN'
+          command: |
+            echo "${SINGULARITY_TOKEN}" > ~/.singularity/sylabs-token
+            cat ~/.singularity/sylabs-token
+      - run:
+          name: 'Deploy simg with version tag to Sylabs.io'
+          command: |
+            # Get version, update files.
+            THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            echo "THISVERSION : ${THISVERSION}"
+            echo "CIRCLE_TAG : ${CIRCLE_TAG}"
+            singularity push -U tmp/cache/mialsuperresolutiontoolkit.simg library://tourbier/default/mialsuperresolutiontoolkit:"${CIRCLE_TAG}"
 
 workflows:
   version: 2
-  build_test_deploy:
+  build-test-deploy:
     jobs:
-      - build:
+      - test-python-install:
+          version: "3.6"
+          filters:
+            tags:
+              only: /.*/
+
+      - build-docker:
+          requires:
+            - test-python-install
+          filters:
+            tags:
+              only: /.*/
+
+      - build-singularity:
+          requires:
+            - build-docker
           filters:
             tags:
               only: /.*/
@@ -370,10 +669,21 @@ workflows:
       #       tags:
       #         only: /.*/
 
-      - test:
+      - test-docker:
           requires:
             # - update_cache
-            - build
+            - build-docker
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+            tags:
+              only: /.*/
+
+      - test-singularity:
+          requires:
+            # - update_cache
+            - build-singularity
           filters:
             branches:
               ignore:
@@ -383,7 +693,7 @@ workflows:
 
       - codacy-coverage-report:
           requires:
-            - test
+            - test-docker
           filters:
               branches:
                 ignore:
@@ -391,11 +701,30 @@ workflows:
               tags:
                 only: /.*/
 
-      - deploy_docker_release:
+      - deploy-pypi-release:
           requires:
-            - build
+            - test-python-install
+            - build-docker
+            - build-singularity
             # - build_docs
-            - test
+            - test-docker
+            - test-singularity
+            - codacy-coverage-report
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              ignore: /.*/
+              # only: master
+            # only act on version tags
+            tags:
+              only: /^v.*/
+
+      - deploy-docker-release:
+          requires:
+            - build-docker
+            # - build_docs
+            - test-docker
+            - codacy-coverage-report
           filters:
             # ignore any commit on any branch by default
             branches:
@@ -405,11 +734,38 @@ workflows:
             tags:
               only: /^v.*/
       
-      - deploy_docker_latest:
+      - deploy-docker-latest:
           requires:
-            - build
+            - build-docker
             # - build_docs
-            - test
+            - test-docker
+            - codacy-coverage-report
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              only: master
+
+      - deploy-singularity-release:
+          requires:
+            - build-singularity
+            # - build_docs
+            - test-singularity
+            - codacy-coverage-report
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              ignore: /.*/
+              # only: master
+            # only act on version tags
+            tags:
+              only: /^v.*/
+
+      - deploy-singularity-latest:
+          requires:
+            - build-singularity
+            # - build_docs
+            - test-singularity
+            - codacy-coverage-report
           filters:
             # ignore any commit on any branch by default
             branches:

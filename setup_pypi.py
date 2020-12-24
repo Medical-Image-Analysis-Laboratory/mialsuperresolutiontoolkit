@@ -21,11 +21,6 @@ packages = ["pymialsrtk",
             "pymialsrtk.pipelines",
             "pymialsrtk.pipelines.anatomical"]
 
-package_data = {"pymialsrtk":
-                ['data/Network_checkpoints/Network_checkpoints_localization/*',
-                 'data/Network_checkpoints/Network_checkpoints_segmentation/*'],
-                }
-
 # Extract package requirements from Conda environment.yml
 include_conda_pip_dependencies = False
 install_requires = []
@@ -86,10 +81,10 @@ def main():
             author_email='sebastien.tourbier@alumni.epfl.ch',
             url='https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit',
             entry_points={
-                 "console_scripts": [
+                "console_scripts": [
                      'mialsuperresolutiontoolkit_docker = pymialsrtk.cli.mialsuperresolutiontoolkit_docker:main',
                      'mialsuperresolutiontoolkit_singularity = pymialsrtk.cli.mialsuperresolutiontoolkit_singularity:main'
-                 ]
+                             ]
             },
             license='BSD-3-Clause',
             classifiers=[
@@ -112,8 +107,7 @@ def main():
             maintainer_email='sebastien.tourbier@alumni.epfl.ch',
             # package_dir={"": "."},  # tell distutils packages are under src
             packages=packages,
-            include_package_data=True,
-            package_data=package_data,
+            include_package_data=False,
             # exclude_package_data={"": ["README.txt"]},
             install_requires=install_requires,
             dependency_links=dependency_links,
