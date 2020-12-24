@@ -14,11 +14,11 @@ The original C++ MIALSRTK library includes all algorithms and methods for brain 
 
 MIALSRTK has been recently extended with the `pymialsrtk` Python3 library following recent advances in standardization of neuroimaging data organization and processing workflows such as the [Brain Imaging Data Structure (BIDS)](https://bids.neuroimaging.io/) and [BIDS App](https://bids-apps.neuroimaging.io/) standards. This library has a modular architecture built on top of the Nipype dataflow library which consists of (1) processing nodes that interface with each of the MIALSRTK C++ tools and (2) a processing pipeline that links the interfaces in a common workflow. 
 
-The processing pipeline with all dependencies including the C++ MIALSRTK tools are encapsulated in a Docker image container, which is now distributed as a `BIDS App` which handles datasets organized following the BIDS standard. 
+The processing pipeline with all dependencies including the C++ MIALSRTK tools are encapsulated in a Docker image container, which is now distributed as a `BIDS App` which handles datasets organized following the BIDS standard. For your convenience, a Singularity image is also made available for execution on high-performance computing cluster.
 
 All these design considerations allow us not only to (1) represent the entire processing pipeline as an *execution graph, where each MIALSRTK C++ tools are connected*, but also to (2) provide a *mecanism to record data provenance and execution details*, and to (3) easily customize the BIDS App to suit specific needs as interfaces with *new tools can be added with relatively little effort* to account for additional algorithms.
 
-The Docker image of the BIDS App is freely available @ [Docker store](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit-bidsapp).  
+The Docker and Singularity images of the BIDS App are freely available @ [Docker Hub](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit-bidsapp) and [Sylabs Cloud](https://cloud.sylabs.io/library/_container/5fe46eb7517f0358917ab76c).
 
 ## Resources
 
@@ -36,11 +36,15 @@ The Docker image of the BIDS App is freely available @ [Docker store](https://st
 
 The BIDS App of MIALSRTK has the following command line arguments:
 
-    $ docker run -it sebastientourbier/mialsuperresolutiontoolkit-bidsapp --help
-
+    $ docker run -it sebastientourbier/mialsuperresolutiontoolkit --help
+    
     usage: run.py [-h]
                   [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
-                  [--param_file PARAM_FILE] [--manual] [-v]
+                  [--param_file PARAM_FILE]
+                  [--openmp_nb_of_cores OPENMP_NB_OF_CORES]
+                  [--nipype_nb_of_cores NIPYPE_NB_OF_CORES]
+                  [--masks_derivatives_dir MASKS_DERIVATIVES_DIR]
+                  [-v]
                   bids_dir output_dir {participant}
 
     Entrypoint script to the MIALSRTK BIDS App
