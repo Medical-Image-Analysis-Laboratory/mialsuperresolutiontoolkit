@@ -634,9 +634,10 @@ jobs:
           name: 'Deploy simg with version tag to Sylabs.io'
           command: |
             # Get version, update files.
-            THISVERSION=v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
-            echo 'THISVERSION : ${THISVERSION}'
-            echo 'CIRCLE_TAG : ${CIRCLE_TAG}'
+            # FIXME: cannot use python or something  wrong with single/double quote
+            # THISVERSION="v$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )"
+            # echo "THISVERSION : ${THISVERSION}"
+            echo "CIRCLE_TAG : ${CIRCLE_TAG}"
             singularity push -U /tmp/cache/mialsuperresolutiontoolkit.simg library://tourbier/default/mialsuperresolutiontoolkit:${CIRCLE_TAG}
 
 workflows:
