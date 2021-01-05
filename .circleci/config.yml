@@ -599,6 +599,7 @@ jobs:
       - run:
           name: 'Deploy simg with latest tag to Sylabs.io'
           command: |
+            singularity delete --arch=amd64 library://tourbier/default/mialsuperresolutiontoolkit:latest
             singularity push -U /tmp/cache/mialsuperresolutiontoolkit.simg library://tourbier/default/mialsuperresolutiontoolkit:latest
 
   deploy-singularity-release:
