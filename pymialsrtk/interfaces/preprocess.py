@@ -1003,7 +1003,18 @@ class StacksOrdering(BaseInterface):
 
         for i in range(data.shape[2]):
             moments = skimage.measure.moments(data[..., i])
-            centroid_coord[i, :] = [moments[0, 1] / moments[0, 0], moments[1, 0] / moments[0, 0]]
+
+            try:
+                centroid_coordx = moments[0, 1] / moments[0, 0]
+            except ZeroDivisionError:
+                centroid_coordx = 0
+
+            try:
+                centroid_coordy = moments[1, 0] / moments[0, 0]
+            except ZeroDivisionError:
+                centroid_coordy = 0
+
+            centroid_coord[i, :] = [centroid_coordx, centroid_coordy]
 
         centroid_coord = centroid_coord[~np.isnan(centroid_coord)]
         centroid_coord = np.reshape(centroid_coord, (int(centroid_coord.shape[0] / 2), 2))
