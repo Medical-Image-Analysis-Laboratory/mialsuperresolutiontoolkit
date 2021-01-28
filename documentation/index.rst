@@ -6,7 +6,7 @@ MIAL Super-Resolution Toolkit
   :width: 600
   :align: center
 
-**Latest released version:** |release|
+**Latest released version:** |vrelease|
 
 This neuroimaging processing pipeline software is developed by the Medical Image Analysis Laboratory (MIAL) at the University Hospital of Lausanne (CHUV) for use within the lab, as well as for open-source software distribution.
 
