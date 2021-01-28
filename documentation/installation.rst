@@ -134,7 +134,7 @@ Once Python3 is installed, the ``mialsuperresolutiontoolkit_docker`` and ``mials
 
   .. parsed-literal::
 
-     $ pip install pymialsrtk==|release|
+     $ pip install |pypirelease|
 
 * You are ready to use the ``mialsuperresolutiontoolkit_docker`` and ``mialsuperresolutiontoolkit_singularity`` wrappers. See their `commandline usages <wrapperusage>`_.
 
