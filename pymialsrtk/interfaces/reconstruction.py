@@ -65,26 +65,36 @@ class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
 
 
 class MialsrtkImageReconstruction(BaseInterface):
-    """Creates a high resolution image from a set of low resolution images [1]_.
+    """Creates a high-resolution image from a set of low resolution images [1]_.
+
+    It is built on the BTK implementation and itimplements the method, presented in [1]_
+    and used in [2]_ to estimate slice motion prior to super-resolution reconstruction,
+    that iterates between slice-to-volume registration and reconstruction of a
+    high-resolution image using scattered data interpolation. The method converges
+    when the mean square error between the high-resolution images reconstructed in
+    the last two iterations is lower than ``1e-6``.
 
     References
     ------------
-    .. [1] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
+    .. [1] Rousseau et al.; Acad Radiol., 2006. `(link to paper) <https://doi.org/10.1016/j.acra.2006.05.003>`_
+    .. [2] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
 
     Example
     ----------
     >>> from pymialsrtk.interfaces.reconstruction import MialsrtkImageReconstruction
-    >>> srtkImageReconstruction = MialsrtkTVSuperResolution()
+    >>> srtkImageReconstruction = MialsrtkImageReconstruction()
     >>> srtkImageReconstruction.inputs.bids_dir = '/my_directory'
-    >>> srtkImageReconstruction.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz', 'sub-01_ses-01_run-2_T2w.nii.gz', \
-    'sub-01_ses-01_run-3_T2w.nii.gz', 'sub-01_ses-01_run-4_T2w.nii.gz']
-    >>> srtkImageReconstruction.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz', 'sub-01_ses-01_run-2_mask.nii.gz', \
-    'sub-01_ses-01_run-3_mask.nii.gz', 'sub-01_ses-01_run-4_mask.nii.gz']
+    >>> srtkImageReconstruction.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz',
+    >>>                                         'sub-01_ses-01_run-2_T2w.nii.gz',
+    >>>                                         'sub-01_ses-01_run-3_T2w.nii.gz',
+    >>>                                         'sub-01_ses-01_run-4_T2w.nii.gz']
+    >>> srtkImageReconstruction.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz',
+    >>>                                        'sub-01_ses-01_run-2_mask.nii.gz',
+    >>>                                        'sub-01_ses-01_run-3_mask.nii.gz',
+    >>>                                        'sub-01_ses-01_run-4_mask.nii.gz']
     >>> srtkImageReconstruction.inputs.stacks_order = [3,1,2,4]
     >>> srtkImageReconstruction.inputs.sub_ses = 'sub-01_ses-01'
     >>> srtkImageReconstruction.inputs.in_roi = 'mask'
-    >>> srtkImageReconstruction.inputs.in_deltat = 0.01
-    >>> srtkImageReconstruction.inputs.in_lambda = 0.75
     >>> srtkImageReconstruction.run()  # doctest: +SKIP
 
     """
