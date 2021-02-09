@@ -240,7 +240,19 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
 
 
 class MialsrtkTVSuperResolution(BaseInterface):
-    """Apply super-resolution algorithm using one or multiple input images [1]_.
+    """Apply super-resolution algorithm using one or multiple input images.
+
+    It implements the super-resolution algorithm with Total-Variation regularization presented in [1]_.
+
+    Taking as input the list of input low resolution images and the list of slice-by-slice
+    transforms estimated with :class:`~pymialsrtk.reconstruction.MialsrtkImageReconstruction`,
+    it builds the forward model `H` that relates the low resolution images `y` to the high resolution
+    `x` to be estimated by `y = Hx`, and it solves optimally using convex optimization
+    the inverse (i.e. super-resolution) problem (finding `x`) with exact Total-Variation regularization.
+
+    The weight of TV regularization is controlled by `in_lambda`. The lower it is, the lower
+    will be the weight of the data fidelity and so the higher will the regularization.
+    The optimization time step is controlled by `in_deltat` that defines the time step of the optimizer.
 
     References
     ------------
