@@ -960,9 +960,7 @@ class StacksOrdering(BaseInterface):
     >>>                                      'sub-01_run-2_mask.nii.gz']
     >>> stacksOrdering.run() # doctest: +SKIP
 
-    Notes
-    --------
-    In the case of discontinuous brain masks, the centroid coordinates of
+    .. note:: In the case of discontinuous brain masks, the centroid coordinates of
     the slices excluded from the mask are set to `numpy.nan` and are not
     anymore considered in the motion index computation since `v2.0.2` release.
     Prior to this release, the centroids of these slices were set to zero
