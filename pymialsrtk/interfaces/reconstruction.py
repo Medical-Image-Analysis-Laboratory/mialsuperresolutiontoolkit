@@ -67,12 +67,13 @@ class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
 class MialsrtkImageReconstruction(BaseInterface):
     """Creates a high-resolution image from a set of low resolution images [1]_.
 
-    It is built on the BTK implementation and itimplements the method, presented in [1]_
-    and used in [2]_ to estimate slice motion prior to super-resolution reconstruction,
+    It is built on the BTK implementation and implements the method, presented in [1]_,
     that iterates between slice-to-volume registration and reconstruction of a
     high-resolution image using scattered data interpolation. The method converges
     when the mean square error between the high-resolution images reconstructed in
     the last two iterations is lower than ``1e-6``.
+    It is used in [2]_ to estimate slice motion prior to
+    Total-Variation super-resolution reconstruction.
 
     References
     ------------
