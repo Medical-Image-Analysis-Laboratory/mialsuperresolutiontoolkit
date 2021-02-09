@@ -893,7 +893,8 @@ class FilteringByRunidOutputSpec(TraitedSpec):
 class FilteringByRunid(BaseInterface):
     """Runs a filtering of files.
 
-    This module filters the input files matching the specified run-ids. Other files are discarded.
+    This module filters the input files matching the specified run-ids.
+    Other files are discarded.
 
     Examples
     --------
@@ -993,7 +994,9 @@ class StacksOrdering(BaseInterface):
     def _compute_motion_index(self, in_file):
         """Function to compute the motion index.
 
-        The motion index is computed from the inter-slice displacement of the centroid of the brain mask.
+        The motion index is computed from the inter-slice displacement of
+        the centroid of the brain mask.
+
         """
         central_third = True
 
@@ -1040,9 +1043,11 @@ class StacksOrdering(BaseInterface):
     def _compute_stack_order(self, in_files):
         """Function to compute the stacks order.
 
-        The motion index is computed for each mask. Stacks are ordered according to their motion index.
-        When the view plane is specified in the filenames (tag `vp`), stacks are ordered such that the 3 first ones are
-        othogonal / in three different orientations.
+        The motion index is computed for each mask.
+        Stacks are ordered according to their motion index.
+        When the view plane is specified in the filenames (tag `vp`),
+        stacks are ordered such that the 3 first ones are
+        orthogonal / in three different orientations.
         """
         motion_ind = []
 
