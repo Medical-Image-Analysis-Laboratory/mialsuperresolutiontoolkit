@@ -1,4 +1,4 @@
-# Copyright © 2016-2020 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -65,26 +65,36 @@ class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
 
 
 class MialsrtkImageReconstruction(BaseInterface):
-    """Creates a high resolution image from a set of low resolution images [1]_.
+    """Creates a high-resolution image from a set of low resolution images.
+
+    It is built on the BTK implementation and implements the method, presented in [Rousseau2006]_,
+    that iterates between slice-to-volume registration and reconstruction of a
+    high-resolution image using scattered data interpolation. The method converges
+    when the mean square error between the high-resolution images reconstructed in
+    the last two iterations is lower than ``1e-6``.
+
+    It is used to estimate slice motion prior to :class:`~pymialsrtk.reconstruction.MialsrtkTVSuperResolution`.
 
     References
     ------------
-    .. [1] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
+    .. [Rousseau2006] Rousseau et al.; Acad Radiol., 2006. `(link to paper) <https://doi.org/10.1016/j.acra.2006.05.003>`_
 
     Example
     ----------
     >>> from pymialsrtk.interfaces.reconstruction import MialsrtkImageReconstruction
-    >>> srtkImageReconstruction = MialsrtkTVSuperResolution()
+    >>> srtkImageReconstruction = MialsrtkImageReconstruction()
     >>> srtkImageReconstruction.inputs.bids_dir = '/my_directory'
-    >>> srtkImageReconstruction.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz', 'sub-01_ses-01_run-2_T2w.nii.gz', \
-    'sub-01_ses-01_run-3_T2w.nii.gz', 'sub-01_ses-01_run-4_T2w.nii.gz']
-    >>> srtkImageReconstruction.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz', 'sub-01_ses-01_run-2_mask.nii.gz', \
-    'sub-01_ses-01_run-3_mask.nii.gz', 'sub-01_ses-01_run-4_mask.nii.gz']
+    >>> srtkImageReconstruction.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz',
+    >>>                                         'sub-01_ses-01_run-2_T2w.nii.gz',
+    >>>                                         'sub-01_ses-01_run-3_T2w.nii.gz',
+    >>>                                         'sub-01_ses-01_run-4_T2w.nii.gz']
+    >>> srtkImageReconstruction.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz',
+    >>>                                        'sub-01_ses-01_run-2_mask.nii.gz',
+    >>>                                        'sub-01_ses-01_run-3_mask.nii.gz',
+    >>>                                        'sub-01_ses-01_run-4_mask.nii.gz']
     >>> srtkImageReconstruction.inputs.stacks_order = [3,1,2,4]
     >>> srtkImageReconstruction.inputs.sub_ses = 'sub-01_ses-01'
     >>> srtkImageReconstruction.inputs.in_roi = 'mask'
-    >>> srtkImageReconstruction.inputs.in_deltat = 0.01
-    >>> srtkImageReconstruction.inputs.in_lambda = 0.75
     >>> srtkImageReconstruction.run()  # doctest: +SKIP
 
     """
@@ -230,11 +240,23 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
 
 
 class MialsrtkTVSuperResolution(BaseInterface):
-    """Apply super-resolution algorithm using one or multiple input images [1]_.
+    """Apply super-resolution algorithm using one or multiple input images.
+
+    It implements the super-resolution algorithm with Total-Variation regularization presented in [Tourbier2015]_.
+
+    Taking as input the list of input low resolution images and the list of slice-by-slice
+    transforms estimated with :class:`~pymialsrtk.reconstruction.MialsrtkImageReconstruction`,
+    it builds the forward model `H` that relates the low resolution images `y` to the high resolution
+    `x` to be estimated by `y = Hx`, and it solves optimally using convex optimization
+    the inverse (i.e. super-resolution) problem (finding `x`) with exact Total-Variation regularization.
+
+    The weight of TV regularization is controlled by `in_lambda`. The lower it is, the lower
+    will be the weight of the data fidelity and so the higher will the regularization.
+    The optimization time step is controlled by `in_deltat` that defines the time step of the optimizer.
 
     References
     ------------
-    .. [1] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
+    .. [Tourbier2015] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
 
     Example
     ----------
