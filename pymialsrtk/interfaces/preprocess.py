@@ -954,8 +954,21 @@ class StacksOrdering(BaseInterface):
     --------
     >>> from pymialsrtk.interfaces.preprocess import StacksOrdering
     >>> stacksOrdering = StacksOrdering()
-    >>> stacksOrdering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz', 'sub-01_run-4_mask.nii.gz', 'sub-01_run-2_mask.nii.gz']
+    >>> stacksOrdering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz',
+    >>>                                      'sub-01_run-4_mask.nii.gz',
+    >>>                                      'sub-01_run-2_mask.nii.gz']
     >>> stacksOrdering.run() # doctest: +SKIP
+
+    Notes
+    --------
+    In the case of discontinuous brain masks, the centroid coordinates of
+    the slices excluded from the mask are set to `numpy.nan` and are not
+    anymore considered in the motion index computation since `v2.0.2` release.
+    Prior to this release, the centroids of these slices were set to zero
+    that has shown to drastically increase the motion index with respect
+    to the real motion during acquisition. However the motion in the remaining
+    slices that were actually used for SR reconstruction might not correspond
+    to the high value of this index.
 
     """
 
