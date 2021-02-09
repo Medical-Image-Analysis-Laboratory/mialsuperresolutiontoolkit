@@ -73,12 +73,11 @@ class MialsrtkImageReconstruction(BaseInterface):
     when the mean square error between the high-resolution images reconstructed in
     the last two iterations is lower than ``1e-6``.
 
-    It is used to estimate slice motion prior to Total-Variation super-resolution reconstruction [Tourbier2015]_.
+    It is used to estimate slice motion prior to :class:`~pymialsrtk.reconstruction.MialsrtkTVSuperResolution`.
 
     References
     ------------
     .. [Rousseau2006] Rousseau et al.; Acad Radiol., 2006. `(link to paper) <https://doi.org/10.1016/j.acra.2006.05.003>`_
-    .. [Tourbier2015] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
 
     Example
     ----------
