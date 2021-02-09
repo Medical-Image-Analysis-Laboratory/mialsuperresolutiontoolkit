@@ -67,18 +67,18 @@ class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
 class MialsrtkImageReconstruction(BaseInterface):
     """Creates a high-resolution image from a set of low resolution images.
 
-    It is built on the BTK implementation and implements the method, presented in [1]_,
+    It is built on the BTK implementation and implements the method, presented in [Rousseau2006]_,
     that iterates between slice-to-volume registration and reconstruction of a
     high-resolution image using scattered data interpolation. The method converges
     when the mean square error between the high-resolution images reconstructed in
     the last two iterations is lower than ``1e-6``.
 
-    It is used to estimate slice motion prior to Total-Variation super-resolution reconstruction [2]_.
+    It is used to estimate slice motion prior to Total-Variation super-resolution reconstruction [Tourbier2015]_.
 
     References
     ------------
-    .. [1] Rousseau et al.; Acad Radiol., 2006. `(link to paper) <https://doi.org/10.1016/j.acra.2006.05.003>`_
-    .. [2] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
+    .. [Rousseau2006] Rousseau et al.; Acad Radiol., 2006. `(link to paper) <https://doi.org/10.1016/j.acra.2006.05.003>`_
+    .. [Tourbier2015] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
 
     Example
     ----------
@@ -243,7 +243,7 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
 class MialsrtkTVSuperResolution(BaseInterface):
     """Apply super-resolution algorithm using one or multiple input images.
 
-    It implements the super-resolution algorithm with Total-Variation regularization presented in [1]_.
+    It implements the super-resolution algorithm with Total-Variation regularization presented in [Tourbier2015]_.
 
     Taking as input the list of input low resolution images and the list of slice-by-slice
     transforms estimated with :class:`~pymialsrtk.reconstruction.MialsrtkImageReconstruction`,
@@ -257,7 +257,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
     References
     ------------
-    .. [1] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
+    .. [Tourbier2015] Tourbier et al.; NeuroImage, 2015. `(link to paper) <https://doi.org/10.1016/j.neuroimage.2015.06.018>`_
 
     Example
     ----------
