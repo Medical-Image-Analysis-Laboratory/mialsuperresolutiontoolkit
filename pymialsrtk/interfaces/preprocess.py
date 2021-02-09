@@ -1022,21 +1022,19 @@ class StacksOrdering(BaseInterface):
 
             try:
                 centroid_coordx = moments[0, 1] / moments[0, 0]
-            except ZeroDivisionError:
-                centroid_coordx = 0
-
-            try:
                 centroid_coordy = moments[1, 0] / moments[0, 0]
+            # This happens in the case of discontinuous brain masks
             except ZeroDivisionError:
-                centroid_coordy = 0
+                centroid_coordx = np.nan
+                centroid_coordy = np.nan
 
             centroid_coord[i, :] = [centroid_coordx, centroid_coordy]
 
         centroid_coord = centroid_coord[~np.isnan(centroid_coord)]
         centroid_coord = np.reshape(centroid_coord, (int(centroid_coord.shape[0] / 2), 2))
 
-        nSlices = data.shape[2]
-        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / nSlices
+        nb_slices = centroid_coord.shape[0]
+        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / nb_slices
 
         return score
 
