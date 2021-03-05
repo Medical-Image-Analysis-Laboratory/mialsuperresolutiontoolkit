@@ -363,7 +363,7 @@ class BinarizeImage(BaseInterface):
 
     def _gen_filename(self, name):
         if name == 'output_srmask':
-            _, name, ext = split_filename(self.inputs.in_file)
+            _, name, ext = split_filename(self.inputs.input_image)
             output = name + '_srMask' + ext
             return os.path.abspath(output)
         return None
