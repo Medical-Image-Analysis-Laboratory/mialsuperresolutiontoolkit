@@ -381,7 +381,7 @@ class BinarizeImage(BaseInterface):
 
     def _run_interface(self, runtime):
         try:
-            self._binarize_image()
+            self._binarize_image(self.inputs.input_image)
         except Exception as e:
             print('Failed')
             print(e)
