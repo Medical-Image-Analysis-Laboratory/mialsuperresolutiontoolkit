@@ -183,12 +183,28 @@ def computeMeanMapImageLandmarks(list_landmarks):
     print(mean_landmarks)
     return mean_landmarks
 
+def sort_ascending(p_files):
+    """Sort files by file basename instead of file path.
+    Added March 2021 by P. de Dumast
+    """
+    from operator import itemgetter
+    import os
+    path_basename = []
+    for f in p_files:
+        path_basename.append((os.path.basename(f), f))
+
+    path_basename = sorted(path_basename, key=itemgetter(0))
+    return [f[1] for f in path_basename]
+
 
 def main(images,masks,outputs):
     
-    image_paths= sorted(images)
-    mask_paths=sorted(masks)
-    output_paths = sorted(outputs)
+    # image_paths= sorted(images)
+    # mask_paths=sorted(masks)
+    # output_paths = sorted(outputs)
+    image_paths= sort_ascending(images)
+    mask_paths=sort_ascending(masks)
+    output_paths = sort_ascending(outputs)
 
     if(len(image_paths)!=len(mask_paths)):
         print('Loading failed: Number of images and masks are different (# images = ', str(len(image_paths)), '\\ # masks =', str(len(mask_paths)), ')')
