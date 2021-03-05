@@ -51,6 +51,17 @@
       "contributions": [
         "fundingFinding"
       ]
+    },
+    {
+      "login": "helenelajous",
+      "name": "Hélène Lajous",
+      "avatar_url": "https://avatars.githubusercontent.com/u/58977568?v=4",
+      "profile": "https://github.com/helenelajous",
+      "contributions": [
+        "bug",
+        "test",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,

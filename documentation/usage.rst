@@ -126,7 +126,7 @@ For instance, the previous call to the ``mialsuperresolutiontoolkit_docker`` wra
     $ docker run -t --rm -u $(id -u):$(id -g) \\
             -v /home/localadmin/data/ds001:/bids_dir \\
             -v /media/localadmin/data/ds001/derivatives:/output_dir \\
-            sebastientourbier/mialsuperresolutiontoolkit:v|release| \\
+            sebastientourbier/mialsuperresolutiontoolkit:|vrelease| \\
             /bids_dir /output_dir participant --participant_label 01 \\
             --param_file /bids_dir/code/participants_params.json \\
             (--openmp_nb_of_cores 4) \\
@@ -141,7 +141,7 @@ The previous call to the ``mialsuperresolutiontoolkit_singularity`` wrapper corr
     $ singularity run --containall \\
             --bind /home/localadmin/data/ds001:/bids_dir \\
             --bind /media/localadmin/data/ds001/derivatives:/output_dir \\
-            library://tourbier/default/mialsuperresolutiontoolkit:v|release| \\
+            library://tourbier/default/mialsuperresolutiontoolkit:|vrelease| \\
             /bids_dir /output_dir participant --participant_label 01 \\
             --param_file /bids_dir/code/participants_params.json \\
             (--openmp_nb_of_cores 4) \\

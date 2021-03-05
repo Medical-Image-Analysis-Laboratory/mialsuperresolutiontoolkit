@@ -206,10 +206,6 @@ def main(bids_dir, output_dir, subject, p_stacks, session, paramTV=None, number_
                                   paramTV,
                                   masks_derivatives_dir,
                                   p_dict_custom_interfaces=dict_custom_interfaces)
-                                  # skip_svr,
-                                  # do_refine_hr_mask,
-                                  # p_skip_nlm_denoising=skip_nlm_denoising,
-                                  # p_skip_stacks_ordering=skip_stacks_ordering)
     # Create the super resolution Nipype workflow
     pipeline.create_workflow()
 

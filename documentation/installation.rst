@@ -83,17 +83,17 @@ Running Docker?
 
 * Open a terminal
 
-* Get the latest release (v|release|) of the BIDS App:
+* Get the latest release (|vrelease|) of the BIDS App:
 
   .. parsed-literal::
 
-    $ docker pull sebastientourbier/mialsuperresolutiontoolkit:v|release|
+    $ docker pull sebastientourbier/mialsuperresolutiontoolkit:|vrelease|
 
 * To display all docker images available::
 
   $ docker images
 
- You should see the docker image "mialsuperresolutiontoolkit" with tag "v|release|" is now available.
+ You should see the docker image "mialsuperresolutiontoolkit" with tag "|vrelease|" is now available.
 
 * You are ready to use the Docker image of `MIALSRTK` from the terminal. See its `commandline usage <usage.html>`_.
 
@@ -102,11 +102,11 @@ Running Singularity?
 
 * Open a terminal
 
-* Get the latest release (v|release|) of the BIDS App:
+* Get the latest release (|vrelease|) of the BIDS App:
 
   .. parsed-literal::
 
-    $ singularity pull library://tourbier/default/mialsuperresolutiontoolkit:v|release|
+    $ singularity pull library://tourbier/default/mialsuperresolutiontoolkit:|vrelease|
 
 * You are ready to use the Singularity image of `MIALSRTK`. See its `commandline usage <usage.html>`_.
 
@@ -134,7 +134,7 @@ Once Python3 is installed, the ``mialsuperresolutiontoolkit_docker`` and ``mials
 
   .. parsed-literal::
 
-     $ pip install pymialsrtk==|release|
+     $ pip install |pypirelease|
 
 * You are ready to use the ``mialsuperresolutiontoolkit_docker`` and ``mialsuperresolutiontoolkit_singularity`` wrappers. See their `commandline usages <wrapperusage>`_.
 
