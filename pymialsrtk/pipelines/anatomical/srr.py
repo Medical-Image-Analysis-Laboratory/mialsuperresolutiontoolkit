@@ -394,7 +394,8 @@ class AnatomicalPipeline:
             srtkHRMask = Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(), name='srtkHRMask')
             srtkHRMask.inputs.bids_dir = self.bids_dir
         else:
-            srtkHRMask = Node(interface=postprocess.BinarizeImage(), name='srtkHRMask')
+            srtkHRMask = Node(interface=Function(input_names=["input_image"], output_names=["output_srmask"],
+                                    function=postprocess.binarize_image), name='srtkHRMask')
 
         srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(), name='srtkMaskImage02')
         srtkMaskImage02.inputs.bids_dir = self.bids_dir
