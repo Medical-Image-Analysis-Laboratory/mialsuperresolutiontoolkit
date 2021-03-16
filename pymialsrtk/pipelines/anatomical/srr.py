@@ -169,7 +169,6 @@ class AnatomicalPipeline:
 
         It is composed of a succession of Nodes and their corresponding parameters,
         where the output of node i goes to the input of node i+1.
-
         """
 
         sub_ses = self.subject
@@ -244,7 +243,8 @@ class AnatomicalPipeline:
         iflogger.info("**** Processing ****")
 
         if self.use_manual_masks:
-            dg = Node(interface=DataGrabber(outfields=['T2ws', 'masks']), name='data_grabber')
+            dg = Node(interface=DataGrabber(outfields=['T2ws', 'masks']),
+                      name='data_grabber')
 
             dg.inputs.base_directory = self.bids_dir
             dg.inputs.template = '*'
@@ -281,7 +281,8 @@ class AnatomicalPipeline:
             dg.inputs.sort_filelist = True
 
             dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
-                                                              'anat', sub_ses+'*_run-*_T2w.nii.gz'))
+                                                              'anat',
+                                                              sub_ses+'*_run-*_T2w.nii.gz'))
             if self.session is not None:
                 dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
                                                                   self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))

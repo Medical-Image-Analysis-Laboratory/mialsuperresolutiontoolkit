@@ -31,17 +31,17 @@ def return_default_nb_of_cores(nb_of_cores, openmp_proportion=2):
 
     Parameters
     ----------
-    nb_of_cores <int>
+    nb_of_cores : int
         Number of cores available on the computer
-    openmp_proportion <int>
+    openmp_proportion : int
         Proportion of cores dedicated to OpenMP threads
 
     Returns
     -------
-    openmp_nb_of_cores <int>
+    openmp_nb_of_cores : int
         Number of cores used by default by openmp
 
-    nipype_nb_of_cores <int>
+    nipype_nb_of_cores : int
         Number of cores used by default by openmp
     """
     openmp_nb_of_cores = nb_of_cores // openmp_proportion
@@ -63,18 +63,18 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
 
     Parameters
     ----------
-    openmp_nb_of_cores <int>
+    openmp_nb_of_cores : int
         Number of cores used by openmp that was initially set
 
-    nipype_nb_of_cores <int>
+    nipype_nb_of_cores : int
         Number of cores used by Niype that was initially set
 
     Returns
     -------
-    openmp_nb_of_cores <int>
+    openmp_nb_of_cores : int
         Valid number of cores used by openmp
 
-    nipype_nb_of_cores <int>
+    nipype_nb_of_cores : int
         Valid number of cores used by Niype
     """
     nb_of_cores = multiprocessing.cpu_count()
@@ -154,45 +154,43 @@ def main(bids_dir, output_dir,
 
     Parameters
     ----------
-    bids_dir <string>
+    bids_dir : string
         BIDS root directory (required)
 
-    output_dir <string>
+    output_dir : string
         Output derivatives directory (required)
 
-    subject <string>
+    subject : string
         Subject ID (in the form ``sub-XX``)
 
-    p_stacks list<<int>>
-        List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
-
-    session <string>
+    session : string
         Session ID if applicable (in the form ``ses-YY``)
 
-    paramTV dict <'deltatTV': float, 'lambdaTV': float, 'primal_dual_loops': int>>
+    p_stacks : list(int)
+        List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
+
+    paramTV dict : {'deltatTV': float, 'lambdaTV': float, 'primal_dual_loops': int}
         Dictionary of Total-Variation super-resolution optimizer parameters
 
-    number_of_cores <int>
-        Number of cores / CPUs used by the Nipype worflow execution engine
-
-    srID <string>
+    srID : string
         ID of the reconstruction useful to distinguish when multiple reconstructions
         with different order of stacks are run on the same subject
 
-    masks_derivatives_dir <string>
+    masks_derivatives_dir : string
         directory basename in BIDS directory derivatives where to search for masks (optional)
 
-    skip_svr <bool> (optional)
-        Weither the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
+    dict_custom_interfaces : {'do_refine_hr_mask': False, 'skip_nlm_denoising': False, 'skip_stacks_ordering': False}
+        Dictionary that customize the workflow (skip interfaces).
 
-    do_refine_hr_mask <bool> (optional)
-        Weither a refinement of the HR mask should be performed. (default is False)
+    number_of_cores : int
+        Number of cores / CPUs used by the Nipype worflow execution engine
 
-    skip_nlm_denoising <bool> (optional)
-        Weither the NLM denoising preprocessing should be skipped. (default is False)
+    memory : int
+        Maximal amount of memory used by the workflow
+        (Default: 0, workflow uses all available memory)
 
-    skip_stacks_ordering <bool> (optional)
-        Weither the automatic stacks ordering should be skipped. (default is False)
+    save_profiler_log : bool (optional)
+        Save the node profiler (runtime stats) log. (default is False)
 
     """
 
@@ -205,6 +203,7 @@ def main(bids_dir, output_dir,
 
     if srID is None:
         srID = "01"
+
     # Initialize an instance of AnatomicalPipeline
     pipeline = AnatomicalPipeline(bids_dir,
                                   output_dir,
@@ -215,6 +214,7 @@ def main(bids_dir, output_dir,
                                   paramTV,
                                   masks_derivatives_dir,
                                   p_dict_custom_interfaces=dict_custom_interfaces)
+
     # Create the super resolution Nipype workflow
     pipeline.create_workflow()
 
