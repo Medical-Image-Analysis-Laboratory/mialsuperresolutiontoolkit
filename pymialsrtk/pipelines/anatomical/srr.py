@@ -515,7 +515,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
-    def run(self, number_of_cores=1):
+    def run(self, number_of_cores=1, memory=None, save_profiler_log=False):
         """Execute the workflow of the super-resolution reconstruction pipeline.
 
         Nipype execution engine will take care of the management and execution of
