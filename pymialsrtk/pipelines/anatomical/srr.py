@@ -313,7 +313,6 @@ class AnatomicalPipeline:
         t2ws_filtered = Node(interface=preprocess.FilteringByRunid(), name='t2ws_filtered')
         masks_filtered = Node(interface=preprocess.FilteringByRunid(), name='masks_filtered')
 
-
         if not self.m_skip_stacks_ordering:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(), name='stackOrdering')
         else:
@@ -349,8 +348,7 @@ class AnatomicalPipeline:
                                                    iterfield=['in_file', 'in_mask', 'in_field'])
         srtkSliceBySliceCorrectBiasField.inputs.bids_dir = self.bids_dir
 
-
-    # 4-modules sequence to be defined as a stage.
+        # 4-modules sequence to be defined as a stage.
         if not self.m_skip_nlm_denoising:
             srtkCorrectSliceIntensity02_nlm = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                                       name='srtkCorrectSliceIntensity02_nlm',
@@ -366,8 +364,7 @@ class AnatomicalPipeline:
             srtkIntensityStandardization02_nlm = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02_nlm')
             srtkIntensityStandardization02_nlm.inputs.bids_dir = self.bids_dir
 
-
-    # 4-modules sequence to be defined as a stage.
+        # 4-modules sequence to be defined as a stage.
         srtkCorrectSliceIntensity02 = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                           name='srtkCorrectSliceIntensity02',
                                           iterfield=['in_file', 'in_mask'])
@@ -381,7 +378,6 @@ class AnatomicalPipeline:
 
         srtkIntensityStandardization02 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02')
         srtkIntensityStandardization02.inputs.bids_dir = self.bids_dir
-
 
         srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
                                   name='srtkMaskImage01',
@@ -422,10 +418,8 @@ class AnatomicalPipeline:
         datasink = Node(DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
 
-
-        # - Build workflow : connections of the nodes
-
-        # Nodes ready - Linking now
+        # Build workflow : connections of the nodes
+        # Nodes ready : Linking now
         if self.use_manual_masks:
             self.wf.connect(dg, "masks", brainMask, "out_file")
         else:
@@ -475,11 +469,9 @@ class AnatomicalPipeline:
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02, "in_mask")
         self.wf.connect(srtkCorrectSliceIntensity02, ("out_file", utils.sort_ascending), srtkIntensityStandardization01, "input_images")
 
-
         self.wf.connect(srtkIntensityStandardization01, ("output_images", utils.sort_ascending), srtkHistogramNormalization, "input_images")
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHistogramNormalization, "input_masks")
         self.wf.connect(srtkHistogramNormalization, ("output_images", utils.sort_ascending), srtkIntensityStandardization02, "input_images")
-
 
         if not self.m_skip_nlm_denoising:
             self.wf.connect(srtkIntensityStandardization02_nlm, ("output_images", utils.sort_ascending), srtkMaskImage01, "in_file")
@@ -499,7 +491,6 @@ class AnatomicalPipeline:
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
 
-
         if self.m_do_refine_hr_mask:
             self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkHRMask, "input_images")
             self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHRMask, "input_masks")
@@ -510,7 +501,6 @@ class AnatomicalPipeline:
 
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkMaskImage02, "in_file")
         self.wf.connect(srtkHRMask, "output_srmask", srtkMaskImage02, "in_mask")
-
 
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkN4BiasFieldCorrection, "input_image")
         self.wf.connect(srtkHRMask, "output_srmask", srtkN4BiasFieldCorrection, "input_mask")
@@ -547,7 +537,6 @@ class AnatomicalPipeline:
         save_profiler_log : bool
             If `True`, save node runtime statistics to a JSON-style log file.
         """
-
         self.wf.write_graph(dotfilename='graph.dot', graph2use='colored', format='png', simple_form=True)
 
         # Create dictionary of arguments passed to plugin_args
