@@ -226,6 +226,18 @@ class AnatomicalPipeline:
 
         # config.enable_provenance()
 
+        # Set path to the callback (profiler) log file
+        callback_log_path = os.path.join(
+            wf_base_dir, "pypeline_stats_" + sub_ses + ".log")
+
+        if os.path.isfile(callback_log_path):
+            os.unlink(callback_log_path)
+
+        logger = logging.getLogger('callback')
+        logger.setLevel(logging.DEBUG)
+        handler = logging.FileHandler(callback_log_path)
+        logger.addHandler(handler)
+
         logging.update_logging(config)
         iflogger = logging.getLogger('nipype.interface')
 

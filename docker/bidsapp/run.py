@@ -136,8 +136,17 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
     return openmp_nb_of_cores, nipype_nb_of_cores
 
 
-def main(bids_dir, output_dir, subject, p_stacks, session, paramTV=None, number_of_cores=1, srID=None,
-         masks_derivatives_dir='', dict_custom_interfaces=None): #skip_svr=False, do_refine_hr_mask=False, skip_nlm_denoising=False, skip_stacks_ordering=False):
+def main(bids_dir, output_dir,
+         subject,
+         session,
+         p_stacks,
+         paramTV=None,
+         srID=None,
+         masks_derivatives_dir='',
+         dict_custom_interfaces=None,
+         number_of_cores=1,
+         memory=0,
+         save_profiler_log=False):
     """Main function that creates and executes the workflow of the BIDS App on one subject.
 
     It creates an instance of the class :class:`pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline`,
