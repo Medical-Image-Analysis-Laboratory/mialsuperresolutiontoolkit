@@ -65,8 +65,15 @@ def sort_ascending(p_files):
     >>> sort_ascending(in_files)
 
     """
-    p_files.sort()
-    return p_files
+    from operator import itemgetter
+    import os
+    path_basename = []
+    for f in p_files:
+        path_basename.append((os.path.basename(f), f))
+
+    path_basename = sorted(path_basename, key=itemgetter(0))
+    # p_files.sort()
+    return [f[1] for f in path_basename]
 
 
 def reorder_by_run_ids(p_files, p_order):

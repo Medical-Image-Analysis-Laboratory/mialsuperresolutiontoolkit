@@ -893,7 +893,8 @@ class FilteringByRunidOutputSpec(TraitedSpec):
 class FilteringByRunid(BaseInterface):
     """Runs a filtering of files.
 
-    This module filters the input files matching the specified run-ids. Other files are discarded.
+    This module filters the input files matching the specified run-ids.
+    Other files are discarded.
 
     Examples
     --------
@@ -954,8 +955,19 @@ class StacksOrdering(BaseInterface):
     --------
     >>> from pymialsrtk.interfaces.preprocess import StacksOrdering
     >>> stacksOrdering = StacksOrdering()
-    >>> stacksOrdering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz', 'sub-01_run-4_mask.nii.gz', 'sub-01_run-2_mask.nii.gz']
+    >>> stacksOrdering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz',
+    >>>                                      'sub-01_run-4_mask.nii.gz',
+    >>>                                      'sub-01_run-2_mask.nii.gz']
     >>> stacksOrdering.run() # doctest: +SKIP
+
+    .. note:: In the case of discontinuous brain masks, the centroid coordinates of
+        the slices excluded from the mask are set to `numpy.nan` and are not
+        anymore considered in the motion index computation since `v2.0.2` release.
+        Prior to this release, the centroids of these slices were set to zero
+        that has shown to drastically increase the motion index with respect
+        to the real motion during acquisition. However the motion in the remaining
+        slices that were actually used for SR reconstruction might not correspond
+        to the high value of this index.
 
     """
 
@@ -980,7 +992,9 @@ class StacksOrdering(BaseInterface):
     def _compute_motion_index(self, in_file):
         """Function to compute the motion index.
 
-        The motion index is computed from the inter-slice displacement of the centroid of the brain mask.
+        The motion index is computed from the inter-slice displacement of
+        the centroid of the brain mask.
+
         """
         central_third = True
 
@@ -1006,30 +1020,30 @@ class StacksOrdering(BaseInterface):
 
             try:
                 centroid_coordx = moments[0, 1] / moments[0, 0]
-            except ZeroDivisionError:
-                centroid_coordx = 0
-
-            try:
                 centroid_coordy = moments[1, 0] / moments[0, 0]
+            # This happens in the case of discontinuous brain masks
             except ZeroDivisionError:
-                centroid_coordy = 0
+                centroid_coordx = np.nan
+                centroid_coordy = np.nan
 
             centroid_coord[i, :] = [centroid_coordx, centroid_coordy]
 
         centroid_coord = centroid_coord[~np.isnan(centroid_coord)]
         centroid_coord = np.reshape(centroid_coord, (int(centroid_coord.shape[0] / 2), 2))
 
-        nSlices = data.shape[2]
-        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / nSlices
+        nb_slices = centroid_coord.shape[0]
+        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / nb_slices
 
         return score
 
     def _compute_stack_order(self, in_files):
         """Function to compute the stacks order.
 
-        The motion index is computed for each mask. Stacks are ordered according to their motion index.
-        When the view plane is specified in the filenames (tag `vp`), stacks are ordered such that the 3 first ones are
-        othogonal / in three different orientations.
+        The motion index is computed for each mask.
+        Stacks are ordered according to their motion index.
+        When the view plane is specified in the filenames (tag `vp`),
+        stacks are ordered such that the 3 first ones are
+        orthogonal / in three different orientations.
         """
         motion_ind = []
 
