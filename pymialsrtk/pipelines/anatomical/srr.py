@@ -164,11 +164,17 @@ class AnatomicalPipeline:
             self.m_skip_nlm_denoising =  False
             self.m_skip_stacks_ordering = False
 
-    def create_workflow(self):
+    def create_workflow(self, save_profiler_log=False):
         """Create the Niype workflow of the super-resolution pipeline.
 
         It is composed of a succession of Nodes and their corresponding parameters,
         where the output of node i goes to the input of node i+1.
+
+        Parameters
+        ----------
+        save_profiler_log : bool
+            If `True`, save node runtime statistics to a JSON-style log file.
+
         """
 
         sub_ses = self.subject
@@ -212,30 +218,38 @@ class AnatomicalPipeline:
             os.unlink(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log"))
             # open(os.path.join(self.output_dir,"pypeline.log"), 'a').close()
 
-        config.update_config({'logging': {'log_directory': os.path.join(wf_base_dir),
-                                          'log_to_file': True},
-                              'execution': {
-                                  'remove_unnecessary_outputs': False,
-                                  'stop_on_first_crash': True,
-                                  'stop_on_first_rerun': False,
-                                  'crashfile_format': "txt",
-                                  'write_provenance': False},
-                              'monitoring': {'enabled': True}
-                              })
+        config.update_config(
+            {
+                'logging': {
+                      'log_directory': os.path.join(wf_base_dir),
+                      'log_to_file': True
+                },
+                'execution': {
+                    'remove_unnecessary_outputs': False,
+                    'stop_on_first_crash': True,
+                    'stop_on_first_rerun': False,
+                    'crashfile_format': "txt",
+                    'use_relative_paths': True,
+                    'write_provenance': False
+                }
+            }
+        )
+
+        if save_profiler_log:
+            config.update_config(
+                {
+                    'monitoring': {
+                            'enabled': save_profiler_log,
+                            'sample_frequency': "0.5",
+                            'summary_append': True
+                    }
+                }
+            )
+            config.enable_resource_monitor()
+
+
 
         # config.enable_provenance()
-
-        # Set path to the callback (profiler) log file
-        callback_log_path = os.path.join(
-            wf_base_dir, "pypeline_stats_" + sub_ses + ".log")
-
-        if os.path.isfile(callback_log_path):
-            os.unlink(callback_log_path)
-
-        logger = logging.getLogger('callback')
-        logger.setLevel(logging.DEBUG)
-        handler = logging.FileHandler(callback_log_path)
-        logger.addHandler(handler)
 
         logging.update_logging(config)
         iflogger = logging.getLogger('nipype.interface')
@@ -518,7 +532,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
-    def run(self, number_of_cores=1, memory=None, save_profiler_log=False):
+    def run(self, number_of_cores=1, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.
 
         Nipype execution engine will take care of the management and execution of
@@ -533,20 +547,18 @@ class AnatomicalPipeline:
 
         memory : int
             Maximal memory used by the workflow
-
-        save_profiler_log : bool
-            If `True`, save node runtime statistics to a JSON-style log file.
         """
         self.wf.write_graph(dotfilename='graph.dot', graph2use='colored', format='png', simple_form=True)
 
         # Create dictionary of arguments passed to plugin_args
-        args_dict = {'n_procs': number_of_cores}
+        args_dict = {
+            'maxtasksperchild': 1,
+            'raise_insufficient': False,
+            'n_procs': number_of_cores
+        }
 
         if memory is not None:
             args_dict['memory_gb'] = memory
-
-        if save_profiler_log:
-            args_dict['status_callback'] = log_nodes_cb
 
         res = self.wf.run(plugin='MultiProc',
                           plugin_args=args_dict)

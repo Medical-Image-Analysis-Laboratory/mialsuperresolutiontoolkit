@@ -216,12 +216,11 @@ def main(bids_dir, output_dir,
                                   p_dict_custom_interfaces=dict_custom_interfaces)
 
     # Create the super resolution Nipype workflow
-    pipeline.create_workflow()
+    pipeline.create_workflow(save_profiler_log=save_profiler_log)
 
     # Execute the workflow
     res = pipeline.run(number_of_cores=number_of_cores,
-                       memory=memory,
-                       save_profiler_log=save_profiler_log)
+                       memory=memory)
 
     return res
 
