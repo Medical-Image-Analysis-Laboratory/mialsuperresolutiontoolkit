@@ -2,8 +2,8 @@
 
 _version_major = 2
 _version_minor = 0
-_version_micro = 1
-_version_extra = ''
+_version_micro = 2
+_version_extra = '-dev'
 
 __release_date__ = '24.12.2020'
 
@@ -16,7 +16,7 @@ __version__ = "%s.%s.%s%s" % (_version_major,
                               _version_extra)
 
 # __current_year__ = datetime.datetime.now().strftime("%Y")
-__current_year__ = '2020'
+__current_year__ = '2021'
 
 __author__ = 'The MIAL Super-Resolution ToolKit developers'
 __copyright__ = 'Copyright 2016-{}, Medical Image Analysis Laboratory (MIAL), Lausanne'.format(__current_year__)
