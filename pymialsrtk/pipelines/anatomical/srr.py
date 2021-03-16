@@ -557,7 +557,7 @@ class AnatomicalPipeline:
             'n_procs': number_of_cores
         }
 
-        if memory is not None:
+        if (memory is not None) and (memory > 0):
             args_dict['memory_gb'] = memory
 
         res = self.wf.run(plugin='MultiProc',
