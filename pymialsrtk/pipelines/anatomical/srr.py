@@ -9,6 +9,7 @@ import os
 import pkg_resources
 
 from nipype import config, logging
+from nipype.utils.profiler import log_nodes_cb
 # from nipype.interfaces.io import BIDSDataGrabber
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.pipeline import Node, MapNode, Workflow
@@ -524,16 +525,28 @@ class AnatomicalPipeline:
 
         Parameters
         ----------
-        number_of_cores <int>
+        number_of_cores : int
             Number of cores / CPUs used by the workflow
 
+        memory : int
+            Maximal memory used by the workflow
+
+        save_profiler_log : bool
+            If `True`, save node runtime statistics to a JSON-style log file.
         """
 
         self.wf.write_graph(dotfilename='graph.dot', graph2use='colored', format='png', simple_form=True)
-        if number_of_cores > 1:
-            res = self.wf.run(plugin='MultiProc', plugin_args={'n_procs': number_of_cores})
 
-        else:
-            res = self.wf.run()
+        # Create dictionary of arguments passed to plugin_args
+        args_dict = {'n_procs': number_of_cores}
+
+        if memory is not None:
+            args_dict['memory_gb'] = memory
+
+        if save_profiler_log:
+            args_dict['status_callback'] = log_nodes_cb
+
+        res = self.wf.run(plugin='MultiProc',
+                          plugin_args=args_dict)
 
         return res

@@ -210,7 +210,9 @@ def main(bids_dir, output_dir, subject, p_stacks, session, paramTV=None, number_
     pipeline.create_workflow()
 
     # Execute the workflow
-    res = pipeline.run(number_of_cores=number_of_cores)
+    res = pipeline.run(number_of_cores=number_of_cores,
+                       memory=memory,
+                       save_profiler_log=save_profiler_log)
 
     return res
 
@@ -262,13 +264,15 @@ if __name__ == '__main__':
                     res = main(bids_dir=args.bids_dir,
                                output_dir=args.output_dir,
                                subject=sub,
-                               p_stacks=stacks,
                                session=ses,
+                               p_stacks=stacks,
                                paramTV=paramTV,
                                srID=sr_params['sr-id'],
                                masks_derivatives_dir=args.masks_derivatives_dir,
+                               dict_custom_interfaces = dict_custom_interfaces,
                                number_of_cores=nipype_nb_of_cores,
-                               dict_custom_interfaces = dict_custom_interfaces)
+                               memory=args.memory,
+                               save_profiler_log=args.profiling)
 
     else:
         print('ERROR: Processing of all dataset not implemented yet\n At least one participant label should be provided')
