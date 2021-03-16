@@ -233,7 +233,8 @@ jobs:
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
-                --nipype_nb_of_cores 1
+                --nipype_nb_of_cores 1 \
+                --profiling
 
             # Rename log
             mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_log.txt
