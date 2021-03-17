@@ -15,27 +15,18 @@ import traceback
 from glob import glob
 
 import numpy as np
+from traits.api import *
+
 import nibabel
 import cv2
 import skimage.measure
-
 import scipy.ndimage as snd
 from skimage import morphology
 from scipy.signal import argrelextrema
 
-try:
-    import tensorflow as tf
-except ImportError:
-    print("Tensorflow not available. Can not run brain extraction")
-
-try:
-    import tflearn
-    from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
-except ImportError:
-    print("tflearn not available. Can not run brain extraction")
-
-
-from traits.api import *
+import tflearn
+from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
+import tensorflow.compat.v1 as tf
 
 from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
