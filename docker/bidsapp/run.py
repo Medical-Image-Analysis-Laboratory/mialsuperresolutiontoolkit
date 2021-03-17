@@ -220,7 +220,8 @@ def main(bids_dir, output_dir,
 
     # Execute the workflow
     res = pipeline.run(number_of_cores=number_of_cores,
-                       memory=memory)
+                       memory=memory,
+                       save_profiler_log=save_profiler_log)
 
     return res
 

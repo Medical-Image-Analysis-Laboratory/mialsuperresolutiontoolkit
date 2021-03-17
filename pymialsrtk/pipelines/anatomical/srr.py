@@ -9,7 +9,10 @@ import os
 import pkg_resources
 
 from nipype import config, logging
+import logging.handlers
 from nipype.utils.profiler import log_nodes_cb
+from nipype.utils.draw_gantt_chart import generate_gantt_chart
+
 # from nipype.interfaces.io import BIDSDataGrabber
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.pipeline import Node, MapNode, Workflow
@@ -240,20 +243,29 @@ class AnatomicalPipeline:
                 {
                     'monitoring': {
                             'enabled': save_profiler_log,
-                            'sample_frequency': "0.5",
+                            'sample_frequency': "1.0",
                             'summary_append': True
                     }
                 }
             )
             config.enable_resource_monitor()
 
-
+        # Update logging with config
+        logging.update_logging(config)
 
         # config.enable_provenance()
 
-        logging.update_logging(config)
-        iflogger = logging.getLogger('nipype.interface')
+        if save_profiler_log:
+            log_filename = os.path.join(wf_base_dir, 'pypeline_stats.log')
+            if os.path.isfile(log_filename):
+                os.unlink(log_filename)
+            logger = logging.getLogger('callback')
+            logger.setLevel(logging.DEBUG)
+            handler = logging.FileHandler(log_filename)
+            logger.addHandler(handler)
 
+        # Use nipype.interface logger to print some information messages
+        iflogger = logging.getLogger('nipype.interface')
         iflogger.info("**** Processing ****")
 
         if self.use_manual_masks:
@@ -532,7 +544,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
-    def run(self, number_of_cores=1, memory=None):
+    def run(self, number_of_cores=1, memory=None, save_profiler_log=False):
         """Execute the workflow of the super-resolution reconstruction pipeline.
 
         Nipype execution engine will take care of the management and execution of
@@ -547,6 +559,10 @@ class AnatomicalPipeline:
 
         memory : int
             Maximal memory used by the workflow
+
+        save_profiler_log : bool
+            If `True`, generates the profiling callback log
+            (Default: `False`)
         """
         self.wf.write_graph(dotfilename='graph.dot', graph2use='colored', format='png', simple_form=True)
 
@@ -560,7 +576,17 @@ class AnatomicalPipeline:
         if (memory is not None) and (memory > 0):
             args_dict['memory_gb'] = memory
 
+        if save_profiler_log:
+            args_dict['status_callback'] = log_nodes_cb
+
         res = self.wf.run(plugin='MultiProc',
                           plugin_args=args_dict)
+
+        if save_profiler_log:
+            log_filename = os.path.join(self.wf.base_dir, 'pypeline_stats.log')
+            generate_gantt_chart(logfile=log_filename,
+                                 cores=number_of_cores,
+                                 minute_scale=10,
+                                 space_between_minutes=50)
 
         return res
