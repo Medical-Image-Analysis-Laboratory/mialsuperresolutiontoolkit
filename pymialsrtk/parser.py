@@ -71,7 +71,9 @@ def get_parser():
 
     p.add_argument('--profiling',
                    help='Save node runtime statistics (number of cores, used memory) '
-                        'in a JSON-style log')
+                        'in a JSON-style log',
+                   action='store_true',
+                   default=False)
 
     p.add_argument('-v', '--version',
                    action='version',
