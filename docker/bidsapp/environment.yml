@@ -10,7 +10,7 @@ dependencies:
 - pip=21.0.1
 - nibabel=3.0.1
 - pandas=1.2.3
-- nipype=1.5.1
+- nipype=1.6.0
 - traits=5.1.2
 - pydotplus=2.0.2
 - pandoc=2.11.0.1
@@ -19,9 +19,9 @@ dependencies:
     - coverage==5.1
     - duecredit==0.8.0
     - apptools==4.4.0
-    # - niworkflows==0.10.2
     - graphviz
-    - numpy==1.16.4 # numpy 1.18.5 caused error (fix: https://github.com/DeepLabCut/Docker4DeepLabCut2.0/issues/26)
+    - numpy==1.20.1
+    # - niworkflows==0.10.2
     - tensorflow==2.3.0
     - tensorflow-estimator==2.3.0
     - tensorboard==2.3.0
