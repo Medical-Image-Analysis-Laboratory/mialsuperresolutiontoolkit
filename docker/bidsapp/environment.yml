@@ -7,8 +7,9 @@ channels:
 
 dependencies:
 - python=3.6.8
-- pip=19.0.3
+- pip=21.0.1
 - nibabel=3.0.1
+- pandas=1.2.3
 - nipype=1.5.1
 - traits=5.1.2
 - traitsui=6.0.0
@@ -23,7 +24,6 @@ dependencies:
     # - niworkflows==0.10.2
     - graphviz
     - numpy==1.16.4 # numpy 1.18.5 caused error (fix: https://github.com/DeepLabCut/Docker4DeepLabCut2.0/issues/26)
-    - pandas==1.2.2
     - tensorflow==1.13.1 # https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.1.0-cp36-cp36m-linux_x86_64.whl # tensorflow==1.15 # tflearn needs tensorflow 1.0+
     - tensorflow-estimator==1.13.0
     - tensorboard==1.13.1
