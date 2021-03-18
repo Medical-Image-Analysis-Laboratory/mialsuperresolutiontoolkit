@@ -213,13 +213,18 @@ class AnatomicalPipeline:
         # Workflow name cannot begin with a number (oterhwise ValueError)
         pipeline_name = "srr_pipeline"
 
-        self.wf = Workflow(name=pipeline_name,base_dir=wf_base_dir)
-        # srr_nipype_dir = os.path.join(self.wf.base_dir, self.wf.name )
-
         # Initialization (Not sure we can control the name of nipype log)
         if os.path.isfile(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log")):
             os.unlink(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log"))
             # open(os.path.join(self.output_dir,"pypeline.log"), 'a').close()
+
+        if save_profiler_log:
+            log_filename = os.path.join(wf_base_dir, 'pypeline_stats.log')
+            if os.path.isfile(log_filename):
+                os.unlink(log_filename)
+
+        self.wf = Workflow(name=pipeline_name,base_dir=wf_base_dir)
+        # srr_nipype_dir = os.path.join(self.wf.base_dir, self.wf.name )
 
         config.update_config(
             {
@@ -256,9 +261,6 @@ class AnatomicalPipeline:
         # config.enable_provenance()
 
         if save_profiler_log:
-            log_filename = os.path.join(wf_base_dir, 'pypeline_stats.log')
-            if os.path.isfile(log_filename):
-                os.unlink(log_filename)
             logger = logging.getLogger('callback')
             logger.setLevel(logging.DEBUG)
             handler = logging.FileHandler(log_filename)
