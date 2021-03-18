@@ -9,7 +9,6 @@ import os
 import pkg_resources
 
 from nipype import config, logging
-from nipype.utils.profiler import log_nodes_cb
 from nipype.utils.draw_gantt_chart import generate_gantt_chart
 
 # from nipype.interfaces.io import BIDSDataGrabber
@@ -258,12 +257,6 @@ class AnatomicalPipeline:
         logging.update_logging(config)
 
         # config.enable_provenance()
-
-        if save_profiler_log:
-            logger = logging.getLogger('callback')
-            logger.setLevel(logging.DEBUG)
-            handler = logging.FileHandler(log_filename)
-            logger.addHandler(handler)
 
         # Use nipype.interface logger to print some information messages
         iflogger = logging.getLogger('nipype.interface')
@@ -577,14 +570,11 @@ class AnatomicalPipeline:
         if (memory is not None) and (memory > 0):
             args_dict['memory_gb'] = memory
 
-        if save_profiler_log:
-            args_dict['status_callback'] = log_nodes_cb
-
         res = self.wf.run(plugin='MultiProc',
                           plugin_args=args_dict)
 
         if save_profiler_log:
-            log_filename = os.path.join(self.wf.base_dir, 'pypeline_stats.log')
+            log_filename = os.path.join(self.wf.base_dir, 'resource_monitor.json')
             generate_gantt_chart(logfile=log_filename,
                                  cores=number_of_cores,
                                  minute_scale=10,
