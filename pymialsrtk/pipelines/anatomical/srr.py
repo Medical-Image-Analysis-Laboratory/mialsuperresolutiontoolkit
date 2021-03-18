@@ -9,7 +9,6 @@ import os
 import pkg_resources
 
 from nipype import config, logging
-import logging.handlers
 from nipype.utils.profiler import log_nodes_cb
 from nipype.utils.draw_gantt_chart import generate_gantt_chart
 
