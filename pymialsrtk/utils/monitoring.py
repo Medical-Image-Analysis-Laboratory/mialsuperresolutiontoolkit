@@ -107,9 +107,9 @@ def log_to_dict(logfile):
     for l in lines:
         node = json.loads(l)
         node["start"] = datetime.datetime.strptime(node["start"],
-                                                   '%Y-%m-%dT%H:%M:%S.%fZ')
+                                                   '%Y-%m-%dT%H:%M:%S.%f')
         node["finish"] = datetime.datetime.strptime(node["finish"],
-                                                    '%Y-%m-%dT%H:%M:%S.%fZ')
+                                                    '%Y-%m-%dT%H:%M:%S.%f')
         nodes_list.append(node)
 
     # Return list of nodes
