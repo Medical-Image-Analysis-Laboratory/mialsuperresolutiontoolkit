@@ -9,19 +9,18 @@ import os
 import pkg_resources
 
 from nipype import config, logging
-from nipype.utils.draw_gantt_chart import generate_gantt_chart
 
 # from nipype.interfaces.io import BIDSDataGrabber
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.pipeline import Node, MapNode, Workflow
 from nipype.interfaces.utility import IdentityInterface, Function
 
-
 # Import the implemented interface from pymialsrtk
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.utils as utils
+from pymialsrtk.utils.monitoring import log_nodes_cb, generate_gantt_chart
 
 # Get pymialsrtk version
 from pymialsrtk.info import __version__
@@ -572,7 +571,7 @@ class AnatomicalPipeline:
             args_dict['memory_gb'] = memory
 
         if save_profiler_log:
-            args_dict['status_callback'] = utils.log_nodes_cb
+            args_dict['status_callback'] = log_nodes_cb
             # Set path to log file and create callback logger
             callback_log_path = os.path.join(self.wf.base_dir,
                                              self.wf.name,
