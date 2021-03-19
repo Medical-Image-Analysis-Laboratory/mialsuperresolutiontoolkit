@@ -9,7 +9,6 @@ import os
 import pkg_resources
 
 from nipype import config, logging
-from nipype.utils.profiler import log_nodes_cb
 from nipype.utils.draw_gantt_chart import generate_gantt_chart
 
 # from nipype.interfaces.io import BIDSDataGrabber
@@ -573,7 +572,7 @@ class AnatomicalPipeline:
             args_dict['memory_gb'] = memory
 
         if save_profiler_log:
-            args_dict['status_callback'] = log_nodes_cb
+            args_dict['status_callback'] = utils.log_nodes_cb
             # Set path to log file and create callback logger
             callback_log_path = os.path.join(self.wf.base_dir,
                                              self.wf.name,
