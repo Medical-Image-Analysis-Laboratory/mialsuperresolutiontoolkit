@@ -228,8 +228,6 @@ def main(bids_dir, output_dir,
 
 if __name__ == '__main__':
 
-    bids_dir = os.path.join('/fetaldata')
-
     parser = get_parser()
     args = parser.parse_args()
 
