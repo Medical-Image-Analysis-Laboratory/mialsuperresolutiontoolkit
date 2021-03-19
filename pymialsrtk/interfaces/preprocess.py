@@ -24,7 +24,7 @@ from skimage import morphology
 from scipy.signal import argrelextrema
 
 try:
-    import tensorflow as tf
+    import tensorflow.compat.v1 as tf
 except ImportError:
     print("Tensorflow not available. Can not run brain extraction")
 

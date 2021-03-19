@@ -208,7 +208,7 @@ class AnatomicalPipeline:
             os.makedirs(wf_base_dir)
         print("Process directory: {}".format(wf_base_dir))
 
-        # Workflow name cannot begin with a number (oterhwise ValueError)
+        # Workflow name cannot begin with a number (otherwise ValueError)
         pipeline_name = "srr_pipeline"
 
         # Initialization (Not sure we can control the name of nipype log)
