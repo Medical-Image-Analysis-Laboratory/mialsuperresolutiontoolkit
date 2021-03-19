@@ -32,10 +32,13 @@ class AnatomicalPipeline:
 
     Attributes
     -----------
-    bids_dir <string>
+    pipeline_name : string
         BIDS root directory (required)
 
-    output_dir <string>
+    bids_dir : string
+        BIDS root directory (required)
+
+    output_dir : string
         Output derivatives directory (required)
 
     subject <string>
@@ -105,6 +108,7 @@ class AnatomicalPipeline:
 
     """
 
+    pipeline_name = "srr_pipeline"
     bids_dir = None
     output_dir = None
     subject = None
@@ -208,9 +212,6 @@ class AnatomicalPipeline:
             os.makedirs(wf_base_dir)
         print("Process directory: {}".format(wf_base_dir))
 
-        # Workflow name cannot begin with a number (otherwise ValueError)
-        pipeline_name = "srr_pipeline"
-
         # Initialization (Not sure we can control the name of nipype log)
         if os.path.isfile(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log")):
             os.unlink(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log"))
@@ -221,7 +222,7 @@ class AnatomicalPipeline:
             if os.path.isfile(log_filename):
                 os.unlink(log_filename)
 
-        self.wf = Workflow(name=pipeline_name,base_dir=wf_base_dir)
+        self.wf = Workflow(name=self.pipeline_name,base_dir=wf_base_dir)
         # srr_nipype_dir = os.path.join(self.wf.base_dir, self.wf.name )
 
         config.update_config(
@@ -574,7 +575,9 @@ class AnatomicalPipeline:
                           plugin_args=args_dict)
 
         if save_profiler_log:
-            log_filename = os.path.join(self.wf.base_dir, 'resource_monitor.json')
+            log_filename = os.path.join(self.wf.base_dir,
+                                        self.wf.name,
+                                        'resource_monitor.json')
             generate_gantt_chart(logfile=log_filename,
                                  cores=number_of_cores,
                                  minute_scale=10,
