@@ -8,12 +8,8 @@ See https://nipype.readthedocs.io/en/latest/api/generated/nipype.utils.profiler.
 See https://nipype.readthedocs.io/en/latest/api/generated/nipype.utils.draw_gantt_chart.html
 """
 # Import packages
-import sys
-import random
 import datetime
 import simplejson as json
-
-from collections import OrderedDict
 
 from nipype.utils.draw_gantt_chart import calculate_resource_timeseries,\
     create_event_dict, draw_nodes, draw_lines, draw_resource_bar
@@ -52,7 +48,6 @@ def log_nodes_cb(node, status):
         status info to the callback logger
 
     """
-
     if status != "end":
         return
 
@@ -89,18 +84,20 @@ def log_to_dict(logfile):
     """
     Function to extract log node dictionaries into a list of python
     dictionaries and return the list as well as the final node
+
     Parameters
     ----------
     logfile : string
         path to the json-formatted log file generated from a nipype
         workflow execution
+
     Returns
     -------
     nodes_list : list
         a list of python dictionaries containing the runtime info
         for each nipype node
-    """
 
+    """
     # Init variables
     with open(logfile, "r") as content:
         # read file separating each line
@@ -130,27 +127,34 @@ def generate_gantt_chart(
     Generates a gantt chart in html showing the workflow execution based on a callback log file.
     This script was intended to be used with the MultiprocPlugin.
     The following code shows how to set up the workflow in order to generate the log file:
+
     Parameters
     ----------
     logfile : string
         filepath to the callback log file to plot the gantt chart of
+
     cores : integer
         the number of cores given to the workflow via the 'n_procs'
         plugin arg
+
     minute_scale : integer (optional); default=10
         the scale, in minutes, at which to plot line markers for the
         gantt chart; for example, minute_scale=10 means there are lines
         drawn at every 10 minute interval from start to finish
+
     space_between_minutes : integer (optional); default=50
         scale factor in pixel spacing between minute line markers
+
     colors : list (optional)
         a list of colors to choose from when coloring the nodes in the
         gantt chart
+
     Returns
     -------
     None
         the function does not return any value but writes out an html
         file in the same directory as the callback log path passed in
+
     Usage
     -----
     # import logging
@@ -166,8 +170,8 @@ def generate_gantt_chart(
     # workflow.run(plugin='MultiProc',
     #     plugin_args={'n_procs':8, 'memory':12, 'status_callback': log_nodes_cb})
     # generate_gantt_chart('callback.log', 8)
-    """
 
+    """
     # add the html header
     html_string = """<!DOCTYPE html>
     <head>
