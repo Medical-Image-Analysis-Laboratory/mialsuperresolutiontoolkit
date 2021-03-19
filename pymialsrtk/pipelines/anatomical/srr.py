@@ -41,49 +41,49 @@ class AnatomicalPipeline:
     output_dir : string
         Output derivatives directory (required)
 
-    subject <string>
+    subject : string
         Subject ID (in the form ``sub-XX``)
 
-    wf <nipype.pipeline.Workflow>
+    wf : nipype.pipeline.Workflow
         Nipype workflow of the reconstruction pipeline
 
-    dictsink <nipype.interfaces.io.JSONFileSink>
+    dictsink : nipype.interfaces.io.JSONFileSink
         Nipype node used to generate a JSON file that store provenance metadata
         for the SR-reconstructed images
 
-    deltatTV <string>
+    deltatTV : string
         Super-resolution optimization time-step
 
-    lambdaTV <Float>
+    lambdaTV : float
         Regularization weight (default is 0.75)
 
-    primal_dual_loops <string>
+    primal_dual_loops : string
         Number of primal/dual loops used in the optimization of the total-variation
         super-resolution algorithm.
 
-    sr_id <string>
+    sr_id : string
         ID of the reconstruction useful to distinguish when multiple reconstructions
         with different order of stacks are run on the same subject
 
-    session <string>
+    session : string
         Session ID if applicable (in the form ``ses-YY``)
 
-    m_stacks list<<int>>
+    m_stacks : list(int)
         List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
 
-    m_masks_derivatives_dir <string>
+    m_masks_derivatives_dir : string
         directory basename in BIDS directory derivatives where to search for masks (optional)
 
-    m_skip_svr <bool>
+    m_skip_svr : bool
         Weither the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
 
-    m_do_refine_hr_mask <bool>
+    m_do_refine_hr_mask : bool
         Weither a refinement of the HR mask should be performed. (default is False)
 
-    m_skip_nlm_denoising <bool>
+    m_skip_nlm_denoising : bool
         Weither the NLM denoising preprocessing should be skipped. (default is False)
 
-    m_skip_stacks_ordering <bool> (optional)
+    m_skip_stacks_ordering : bool (optional)
         Weither the automatic stacks ordering should be skipped. (default is False)
 
 
@@ -92,15 +92,15 @@ class AnatomicalPipeline:
     >>> from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
     >>> # Create a new instance
     >>> pipeline = AnatomicalPipeline('/path/to/bids_dir',
-                                  '/path/to/output_dir',
-                                  'sub-01',
-                                  [1,3,2,0],
-                                  01,
-                                  None,
-                                  paramTV={deltatTV = "0.001",
-                                           lambdaTV = "0.75",
-                                           primal_dual_loops = "20"},
-                                  use_manual_masks=False)
+                                      '/path/to/output_dir',
+                                      'sub-01',
+                                      [1,3,2,0],
+                                      01,
+                                      None,
+                                      paramTV={deltatTV = "0.001",
+                                               lambdaTV = "0.75",
+                                               primal_dual_loops = "20"},
+                                      use_manual_masks=False)
     >>> # Create the super resolution Nipype workflow
     >>> pipeline.create_workflow()
     >>> # Execute the workflow

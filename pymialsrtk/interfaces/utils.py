@@ -15,13 +15,13 @@ def run(command, env=None, cwd=None):
 
     Parameters
     ----------
-    command <string>
+    command : string
         String containing the command to be executed (required)
 
-    env <os.environ>
+    env : os.environ
         Specify a custom os.environ
 
-    cwd <Directory>
+    cwd : Directory
         Specify a custom current working directory
 
     Examples
@@ -56,7 +56,7 @@ def sort_ascending(p_files):
 
     Parameters
     ----------
-    p_files <list<string>>
+    p_files : list
         List of image paths to be sorted in ascending order
 
     Examples
