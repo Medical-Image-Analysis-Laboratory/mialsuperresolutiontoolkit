@@ -19,7 +19,8 @@ packages = ["pymialsrtk",
             "pymialsrtk.cli",
             "pymialsrtk.interfaces",
             "pymialsrtk.pipelines",
-            "pymialsrtk.pipelines.anatomical"]
+            "pymialsrtk.pipelines.anatomical",
+            "pymialsrtk.utils"]
 
 package_data = {"pymialsrtk":
                 ['data/Network_checkpoints/Network_checkpoints_localization/*',
