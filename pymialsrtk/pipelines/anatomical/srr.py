@@ -578,10 +578,11 @@ class AnatomicalPipeline:
             callback_log_path = os.path.join(self.wf.base_dir,
                                              self.wf.name,
                                              'run_stats.log')
-            import logging as sys_logging
-            logger = sys_logging.getLogger('callback')
-            logger.setLevel(sys_logging.DEBUG)
-            handler = sys_logging.FileHandler(callback_log_path)
+            import logging
+            import logging.handlers
+            logger = logging.getLogger('callback')
+            logger.setLevel(logging.DEBUG)
+            handler = logging.FileHandler(callback_log_path)
             logger.addHandler(handler)
 
         res = self.wf.run(plugin='MultiProc',
