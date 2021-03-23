@@ -20,7 +20,7 @@ dependencies:
     - duecredit==0.8.0
     - apptools==4.4.0
     - graphviz
-    - numpy==1.19.0
+    - numpy==1.16.6
     # - niworkflows==0.10.2
     - tensorflow==2.3.0
     - tensorflow-estimator==2.3.0
