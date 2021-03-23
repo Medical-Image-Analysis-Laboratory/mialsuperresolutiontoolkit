@@ -12,7 +12,7 @@ import datetime
 import simplejson as json
 
 from nipype.utils.draw_gantt_chart import calculate_resource_timeseries,\
-    create_event_dict, draw_nodes, draw_lines, draw_resource_bar
+    create_event_dict, draw_nodes, draw_lines
 
 # Pandas
 try:
@@ -114,6 +114,119 @@ def log_to_dict(logfile):
 
     # Return list of nodes
     return nodes_list
+
+
+def draw_resource_bar(
+    start_time,
+    finish_time,
+    time_series,
+    space_between_minutes,
+    minute_scale,
+    color,
+    left,
+    resource,
+    max_bar_width
+):
+    """Draw the resource bar in the resource monitoring gantt chart.
+
+    Parameters
+    ----------
+    start_time : datatime.DateTime
+        node start datetime
+
+    finish_time : datatime.DateTime
+        Node finish datetime
+
+    time_series : pandas.Series
+        Node timeseries
+
+    space_between_minutes : int
+        Space between minutes
+
+    minute_scale : int
+        Scaling of space between minutes
+
+    color : string
+        Color hexadecimal code
+
+    left : int
+        Number of pixels to place to bar to the right of
+        the left edge
+
+    resource : 'Memory' or 'Threads'
+        Type of resource
+
+    max_bar_width : int
+        Maximal bar width in pixels
+
+    Returns
+    -------
+    result : string
+        Bar-formatted html string
+
+    """
+    # Memory header
+    result = "<p class='time' style='top:198px;left:%dpx;'>%s</p>" % (left, resource)
+    # Image scaling factors
+    scale = space_between_minutes / minute_scale
+    space_between_minutes = space_between_minutes / scale
+
+    # Iterate through time series
+    ts_items = time_series.items()
+
+    max_ts = time_series.max()
+    print(f'Max time series ({resource}): {max_ts}')
+
+    ts_len = len(time_series)
+    for idx, (ts_start, amount) in enumerate(ts_items):
+        if idx < ts_len - 1:
+            ts_end = time_series.index[idx + 1]
+        else:
+            ts_end = finish_time
+        # Calculate offset from start at top
+        offset = (
+            (ts_start - start_time).total_seconds() / 60.0
+        ) * scale * space_between_minutes + 220
+        # Scale duration
+        duration_mins = (ts_end - ts_start).total_seconds() / 60.0
+        height = duration_mins * scale * space_between_minutes
+        if height < 5:
+            height = 5
+        height -= 2
+
+        # Bar width is proportional to resource amount
+        width = amount * (max_bar_width / max_ts)
+
+        if resource.lower() == "memory":
+            label = "%.3f GB" % amount
+        else:
+            label = "%d threads" % amount
+
+        # Setup dictionary for bar html string insertion
+        bar_dict = {
+            "color": color,
+            "height": height,
+            "width": width,
+            "offset": offset,
+            "left": left,
+            "label": label,
+            "duration": duration_mins,
+            "start": ts_start.strftime("%Y-%m-%d %H:%M:%S"),
+            "finish": ts_end.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+        bar_html = (
+            "<div class='bar' style='background-color:%(color)s;"
+            "height:%(height).3fpx;width:%(width).3fpx;"
+            "left:%(left)dpx; top:%(offset).3fpx;'"
+            "title='%(label)s\nduration:%(duration).3f\n"
+            "start:%(start)s\nend:%(finish)s'></div>"
+        )
+        # Add another bar to html line
+        result += bar_html % bar_dict
+
+    # Return bar-formatted html string
+    return result
 
 
 def generate_gantt_chart(
@@ -276,51 +389,61 @@ def generate_gantt_chart(
     estimated_mem_ts = calculate_resource_timeseries(events, "estimated_memory_gb")
     runtime_mem_ts = calculate_resource_timeseries(events, "runtime_memory_gb")
     # Plot gantt chart
+
+    # Determine offset for 200px width
+    max_bar_width = 200
     resource_offset = 120 + 30 * cores
     html_string += draw_resource_bar(
-        start_node["start"],
-        last_node["finish"],
-        estimated_mem_ts,
-        space_between_minutes,
-        minute_scale,
-        "#90BBD7",
-        resource_offset * 2 + 120,
-        "Memory",
+            start_node["start"],
+            last_node["finish"],
+            estimated_mem_ts,
+            space_between_minutes,
+            minute_scale,
+            "#90BBD7",
+            resource_offset + max_bar_width + 120,
+            "Memory",
+            max_bar_width
     )
     html_string += draw_resource_bar(
-        start_node["start"],
-        last_node["finish"],
-        runtime_mem_ts,
-        space_between_minutes,
-        minute_scale,
-        "#03969D",
-        resource_offset * 2 + 120,
-        "Memory",
+            start_node["start"],
+            last_node["finish"],
+            runtime_mem_ts,
+            space_between_minutes,
+            minute_scale,
+            "#03969D",
+            resource_offset + max_bar_width + 120,
+            "Memory",
+            max_bar_width
     )
 
     # Get threads timeseries
     estimated_threads_ts = calculate_resource_timeseries(events, "estimated_threads")
     runtime_threads_ts = calculate_resource_timeseries(events, "runtime_threads")
-    # Plot gantt chart
+
+    print(f'estimated threads: {estimated_threads_ts.max()}')
+    print(f'runtime threads: {runtime_threads_ts.max()}')
+
     html_string += draw_resource_bar(
-        start_node["start"],
-        last_node["finish"],
-        estimated_threads_ts,
-        space_between_minutes,
-        minute_scale,
-        "#90BBD7",
-        resource_offset,
-        "Threads",
+            start_node["start"],
+            last_node["finish"],
+            estimated_threads_ts,
+            space_between_minutes,
+            minute_scale,
+            "#90BBD7",
+            resource_offset,
+            "Threads",
+            max_bar_width
     )
     html_string += draw_resource_bar(
-        start_node["start"],
-        last_node["finish"],
-        runtime_threads_ts,
-        space_between_minutes,
-        minute_scale,
-        "#03969D",
-        resource_offset,
-        "Threads",
+            start_node["start"],
+            last_node["finish"],
+            runtime_threads_ts,
+            space_between_minutes,
+            minute_scale,
+            "#03969D",
+            resource_offset,
+            "Threads",
+            max_bar_width
     )
 
     # finish html
