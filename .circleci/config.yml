@@ -253,8 +253,14 @@ jobs:
           when: always
           command: |
             sudo chown $(id -un):$(id -gn) -R /tmp/src/mialsuperresolutiontoolkit/data
-            find /tmp/src/mialsuperresolutiontoolkit/data/derivatives -not -name "*.svg" -not -name "*.png" -not -name "*.html"  -not -name "*.nii.gz" -not -name "*.rst" \
-                -not -name "*.mat" -not -name "*.gpickle" -not -name "*.lta" -not -name "*.json" -not -name "*.txt" -not -name "*.pklz" -type f -delete
+            find /tmp/src/mialsuperresolutiontoolkit/data/derivatives \
+                -not -name "*.svg" -not -name "*.png" \
+                -not -name "*.nii.gz" -not -name "*.rst" \
+                -not -name "*.mat" -not -name "*.gpickle" \
+                -not -name "*.lta" -not -name "*.json" \
+                -not -name "*.txt" -not -name "*.pklz" \
+                -not -name "*.log" -not -name "*.html" \
+                -type f -delete
       - persist_to_workspace:
           root: /tmp
           paths:
