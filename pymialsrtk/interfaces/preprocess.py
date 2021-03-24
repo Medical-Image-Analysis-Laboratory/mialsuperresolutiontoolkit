@@ -35,8 +35,6 @@ try:
 except ImportError:
     print("tflearn not available. Can not run brain extraction")
 
-from traits.api import *
-
 from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
