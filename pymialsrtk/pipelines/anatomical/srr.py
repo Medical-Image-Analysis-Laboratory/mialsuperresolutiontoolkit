@@ -90,7 +90,8 @@ class AnatomicalPipeline:
     --------
     >>> from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
     >>> # Create a new instance
-    >>> pipeline = AnatomicalPipeline('/path/to/bids_dir',
+    >>> pipeline = AnatomicalPipeline(pipeline_name='srr_pipeline',
+                                      '/path/to/bids_dir',
                                       '/path/to/output_dir',
                                       'sub-01',
                                       [1,3,2,0],
@@ -590,6 +591,8 @@ class AnatomicalPipeline:
             generate_gantt_chart(logfile=callback_log_path,
                                  cores=number_of_cores,
                                  minute_scale=10,
-                                 space_between_minutes=50)
+                                 space_between_minutes=50,
+                                 pipeline_name=os.path.join(self.wf.base_dir,
+                                                            self.wf.name))
 
         return res

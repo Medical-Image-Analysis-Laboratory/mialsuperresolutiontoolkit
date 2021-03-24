@@ -219,7 +219,7 @@ def draw_resource_bar(
             "<div class='bar' style='background-color:%(color)s;"
             "height:%(height).3fpx;width:%(width).3fpx;"
             "left:%(left)dpx; top:%(offset).3fpx;'"
-            "title='%(label)s\nduration:%(duration).3f\n"
+            "title='%(label)s\nduration:%(duration).3f minutes\n"
             "start:%(start)s\nend:%(finish)s'></div>"
         )
         # Add another bar to html line
@@ -235,6 +235,7 @@ def generate_gantt_chart(
     minute_scale=10,
     space_between_minutes=50,
     colors=["#7070FF", "#4E4EB2", "#2D2D66", "#9B9BFF"],
+    pipeline_name='Undefined',
 ):
     """
     Generates a gantt chart in html showing the workflow execution based on a callback log file.
@@ -261,6 +262,10 @@ def generate_gantt_chart(
     colors : list (optional)
         a list of colors to choose from when coloring the nodes in the
         gantt chart
+
+    pipeline_name : string
+        The name of the pipeline to be displayed in the output HTML page
+        (Default: `'Undefined'`)
 
     Returns
     -------
@@ -362,6 +367,7 @@ def generate_gantt_chart(
     events = create_event_dict(start_node["start"], nodes_list)
 
     # Summary strings of workflow at top
+    html_string += "<p>Pipeline: " + pipeline_name + "</p>"
     html_string += (
         "<p>Start: " + start_node["start"].strftime("%Y-%m-%d %H:%M:%S") + "</p>"
     )
