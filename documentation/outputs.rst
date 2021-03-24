@@ -96,7 +96,7 @@ Execution details (data provenance) of each interface (node) of a given pipeline
     :align: center
 
 `MIALSRTK` can monitor the computational resources used by each interface / node of the workflow,
-if run `--profiling` option flag. It will generate `srr_pipeline/run_stats.log.html` which reports
+if run `--profiling` option flag. It will generate ``srr_pipeline/run_stats.log.html`` which reports
 run times, number of executed threads, and amount of used memory in the form of a HTML gantt chart.
 
 .. raw:: html
