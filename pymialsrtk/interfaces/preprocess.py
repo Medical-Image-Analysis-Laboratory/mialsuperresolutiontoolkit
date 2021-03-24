@@ -15,10 +15,11 @@ import traceback
 from glob import glob
 
 import numpy as np
+from traits.api import *
+
 import nibabel
 import cv2
 import skimage.measure
-
 import scipy.ndimage as snd
 from skimage import morphology
 from scipy.signal import argrelextrema
@@ -33,7 +34,6 @@ try:
     from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
 except ImportError:
     print("tflearn not available. Can not run brain extraction")
-
 
 from traits.api import *
 
