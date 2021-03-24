@@ -359,7 +359,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
             json.dump(self.m_output_dict, outfile, indent=4)
-            print('json dumped.')
+            print('JSON side-car written.')
 
         try:
             cmd = ' '.join(cmd)
@@ -371,28 +371,31 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         # Save cuts of the SR image in a PNG for later reporting
         out_sr_png = self._gen_filename('output_sr_png')
-        fig = plt.figure(1,
-                         figsize=(6, 2),
-                         dpi=100,
-                         facecolor='k',
-                         edgecolor='k',
-                         )
+
         img = nib.load(out_sr)
-        plot_anat(anat_img=out_sr,
-                  cut_coords=tuple(s // 2 for s in img.shape),
-                  output_file=out_sr_png,
-                  figure=fig,
-                  draw_cross=True,
-                  black_bg=True,
-                  dim='auto',
-                  display_mode='ortho')
+        cut = tuple(s // 2 for s in img.shape)
         del img
+
+        print(f'Create orthogonal cuts of output SR image at {cut} and save it as {out_sr_png}')
+        disp = plot_anat(anat_img=out_sr,
+                         cut_coords=cut,
+                         annotate=True,
+                         draw_cross=True,
+                         black_bg=True,
+                         dim='auto',
+                         display_mode='ortho')
+
+        disp.savefig(fname=out_sr_png,
+                     dpi=100,
+                     facecolor='k',
+                     edgecolor='k',
+                     bbox_inches=None,
+                     pad_inches=0.1)
 
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
         outputs['output_sr'] = self._gen_filename('output_sr')
         outputs['output_sr_png'] = self._gen_filename('output_sr_png')
         # outputs['output_dict'] = self.m_output_dict
