@@ -377,20 +377,26 @@ class MialsrtkTVSuperResolution(BaseInterface):
         del img
 
         print(f'Create orthogonal cuts of output SR image at {cut} and save it as {out_sr_png}')
+
+        fig = plt.figure(1,
+                         figsize=(9, 3),
+                         dpi=100,
+                         facecolor='k',
+                         edgecolor='k',
+                         bbox_inches=None,
+                         pad_inches=0.1
+                         )
+
         disp = plot_anat(anat_img=out_sr,
                          cut_coords=cut,
                          annotate=True,
                          draw_cross=True,
                          black_bg=True,
                          dim='auto',
-                         display_mode='ortho')
+                         display_mode='ortho',
+                         figure=fig)
 
-        disp.savefig(out_sr_png,
-                     dpi=100,
-                     facecolor='k',
-                     edgecolor='k',
-                     bbox_inches=None,
-                     pad_inches=0.1)
+        disp.savefig(out_sr_png)
 
         return runtime
 
