@@ -9,17 +9,18 @@ import os
 import pkg_resources
 
 from nipype import config, logging
+
 # from nipype.interfaces.io import BIDSDataGrabber
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.pipeline import Node, MapNode, Workflow
 from nipype.interfaces.utility import IdentityInterface, Function
-
 
 # Import the implemented interface from pymialsrtk
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.utils as utils
+from pymialsrtk.utils.monitoring import log_nodes_cb, generate_gantt_chart
 
 # Get pymialsrtk version
 from pymialsrtk.info import __version__
@@ -30,55 +31,58 @@ class AnatomicalPipeline:
 
     Attributes
     -----------
-    bids_dir <string>
+    pipeline_name : string
         BIDS root directory (required)
 
-    output_dir <string>
+    bids_dir : string
+        BIDS root directory (required)
+
+    output_dir : string
         Output derivatives directory (required)
 
-    subject <string>
+    subject : string
         Subject ID (in the form ``sub-XX``)
 
-    wf <nipype.pipeline.Workflow>
+    wf : nipype.pipeline.Workflow
         Nipype workflow of the reconstruction pipeline
 
-    dictsink <nipype.interfaces.io.JSONFileSink>
+    dictsink : nipype.interfaces.io.JSONFileSink
         Nipype node used to generate a JSON file that store provenance metadata
         for the SR-reconstructed images
 
-    deltatTV <string>
+    deltatTV : string
         Super-resolution optimization time-step
 
-    lambdaTV <Float>
+    lambdaTV : float
         Regularization weight (default is 0.75)
 
-    primal_dual_loops <string>
+    primal_dual_loops : string
         Number of primal/dual loops used in the optimization of the total-variation
         super-resolution algorithm.
 
-    sr_id <string>
+    sr_id : string
         ID of the reconstruction useful to distinguish when multiple reconstructions
         with different order of stacks are run on the same subject
 
-    session <string>
+    session : string
         Session ID if applicable (in the form ``ses-YY``)
 
-    m_stacks list<<int>>
+    m_stacks : list(int)
         List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
 
-    m_masks_derivatives_dir <string>
+    m_masks_derivatives_dir : string
         directory basename in BIDS directory derivatives where to search for masks (optional)
 
-    m_skip_svr <bool>
+    m_skip_svr : bool
         Weither the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
 
-    m_do_refine_hr_mask <bool>
+    m_do_refine_hr_mask : bool
         Weither a refinement of the HR mask should be performed. (default is False)
 
-    m_skip_nlm_denoising <bool>
+    m_skip_nlm_denoising : bool
         Weither the NLM denoising preprocessing should be skipped. (default is False)
 
-    m_skip_stacks_ordering <bool> (optional)
+    m_skip_stacks_ordering : bool (optional)
         Weither the automatic stacks ordering should be skipped. (default is False)
 
 
@@ -87,15 +91,15 @@ class AnatomicalPipeline:
     >>> from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
     >>> # Create a new instance
     >>> pipeline = AnatomicalPipeline('/path/to/bids_dir',
-                                  '/path/to/output_dir',
-                                  'sub-01',
-                                  [1,3,2,0],
-                                  01,
-                                  None,
-                                  paramTV={deltatTV = "0.001",
-                                           lambdaTV = "0.75",
-                                           primal_dual_loops = "20"},
-                                  use_manual_masks=False)
+                                      '/path/to/output_dir',
+                                      'sub-01',
+                                      [1,3,2,0],
+                                      01,
+                                      None,
+                                      paramTV={deltatTV = "0.001",
+                                               lambdaTV = "0.75",
+                                               primal_dual_loops = "20"},
+                                      use_manual_masks=False)
     >>> # Create the super resolution Nipype workflow
     >>> pipeline.create_workflow()
     >>> # Execute the workflow
@@ -103,6 +107,7 @@ class AnatomicalPipeline:
 
     """
 
+    pipeline_name = "srr_pipeline"
     bids_dir = None
     output_dir = None
     subject = None
@@ -163,11 +168,16 @@ class AnatomicalPipeline:
             self.m_skip_nlm_denoising =  False
             self.m_skip_stacks_ordering = False
 
-    def create_workflow(self):
+    def create_workflow(self, save_profiler_log=False):
         """Create the Niype workflow of the super-resolution pipeline.
 
         It is composed of a succession of Nodes and their corresponding parameters,
         where the output of node i goes to the input of node i+1.
+
+        Parameters
+        ----------
+        save_profiler_log : bool
+            If `True`, save node runtime statistics to a JSON-style log file.
 
         """
 
@@ -201,37 +211,60 @@ class AnatomicalPipeline:
             os.makedirs(wf_base_dir)
         print("Process directory: {}".format(wf_base_dir))
 
-        # Workflow name cannot begin with a number (oterhwise ValueError)
-        pipeline_name = "srr_pipeline"
-
-        self.wf = Workflow(name=pipeline_name,base_dir=wf_base_dir)
-        # srr_nipype_dir = os.path.join(self.wf.base_dir, self.wf.name )
-
         # Initialization (Not sure we can control the name of nipype log)
         if os.path.isfile(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log")):
             os.unlink(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log"))
             # open(os.path.join(self.output_dir,"pypeline.log"), 'a').close()
 
-        config.update_config({'logging': {'log_directory': os.path.join(wf_base_dir),
-                                          'log_to_file': True},
-                              'execution': {
-                                  'remove_unnecessary_outputs': False,
-                                  'stop_on_first_crash': True,
-                                  'stop_on_first_rerun': False,
-                                  'crashfile_format': "txt",
-                                  'write_provenance': False},
-                              'monitoring': {'enabled': True}
-                              })
+        if save_profiler_log:
+            log_filename = os.path.join(wf_base_dir, 'pypeline_stats.log')
+            if os.path.isfile(log_filename):
+                os.unlink(log_filename)
+
+        self.wf = Workflow(name=self.pipeline_name,base_dir=wf_base_dir)
+        # srr_nipype_dir = os.path.join(self.wf.base_dir, self.wf.name )
+
+        config.update_config(
+            {
+                'logging': {
+                      'log_directory': os.path.join(wf_base_dir),
+                      'log_to_file': True
+                },
+                'execution': {
+                    'remove_unnecessary_outputs': False,
+                    'stop_on_first_crash': True,
+                    'stop_on_first_rerun': False,
+                    'crashfile_format': "txt",
+                    'use_relative_paths': True,
+                    'write_provenance': False
+                }
+            }
+        )
+
+        if save_profiler_log:
+            config.update_config(
+                {
+                    'monitoring': {
+                            'enabled': save_profiler_log,
+                            'sample_frequency': "1.0",
+                            'summary_append': True
+                    }
+                }
+            )
+            config.enable_resource_monitor()
+
+        # Update logging with config
+        logging.update_logging(config)
 
         # config.enable_provenance()
 
-        logging.update_logging(config)
+        # Use nipype.interface logger to print some information messages
         iflogger = logging.getLogger('nipype.interface')
-
         iflogger.info("**** Processing ****")
 
         if self.use_manual_masks:
-            dg = Node(interface=DataGrabber(outfields=['T2ws', 'masks']), name='data_grabber')
+            dg = Node(interface=DataGrabber(outfields=['T2ws', 'masks']),
+                      name='data_grabber')
 
             dg.inputs.base_directory = self.bids_dir
             dg.inputs.template = '*'
@@ -268,7 +301,8 @@ class AnatomicalPipeline:
             dg.inputs.sort_filelist = True
 
             dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
-                                                              'anat', sub_ses+'*_run-*_T2w.nii.gz'))
+                                                              'anat',
+                                                              sub_ses+'*_run-*_T2w.nii.gz'))
             if self.session is not None:
                 dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
                                                                   self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
@@ -298,7 +332,6 @@ class AnatomicalPipeline:
 
         t2ws_filtered = Node(interface=preprocess.FilteringByRunid(), name='t2ws_filtered')
         masks_filtered = Node(interface=preprocess.FilteringByRunid(), name='masks_filtered')
-
 
         if not self.m_skip_stacks_ordering:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(), name='stackOrdering')
@@ -335,8 +368,7 @@ class AnatomicalPipeline:
                                                    iterfield=['in_file', 'in_mask', 'in_field'])
         srtkSliceBySliceCorrectBiasField.inputs.bids_dir = self.bids_dir
 
-
-    # 4-modules sequence to be defined as a stage.
+        # 4-modules sequence to be defined as a stage.
         if not self.m_skip_nlm_denoising:
             srtkCorrectSliceIntensity02_nlm = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                                       name='srtkCorrectSliceIntensity02_nlm',
@@ -352,8 +384,7 @@ class AnatomicalPipeline:
             srtkIntensityStandardization02_nlm = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02_nlm')
             srtkIntensityStandardization02_nlm.inputs.bids_dir = self.bids_dir
 
-
-    # 4-modules sequence to be defined as a stage.
+        # 4-modules sequence to be defined as a stage.
         srtkCorrectSliceIntensity02 = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                           name='srtkCorrectSliceIntensity02',
                                           iterfield=['in_file', 'in_mask'])
@@ -367,7 +398,6 @@ class AnatomicalPipeline:
 
         srtkIntensityStandardization02 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02')
         srtkIntensityStandardization02.inputs.bids_dir = self.bids_dir
-
 
         srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
                                   name='srtkMaskImage01',
@@ -408,10 +438,8 @@ class AnatomicalPipeline:
         datasink = Node(DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
 
-
-        # - Build workflow : connections of the nodes
-
-        # Nodes ready - Linking now
+        # Build workflow : connections of the nodes
+        # Nodes ready : Linking now
         if self.use_manual_masks:
             self.wf.connect(dg, "masks", brainMask, "out_file")
         else:
@@ -461,11 +489,9 @@ class AnatomicalPipeline:
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02, "in_mask")
         self.wf.connect(srtkCorrectSliceIntensity02, ("out_file", utils.sort_ascending), srtkIntensityStandardization01, "input_images")
 
-
         self.wf.connect(srtkIntensityStandardization01, ("output_images", utils.sort_ascending), srtkHistogramNormalization, "input_images")
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHistogramNormalization, "input_masks")
         self.wf.connect(srtkHistogramNormalization, ("output_images", utils.sort_ascending), srtkIntensityStandardization02, "input_images")
-
 
         if not self.m_skip_nlm_denoising:
             self.wf.connect(srtkIntensityStandardization02_nlm, ("output_images", utils.sort_ascending), srtkMaskImage01, "in_file")
@@ -485,7 +511,6 @@ class AnatomicalPipeline:
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
 
-
         if self.m_do_refine_hr_mask:
             self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkHRMask, "input_images")
             self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHRMask, "input_masks")
@@ -496,7 +521,6 @@ class AnatomicalPipeline:
 
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkMaskImage02, "in_file")
         self.wf.connect(srtkHRMask, "output_srmask", srtkMaskImage02, "in_mask")
-
 
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkN4BiasFieldCorrection, "input_image")
         self.wf.connect(srtkHRMask, "output_srmask", srtkN4BiasFieldCorrection, "input_mask")
@@ -514,7 +538,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
-    def run(self, number_of_cores=1):
+    def run(self, number_of_cores=1, memory=None, save_profiler_log=False):
         """Execute the workflow of the super-resolution reconstruction pipeline.
 
         Nipype execution engine will take care of the management and execution of
@@ -524,16 +548,48 @@ class AnatomicalPipeline:
 
         Parameters
         ----------
-        number_of_cores <int>
+        number_of_cores : int
             Number of cores / CPUs used by the workflow
 
+        memory : int
+            Maximal memory used by the workflow
+
+        save_profiler_log : bool
+            If `True`, generates the profiling callback log
+            (Default: `False`)
         """
-
         self.wf.write_graph(dotfilename='graph.dot', graph2use='colored', format='png', simple_form=True)
-        if number_of_cores > 1:
-            res = self.wf.run(plugin='MultiProc', plugin_args={'n_procs': number_of_cores})
 
-        else:
-            res = self.wf.run()
+        # Create dictionary of arguments passed to plugin_args
+        args_dict = {
+            'maxtasksperchild': 1,
+            'raise_insufficient': False,
+            'n_procs': number_of_cores
+        }
+
+        if (memory is not None) and (memory > 0):
+            args_dict['memory_gb'] = memory
+
+        if save_profiler_log:
+            args_dict['status_callback'] = log_nodes_cb
+            # Set path to log file and create callback logger
+            callback_log_path = os.path.join(self.wf.base_dir,
+                                             self.wf.name,
+                                             'run_stats.log')
+            import logging
+            import logging.handlers
+            logger = logging.getLogger('callback')
+            logger.setLevel(logging.DEBUG)
+            handler = logging.FileHandler(callback_log_path)
+            logger.addHandler(handler)
+
+        res = self.wf.run(plugin='MultiProc',
+                          plugin_args=args_dict)
+
+        if save_profiler_log:
+            generate_gantt_chart(logfile=callback_log_path,
+                                 cores=number_of_cores,
+                                 minute_scale=10,
+                                 space_between_minutes=50)
 
         return res
