@@ -20,6 +20,12 @@ New feature
   modified to support this task
   (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
 
+Python update
+===============
+
+* From `3.6.8` to `3.7.10`
+
+
 New package
 ==============
 
