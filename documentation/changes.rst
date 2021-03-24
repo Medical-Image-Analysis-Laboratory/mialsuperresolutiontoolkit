@@ -15,16 +15,19 @@ New feature
 =============
 
 * ``pymialsrtk`` enables to monitor resources (time, threads, memory) used by the
-  interface of the pipelines at execution. This includes the creation of a new module
-  `pymialsrtk.utils.monitoring` that includes all methods originating from Nipype and
-  modified to support this task
+  interface of the pipeline at execution with the ``--profiling`` option flag.
+  This includes the creation of a new module `pymialsrtk.utils.monitoring` that
+  includes all methods originating from Nipype and modified to support this task
+  (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
+
+* ``pymialsrtk`` enables to fix the maximal amount of memory (in Gb) that could be used by the
+  pipelines at execution with the ``--memory MEMORY_Gb`` option flag.
   (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
 
 Python update
 ===============
 
 * From `3.6.8` to `3.7.10`
-
 
 New package
 ==============
