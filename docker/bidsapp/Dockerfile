@@ -51,13 +51,13 @@ RUN /bin/bash -c 'ls -al && $CONDA_ACTIVATE && pip install .'
 WORKDIR /app
 
 ##############################################################
-# Use tcmalloc instead of malloc in TensorFLow
+# Use jemalloc instead of malloc in TensorFLow
 # that suffers less from fragmentation when
 # allocating and deallocating large objects
 ##############################################################
-RUN apt-get update && apt-get install -y google-perftools && \
+RUN apt-get update && apt-get install -y libjemalloc-dev && \
     rm -rf /var/lib/apt/lists/*
-ENV LD_PRELOAD=/usr/lib/libtcmalloc.so.4
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
 
 ##############################################################
 # Create entrypoint scripts
