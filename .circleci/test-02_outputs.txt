@@ -59,6 +59,9 @@ nipype/sub-01/rec-1/srr_pipeline/nlmDenoise/mapflow/_nlmDenoise2/sub-01_run-6_T2
 nipype/sub-01/rec-1/srr_pipeline/nlmDenoise/_node.pklz
 nipype/sub-01/rec-1/srr_pipeline/nlmDenoise/_report/report.rst
 nipype/sub-01/rec-1/srr_pipeline/nlmDenoise/result_nlmDenoise.pklz
+nipype/sub-01/rec-1/srr_pipeline/resource_monitor.json
+nipype/sub-01/rec-1/srr_pipeline/run_stats.log
+nipype/sub-01/rec-1/srr_pipeline/run_stats.log.html
 nipype/sub-01/rec-1/srr_pipeline/srtkCorrectSliceIntensity01/_inputs.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkCorrectSliceIntensity01/mapflow/_srtkCorrectSliceIntensity010/_inputs.pklz
 nipype/sub-01/rec-1/srr_pipeline/srtkCorrectSliceIntensity01/mapflow/_srtkCorrectSliceIntensity010/_node.pklz
@@ -284,8 +287,8 @@ pymialsrtk-2.0.2-dev/sub-01/anat/_brainExtraction2/sub-01_run-6_desc-brain_mask.
 pymialsrtk-2.0.2-dev/sub-01/anat/_srtkMaskImage010/sub-01_run-1_id-1_desc-preprocSDI_T2w.nii.gz
 pymialsrtk-2.0.2-dev/sub-01/anat/_srtkMaskImage011/sub-01_run-3_id-1_desc-preprocSDI_T2w.nii.gz
 pymialsrtk-2.0.2-dev/sub-01/anat/_srtkMaskImage012/sub-01_run-6_id-1_desc-preprocSDI_T2w.nii.gz
-pymialsrtk-2.0.2-dev/sub-01/anat/SRTV_sub-01_3V_rad1_srMask.nii.gz
 pymialsrtk-2.0.2-dev/sub-01/anat/sub-01_rec-SDI_id-1_T2w.nii.gz
+pymialsrtk-2.0.2-dev/sub-01/anat/sub-01_rec-SR_id-1_T2w_desc-brain_mask.nii.gz
 pymialsrtk-2.0.2-dev/sub-01/anat/sub-01_rec-SR_id-1_T2w.json
 pymialsrtk-2.0.2-dev/sub-01/anat/sub-01_rec-SR_id-1_T2w.nii.gz
 pymialsrtk-2.0.2-dev/sub-01/anat/sub-01_run-1_id-1_desc-preprocSR_T2w.nii.gz

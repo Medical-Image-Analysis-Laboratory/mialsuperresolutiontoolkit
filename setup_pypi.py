@@ -19,7 +19,8 @@ packages = ["pymialsrtk",
             "pymialsrtk.cli",
             "pymialsrtk.interfaces",
             "pymialsrtk.pipelines",
-            "pymialsrtk.pipelines.anatomical"]
+            "pymialsrtk.pipelines.anatomical",
+            "pymialsrtk.utils"]
 
 # Extract package requirements from Conda environment.yml
 include_conda_pip_dependencies = False

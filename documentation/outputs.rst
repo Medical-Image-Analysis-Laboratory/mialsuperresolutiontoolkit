@@ -94,3 +94,11 @@ Execution details (data provenance) of each interface (node) of a given pipeline
 .. image:: images/nipype_node_report.png
     :width: 600
     :align: center
+
+`MIALSRTK` can monitor the computational resources used by each interface / node of the workflow,
+if run `--profiling` option flag. It will generate ``srr_pipeline/run_stats.log.html`` which reports
+run times, number of executed threads, and amount of used memory in the form of a HTML gantt chart.
+
+.. raw:: html
+
+    <iframe src="_static/run_stats.log.html" height="345px" width="100%"></iframe>
