@@ -28,9 +28,12 @@ New package
 Package update
 ===============
 
-* numpy `1.16.6`
-* tflearn `0.5.0`
-* tensorflow `2.3.0`
+* pip from `19.0.3` to `21.0.1`
+* numpy from `1.16.4` to `1.16.6`
+* tflearn from `0.3.2` to `0.5.0`
+* tensorflow from `1.13.1` to `2.3.0`
+* tensorflow-estimator from `1.13.0` to `2.3.0`
+* tensorboard from `1.13.1` to `2.3.0`
 
 Bug fix
 ========
