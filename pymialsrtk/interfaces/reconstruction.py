@@ -385,7 +385,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
                          dim='auto',
                          display_mode='ortho')
 
-        disp.savefig(fname=out_sr_png,
+        disp.savefig(out_sr_png,
                      dpi=100,
                      facecolor='k',
                      edgecolor='k',
