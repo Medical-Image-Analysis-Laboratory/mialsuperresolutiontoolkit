@@ -171,12 +171,11 @@ def draw_resource_bar(
     scale = space_between_minutes / minute_scale
     space_between_minutes = space_between_minutes / scale
 
+    # Maximal value in the time series
+    max_ts = time_series.max()
+
     # Iterate through time series
     ts_items = time_series.items()
-
-    max_ts = time_series.max()
-    print(f'Max time series ({resource}): {max_ts}')
-
     ts_len = len(time_series)
     for idx, (ts_start, amount) in enumerate(ts_items):
         if idx < ts_len - 1:
@@ -186,7 +185,7 @@ def draw_resource_bar(
         # Calculate offset from start at top
         offset = (
             (ts_start - start_time).total_seconds() / 60.0
-        ) * scale * space_between_minutes + 220
+        ) * scale * space_between_minutes + 250
         # Scale duration
         duration_mins = (ts_end - ts_start).total_seconds() / 60.0
         height = duration_mins * scale * space_between_minutes
@@ -367,7 +366,7 @@ def generate_gantt_chart(
     events = create_event_dict(start_node["start"], nodes_list)
 
     # Summary strings of workflow at top
-    html_string += "<p>Pipeline: " + pipeline_name + "</p>"
+    html_string += "<p>Pipeline Folder: " + pipeline_name + "</p>"
     html_string += (
         "<p>Start: " + start_node["start"].strftime("%Y-%m-%d %H:%M:%S") + "</p>"
     )
