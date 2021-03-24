@@ -60,7 +60,7 @@ def get_parser():
                    type=int)
 
     p.add_argument('--memory',
-                   help='Limit the workflow to using the amount of specified memory [in gb]'
+                   help='Limit the workflow to using the amount of specified memory [in gb] '
                         '(Default: 0, the workflow memory consumption is not limited)',
                    default=0,
                    type=int)
@@ -70,8 +70,9 @@ def get_parser():
                         '``<output_dir>/<masks_derivatives_dir>/ directory`` directory')
 
     p.add_argument('--profiling',
-                   help='Save node runtime statistics (number of cores, used memory) '
-                        'in a JSON-style log',
+                   help='Save node runtime statistics (processing times, number of threads, memory) '
+                        'in a JSON-style `run_stats.log` and in the form '
+                        'of a gantt chart in a HTML `run_stats.log.html`',
                    action='store_true',
                    default=False)
 
