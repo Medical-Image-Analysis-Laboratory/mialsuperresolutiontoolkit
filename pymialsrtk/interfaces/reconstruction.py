@@ -383,8 +383,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
                          dpi=100,
                          facecolor='k',
                          edgecolor='k',
-                         bbox_inches=None,
-                         pad_inches=0.1
+                         clear=True
                          )
 
         disp = plot_anat(anat_img=out_sr,
