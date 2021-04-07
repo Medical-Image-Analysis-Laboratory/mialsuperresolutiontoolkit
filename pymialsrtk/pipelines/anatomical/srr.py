@@ -129,9 +129,10 @@ class AnatomicalPipeline:
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
+    m_masks_desc = None
 
     def __init__(self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
-                 session=None, paramTV=None, p_masks_derivatives_dir=None,
+                 session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
                  p_dict_custom_interfaces = None):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -154,6 +155,7 @@ class AnatomicalPipeline:
         # If masks directory is not specified use the automated brain extraction method.
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
         self.use_manual_masks = True if self.m_masks_derivatives_dir is not None else False
+        self.m_masks_desc = p_masks_desc if self.use_manual_masks else None
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
@@ -272,23 +274,32 @@ class AnatomicalPipeline:
             dg.inputs.raise_on_empty = False
             dg.inputs.sort_filelist = True
 
-            dg.inputs.field_template = dict(T2ws=os.path.join(self.subject, 'anat', sub_ses+'*_run-*_T2w.nii.gz'),
-                                            masks=os.path.join('derivatives',
-                                                               self.m_masks_derivatives_dir,
-                                                               self.subject,
-                                                               'anat',
-                                                               sub_ses+'*_run-*_*mask.nii.gz'))
+            # self.m_masks_desc
             if self.session is not None:
-                dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
-                                                                  self.session,
-                                                                  'anat',
-                                                                  '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])),
-                                                masks=os.path.join('derivatives',
-                                                                   self.m_masks_derivatives_dir,
-                                                                   self.subject,
-                                                                   self.session,
-                                                                   'anat',
-                                                                   '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])))
+                t2ws_template = os.path.join(self.subject, self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz']))
+
+                if self.m_masks_desc is not None:
+                    masks_template = os.path.join('derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
+                                                  '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz']))
+                else:
+                    masks_template = os.path.join('derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
+                                                  '_'.join([sub_ses, '*run-*', '*mask.nii.gz']))
+
+
+            else:
+                t2ws_template=os.path.join(self.subject, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
+
+                if self.m_masks_desc is not None:
+                    masks_template = os.path.join('derivatives', self.m_masks_derivatives_dir, self.subject,self.session, 'anat',
+                                                  '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz']))
+                else:
+                    masks_template=os.path.join('derivatives', self.m_masks_derivatives_dir, self.subject, 'anat',
+                                                sub_ses + '*_run-*_desc-'+self.m_masks_desc+'*mask.nii.gz')
+
+
+            dg.inputs.field_template = dict(T2ws=t2ws_template,
+                                            masks=masks_template)
+
             brainMask = MapNode(interface=IdentityInterface(fields=['out_file']),
                                 name='brain_masks_bypass',
                                 iterfield=['out_file'])
