@@ -294,7 +294,7 @@ class AnatomicalPipeline:
                                                   '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz']))
                 else:
                     masks_template=os.path.join('derivatives', self.m_masks_derivatives_dir, self.subject, 'anat',
-                                                sub_ses + '*_run-*_desc-'+self.m_masks_desc+'*mask.nii.gz')
+                                                sub_ses + '*_run-*_*mask.nii.gz')
 
 
             dg.inputs.field_template = dict(T2ws=t2ws_template,
