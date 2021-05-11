@@ -85,6 +85,8 @@ The BIDS App of MIALSRTK has the following command line arguments:
                             (Default: 0, meaning it will be determined automatically)
       --masks_derivatives_dir
                             Use manual brain masks found in the specified directory
+      --profiling
+                            Generate performance/memory profiling reports
       -v, --version         show program's version number and exit
 
 ## Credits 
