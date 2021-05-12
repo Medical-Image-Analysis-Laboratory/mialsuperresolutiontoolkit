@@ -141,6 +141,7 @@ def main(bids_dir, output_dir,
          paramTV=None,
          srID=None,
          masks_derivatives_dir='',
+         masks_desc=None,
          dict_custom_interfaces=None,
          number_of_cores=1,
          memory=0,
@@ -177,6 +178,9 @@ def main(bids_dir, output_dir,
     masks_derivatives_dir : string
         directory basename in BIDS directory derivatives where to search for masks (optional)
 
+    masks_desc : string
+        BIDS description tag of masks to use (optional)
+
     dict_custom_interfaces : {'do_refine_hr_mask': False, 'skip_nlm_denoising': False, 'skip_stacks_ordering': False}
         Dictionary that customize the workflow (skip interfaces).
 
@@ -211,6 +215,7 @@ def main(bids_dir, output_dir,
                                   session,
                                   paramTV,
                                   masks_derivatives_dir,
+                                  masks_desc,
                                   p_dict_custom_interfaces=dict_custom_interfaces)
 
     # Create the super resolution Nipype workflow
@@ -259,6 +264,7 @@ if __name__ == '__main__':
                     ses = sr_params["session"] if "session" in sr_params.keys() else None
                     stacks = sr_params['stacks'] if 'stacks' in sr_params.keys() else None
                     paramTV = sr_params['paramTV'] if 'paramTV' in sr_params.keys() else None
+                    masks_desc = sr_params['masks_desc'] if 'masks_desc' in sr_params.keys() else None
 
                     dict_custom_interfaces = sr_params['custom_interfaces'] if 'custom_interfaces' in sr_params.keys() else None
 
@@ -274,6 +280,7 @@ if __name__ == '__main__':
                                paramTV=paramTV,
                                srID=sr_params['sr-id'],
                                masks_derivatives_dir=args.masks_derivatives_dir,
+                               masks_desc=masks_desc,
                                dict_custom_interfaces = dict_custom_interfaces,
                                number_of_cores=nipype_nb_of_cores,
                                memory=args.memory,
