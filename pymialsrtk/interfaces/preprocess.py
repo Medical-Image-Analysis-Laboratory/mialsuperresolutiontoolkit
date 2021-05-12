@@ -1042,12 +1042,14 @@ class StacksOrdering(BaseInterface):
         return score, centroid_coord[:, 0], centroid_coord[:, 1]
 
     def _create_report_image(self, score, centroid_coordx, centroid_coordy):
+        print("\t>> Create report image...")
         # Visualization setup
         matplotlib.use('Agg')
         matplotlib.style.use(['dark_background', 'ggplot', 'fast'])
         sns.set()
 
         # Format data and create a Pandas DataFrame
+        print("\t\t\t - Format data...")
         df_files = []
         df_motion_ind = []
         df_centroid_coord = []
@@ -1064,6 +1066,7 @@ class StacksOrdering(BaseInterface):
                 df_motion_ind.append(score[f])
                 df_axis.append("Y")
                 df_centroid_coord.append(coordy)
+        print("\t\t\t - Create DataFrame...")
         df = pd.DataFrame(
             {
                 "Scans": df_files,
@@ -1073,6 +1076,7 @@ class StacksOrdering(BaseInterface):
             }
         )
 
+        print("\t\t\t - Create Boxplot...")
         # Configure subplots
         # fig, (ax1, ax2) = plt.subplots(1, 2)
         fig, ax1 = plt.subplots()
@@ -1081,7 +1085,9 @@ class StacksOrdering(BaseInterface):
         sns.boxplot(data=df, x="Scans", y="Centroid Coord", hue="Axis", ax=ax1)
 
         # Save the report image
-        fig.savefig(os.path.abspath('motion_report.png'))
+        image_filename = os.path.abspath('motion_report.png')
+        print(f'\t\t\t - Save report image as {image_filename}...')
+        fig.savefig(image_filename, dpi=150)
 
     def _compute_stack_order(self):
         """Function to compute the stacks order.
