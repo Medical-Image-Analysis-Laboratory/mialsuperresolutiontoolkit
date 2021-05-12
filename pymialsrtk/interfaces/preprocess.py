@@ -23,6 +23,11 @@ import skimage.measure
 import scipy.ndimage as snd
 from skimage import morphology
 from scipy.signal import argrelextrema
+import pandas as pd
+
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 try:
     import tensorflow.compat.v1 as tf
@@ -942,6 +947,7 @@ class StacksOrderingOutputSpec(TraitedSpec):
     """Class used to represent outputs of the StacksOrdering interface."""
 
     stacks_order = traits.List(desc='Order of image `run-id` to be used for reconstruction')
+    report_image = File(exists=True, desc='Output PNG image for report')
 
 
 class StacksOrdering(BaseInterface):
@@ -976,7 +982,7 @@ class StacksOrdering(BaseInterface):
 
     def _run_interface(self, runtime):
         try:
-            self.m_stack_order = self._compute_stack_order(self.inputs.input_masks)
+            self.m_stack_order = self._compute_stack_order()
         except Exception as e:
             print('Failed')
             print(e)
@@ -985,6 +991,7 @@ class StacksOrdering(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['stacks_order'] = self.m_stack_order
+        outputs['report_image'] = os.path.abspath('motion_report.png')
         return outputs
 
     def _compute_motion_index(self, in_file):
@@ -1032,9 +1039,51 @@ class StacksOrdering(BaseInterface):
         nb_slices = centroid_coord.shape[0]
         score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / nb_slices
 
-        return score
+        return score, centroid_coord[:, 0], centroid_coord[:, 1]
 
-    def _compute_stack_order(self, in_files):
+    def _create_report_image(self, score, centroid_coordx, centroid_coordy):
+        # Visualization setup
+        matplotlib.use('Agg')
+        matplotlib.style.use(['dark_background', 'ggplot', 'fast'])
+        sns.set()
+
+        # Format data and create a Pandas DataFrame
+        df_files = []
+        df_motion_ind = []
+        df_centroid_coord = []
+        df_axis = []
+        for f in self.inputs.input_masks:
+            for coordx, coordy in zip(centroid_coordx[f], centroid_coordy[f]):
+                # Add line for coordx
+                df_files.append(f)
+                df_motion_ind.append(score[f])
+                df_axis.append("X")
+                df_centroid_coord.append(coordx)
+                # Add line for coordy
+                df_files.append(f)
+                df_motion_ind.append(score[f])
+                df_axis.append("Y")
+                df_centroid_coord.append(coordy)
+        df = pd.DataFrame(
+            {
+                "Scans": df_files,
+                "Motion Index": df_motion_ind,
+                "Centroid Coord": df_centroid_coord,
+                "Axis": df_axis,
+            }
+        )
+
+        # Configure subplots
+        # fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig, ax1 = plt.subplots()
+
+        # Make a boxplot with seaborn
+        sns.boxplot(data=df, x="Scans", y="Centroid Coord", hue="Axis", ax=ax1)
+
+        # Save the report image
+        fig.savefig(os.path.abspath('motion_report.png'))
+
+    def _compute_stack_order(self):
         """Function to compute the stacks order.
 
         The motion index is computed for each mask.
@@ -1045,18 +1094,26 @@ class StacksOrdering(BaseInterface):
         """
         motion_ind = []
 
-        for f in in_files:
-            motion_ind.append(self._compute_motion_index(f))
+        score = {}
+        centroid_coordx = {}
+        centroid_coordy = {}
 
-        vp_defined = -1 not in [f.find('vp') for f in in_files]
+        for f in self.inputs.input_masks:
+            score[f], centroid_coordx[f], centroid_coordy[f] = self._compute_motion_index(f)
+            motion_ind.append(score[f])
+
+        self._create_report_image(score, centroid_coordx, centroid_coordy)
+
+        vp_defined = -1 not in [f.find('vp') for f in self.inputs.input_masks]
         if vp_defined:
             orientations_ = []
-            for f in in_files:
+            for f in self.inputs.input_masks:
                 orientations_.append((f.split('_vp-')[1]).split('_')[0])
-            _, images_ordered, orientations_ordered = (list(t) for t in zip(
-                *sorted(zip(motion_ind, in_files, orientations_))))
+            _, images_ordered, orientations_ordered = (
+                list(t) for t in zip(*sorted(zip(motion_ind, self.inputs.input_masks, orientations_)))
+            )
         else:
-            _, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, in_files))))
+            _, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, self.inputs.input_masks))))
 
         run_order = [int(f.split('run-')[1].split('_')[0]) for f in images_ordered]
 
