@@ -991,7 +991,9 @@ class StacksOrdering(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['stacks_order'] = self.m_stack_order
-        outputs['report_image'] = os.path.abspath('motion_report.png')
+        image_filename = os.path.abspath('motion_index_QC.png')
+        print(f'\t\t\t - List output report image as {image_filename}...')
+        outputs['report_image'] = image_filename
         return outputs
 
     def _compute_motion_index(self, in_file):
@@ -1044,6 +1046,7 @@ class StacksOrdering(BaseInterface):
     def _create_report_image(self, score, centroid_coordx, centroid_coordy):
         print("\t>> Create report image...")
         # Visualization setup
+        matplotlib.use('agg')
         sns.set_style("whitegrid")
 
         # Format data and create a Pandas DataFrame
@@ -1079,12 +1082,14 @@ class StacksOrdering(BaseInterface):
         # fig, (ax1, ax2) = plt.subplots(1, 2)
         fig, ax1 = plt.subplots()
 
+        print(df)
+
         # Make a boxplot with seaborn
         sns.boxplot(data=df, x="Scans", y="Centroid Coord", hue="Axis", ax=ax1)
         sns.despine()
 
         # Save the report image
-        image_filename = os.path.abspath('motion_report.png')
+        image_filename = os.path.abspath('motion_index_QC.png')
         print(f'\t\t\t - Save report image as {image_filename}...')
         plt.savefig(image_filename, dpi=150)
 
