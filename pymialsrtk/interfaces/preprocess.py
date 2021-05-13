@@ -1044,9 +1044,7 @@ class StacksOrdering(BaseInterface):
     def _create_report_image(self, score, centroid_coordx, centroid_coordy):
         print("\t>> Create report image...")
         # Visualization setup
-        matplotlib.use('Agg')
-        matplotlib.style.use(['dark_background', 'ggplot', 'fast'])
-        sns.set()
+        sns.set_style("whitegrid")
 
         # Format data and create a Pandas DataFrame
         print("\t\t\t - Format data...")
@@ -1083,6 +1081,7 @@ class StacksOrdering(BaseInterface):
 
         # Make a boxplot with seaborn
         sns.boxplot(data=df, x="Scans", y="Centroid Coord", hue="Axis", ax=ax1)
+        sns.despine()
 
         # Save the report image
         image_filename = os.path.abspath('motion_report.png')
