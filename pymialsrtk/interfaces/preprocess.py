@@ -1087,7 +1087,7 @@ class StacksOrdering(BaseInterface):
         # Save the report image
         image_filename = os.path.abspath('motion_report.png')
         print(f'\t\t\t - Save report image as {image_filename}...')
-        fig.savefig(image_filename, dpi=150)
+        plt.savefig(image_filename, dpi=150)
 
     def _compute_stack_order(self):
         """Function to compute the stacks order.
