@@ -117,7 +117,7 @@ jobs:
       - singularity/install-go:
           go-version: '1.13'
       - singularity/debian-install-3:
-          singularity-version: 3.5.1
+          singularity-version: 3.7.3
       - run:
           name: "Building Singularity image from Docker image"
           command: |
@@ -328,7 +328,7 @@ jobs:
       - singularity/install-go:
           go-version: '1.13'
       - singularity/debian-install-3:
-          singularity-version: 3.5.1
+          singularity-version: 3.7.3
       - run:
           name: "Create the data/test and data/singularity-derivatives folders"
           no_output_timeout: 1h
