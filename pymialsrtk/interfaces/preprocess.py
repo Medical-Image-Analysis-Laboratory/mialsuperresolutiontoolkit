@@ -947,7 +947,7 @@ class StacksOrderingOutputSpec(TraitedSpec):
     """Class used to represent outputs of the StacksOrdering interface."""
 
     stacks_order = traits.List(desc='Order of image `run-id` to be used for reconstruction')
-    report_image = File(exists=True, desc='Output PNG image for report')
+    report_image = File(desc='Output PNG image for report')
 
 
 class StacksOrdering(BaseInterface):
