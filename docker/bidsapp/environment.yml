@@ -12,6 +12,7 @@ dependencies:
 - pandas=1.2.3
 - nipype=1.6.0
 - traits=5.1.2
+- nilearn=0.7.1
 - pydotplus=2.0.2
 - pandoc=2.11.0.1
 - seaborn=0.11.1
