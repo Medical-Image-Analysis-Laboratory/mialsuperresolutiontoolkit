@@ -15,6 +15,10 @@ from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
+import nibabel as nib
+from matplotlib import pyplot as plt
+from nilearn.plotting import plot_anat
+
 from pymialsrtk.interfaces.utils import run, reorder_by_run_ids
 
 
@@ -119,8 +123,7 @@ class MialsrtkImageReconstruction(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-        params = []
-        params.append(''.join(["--", self.inputs.in_roi]))
+        params = [''.join(["--", self.inputs.in_roi])]
 
         input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
         input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
@@ -235,6 +238,7 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkTVSuperResolution interface."""
 
     output_sr = File(desc='Output super-resolution image file')
+    output_sr_png = File(desc='Output super-resolution PNG image file for quality assessment')
     # output_dict = Dict(desc='Super-resolution reconstruction parameters summarized in a python dictionary')
     output_json_path = File(desc='Output path where `output_dict` should be saved ')
 
@@ -285,7 +289,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
     m_out_files = ''
     m_output_dict = {}
 
-
     def _gen_filename(self, name):
         if name == 'output_sr':
             _, _, ext = split_filename(self.inputs.input_sdi)
@@ -298,6 +301,13 @@ class MialsrtkTVSuperResolution(BaseInterface):
             output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
                                                       str(len(self.inputs.stacks_order)), 'V_rad',
                                                       str(int(self.inputs.input_rad_dilatation)), '.json'])
+
+            return os.path.abspath(output)
+
+        elif name == 'output_sr_png':
+            output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
+                                                      str(len(self.inputs.stacks_order)), 'V_rad',
+                                                      str(int(self.inputs.input_rad_dilatation)), '.png'])
 
             return os.path.abspath(output)
 
@@ -346,11 +356,10 @@ class MialsrtkTVSuperResolution(BaseInterface):
         self.m_output_dict["CustomMetaData"]["Optimization time step"] = self.inputs.in_deltat
         self.m_output_dict["CustomMetaData"]["Primal/dual loops"] = self.inputs.in_loop
 
-
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
             json.dump(self.m_output_dict, outfile, indent=4)
-            print('json dumped.')
+            print('JSON side-car written.')
 
         try:
             cmd = ' '.join(cmd)
@@ -360,12 +369,40 @@ class MialsrtkTVSuperResolution(BaseInterface):
             print('Failed')
             print(e)
 
+        # Save cuts of the SR image in a PNG for later reporting
+        out_sr_png = self._gen_filename('output_sr_png')
+
+        img = nib.load(out_sr)
+        cut = tuple(s // 2 for s in img.shape)
+        del img
+
+        print(f'Create orthogonal cuts of output SR image at {cut} and save it as {out_sr_png}')
+
+        fig = plt.figure(1,
+                         figsize=(9, 3),
+                         dpi=100,
+                         facecolor='k',
+                         edgecolor='k',
+                         clear=True
+                         )
+
+        disp = plot_anat(anat_img=out_sr,
+                         cut_coords=cut,
+                         annotate=True,
+                         draw_cross=True,
+                         black_bg=True,
+                         dim='auto',
+                         display_mode='ortho',
+                         figure=fig)
+
+        disp.savefig(out_sr_png)
+
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, _, ext = split_filename(os.path.abspath(self.inputs.input_sdi))
         outputs['output_sr'] = self._gen_filename('output_sr')
+        outputs['output_sr_png'] = self._gen_filename('output_sr_png')
         # outputs['output_dict'] = self.m_output_dict
         outputs['output_json_path'] = self._gen_filename('output_json_path')
 
