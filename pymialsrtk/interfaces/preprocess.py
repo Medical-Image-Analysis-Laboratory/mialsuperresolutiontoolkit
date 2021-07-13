@@ -1059,82 +1059,161 @@ class StacksOrdering(BaseInterface):
         return score, prop_of_nans, centroid_coord[:, 0], centroid_coord[:, 1]
 
     def _create_report_image(self, score, prop_of_nans, centroid_coordx, centroid_coordy):
+        # Output report image basename
+        image_basename = 'motion_index_QC'
+
         print("\t>> Create report image...")
         # Visualization setup
         matplotlib.use('agg')
         sns.set_style("whitegrid")
+        sns.set(font_scale=1)
 
         # Compute mean centroid coordinates for each image
         mean_centroid_coordx = {}
         mean_centroid_coordy = {}
         for f in self.inputs.input_masks:
-            mean_centroid_coordx[f] = centroid_coordx[f].nanmean()
-            mean_centroid_coordy[f] = centroid_coordy[f].nanmean()
+            mean_centroid_coordx[f] = np.nanmean(centroid_coordx[f])
+            mean_centroid_coordy[f] = np.nanmean(centroid_coordy[f])
 
         # Format data and create a Pandas DataFrame
         print("\t\t\t - Format data...")
         df_files = []
+        df_slices = []
         df_motion_ind = []
-        df_centroid_metric = []
-        df_metrics = []
+        df_prop_of_nans = []
+        df_centroid_coordx = []
+        df_centroid_coordy = []
+        df_centroid_displ = []
+
         for f in self.inputs.input_masks:
             # Extract only filename with extension from the absolute path
             path = pathlib.Path(f)
-            fname = path.stem + path.suffix
-            del path
+            # Extract the "run-xx" part in the filename
+            fname = path.stem.split('_T2w_')[0].split('_')[1]
 
-            for coordx, coordy in zip(centroid_coordx[f], centroid_coordy[f]):
-                # Zero-centering of the x and y centroid coordinates
-                coordx = coordx - mean_centroid_coordx[f]
-                coordy = coordy - mean_centroid_coordy[f]
-                # Add line for coordx
+            for i, (coordx, coordy) in enumerate(zip(centroid_coordx[f], centroid_coordy[f])):
                 df_files.append(fname)
+                df_slices.append(i)
                 df_motion_ind.append(score[f])
-                df_metrics.append("X Coord")
-                df_centroid_metric.append(coordx)
-                # Add line for coordy
-                df_files.append(fname)
-                df_motion_ind.append(score[f])
-                df_metrics.append("Y Coord")
-                df_centroid_metric.append(coordy)
-                # Add line for displacement magnitude relative to
-                # the mean centroid over the slices
-                df_files.append(fname)
-                df_motion_ind.append(score[f])
-                df_metrics.append("Displacement Magnitude")
-                if not np.isnan(coordy) and not np.isnan(coordx):
-                    df_centroid_metric.append(
+                df_prop_of_nans.append(prop_of_nans[f])
+                df_centroid_coordx.append(coordx)
+                df_centroid_coordy.append(coordy)
+                if not np.isnan(coordx) and not np.isnan(coordy):
+                    df_centroid_displ.append(
                         np.sqrt(coordx * coordx + coordy * coordy)
                     )
                 else:
-                    df_centroid_metric.append(np.nan)
+                    df_centroid_displ.append(np.nan)
 
         print("\t\t\t - Create DataFrame...")
         df = pd.DataFrame(
             {
-                "Scans": df_files,
+                "Scan": df_files,
+                "Slice": df_files,
                 "Motion Index": df_motion_ind,
-                "Centroid Metrics": df_centroid_metric,
-                "Metrics": df_metrics,
+                "Proportion of NaNs (%)": df_prop_of_nans,
+                "X (mm)": df_centroid_coordx,
+                "Y (mm)": df_centroid_coordy,
+                "Displacement Magnitude (mm)": df_centroid_displ,
             }
         )
-        df = df.sort_values(by=['Motion Index', 'Scans'])
+        df = df.sort_values(by=['Motion Index', 'Scan', 'Slice'])
         print(df)
 
         print("\t\t\t - Create Boxplot...")
         # Configure subplots
-        _, ax1 = plt.subplots()
-        # fig, (ax1, ax2) = plt.subplots(1, 2)
+        # _, ax1 = plt.subplots()
+        # _, (ax1, ax2) = plt.subplots(1, 2)
 
         # Make a boxplot with seaborn
-        sns.violinplot(data=df, x="Scans", y="Centroid Metrics", hue="Metrics", ax=ax1)
-        sns.swarmplot(data=df, x="Scans", y="Centroid Metrics", hue="Metrics", ax=ax1)
-        sns.despine()
-        ax1.set_xticklabels(ax1.get_xticklabels(), rotation=40)
+        sf0 = sns.jointplot(
+            data=df, x="X (mm)", y="Y (mm)",
+            hue="Scan",
+            height=6,
+        )
+        # Save the temporary report image
+        image_filename = os.path.abspath(image_basename + '_0.png')
+        print(f'\t\t\t - Save report image 0 as {image_filename}...')
+        sf0.savefig(image_filename, dpi=150)
+        plt.close(sf0.fig)
 
-        # Save the report image
+        sf1 = sns.catplot(
+                data=df, y="Scan", x="Motion Index",
+                kind="bar"
+        )
+        sf1.ax.set_yticklabels(
+            sf1.ax.get_yticklabels(),
+            rotation=0
+        )
+        sf1.fig.set_size_inches(6, 2)
+        # Save the temporary report image
+        image_filename = os.path.abspath(image_basename + '_1.png')
+        print(f'\t\t\t - Save report image 1 as {image_filename}...')
+        sf1.savefig(image_filename, dpi=150)
+        plt.close(sf1.fig)
+
+        sf2 = sns.catplot(
+                data=df, y="Scan", x="Displacement Magnitude (mm)",
+                kind="violin",
+                inner='stick'
+        )
+        sf2.ax.set_yticklabels(
+            sf2.ax.get_yticklabels(),
+            rotation=0
+        )
+        sf2.fig.set_size_inches(6, 2)
+        # Save the temporary report image
+        image_filename = os.path.abspath(image_basename + '_2.png')
+        print(f'\t\t\t - Save report image 2 as {image_filename}...')
+        sf2.savefig(image_filename, dpi=150)
+        plt.close(sf2.fig)
+
+        sf3 = sns.catplot(
+                data=df, y="Scan", x="Proportion of NaNs (%)",
+                kind="bar"
+        )
+        sf3.ax.set_yticklabels(
+            sf3.ax.get_yticklabels(),
+            rotation=0
+        )
+        sf3.fig.set_size_inches(6, 2)
+        # Save the temporary report image
+        image_filename = os.path.abspath(image_basename + '_3.png')
+        print(f'\t\t\t - Save report image 3 as {image_filename}...')
+        sf3.savefig(image_filename, dpi=150)
+        plt.close(sf3.fig)
+
+        # Define a method to load the temporary report image
+        def read_image(filename):
+            """Read the PNG image with matplotlib.
+
+            Parameters
+            ----------
+            filename : string
+                Image filename without the absolute path
+
+            """
+            return matplotlib.image.imread(os.path.abspath(filename))
+
+        # Create the final report image that combines the
+        # four temporary report images
+
+        fig = plt.figure(constrained_layout=True, figsize=(20, 10))
+
+        subfigs = fig.subfigures(1, 2)
+
+        axs = subfigs.flat[0].subplots(1, 1)
+        axs.imshow(read_image(image_basename + '_0.png'))
+        axs.set_axis_off()
+
+        axs = subfigs.flat[1].subplots(3, 1)
+        for i, ax in enumerate(axs):
+            ax.imshow(read_image(image_basename + f'_{i+1}.png'))
+            ax.set_axis_off()
+
+        # Save the final report image
         image_filename = os.path.abspath('motion_index_QC.png')
-        print(f'\t\t\t - Save report image as {image_filename}...')
+        print(f'\t\t\t - Save final report image as {image_filename}...')
         plt.savefig(image_filename, dpi=150)
 
     def _compute_stack_order(self):
