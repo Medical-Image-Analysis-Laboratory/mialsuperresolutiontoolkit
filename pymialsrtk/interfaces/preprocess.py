@@ -1121,11 +1121,12 @@ class StacksOrdering(BaseInterface):
         print(df)
 
         print("\t\t\t - Create Boxplot...")
-        # Configure subplots
-        # _, ax1 = plt.subplots()
-        # _, (ax1, ax2) = plt.subplots(1, 2)
 
-        # Make a boxplot with seaborn
+        # Make multiple plots with seaborn,
+        # Saved in temporary png image and
+        # combined in a final report image
+
+        # Show the zero-centered positions of the centroids
         sf0 = sns.jointplot(
             data=df, x="X (mm)", y="Y (mm)",
             hue="Scan",
@@ -1137,6 +1138,7 @@ class StacksOrdering(BaseInterface):
         sf0.savefig(image_filename, dpi=150)
         plt.close(sf0.fig)
 
+        # Show the scan motion index
         sf1 = sns.catplot(
                 data=df, y="Scan", x="Motion Index",
                 kind="bar"
@@ -1152,6 +1154,7 @@ class StacksOrdering(BaseInterface):
         sf1.savefig(image_filename, dpi=150)
         plt.close(sf1.fig)
 
+        # Show the displacement magnitude of the centroids
         sf2 = sns.catplot(
                 data=df, y="Scan", x="Displacement Magnitude (mm)",
                 kind="violin",
@@ -1168,6 +1171,8 @@ class StacksOrdering(BaseInterface):
         sf2.savefig(image_filename, dpi=150)
         plt.close(sf2.fig)
 
+        # Show the percentage of slice with NaNs for centroids.
+        # It can occur when the brain mask does not cover the slice
         sf3 = sns.catplot(
                 data=df, y="Scan", x="Proportion of NaNs (%)",
                 kind="bar"
@@ -1183,7 +1188,7 @@ class StacksOrdering(BaseInterface):
         sf3.savefig(image_filename, dpi=150)
         plt.close(sf3.fig)
 
-        # Define a method to load the temporary report image
+        # Define a method to load the temporary report images
         def read_image(filename):
             """Read the PNG image with matplotlib.
 
@@ -1585,7 +1590,6 @@ class BrainExtraction(BaseInterface):
             tf_saver.restore(sess_test_seg, modelCkptSeg)
 
             for idx in range(images.shape[0]):
-
                 im = np.reshape(images[idx, :, :], [1, width, height, n_channels])
                 feed_dict = {x: im}
                 pred_ = sess_test_seg.run(pred, feed_dict=feed_dict)
@@ -1635,169 +1639,144 @@ class BrainExtraction(BaseInterface):
         largest_cc[output == max_label] = 255
         return largest_cc.astype('uint8')
 
-    def _post_processing(self, pred_lbl):
+    def _post_processing(self, pred_lbl, verbose=False):
         """Post-processing the binarized network output by Priscille de Dumast."""
 
-        # post_proc = True
         post_proc_cc = True
         post_proc_fill_holes = True
 
         post_proc_closing_minima = True
         post_proc_opening_maxima = True
         post_proc_extremity = False
-        # stackmodified = True
 
         crt_stack = pred_lbl.copy()
         crt_stack_pp = crt_stack.copy()
 
-        if 1:
+        distrib = []
+        for iSlc in range(crt_stack.shape[0]):
+            distrib.append(np.sum(crt_stack[iSlc]))
 
-            distrib = []
-            for iSlc in range(crt_stack.shape[0]):
-                distrib.append(np.sum(crt_stack[iSlc]))
+        if post_proc_cc:
+            crt_stack_cc = crt_stack.copy()
+            labeled_array, _ = snd.measurements.label(crt_stack_cc)
+            unique, counts = np.unique(labeled_array, return_counts=True)
 
-            if post_proc_cc:
-                # print("post_proc_cc")
-                crt_stack_cc = crt_stack.copy()
-                labeled_array, _ = snd.measurements.label(crt_stack_cc)
-                unique, counts = np.unique(labeled_array, return_counts=True)
+            # Try to remove false positives seen as independent connected components #2ndBrain
+            for ind, _ in enumerate(unique):
+                if 5 < counts[ind] < 300:
+                    wherr = np.where(labeled_array == unique[ind])
+                    for ii in range(len(wherr[0])):
+                        crt_stack_cc[wherr[0][ii], wherr[1][ii], wherr[2][ii]] = 0
 
-                # Try to remove false positives seen as independent connected components #2ndBrain
-                for ind, _ in enumerate(unique):
-                    if 5 < counts[ind] and counts[ind] < 300:
-                        wherr = np.where(labeled_array == unique[ind])
-                        for ii in range(len(wherr[0])):
-                            crt_stack_cc[wherr[0][ii], wherr[1][ii], wherr[2][ii]] = 0
+            crt_stack_pp = crt_stack_cc.copy()
 
-                crt_stack_pp = crt_stack_cc.copy()
+        if post_proc_fill_holes:
+            crt_stack_holes = crt_stack_pp.copy()
 
-            if post_proc_fill_holes:
-                # print("post_proc_fill_holes")
-                crt_stack_holes = crt_stack_pp.copy()
+            inv_mask = 1 - crt_stack_holes
+            labeled_holes, _ = snd.measurements.label(inv_mask)
+            unique, counts = np.unique(labeled_holes, return_counts=True)
 
-                inv_mask = 1 - crt_stack_holes
-                labeled_holes, _ = snd.measurements.label(inv_mask)
-                unique, counts = np.unique(labeled_holes, return_counts=True)
+            for lbl in unique[2:]:
+                trou = np.where(labeled_holes == lbl)
+                for ind in range(len(trou[0])):
+                    inv_mask[trou[0][ind], trou[1][ind], trou[2][ind]] = 0
 
-                for lbl in unique[2:]:
-                    trou = np.where(labeled_holes == lbl)
-                    for ind in range(len(trou[0])):
-                        inv_mask[trou[0][ind], trou[1][ind], trou[2][ind]] = 0
+            crt_stack_holes = 1 - inv_mask
+            crt_stack_pp = crt_stack_holes.copy()
 
-                crt_stack_holes = 1 - inv_mask
-                crt_stack_cc = crt_stack_holes.copy()
-                crt_stack_pp = crt_stack_holes.copy()
+            distrib_cc = []
+            for iSlc in range(crt_stack_pp.shape[0]):
+                distrib_cc.append(np.sum(crt_stack_pp[iSlc]))
 
-                distrib_cc = []
+        if post_proc_closing_minima or post_proc_opening_maxima:
+
+            if post_proc_closing_minima:
+                crt_stack_closed_minima = crt_stack_pp.copy()
+
+                # for local minima
+                local_minima = argrelextrema(np.asarray(distrib_cc), np.less)[0]
+                local_maxima = argrelextrema(np.asarray(distrib_cc), np.greater)[0]
+
+                for iMin, _ in enumerate(local_minima):
+                    for iMax in range(len(local_maxima) - 1):
+                        # find between which maxima is the minima localized
+                        if local_maxima[iMax] < local_minima[iMin] < local_maxima[iMax + 1]:
+                            # check if diff max-min is large enough to be considered
+                            if ((distrib_cc[local_maxima[iMax]] - distrib_cc[local_minima[iMin]] > 50) and
+                               (distrib_cc[local_maxima[iMax + 1]] - distrib_cc[local_minima[iMin]] > 50)):
+                                sub_stack = crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :]
+                                sub_stack = morphology.binary_closing(sub_stack)
+                                crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :] = sub_stack
+                crt_stack_pp = crt_stack_closed_minima.copy()
+
+                distrib_closed = []
+                for iSlc in range(crt_stack_closed_minima.shape[0]):
+                    distrib_closed.append(np.sum(crt_stack_closed_minima[iSlc]))
+
+            if post_proc_opening_maxima:
+                crt_stack_opened_maxima = crt_stack_pp.copy()
+
+                local = True
+                if local:
+                    local_maxima_n = argrelextrema(
+                        np.asarray(distrib_closed), np.greater
+                    )[0]  # default is mode='clip'. Doesn't consider extremity as being an extrema
+
+                    for iMax, _ in enumerate(local_maxima_n):
+                        # Check if this local maxima is a "peak"
+                        if ((distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] - 1] > 50) and
+                           (distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] + 1] > 50)):
+
+                            if verbose:
+                                print("Ceci est un pic de au moins 50.",
+                                      distrib[local_maxima_n[iMax]],
+                                      "en",
+                                      local_maxima_n[iMax])
+                                print("                                bordé de",
+                                      distrib[local_maxima_n[iMax] - 1],
+                                      "en",
+                                      local_maxima_n[iMax] - 1)
+                                print("                                et",
+                                      distrib[local_maxima_n[iMax] + 1],
+                                      "en",
+                                      local_maxima_n[iMax] + 1)
+                                print("")
+
+                            sub_stack = crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :]
+                            sub_stack = morphology.binary_opening(sub_stack)
+                            crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :] = sub_stack
+                else:
+                    crt_stack_opened_maxima = morphology.binary_opening(crt_stack_opened_maxima)
+                crt_stack_pp = crt_stack_opened_maxima.copy()
+
+                distrib_opened = []
                 for iSlc in range(crt_stack_pp.shape[0]):
-                    distrib_cc.append(np.sum(crt_stack_pp[iSlc]))
+                    distrib_opened.append(np.sum(crt_stack_pp[iSlc]))
 
-            if post_proc_closing_minima or post_proc_opening_maxima:
+            if post_proc_extremity:
+                crt_stack_extremity = crt_stack_pp.copy()
 
-                if 0:  # closing GLOBAL
-                    crt_stack_closed_minima = crt_stack_pp.copy()
-                    crt_stack_closed_minima = morphology.binary_closing(crt_stack_closed_minima)
-                    crt_stack_pp = crt_stack_closed_minima.copy()
+                # check si y a un maxima sur une extremite
+                maxima_extrema = argrelextrema(np.asarray(distrib_closed),
+                                               np.greater,
+                                               mode='wrap')[0]
 
-                    distrib_closed = []
-                    for iSlc in range(crt_stack_closed_minima.shape[0]):
-                        distrib_closed.append(np.sum(crt_stack_closed_minima[iSlc]))
+                if distrib_opened[0] - distrib_opened[1] > 40:
+                    sub_stack = crt_stack_extremity[0:2, :, :]
+                    sub_stack = morphology.binary_opening(sub_stack)
+                    crt_stack_extremity[0:2, :, :] = sub_stack
 
-                if post_proc_closing_minima:
-                    # if 0:
-                    crt_stack_closed_minima = crt_stack_pp.copy()
+                if pred_lbl.shape[0] - 1 in maxima_extrema:
+                    sub_stack = crt_stack_opened_maxima[-2:, :, :]
+                    sub_stack = morphology.binary_opening(sub_stack)
+                    crt_stack_opened_maxima[-2:, :, :] = sub_stack
 
-                    # for local minima
-                    local_minima = argrelextrema(np.asarray(distrib_cc), np.less)[0]
-                    local_maxima = argrelextrema(np.asarray(distrib_cc), np.greater)[0]
+                crt_stack_pp = crt_stack_extremity.copy()
 
-                    for iMin, _ in enumerate(local_minima):
-                        for iMax in range(len(local_maxima) - 1):
-                            # print(local_maxima[iMax], "<", local_minima[iMin], "AND", local_minima[iMin], "<", local_maxima[iMax+1], "   ???")
-
-                            # find between which maxima is the minima localized
-                            if local_maxima[iMax] < local_minima[iMin] and local_minima[iMin] < local_maxima[iMax + 1]:
-
-                                # check if diff max-min is large enough to be considered
-                                if ((distrib_cc[local_maxima[iMax]] - distrib_cc[local_minima[iMin]] > 50) and
-                                   (distrib_cc[local_maxima[iMax + 1]] - distrib_cc[local_minima[iMin]] > 50)):
-                                    sub_stack = crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :]
-
-                                    # print("We did 3d close.")
-                                    sub_stack = morphology.binary_closing(sub_stack)
-                                    crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :] = sub_stack
-
-                    crt_stack_pp = crt_stack_closed_minima.copy()
-
-                    distrib_closed = []
-                    for iSlc in range(crt_stack_closed_minima.shape[0]):
-                        distrib_closed.append(np.sum(crt_stack_closed_minima[iSlc]))
-
-                if post_proc_opening_maxima:
-                    crt_stack_opened_maxima = crt_stack_pp.copy()
-
-                    local = True
-                    if local:
-                        local_maxima_n = argrelextrema(np.asarray(distrib_closed), np.greater)[
-                            0]  # default is mode='clip'. Doesn't consider extremity as being an extrema
-
-                        for iMax, _ in enumerate(local_maxima_n):
-
-                            # Check if this local maxima is a "peak"
-                            if ((distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] - 1] > 50) and
-                               (distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] + 1] > 50)):
-
-                                if 0:
-                                    print("Ceci est un pic de au moins 50.", distrib[local_maxima_n[iMax]], "en",
-                                          local_maxima_n[iMax])
-                                    print("                                bordé de", distrib[local_maxima_n[iMax] - 1],
-                                          "en", local_maxima_n[iMax] - 1)
-                                    print("                                et", distrib[local_maxima_n[iMax] + 1], "en",
-                                          local_maxima_n[iMax] + 1)
-                                    print("")
-
-                                sub_stack = crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :]
-                                sub_stack = morphology.binary_opening(sub_stack)
-                                crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :] = sub_stack
-                    else:
-                        crt_stack_opened_maxima = morphology.binary_opening(crt_stack_opened_maxima)
-
-                    crt_stack_pp = crt_stack_opened_maxima.copy()
-
-                    distrib_opened = []
-                    for iSlc in range(crt_stack_pp.shape[0]):
-                        distrib_opened.append(np.sum(crt_stack_pp[iSlc]))
-
-                if post_proc_extremity:
-
-                    crt_stack_extremity = crt_stack_pp.copy()
-
-                    # check si y a un maxima sur une extremite
-                    maxima_extrema = argrelextrema(np.asarray(distrib_closed), np.greater, mode='wrap')[0]
-                    # print("maxima_extrema", maxima_extrema, "     numslices",numslices, "     numslices-1",numslices-1)
-
-                    if distrib_opened[0] - distrib_opened[1] > 40:
-                        # print("First slice of ", distrib_opened, " is a maxima")
-                        sub_stack = crt_stack_extremity[0:2, :, :]
-                        sub_stack = morphology.binary_opening(sub_stack)
-                        crt_stack_extremity[0:2, :, :] = sub_stack
-                        # print("On voulait close 1st slices",  sub_stack.shape[0])
-
-                    if pred_lbl.shape[0] - 1 in maxima_extrema:
-                        # print(numslices-1, "in maxima_extrema", maxima_extrema )
-
-                        sub_stack = crt_stack_opened_maxima[-2:, :, :]
-                        sub_stack = morphology.binary_opening(sub_stack)
-                        crt_stack_opened_maxima[-2:, :, :] = sub_stack
-
-                        # print("On voulait close last slices",  sub_stack.shape[0])
-
-                    crt_stack_pp = crt_stack_extremity.copy()
-
-                    distrib_opened_border = []
-                    for iSlc in range(crt_stack_pp.shape[0]):
-                        distrib_opened_border.append(np.sum(crt_stack_pp[iSlc]))
-
+                distrib_opened_border = []
+                for iSlc in range(crt_stack_pp.shape[0]):
+                    distrib_opened_border.append(np.sum(crt_stack_pp[iSlc]))
         return crt_stack_pp
 
     def _list_outputs(self):
