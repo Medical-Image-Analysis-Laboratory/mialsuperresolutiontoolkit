@@ -1376,7 +1376,7 @@ class BrainExtraction(BaseInterface):
 
         """
 
-        ##### Step 1: Brain localization #####
+        # Step 1: Brain localization
         normalize = "local_max"
         width = 128
         height = 128
@@ -1392,22 +1392,22 @@ class BrainExtraction(BaseInterface):
 
         slice_counter = 0
         for ii in range(image_data.shape[2]):
-           img_patch = cv2.resize(image_data[:, :, ii], dsize=(width, height), fx=width,
-                                   fy=height)
+            img_patch = cv2.resize(image_data[:, :, ii],
+                                  dsize=(width, height),
+                                  fx=width, fy=height)
+            if normalize:
+                if normalize == "local_max":
+                    images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
+                elif normalize == "global_max":
+                    images[slice_counter, :, :, 0] = img_patch / max_val
+                elif normalize == "mean_std":
+                    images[slice_counter, :, :, 0] = (img_patch - np.mean(img_patch)) / np.std(img_patch)
+                else:
+                    raise ValueError('Please select a valid normalization')
+            else:
+                images[slice_counter, :, :, 0] = img_patch
 
-           if normalize:
-              if normalize == "local_max":
-                 images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
-              elif normalize == "global_max":
-                 images[slice_counter, :, :, 0] = img_patch / max_val
-              elif normalize == "mean_std":
-                 images[slice_counter, :, :, 0] = (img_patch - np.mean(img_patch)) / np.std(img_patch)
-              else:
-                 raise ValueError('Please select a valid normalization')
-           else:
-              images[slice_counter, :, :, 0] = img_patch
-
-           slice_counter += 1
+            slice_counter += 1
 
         # Tensorflow graph
         g = tf.Graph()
@@ -1460,7 +1460,6 @@ class BrainExtraction(BaseInterface):
         # Thresholding parameter to binarize predictions
         percentileLoc = thresholdLoc*100
 
-        im = np.zeros((1, width, height, n_channels))
         pred3d = []
         with tf.Session(graph=g) as sess_test_loc:
             # Restore the model
@@ -1478,7 +1477,6 @@ class BrainExtraction(BaseInterface):
                 pred_bin = np.where(pred_ > theta, 1, 0)
                 pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
 
-            #####
             pred3d = np.asarray(pred3d)
             heights = []
             widths = []
@@ -1512,7 +1510,7 @@ class BrainExtraction(BaseInterface):
             y_beg = med_y-half_max_y-border_y
             y_end = med_y+half_max_y+border_y
 
-        ##### Step 2: Brain segmentation #####
+        # Step 2: Brain segmentation
         width = 96
         height = 96
 
@@ -1595,18 +1593,27 @@ class BrainExtraction(BaseInterface):
                 theta = np.percentile(pred_, percentileSeg)
                 pred_bin = np.where(pred_ > theta, 1, 0)
                 # Map predictions to original indices and size
-                pred_bin = cv2.resize(pred_bin[0, :, :, 0], dsize=(y_end-y_beg, x_end-x_beg), interpolation=cv2.INTER_NEAREST)
+                pred_bin = cv2.resize(
+                    pred_bin[0, :, :, 0],
+                    dsize=(y_end-y_beg, x_end-x_beg),
+                    interpolation=cv2.INTER_NEAREST)
                 pred3dFinal[idx, x_beg:x_end, y_beg:y_end,0] = pred_bin.astype('float64')
 
             pppp = True
             if pppp:
                 pred3dFinal = self._post_processing(np.asarray(pred3dFinal))
-            pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3dFinal]
+            pred3d = [
+                cv2.resize(
+                    elem,
+                    dsize=(image_data.shape[1], image_data.shape[0]),
+                    interpolation=cv2.INTER_NEAREST
+                ) for elem in pred3dFinal
+            ]
             pred3d = np.asarray(pred3d)
-            upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
-            up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
-            # Save output mask
+            upsampled = np.swapaxes(np.swapaxes(pred3d, 1, 2), 0, 2)  # if Orient module applied, no need for this line(?)
+            up_mask = nibabel.Nifti1Image(upsampled, img_nib.affine)
 
+            # Save output mask
             save_file = self._gen_filename('out_file')
             nibabel.save(up_mask, save_file)
 
