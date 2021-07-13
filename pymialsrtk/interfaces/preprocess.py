@@ -13,6 +13,7 @@ histogram normalization and both manual or deep learning based automatic brain e
 import os
 import traceback
 from glob import glob
+import pathlib
 
 import numpy as np
 from traits.api import *
@@ -1049,44 +1050,73 @@ class StacksOrdering(BaseInterface):
         matplotlib.use('agg')
         sns.set_style("whitegrid")
 
+        # Compute mean centroid coordinates for each image
+        mean_centroid_coordx = {}
+        mean_centroid_coordy = {}
+        for f in self.inputs.input_masks:
+            mean_centroid_coordx[f] = centroid_coordx[f].nanmean()
+            mean_centroid_coordy[f] = centroid_coordy[f].nanmean()
+
         # Format data and create a Pandas DataFrame
         print("\t\t\t - Format data...")
         df_files = []
         df_motion_ind = []
-        df_centroid_coord = []
-        df_axis = []
+        df_centroid_metric = []
+        df_metrics = []
         for f in self.inputs.input_masks:
+            # Extract only filename with extension from the absolute path
+            path = pathlib.Path(f)
+            fname = path.stem + path.suffix
+            del path
+
             for coordx, coordy in zip(centroid_coordx[f], centroid_coordy[f]):
+                # Zero-centering of the x and y centroid coordinates
+                coordx = coordx - mean_centroid_coordx[f]
+                coordy = coordy - mean_centroid_coordy[f]
                 # Add line for coordx
-                df_files.append(f)
+                df_files.append(fname)
                 df_motion_ind.append(score[f])
-                df_axis.append("X")
-                df_centroid_coord.append(coordx)
+                df_metrics.append("X Coord")
+                df_centroid_metric.append(coordx)
                 # Add line for coordy
-                df_files.append(f)
+                df_files.append(fname)
                 df_motion_ind.append(score[f])
-                df_axis.append("Y")
-                df_centroid_coord.append(coordy)
+                df_metrics.append("Y Coord")
+                df_centroid_metric.append(coordy)
+                # Add line for displacement magnitude relative to
+                # the mean centroid over the slices
+                df_files.append(fname)
+                df_motion_ind.append(score[f])
+                df_metrics.append("Displacement Magnitude")
+                if not np.isnan(coordy) and not np.isnan(coordx):
+                    df_centroid_metric.append(
+                        np.sqrt(coordx * coordx + coordy * coordy)
+                    )
+                else:
+                    df_centroid_metric.append(np.nan)
+
         print("\t\t\t - Create DataFrame...")
         df = pd.DataFrame(
             {
                 "Scans": df_files,
                 "Motion Index": df_motion_ind,
-                "Centroid Coord": df_centroid_coord,
-                "Axis": df_axis,
+                "Centroid Metrics": df_centroid_metric,
+                "Metrics": df_metrics,
             }
         )
+        df = df.sort_values(by=['Motion Index', 'Scans'])
+        print(df)
 
         print("\t\t\t - Create Boxplot...")
         # Configure subplots
         _, ax1 = plt.subplots()
         # fig, (ax1, ax2) = plt.subplots(1, 2)
 
-        print(df)
-
         # Make a boxplot with seaborn
-        sns.boxplot(data=df, x="Scans", y="Centroid Coord", hue="Axis", ax=ax1)
+        sns.violinplot(data=df, x="Scans", y="Centroid Metrics", hue="Metrics", ax=ax1)
+        sns.swarmplot(data=df, x="Scans", y="Centroid Metrics", hue="Metrics", ax=ax1)
         sns.despine()
+        ax1.set_xticklabels(ax1.get_xticklabels(), rotation=40)
 
         # Save the report image
         image_filename = os.path.abspath('motion_index_QC.png')
