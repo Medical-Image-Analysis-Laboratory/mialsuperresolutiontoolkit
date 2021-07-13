@@ -1079,8 +1079,8 @@ class StacksOrdering(BaseInterface):
 
         print("\t\t\t - Create Boxplot...")
         # Configure subplots
+        _, ax1 = plt.subplots()
         # fig, (ax1, ax2) = plt.subplots(1, 2)
-        fig, ax1 = plt.subplots()
 
         print(df)
 
