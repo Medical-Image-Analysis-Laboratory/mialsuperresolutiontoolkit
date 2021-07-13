@@ -43,3 +43,4 @@ dependencies:
     - recommonmark==0.5.0
     - jupyter_contrib_nbextensions #==0.5.1
 #    - pybids==0.9.1
+    - matplotlib==3.4
