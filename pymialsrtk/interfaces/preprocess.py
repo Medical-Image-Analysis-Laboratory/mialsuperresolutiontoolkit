@@ -1007,10 +1007,11 @@ class StacksOrdering(BaseInterface):
         central_third = True
 
         img = nibabel.load(in_file)
-
-        # Todo: Compute centroid displacement as a distance instead of a number of voxel
-        # voxelspacing = img.header['pixdim'][2]
         data = img.get_fdata()
+
+        # To compute centroid displacement as a distance
+        # instead of a number of voxel
+        sx, sy, sz = img.header.get_zooms()
 
         z = np.where(data)[2]
         data = data[..., int(min(z)):int(max(z) + 1)]
@@ -1039,8 +1040,16 @@ class StacksOrdering(BaseInterface):
         centroid_coord = centroid_coord[~np.isnan(centroid_coord)]
         centroid_coord = np.reshape(centroid_coord, (int(centroid_coord.shape[0] / 2), 2))
 
+        # Zero-centering
+        centroid_coord[:, 0] -= np.mean(centroid_coord[:, 0])
+        centroid_coord[:, 1] -= np.mean(centroid_coord[:, 1])
+
+        # Convert from "number of voxels" to "mm" based on the voxel size
+        centroid_coord[:, 0] *= sx
+        centroid_coord[:, 1] *= sy
+
         nb_slices = centroid_coord.shape[0]
-        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / nb_slices
+        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / ( nb_slices * sz)
 
         return score, centroid_coord[:, 0], centroid_coord[:, 1]
 
