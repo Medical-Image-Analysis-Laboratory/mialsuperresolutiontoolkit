@@ -387,7 +387,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
                          )
 
         disp = plot_anat(anat_img=out_sr,
-                         cut_coords=cut,
+                         # cut_coords=cut,
                          annotate=True,
                          draw_cross=True,
                          black_bg=True,
