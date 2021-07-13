@@ -1037,6 +1037,11 @@ class StacksOrdering(BaseInterface):
 
             centroid_coord[i, :] = [centroid_coordx, centroid_coordy]
 
+        nb_of_notnans = np.count_nonzero(~np.isnan(centroid_coord))
+        nb_of_nans = np.count_nonzero(np.isnan(centroid_coord))
+        print(f'  Info: Number of NaNs = {nb_of_nans}')
+        prop_of_nans = nb_of_nans / (nb_of_nans + nb_of_notnans)
+
         centroid_coord = centroid_coord[~np.isnan(centroid_coord)]
         centroid_coord = np.reshape(centroid_coord, (int(centroid_coord.shape[0] / 2), 2))
 
@@ -1051,9 +1056,9 @@ class StacksOrdering(BaseInterface):
         nb_slices = centroid_coord.shape[0]
         score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / ( nb_slices * sz)
 
-        return score, centroid_coord[:, 0], centroid_coord[:, 1]
+        return score, prop_of_nans, centroid_coord[:, 0], centroid_coord[:, 1]
 
-    def _create_report_image(self, score, centroid_coordx, centroid_coordy):
+    def _create_report_image(self, score, prop_of_nans, centroid_coordx, centroid_coordy):
         print("\t>> Create report image...")
         # Visualization setup
         matplotlib.use('agg')
@@ -1144,14 +1149,15 @@ class StacksOrdering(BaseInterface):
         motion_ind = []
 
         score = {}
+        prop_of_nans = {}
         centroid_coordx = {}
         centroid_coordy = {}
 
         for f in self.inputs.input_masks:
-            score[f], centroid_coordx[f], centroid_coordy[f] = self._compute_motion_index(f)
+            score[f], prop_of_nans[f], centroid_coordx[f], centroid_coordy[f] = self._compute_motion_index(f)
             motion_ind.append(score[f])
 
-        self._create_report_image(score, centroid_coordx, centroid_coordy)
+        self._create_report_image(score, prop_of_nans, centroid_coordx, centroid_coordy)
 
         vp_defined = -1 not in [f.find('vp') for f in self.inputs.input_masks]
         if vp_defined:
