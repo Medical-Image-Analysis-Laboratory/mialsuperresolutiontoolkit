@@ -1386,6 +1386,7 @@ class BrainExtraction(BaseInterface):
 
         img_nib = nibabel.load(os.path.join(dataPath))
         image_data = img_nib.get_data()
+        max_val = np.max(image_data)
         images = np.zeros((image_data.shape[2], width, height, n_channels))
         pred3dFinal = np.zeros((image_data.shape[2], image_data.shape[0], image_data.shape[1], n_channels))
 
