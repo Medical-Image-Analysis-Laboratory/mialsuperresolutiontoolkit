@@ -379,12 +379,11 @@ class MialsrtkTVSuperResolution(BaseInterface):
         )
         display = plot_anat(
             anat_img=out_sr,
-            # cut_coords=cut,
             annotate=True,
-            draw_cross=True,
+            draw_cross=False,
             black_bg=True,
             dim='auto',
-            display_mode='ortho',
+            display_mode='mosaic',
             figure=fig
         )
         display.savefig(out_sr_png)
