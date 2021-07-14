@@ -5,8 +5,6 @@
 """PyMIALSRTK reconstruction functions."""
 
 import os
-
-from glob import glob
 import json
 
 from traits.api import *
@@ -57,7 +55,6 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
                                     usedefault=True)
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that specify the order of the stacks')
-
     no_reg = traits.Bool(default=False, desc="Skip slice-to-volume registration.")
 
 
@@ -110,14 +107,14 @@ class MialsrtkImageReconstruction(BaseInterface):
         if name == 'output_sdi':
             _, _, ext = split_filename(orig)
             output = ''.join([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
-                      str(len(self.inputs.stacks_order)), 'V_rad',
-                      str(int(self.inputs.input_rad_dilatation)), ext])
+                              str(len(self.inputs.stacks_order)), 'V_rad',
+                              str(int(self.inputs.input_rad_dilatation)), ext])
             return os.path.abspath(output)
 
         elif name == 'output_transforms':
             _, name, _ = split_filename(orig)
             output = ''.join([name, self.inputs.out_transf_postfix, '_',
-                     str(len(self.inputs.stacks_order)), 'V', '.txt'])
+                              str(len(self.inputs.stacks_order)), 'V', '.txt'])
 
             return os.path.abspath(output)
         return None
@@ -130,8 +127,6 @@ class MialsrtkImageReconstruction(BaseInterface):
 
         for in_image, in_mask in zip(input_images, input_masks):
 
-            transf_file = self._gen_filename(in_image, 'output_transforms')
-
             params.append("-i")
             params.append(in_image)
 
@@ -139,11 +134,11 @@ class MialsrtkImageReconstruction(BaseInterface):
                 params.append("-m")
                 params.append(in_mask)
 
+            transf_file = self._gen_filename(in_image, 'output_transforms')
             params.append("-t")
             params.append(transf_file)
 
         out_file = self._gen_filename(self.inputs.input_images[0], 'output_sdi')
-
         params.append("-o")
         params.append(out_file)
 
@@ -164,7 +159,9 @@ class MialsrtkImageReconstruction(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_transforms'] = [self._gen_filename(in_image, 'output_transforms') for in_image in self.inputs.input_images]
+        outputs['output_transforms'] = [
+            self._gen_filename(in_image, 'output_transforms') for in_image in self.inputs.input_images
+        ]
         outputs['output_sdi'] = self._gen_filename(self.inputs.input_images[0], 'output_sdi')
         return outputs
 
@@ -189,14 +186,12 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     deblurring = traits.Bool(False,
                              desc='Flag to set deblurring PSF during SR (double the neighborhood)',
                              usedefault=True)
-
     in_loop = traits.Int(mandatory=True,
                          desc='Number of loops (SR/denoising)')
     in_deltat = traits.Float(mandatory=True,
                              desc='Parameter deltat of TV optimizer')
     in_lambda = traits.Float(mandatory=True,
                              desc='TV regularization factor which weights the data fidelity term in TV optimizer')
-
     in_bregman_loop = traits.Int(1,
                                  desc='Number of Bregman loops',
                                  usedefault=True)
@@ -215,20 +210,17 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     in_outer_thresh = traits.Float(0.000001,
                                    desc='Outer loop convergence threshold',
                                    usedefault=True)
-
     out_prefix = traits.Str("SRTV_",
                             desc='Prefix added to construct output super-resolution filename',
                             usedefault=True)
     stacks_order = traits.List(mandatory=False,
                                desc='List of stack run-id that specify the order of the stacks')
-
     input_rad_dilatation = traits.Float(1.0,
                                         desc='Radius dilatation used in prior step to construct output filename',
                                         usedefault=True)
     sub_ses = traits.Str("x",
                          desc='Subject and session BIDS identifier to construct output filename',
                          usedefault=True)
-
     use_manual_masks = traits.Bool(False,
                                    desc='Use masks of input files',
                                    usedefault=True)
@@ -239,8 +231,8 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
 
     output_sr = File(desc='Output super-resolution image file')
     output_sr_png = File(desc='Output super-resolution PNG image file for quality assessment')
-    # output_dict = Dict(desc='Super-resolution reconstruction parameters summarized in a python dictionary')
-    output_json_path = File(desc='Output path where `output_dict` should be saved ')
+    output_json_path = File(desc='Output json file where super-resolution reconstruction parameters '
+                                 'are summarized')
 
 
 class MialsrtkTVSuperResolution(BaseInterface):
@@ -292,22 +284,25 @@ class MialsrtkTVSuperResolution(BaseInterface):
     def _gen_filename(self, name):
         if name == 'output_sr':
             _, _, ext = split_filename(self.inputs.input_sdi)
-            output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                                      str(len(self.inputs.stacks_order)), 'V_rad',
-                                                      str(int(self.inputs.input_rad_dilatation)), ext])
+            output = ''.join([self.inputs.out_prefix,
+                              self.inputs.sub_ses, '_',
+                              str(len(self.inputs.stacks_order)), 'V_rad',
+                              str(int(self.inputs.input_rad_dilatation)), ext])
             return os.path.abspath(output)
 
         elif name == 'output_json_path':
-            output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                                      str(len(self.inputs.stacks_order)), 'V_rad',
-                                                      str(int(self.inputs.input_rad_dilatation)), '.json'])
+            output = ''.join([self.inputs.out_prefix,
+                              self.inputs.sub_ses, '_',
+                              str(len(self.inputs.stacks_order)), 'V_rad',
+                              str(int(self.inputs.input_rad_dilatation)), '.json'])
 
             return os.path.abspath(output)
 
         elif name == 'output_sr_png':
-            output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                                      str(len(self.inputs.stacks_order)), 'V_rad',
-                                                      str(int(self.inputs.input_rad_dilatation)), '.png'])
+            output = ''.join([self.inputs.out_prefix,
+                              self.inputs.sub_ses, '_',
+                              str(len(self.inputs.stacks_order)), 'V_rad',
+                              str(int(self.inputs.input_rad_dilatation)), '.png'])
 
             return os.path.abspath(output)
 
@@ -326,9 +321,9 @@ class MialsrtkTVSuperResolution(BaseInterface):
             cmd += ['-m', in_mask]
             cmd += ['-t', in_transform]
 
-        out_sr = self._gen_filename('output_sr')
-
         cmd += ['-r', self.inputs.input_sdi]
+
+        out_sr = self._gen_filename('output_sr')
         cmd += ['-o', out_sr]
 
         if self.inputs.deblurring:
@@ -337,7 +332,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--loop', str(self.inputs.in_loop)]
         cmd += ['--deltat', str(self.inputs.in_deltat)]
         cmd += ['--lambda', str(self.inputs.in_lambda)]
-
         cmd += ['--bregman-loop', str(self.inputs.in_bregman_loop)]
         cmd += ['--iter', str(self.inputs.in_iter)]
         cmd += ['--step-scale', str(self.inputs.in_step_scale)]
