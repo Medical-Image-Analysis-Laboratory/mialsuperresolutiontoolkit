@@ -948,6 +948,7 @@ class StacksOrderingOutputSpec(TraitedSpec):
     """Class used to represent outputs of the StacksOrdering interface."""
 
     stacks_order = traits.List(desc='Order of image `run-id` to be used for reconstruction')
+    motion_tsv = File(desc='Output TSV file with results used to create `report_image`')
     report_image = File(desc='Output PNG image for report')
 
 
@@ -992,9 +993,8 @@ class StacksOrdering(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['stacks_order'] = self.m_stack_order
-        image_filename = os.path.abspath('motion_index_QC.png')
-        print(f'\t\t\t - List output report image as {image_filename}...')
-        outputs['report_image'] = image_filename
+        outputs['report_image'] = os.path.abspath('motion_index_QC.png')
+        outputs['motion_tsv'] = os.path.abspath('motion_index_QC.tsv')
         return outputs
 
     def _compute_motion_index(self, in_file):
@@ -1105,6 +1105,7 @@ class StacksOrdering(BaseInterface):
                 else:
                     df_centroid_displ.append(np.nan)
 
+        # Create a dataframe to facilitate handling with the results
         print("\t\t\t - Create DataFrame...")
         df = pd.DataFrame(
             {
@@ -1118,13 +1119,16 @@ class StacksOrdering(BaseInterface):
             }
         )
         df = df.sort_values(by=['Motion Index', 'Scan', 'Slice'])
-        print(df)
 
-        print("\t\t\t - Create Boxplot...")
+        # Save the results in a TSV file
+        tsv_file = os.path.abspath('motion_index_QC.tsv')
+        print(f"\t\t\t - Save motion results to {tsv_file}...")
+        df.to_csv(tsv_file, sep='\t')
 
-        # Make multiple plots with seaborn,
+        # Make multiple figures with seaborn,
         # Saved in temporary png image and
         # combined in a final report image
+        print("\t\t\t - Create figures...")
 
         # Show the zero-centered positions of the centroids
         sf0 = sns.jointplot(

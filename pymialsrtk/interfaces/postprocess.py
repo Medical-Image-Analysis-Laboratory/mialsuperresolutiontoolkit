@@ -322,6 +322,10 @@ class FilenamesGeneration(BaseInterface):
                                      self.inputs.sub_ses + '_rec-SR' +
                                      '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.png'))
 
+        self.m_substitutions.append(('motion_index_QC.tsv',
+                                     self.inputs.sub_ses + '_rec-SR' +
+                                     '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.tsv'))
+
         return runtime
 
     def _list_outputs(self):
