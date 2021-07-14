@@ -544,7 +544,7 @@ class AnatomicalPipeline:
         datasink = Node(DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
 
-        self.wf.connect(stacksOrdering, "report_image", datasink, 'qc.@stackOrderingQC')
+        self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
         self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), datasink, 'anat.@LRmasks')
         self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsPreproc')
@@ -554,7 +554,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat.@SDI')
         self.wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
         self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
-        self.wf.connect(srtkTVSuperResolution, "output_sr_png", datasink, 'qc.@SRpng')
+        self.wf.connect(srtkTVSuperResolution, "output_sr_png", datasink, 'figures.@SRpng')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
     def run(self, number_of_cores=1, memory=None, save_profiler_log=False):
