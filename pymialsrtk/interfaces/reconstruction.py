@@ -377,25 +377,23 @@ class MialsrtkTVSuperResolution(BaseInterface):
         del img
 
         print(f'Create orthogonal cuts of output SR image at {cut} and save it as {out_sr_png}')
-
-        fig = plt.figure(1,
-                         figsize=(9, 3),
-                         dpi=100,
-                         facecolor='k',
-                         edgecolor='k',
-                         clear=False
-                         )
-
-        disp = plot_anat(anat_img=out_sr,
-                         # cut_coords=cut,
-                         annotate=True,
-                         draw_cross=True,
-                         black_bg=True,
-                         dim='auto',
-                         display_mode='ortho',
-                         figure=fig)
-
-        disp.savefig(out_sr_png)
+        fig = plt.figure(
+            figsize=(9, 3),
+            dpi=100,
+            facecolor='k',
+            edgecolor='k'
+        )
+        display = plot_anat(
+            anat_img=out_sr,
+            # cut_coords=cut,
+            annotate=True,
+            draw_cross=True,
+            black_bg=True,
+            dim='auto',
+            display_mode='ortho',
+            figure=fig
+        )
+        display.savefig(out_sr_png)
 
         return runtime
 
@@ -403,7 +401,5 @@ class MialsrtkTVSuperResolution(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_sr'] = self._gen_filename('output_sr')
         outputs['output_sr_png'] = self._gen_filename('output_sr_png')
-        # outputs['output_dict'] = self.m_output_dict
         outputs['output_json_path'] = self._gen_filename('output_json_path')
-
         return outputs
