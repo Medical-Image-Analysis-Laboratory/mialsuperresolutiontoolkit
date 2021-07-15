@@ -13,6 +13,7 @@ from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
+import numpy as np
 import nibabel as nib
 from matplotlib import pyplot as plt
 from nilearn.plotting import plot_anat
@@ -151,7 +152,7 @@ class MialsrtkImageReconstruction(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -339,7 +340,17 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
         cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
 
-        # JSON file SRTV
+        try:
+            cmd = ' '.join(cmd)
+            run(cmd, cwd=os.path.abspath(self.inputs.bids_dir))
+
+        except Exception as e:
+            print('Failed')
+            print(e)
+
+        ################################################
+        # Creation of JSON sidecar file of the SR image
+        ################################################
         self.m_output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation" \
                                             " Super-Resolution algorithm provided by MIALSRTK"
         self.m_output_dict["Input sources run order"] = self.inputs.stacks_order
@@ -355,38 +366,81 @@ class MialsrtkTVSuperResolution(BaseInterface):
             json.dump(self.m_output_dict, outfile, indent=4)
             print('JSON side-car written.')
 
-        try:
-            cmd = ' '.join(cmd)
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-
-        except Exception as e:
-            print('Failed')
-            print(e)
-
+        #########################################################
         # Save cuts of the SR image in a PNG for later reporting
+        #########################################################
         out_sr_png = self._gen_filename('output_sr_png')
 
+        # Load the super-resolution image
+        print(f'  > Load SR image {out_sr}...')
         img = nib.load(out_sr)
-        cut = tuple(s // 2 for s in img.shape)
+        # Get image properties
+        zooms = img.header.get_zooms()  # zooms are the size of the voxels
+        shape = img.shape
+        fov = np.array(zooms) * np.array(shape)
+        # Get middle cut
+        cut = [s // 2 for s in shape]
+        print(f'    Image properties: Zooms={zooms}/ Shape={shape}/ FOV={fov}/ middle cut={cut}')
+
+        # Crop the image if the FOV exceeds a certain value
+        def compute_axis_crop_indices(cut, fov, max_fov=120):
+            """Compute the cropping index in a dimension if the Field-Of-View exceeds a maximum value of 120mm by default.
+
+            Parameters
+            ----------
+            cut: int
+                Middle slice index in a given dimension
+
+            fov: float
+                Slice Field-of-View (mm) in a given dimension
+
+            max_fov: float
+                Maximum Slice Field-of-View (mm) to which the image does not need to be cropped
+                (120mm by default)
+
+            Returns
+            -------
+            (crop_start_index, crop_end_index): (int, int)
+                Starting and ending indices of the image crop along the given dimension
+
+            """
+            crop_start_index = cut - max_fov // 2 if fov > max_fov else 0
+            crop_end_index = cut + max_fov // 2 if fov > max_fov else -1
+            return crop_start_index, crop_end_index
+
+        max_fov = 120  # in mm
+        crop_start_x, crop_end_x = compute_axis_crop_indices(cut[0], fov[0], max_fov=max_fov)
+        crop_start_y, crop_end_y = compute_axis_crop_indices(cut[1], fov[1], max_fov=max_fov)
+        crop_start_z, crop_end_z = compute_axis_crop_indices(cut[2], fov[2], max_fov=max_fov)
+
+        print(f'  > Crop SR image at '
+              f'({crop_start_x}:{crop_end_x}, '
+              f'{crop_start_y}:{crop_end_y}, '
+              f'{crop_start_z}:{crop_end_z})...')
+        cropped_img = img.slicer[
+            crop_start_x:crop_end_x,
+            crop_start_y:crop_end_y,
+            crop_start_z:crop_end_z
+        ]
         del img
 
-        print(f'Create orthogonal cuts of output SR image at {cut} and save it as {out_sr_png}')
-        fig = plt.figure(
-            figsize=(9, 3),
-            dpi=100,
-            facecolor='k',
-            edgecolor='k'
-        )
-        display = plot_anat(
-            anat_img=out_sr,
+        # Create and save the figure
+        plot_anat(
+            cut_coords=(6, 6, 6),
+            anat_img=cropped_img,
             annotate=True,
             draw_cross=False,
             black_bg=True,
             dim='auto',
-            display_mode='mosaic',
-            figure=fig
+            display_mode='ortho',
         )
-        display.savefig(out_sr_png)
+        print(f'Save the PNG image cuts as {out_sr_png}')
+        plt.savefig(
+            out_sr_png,
+            dpi=100,
+            facecolor='k',
+            edgecolor='k'
+        )
 
         return runtime
 
