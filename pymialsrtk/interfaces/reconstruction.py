@@ -363,8 +363,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
+            print('  > Write JSON side-car...')
             json.dump(self.m_output_dict, outfile, indent=4)
-            print('JSON side-car written.')
 
         #########################################################
         # Save cuts of the SR image in a PNG for later reporting
@@ -376,11 +376,11 @@ class MialsrtkTVSuperResolution(BaseInterface):
         img = nib.load(out_sr)
         # Get image properties
         zooms = img.header.get_zooms()  # zooms are the size of the voxels
-        shape = img.shape
-        fov = np.array(zooms) * np.array(shape)
+        shapes = img.shape
+        fovs = np.array(zooms) * np.array(shapes)
         # Get middle cut
-        cut = [s // 2 for s in shape]
-        print(f'    Image properties: Zooms={zooms}/ Shape={shape}/ FOV={fov}/ middle cut={cut}')
+        cuts = [s // 2 for s in shapes]
+        print(f'    Image properties: Zooms={zooms}/ Shape={shapes}/ FOV={fovs}/ middle cut={cuts}')
 
         # Crop the image if the FOV exceeds a certain value
         def compute_axis_crop_indices(cut, fov, max_fov=120):
@@ -408,10 +408,9 @@ class MialsrtkTVSuperResolution(BaseInterface):
             crop_end_index = cut + max_fov // 2 if fov > max_fov else -1
             return crop_start_index, crop_end_index
 
-        max_fov = 120  # in mm
-        crop_start_x, crop_end_x = compute_axis_crop_indices(cut[0], fov[0], max_fov=max_fov)
-        crop_start_y, crop_end_y = compute_axis_crop_indices(cut[1], fov[1], max_fov=max_fov)
-        crop_start_z, crop_end_z = compute_axis_crop_indices(cut[2], fov[2], max_fov=max_fov)
+        crop_start_x, crop_end_x = compute_axis_crop_indices(cuts[0], fovs[0], max_fov=120)
+        crop_start_y, crop_end_y = compute_axis_crop_indices(cuts[1], fovs[1], max_fov=120)
+        crop_start_z, crop_end_z = compute_axis_crop_indices(cuts[2], fovs[2], max_fov=120)
 
         print(f'  > Crop SR image at '
               f'({crop_start_x}:{crop_end_x}, '
@@ -426,7 +425,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         # Create and save the figure
         plot_anat(
-            cut_coords=(6, 6, 6),
             anat_img=cropped_img,
             annotate=True,
             draw_cross=False,
