@@ -68,13 +68,15 @@ class AnatomicalPipeline:
         Session ID if applicable (in the form ``ses-YY``)
 
     m_stacks : list(int)
-        List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
+        List of stack to be used in the reconstruction.
+        The specified order is kept if `skip_stacks_ordering` is True.
 
     m_masks_derivatives_dir : string
         directory basename in BIDS directory derivatives where to search for masks (optional)
 
     m_skip_svr : bool
-        Weither the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
+        Weither the Slice-to-Volume Registration should be skipped in the image reconstruction.
+        (default is False)
 
     m_do_refine_hr_mask : bool
         Weither a refinement of the HR mask should be performed. (default is False)
@@ -131,9 +133,11 @@ class AnatomicalPipeline:
     use_manual_masks = False
     m_masks_desc = None
 
-    def __init__(self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
-                 session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
-                 p_dict_custom_interfaces = None):
+    def __init__(
+        self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
+        session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
+        p_dict_custom_interfaces=None
+    ):
         """Constructor of AnatomicalPipeline class instance."""
 
         # BIDS processing parameters
@@ -159,9 +163,9 @@ class AnatomicalPipeline:
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
-            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] if 'skip_svr' in  p_dict_custom_interfaces.keys() else False
-            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] if 'do_refine_hr_mask' in  p_dict_custom_interfaces.keys() else False
-            self.m_skip_nlm_denoising = p_dict_custom_interfaces['skip_nlm_denoising'] if 'skip_nlm_denoising' in  p_dict_custom_interfaces.keys() else False
+            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] if 'skip_svr' in p_dict_custom_interfaces.keys() else False
+            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() else False
+            self.m_skip_nlm_denoising = p_dict_custom_interfaces['skip_nlm_denoising'] if 'skip_nlm_denoising' in p_dict_custom_interfaces.keys() else False
 
             self.m_skip_stacks_ordering = p_dict_custom_interfaces['skip_stacks_ordering'] if \
                 ((self.m_stacks is not None) and ('skip_stacks_ordering' in p_dict_custom_interfaces.keys())) else False
@@ -442,14 +446,6 @@ class AnatomicalPipeline:
         srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(), name='srtkMaskImage02')
         srtkMaskImage02.inputs.bids_dir = self.bids_dir
 
-        finalFilenamesGeneration = Node(postprocess.FilenamesGeneration(), name='filenames_gen')
-        finalFilenamesGeneration.inputs.sub_ses = sub_ses
-        finalFilenamesGeneration.inputs.sr_id = self.sr_id
-        finalFilenamesGeneration.inputs.use_manual_masks = self.use_manual_masks
-
-        datasink = Node(DataSink(), name='data_sinker')
-        datasink.inputs.base_directory = final_res_dir
-
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
         if self.use_manual_masks:
@@ -537,17 +533,28 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkN4BiasFieldCorrection, "input_image")
         self.wf.connect(srtkHRMask, "output_srmask", srtkN4BiasFieldCorrection, "input_mask")
 
+        # Datasinker
+        finalFilenamesGeneration = Node(postprocess.FilenamesGeneration(), name='filenames_gen')
+        finalFilenamesGeneration.inputs.sub_ses = sub_ses
+        finalFilenamesGeneration.inputs.sr_id = self.sr_id
+        finalFilenamesGeneration.inputs.use_manual_masks = self.use_manual_masks
+
         self.wf.connect(stacksOrdering, "stacks_order", finalFilenamesGeneration, "stacks_order")
-        self.wf.connect(finalFilenamesGeneration, "substitutions", datasink, "substitutions")
+
+        datasink = Node(DataSink(), name='data_sinker')
+        datasink.inputs.base_directory = final_res_dir
+
+        self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
+        self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), datasink, 'anat.@LRmasks')
-
         self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsPreproc')
-        self.wf.connect(srtkMaskImage01, ("out_im_file", utils.sort_ascending), datasink, 'anat.@LRsDenoised')
         self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), datasink, 'xfm.@transforms')
-
+        self.wf.connect(finalFilenamesGeneration, "substitutions", datasink, "substitutions")
+        self.wf.connect(srtkMaskImage01, ("out_im_file", utils.sort_ascending), datasink, 'anat.@LRsDenoised')
         self.wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat.@SDI')
         self.wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
         self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
+        self.wf.connect(srtkTVSuperResolution, "output_sr_png", datasink, 'figures.@SRpng')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
     def run(self, number_of_cores=1, memory=None, save_profiler_log=False):

@@ -278,12 +278,12 @@ class FilenamesGeneration(BaseInterface):
                                          '_T2w_nlm_uni_bcorr_histnorm_transform_' + str(
                                         len(self.inputs.stacks_order)) + 'V.txt',
                                         self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
-                                        self.inputs.sr_id) + '_T2w_from-origin_to-SDI_mode-image_xfm.txt'))
+                                        self.inputs.sr_id) + '_mod-T2w_from-origin_to-SDI_mode-image_xfm.txt'))
 
             self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) +
                                          '_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
                                         self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
-                                        self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz'))
+                                        self.inputs.sr_id) + '_mod-T2w_desc-brain_mask.nii.gz'))
 
         self.m_substitutions.append(('SDI_' + self.inputs.sub_ses + '_' +
                                      str(len(self.inputs.stacks_order)) + 'V_rad1.nii.gz',
@@ -303,13 +303,28 @@ class FilenamesGeneration(BaseInterface):
         self.m_substitutions.append((self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
                                      self.inputs.sub_ses + '_rec-SR' +
                                      '_id-' + str(self.inputs.sr_id) +
-                                     '_T2w_desc-brain_mask.nii.gz'))
+                                     '_mod-T2w_desc-brain_mask.nii.gz'))
 
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses +
                                      '_' + str(len(self.inputs.stacks_order)) +
                                      'V_rad1_srMask.nii.gz',
                                      self.inputs.sub_ses + '_rec-SR' +
-                                     '_id-' + str(self.inputs.sr_id) + '_T2w_desc-brain_mask.nii.gz'))
+                                     '_id-' + str(self.inputs.sr_id) +
+                                     '_mod-T2w_desc-brain_mask.nii.gz'))
+
+        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses +
+                                     '_' + str(len(self.inputs.stacks_order)) +
+                                     'V_rad1.png',
+                                     self.inputs.sub_ses + '_rec-SR' +
+                                     '_id-' + str(self.inputs.sr_id) + '_T2w.png'))
+
+        self.m_substitutions.append(('motion_index_QC.png',
+                                     self.inputs.sub_ses + '_rec-SR' +
+                                     '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.png'))
+
+        self.m_substitutions.append(('motion_index_QC.tsv',
+                                     self.inputs.sub_ses + '_rec-SR' +
+                                     '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.tsv'))
 
         return runtime
 

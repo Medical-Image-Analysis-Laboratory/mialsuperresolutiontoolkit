@@ -15,6 +15,7 @@ dependencies:
 - nilearn=0.7.1
 - pydotplus=2.0.2
 - pandoc=2.11.0.1
+- seaborn=0.11.1
 
 - pip:
     - coverage==5.1
@@ -36,3 +37,4 @@ dependencies:
     - sphinx-argparse==0.2.5
     - nbsphinx==0.7.1
     - recommonmark==0.5.0
+    - matplotlib==3.4

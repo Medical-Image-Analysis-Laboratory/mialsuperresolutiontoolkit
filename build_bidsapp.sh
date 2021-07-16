@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 CMP_BUILD_DATE="$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")"
 echo "$CMP_BUILD_DATE"
 

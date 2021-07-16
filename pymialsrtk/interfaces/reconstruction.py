@@ -5,8 +5,6 @@
 """PyMIALSRTK reconstruction functions."""
 
 import os
-
-from glob import glob
 import json
 
 from traits.api import *
@@ -15,6 +13,7 @@ from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
+import numpy as np
 import nibabel as nib
 from matplotlib import pyplot as plt
 from nilearn.plotting import plot_anat
@@ -57,7 +56,6 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
                                     usedefault=True)
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that specify the order of the stacks')
-
     no_reg = traits.Bool(default=False, desc="Skip slice-to-volume registration.")
 
 
@@ -110,14 +108,14 @@ class MialsrtkImageReconstruction(BaseInterface):
         if name == 'output_sdi':
             _, _, ext = split_filename(orig)
             output = ''.join([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
-                      str(len(self.inputs.stacks_order)), 'V_rad',
-                      str(int(self.inputs.input_rad_dilatation)), ext])
+                              str(len(self.inputs.stacks_order)), 'V_rad',
+                              str(int(self.inputs.input_rad_dilatation)), ext])
             return os.path.abspath(output)
 
         elif name == 'output_transforms':
             _, name, _ = split_filename(orig)
             output = ''.join([name, self.inputs.out_transf_postfix, '_',
-                     str(len(self.inputs.stacks_order)), 'V', '.txt'])
+                              str(len(self.inputs.stacks_order)), 'V', '.txt'])
 
             return os.path.abspath(output)
         return None
@@ -130,8 +128,6 @@ class MialsrtkImageReconstruction(BaseInterface):
 
         for in_image, in_mask in zip(input_images, input_masks):
 
-            transf_file = self._gen_filename(in_image, 'output_transforms')
-
             params.append("-i")
             params.append(in_image)
 
@@ -139,11 +135,11 @@ class MialsrtkImageReconstruction(BaseInterface):
                 params.append("-m")
                 params.append(in_mask)
 
+            transf_file = self._gen_filename(in_image, 'output_transforms')
             params.append("-t")
             params.append(transf_file)
 
         out_file = self._gen_filename(self.inputs.input_images[0], 'output_sdi')
-
         params.append("-o")
         params.append(out_file)
 
@@ -156,7 +152,7 @@ class MialsrtkImageReconstruction(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -164,7 +160,9 @@ class MialsrtkImageReconstruction(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_transforms'] = [self._gen_filename(in_image, 'output_transforms') for in_image in self.inputs.input_images]
+        outputs['output_transforms'] = [
+            self._gen_filename(in_image, 'output_transforms') for in_image in self.inputs.input_images
+        ]
         outputs['output_sdi'] = self._gen_filename(self.inputs.input_images[0], 'output_sdi')
         return outputs
 
@@ -189,14 +187,12 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     deblurring = traits.Bool(False,
                              desc='Flag to set deblurring PSF during SR (double the neighborhood)',
                              usedefault=True)
-
     in_loop = traits.Int(mandatory=True,
                          desc='Number of loops (SR/denoising)')
     in_deltat = traits.Float(mandatory=True,
                              desc='Parameter deltat of TV optimizer')
     in_lambda = traits.Float(mandatory=True,
                              desc='TV regularization factor which weights the data fidelity term in TV optimizer')
-
     in_bregman_loop = traits.Int(1,
                                  desc='Number of Bregman loops',
                                  usedefault=True)
@@ -215,20 +211,17 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     in_outer_thresh = traits.Float(0.000001,
                                    desc='Outer loop convergence threshold',
                                    usedefault=True)
-
     out_prefix = traits.Str("SRTV_",
                             desc='Prefix added to construct output super-resolution filename',
                             usedefault=True)
     stacks_order = traits.List(mandatory=False,
                                desc='List of stack run-id that specify the order of the stacks')
-
     input_rad_dilatation = traits.Float(1.0,
                                         desc='Radius dilatation used in prior step to construct output filename',
                                         usedefault=True)
     sub_ses = traits.Str("x",
                          desc='Subject and session BIDS identifier to construct output filename',
                          usedefault=True)
-
     use_manual_masks = traits.Bool(False,
                                    desc='Use masks of input files',
                                    usedefault=True)
@@ -239,8 +232,8 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
 
     output_sr = File(desc='Output super-resolution image file')
     output_sr_png = File(desc='Output super-resolution PNG image file for quality assessment')
-    # output_dict = Dict(desc='Super-resolution reconstruction parameters summarized in a python dictionary')
-    output_json_path = File(desc='Output path where `output_dict` should be saved ')
+    output_json_path = File(desc='Output json file where super-resolution reconstruction parameters '
+                                 'are summarized')
 
 
 class MialsrtkTVSuperResolution(BaseInterface):
@@ -292,22 +285,25 @@ class MialsrtkTVSuperResolution(BaseInterface):
     def _gen_filename(self, name):
         if name == 'output_sr':
             _, _, ext = split_filename(self.inputs.input_sdi)
-            output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                                      str(len(self.inputs.stacks_order)), 'V_rad',
-                                                      str(int(self.inputs.input_rad_dilatation)), ext])
+            output = ''.join([self.inputs.out_prefix,
+                              self.inputs.sub_ses, '_',
+                              str(len(self.inputs.stacks_order)), 'V_rad',
+                              str(int(self.inputs.input_rad_dilatation)), ext])
             return os.path.abspath(output)
 
         elif name == 'output_json_path':
-            output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                                      str(len(self.inputs.stacks_order)), 'V_rad',
-                                                      str(int(self.inputs.input_rad_dilatation)), '.json'])
+            output = ''.join([self.inputs.out_prefix,
+                              self.inputs.sub_ses, '_',
+                              str(len(self.inputs.stacks_order)), 'V_rad',
+                              str(int(self.inputs.input_rad_dilatation)), '.json'])
 
             return os.path.abspath(output)
 
         elif name == 'output_sr_png':
-            output = ''.join([self.inputs.out_prefix, self.inputs.sub_ses, '_',
-                                                      str(len(self.inputs.stacks_order)), 'V_rad',
-                                                      str(int(self.inputs.input_rad_dilatation)), '.png'])
+            output = ''.join([self.inputs.out_prefix,
+                              self.inputs.sub_ses, '_',
+                              str(len(self.inputs.stacks_order)), 'V_rad',
+                              str(int(self.inputs.input_rad_dilatation)), '.png'])
 
             return os.path.abspath(output)
 
@@ -326,9 +322,9 @@ class MialsrtkTVSuperResolution(BaseInterface):
             cmd += ['-m', in_mask]
             cmd += ['-t', in_transform]
 
-        out_sr = self._gen_filename('output_sr')
-
         cmd += ['-r', self.inputs.input_sdi]
+
+        out_sr = self._gen_filename('output_sr')
         cmd += ['-o', out_sr]
 
         if self.inputs.deblurring:
@@ -337,7 +333,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--loop', str(self.inputs.in_loop)]
         cmd += ['--deltat', str(self.inputs.in_deltat)]
         cmd += ['--lambda', str(self.inputs.in_lambda)]
-
         cmd += ['--bregman-loop', str(self.inputs.in_bregman_loop)]
         cmd += ['--iter', str(self.inputs.in_iter)]
         cmd += ['--step-scale', str(self.inputs.in_step_scale)]
@@ -345,7 +340,17 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
         cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
 
-        # JSON file SRTV
+        try:
+            cmd = ' '.join(cmd)
+            run(cmd, cwd=os.path.abspath(self.inputs.bids_dir))
+
+        except Exception as e:
+            print('Failed')
+            print(e)
+
+        ################################################
+        # Creation of JSON sidecar file of the SR image
+        ################################################
         self.m_output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation" \
                                             " Super-Resolution algorithm provided by MIALSRTK"
         self.m_output_dict["Input sources run order"] = self.inputs.stacks_order
@@ -358,44 +363,82 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
+            print('  > Write JSON side-car...')
             json.dump(self.m_output_dict, outfile, indent=4)
-            print('JSON side-car written.')
 
-        try:
-            cmd = ' '.join(cmd)
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
-
-        except Exception as e:
-            print('Failed')
-            print(e)
-
+        #########################################################
         # Save cuts of the SR image in a PNG for later reporting
+        #########################################################
         out_sr_png = self._gen_filename('output_sr_png')
 
+        # Load the super-resolution image
+        print(f'  > Load SR image {out_sr}...')
         img = nib.load(out_sr)
-        cut = tuple(s // 2 for s in img.shape)
+        # Get image properties
+        zooms = img.header.get_zooms()  # zooms are the size of the voxels
+        shapes = img.shape
+        fovs = np.array(zooms) * np.array(shapes)
+        # Get middle cut
+        cuts = [s // 2 for s in shapes]
+        print(f'    Image properties: Zooms={zooms}/ Shape={shapes}/ FOV={fovs}/ middle cut={cuts}')
+
+        # Crop the image if the FOV exceeds a certain value
+        def compute_axis_crop_indices(cut, fov, max_fov=120):
+            """Compute the cropping index in a dimension if the Field-Of-View exceeds a maximum value of 120mm by default.
+
+            Parameters
+            ----------
+            cut: int
+                Middle slice index in a given dimension
+
+            fov: float
+                Slice Field-of-View (mm) in a given dimension
+
+            max_fov: float
+                Maximum Slice Field-of-View (mm) to which the image does not need to be cropped
+                (120mm by default)
+
+            Returns
+            -------
+            (crop_start_index, crop_end_index): (int, int)
+                Starting and ending indices of the image crop along the given dimension
+
+            """
+            crop_start_index = cut - max_fov // 2 if fov > max_fov else 0
+            crop_end_index = cut + max_fov // 2 if fov > max_fov else -1
+            return crop_start_index, crop_end_index
+
+        crop_start_x, crop_end_x = compute_axis_crop_indices(cuts[0], fovs[0], max_fov=120)
+        crop_start_y, crop_end_y = compute_axis_crop_indices(cuts[1], fovs[1], max_fov=120)
+        crop_start_z, crop_end_z = compute_axis_crop_indices(cuts[2], fovs[2], max_fov=120)
+
+        print(f'  > Crop SR image at '
+              f'({crop_start_x}:{crop_end_x}, '
+              f'{crop_start_y}:{crop_end_y}, '
+              f'{crop_start_z}:{crop_end_z})...')
+        cropped_img = img.slicer[
+            crop_start_x:crop_end_x,
+            crop_start_y:crop_end_y,
+            crop_start_z:crop_end_z
+        ]
         del img
 
-        print(f'Create orthogonal cuts of output SR image at {cut} and save it as {out_sr_png}')
-
-        fig = plt.figure(1,
-                         figsize=(9, 3),
-                         dpi=100,
-                         facecolor='k',
-                         edgecolor='k',
-                         clear=True
-                         )
-
-        disp = plot_anat(anat_img=out_sr,
-                         cut_coords=cut,
-                         annotate=True,
-                         draw_cross=True,
-                         black_bg=True,
-                         dim='auto',
-                         display_mode='ortho',
-                         figure=fig)
-
-        disp.savefig(out_sr_png)
+        # Create and save the figure
+        plot_anat(
+            anat_img=cropped_img,
+            annotate=True,
+            draw_cross=False,
+            black_bg=True,
+            dim='auto',
+            display_mode='ortho',
+        )
+        print(f'Save the PNG image cuts as {out_sr_png}')
+        plt.savefig(
+            out_sr_png,
+            dpi=100,
+            facecolor='k',
+            edgecolor='k'
+        )
 
         return runtime
 
@@ -403,7 +446,5 @@ class MialsrtkTVSuperResolution(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_sr'] = self._gen_filename('output_sr')
         outputs['output_sr_png'] = self._gen_filename('output_sr_png')
-        # outputs['output_dict'] = self.m_output_dict
         outputs['output_json_path'] = self._gen_filename('output_json_path')
-
         return outputs
