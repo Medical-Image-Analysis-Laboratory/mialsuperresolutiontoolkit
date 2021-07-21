@@ -1,0 +1,15 @@
+{
+    "Description": "Isotropic high-resolution image reconstructed using the Total-Variation Super-Resolution algorithm provided by MIALSRTK",
+    "Input sources run order": [
+        6,
+        3,
+        1
+    ],
+    "CustomMetaData": {
+        "Number of scans used": "3",
+        "Masks used": "Automatic",
+        "TV regularization weight lambda": 0.75,
+        "Optimization time step": 0.01,
+        "Primal/dual loops": 10
+    }
+}
