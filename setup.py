@@ -15,17 +15,22 @@ directory = os.path.dirname(os.path.abspath(__file__))
 if os.path.exists('MANIFEST'):
     os.remove('MANIFEST')
 
-packages = ["pymialsrtk",
-            "pymialsrtk.cli",
-            "pymialsrtk.interfaces",
-            "pymialsrtk.pipelines",
-            "pymialsrtk.pipelines.anatomical",
-            "pymialsrtk.utils"]
+packages = [
+    "pymialsrtk",
+    "pymialsrtk.cli",
+    "pymialsrtk.interfaces",
+    "pymialsrtk.pipelines",
+    "pymialsrtk.pipelines.anatomical",
+    "pymialsrtk.utils"
+]
 
-package_data = {"pymialsrtk":
-                ['data/Network_checkpoints/Network_checkpoints_localization/*',
-                 'data/Network_checkpoints/Network_checkpoints_segmentation/*'],
-                }
+package_data = {
+    "pymialsrtk": [
+        'data/Network_checkpoints/Network_checkpoints_localization/*',
+        'data/Network_checkpoints/Network_checkpoints_segmentation/*',
+        'data/report/templates/*'
+    ],
+}
 
 # Extract package requirements from Conda environment.yml
 include_conda_pip_dependencies = False
