@@ -618,7 +618,7 @@ class AnatomicalPipeline:
                 self.subject,
                 self.session,
                 'figures',
-                f'{self.subject}_{self.session}_desc-processing_graph.png'
+                f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
             )
         else:
             dst = os.path.join(
@@ -626,7 +626,7 @@ class AnatomicalPipeline:
                     '-'.join(["pymialsrtk", __version__]),
                     self.subject,
                     'figures',
-                    f'{self.subject}_desc-processing_graph.png'
+                    f'{self.subject}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
             )
         iflogger.info(f'\t > Copy {src} to {dst}...')
         shutil.copy(
