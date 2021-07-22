@@ -17,6 +17,7 @@ if os.path.exists('MANIFEST'):
 
 packages = [
     "pymialsrtk",
+    "pymialsrtk.bids",
     "pymialsrtk.cli",
     "pymialsrtk.interfaces",
     "pymialsrtk.pipelines",

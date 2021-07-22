@@ -11,6 +11,7 @@ import pkg_resources
 from nipype import config, logging
 
 # from nipype.interfaces.io import BIDSDataGrabber
+from nipype.info import __version__ as __nipype_version__
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.pipeline import Node, MapNode, Workflow
 from nipype.interfaces.utility import IdentityInterface, Function
@@ -20,6 +21,7 @@ import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.utils as utils
+from pymialsrtk.bids.utils import write_bids_derivative_description
 from pymialsrtk.utils.monitoring import log_nodes_cb, generate_gantt_chart
 
 # Get pymialsrtk version
@@ -194,7 +196,7 @@ class AnatomicalPipeline:
 
         if self.session is None:
             wf_base_dir = os.path.join(self.output_dir,
-                                       "nipype",
+                                       '-'.join(["nipype", __nipype_version__]),
                                        self.subject,
                                        "rec-{}".format(self.sr_id))
             final_res_dir = os.path.join(self.output_dir,
@@ -202,7 +204,7 @@ class AnatomicalPipeline:
                                          self.subject)
         else:
             wf_base_dir = os.path.join(self.output_dir,
-                                       "nipype",
+                                       '-'.join(["nipype", __nipype_version__]),
                                        self.subject,
                                        self.session,
                                        "rec-{}".format(self.sr_id))
@@ -658,6 +660,14 @@ class AnatomicalPipeline:
         iflogger.info("**** Processing ****")
         res = self.wf.run(plugin='MultiProc',
                           plugin_args=args_dict)
+
+        iflogger.info("**** Write dataset derivatives description ****")
+        for toolbox in ["pymialsrtk", "nipype"]:
+            write_bids_derivative_description(
+                bids_dir=self.bids_dir,
+                deriv_dir=self.output_dir,
+                pipeline_name=toolbox
+            )
 
         if save_profiler_log:
             iflogger.info("**** Workflow execution profiling ****")
