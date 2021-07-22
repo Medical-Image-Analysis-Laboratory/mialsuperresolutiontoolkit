@@ -5,13 +5,16 @@
 """Module for the super-resolution reconstruction pipeline."""
 
 import os
+import json
 import shutil
 import pkg_resources
 
-from nipype import config, logging
+from jinja2 import Environment, FileSystemLoader
 
-# from nipype.interfaces.io import BIDSDataGrabber
+import nibabel as nib
+
 from nipype.info import __version__ as __nipype_version__
+from nipype import config, logging
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.pipeline import Node, MapNode, Workflow
 from nipype.interfaces.utility import IdentityInterface, Function
@@ -662,6 +665,9 @@ class AnatomicalPipeline:
                 pipeline_name=toolbox
             )
 
+        iflogger.info("**** Super-resolution HTML report creation ****")
+        self.create_subject_report()
+
         if save_profiler_log:
             iflogger.info("**** Workflow execution profiling ****")
             iflogger.info(f'\t > Creation of report...')
@@ -673,3 +679,88 @@ class AnatomicalPipeline:
                                                             self.wf.name))
 
         return res
+
+    def create_subject_report(self):
+        """Create the HTML report"""
+        # Set main subject derivatives directory
+        if self.session is None:
+            sub_ses = self.subject
+            final_res_dir = os.path.join(self.output_dir,
+                                         '-'.join(["pymialsrtk", __version__]),
+                                         self.subject)
+        else:
+            sub_ses = f'{self.subject}_{self.session}'
+            final_res_dir = os.path.join(self.output_dir,
+                                         '-'.join(["pymialsrtk", __version__]),
+                                         self.subject,
+                                         self.session)
+        # Get the HTML report template
+        path = pkg_resources.resource_filename(
+            'pymialsrtk',
+            "data/report/templates/template.html"
+        )
+        jinja_template_dir = os.path.dirname(path)
+
+        file_loader = FileSystemLoader(jinja_template_dir)
+        env = Environment(loader=file_loader)
+
+        template = env.get_template('template.html')
+
+        # Load main data derivatives necessary for the report
+        sr_nii_image = os.path.join(
+            final_res_dir, 'anat',
+            f'{sub_ses}_rec-SR_id-{self.sr_id}_T2w.nii.gz'
+        )
+        img = nib.load(sr_nii_image)
+        sx, sy, sz = img.header.get_zooms()
+
+        sr_json_metadata = os.path.join(
+            final_res_dir, 'anat',
+            f'{sub_ses}_rec-SR_id-{self.sr_id}_T2w.json'
+        )
+        with open(sr_json_metadata) as f:
+            sr_json_metadata = json.load(f)
+
+        workflow_image = os.path.join(
+            '..', 'figures',
+            f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
+        )
+
+        sr_png_image = os.path.join(
+            '..', 'figures',
+            f'{sub_ses}_rec-SR_id-{self.sr_id}_T2w.png'
+        )
+
+        motion_report_image = os.path.join(
+            '..', 'figures',
+            f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-motion_stats.png'
+        )
+
+        # Create the text for {{subject}} field in template
+        if self.session is None:
+            report_subject_text = f'{self.subject.split("-")[-1]}'
+        else:
+            report_subject_text = f'{self.subject.split("-")[-1]} '\
+                                  + f'(Session {self.session.split("-")[-1]})'
+
+        # Generate the report
+        report_html_content = template.render(
+                subject=report_subject_text,
+                in_plane_res=f"{sx}mm x {sy}mm",
+                slice_thickness=f"{sz}mm",
+                sr_json_metadata=sr_json_metadata,
+                workflow_graph=workflow_image,
+                sr_png_image=sr_png_image,
+                motion_report_image=motion_report_image,
+                version=__version__
+        )
+        print(f'DEBUG: Report content={report_html_content}')
+        # Create the report directory if it does not exist
+        report_dir = os.path.join(final_res_dir, 'report')
+        os.makedirs(report_dir, exist_ok=True)
+
+        # Save the HTML report file
+        out_report_filename = os.path.join(report_dir, f'{sub_ses}.html')
+        print(f'DEBUG: Save HTML report as {out_report_filename}...')
+        with open(out_report_filename, "w+") as file:
+            file.write(report_html_content)
