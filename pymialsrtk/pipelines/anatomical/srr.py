@@ -624,11 +624,12 @@ class AnatomicalPipeline:
                     'figures',
                     f'{self.subject}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
             )
+        # Create the figures/ and parent directories if they do not exist
+        figures_dir = os.path.dirname(dst)
+        os.makedirs(figures_dir, exist_ok=True)
+        # Make the copy
         iflogger.info(f'\t > Copy {src} to {dst}...')
-        shutil.copy(
-            src=src,
-            dst=dst
-        )
+        shutil.copy(src=src, dst=dst)
 
         # Create dictionary of arguments passed to plugin_args
         args_dict = {
