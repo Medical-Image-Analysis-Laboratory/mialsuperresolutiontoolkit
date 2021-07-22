@@ -600,6 +600,10 @@ class AnatomicalPipeline:
             If `True`, generates the profiling callback log
             (Default: `False`)
         """
+        from nipype import logging as nipype_logging
+
+        # Use nipype.interface logger to print some information messages
+        iflogger = nipype_logging.getLogger('nipype.interface')
         self.wf.write_graph(dotfilename='graph.dot', graph2use='colored', format='png', simple_form=True)
 
         # Create dictionary of arguments passed to plugin_args
@@ -625,10 +629,13 @@ class AnatomicalPipeline:
             handler = logging.FileHandler(callback_log_path)
             logger.addHandler(handler)
 
+        iflogger.info("**** Processing ****")
         res = self.wf.run(plugin='MultiProc',
                           plugin_args=args_dict)
 
         if save_profiler_log:
+            iflogger.info("**** Workflow execution profiling ****")
+            iflogger.info(f'\t > Creation of report...')
             generate_gantt_chart(logfile=callback_log_path,
                                  cores=number_of_cores,
                                  minute_scale=10,
