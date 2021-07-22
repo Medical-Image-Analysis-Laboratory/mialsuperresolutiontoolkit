@@ -604,7 +604,33 @@ class AnatomicalPipeline:
 
         # Use nipype.interface logger to print some information messages
         iflogger = nipype_logging.getLogger('nipype.interface')
+        iflogger.info("**** Workflow graph creation ****")
         self.wf.write_graph(dotfilename='graph.dot', graph2use='colored', format='png', simple_form=True)
+
+        # Copy and rename the generated "graph.png" image
+        src = os.path.join(self.wf.base_dir, self.wf.name, 'graph.png')
+        if self.session is not None:
+            dst = os.path.join(
+                self.output_dir,
+                '-'.join(["pymialsrtk", __version__]),
+                self.subject,
+                self.session,
+                'figures',
+                f'{self.subject}_{self.session}_desc-processing_graph.png'
+            )
+        else:
+            dst = os.path.join(
+                    self.output_dir,
+                    '-'.join(["pymialsrtk", __version__]),
+                    self.subject,
+                    'figures',
+                    f'{self.subject}_desc-processing_graph.png'
+            )
+        iflogger.info(f'\t > Copy {src} to {dst}...')
+        shutil.copy(
+            src=src,
+            dst=dst
+        )
 
         # Create dictionary of arguments passed to plugin_args
         args_dict = {
