@@ -95,10 +95,11 @@ def write_bids_derivative_description(bids_dir, deriv_dir, pipeline_name):
     ] = "TODO: To be updated (See https://creativecommons.org/about/cclicenses/)"
 
     # Save the dataset_description.json file
-    with open(
-        os.path.join(deriv_dir,
-                     pipeline_name,
-                     "dataset_description.json"),
-        "w"
-    ) as fobj:
+    output_filename = os.path.join(
+        deriv_dir,
+        f'{desc["GeneratedBy"]["Name"]}-{desc["GeneratedBy"]["Version"]}',
+        "dataset_description.json"
+    )
+    print(f'\tSave {desc["GeneratedBy"]["Name"]} bids tool description to {output_filename}...')
+    with open(output_filename, 'w+') as fobj:
         json.dump(desc, fobj, indent=4)
