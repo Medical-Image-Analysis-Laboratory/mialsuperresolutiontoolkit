@@ -563,7 +563,7 @@ class AnatomicalPipeline:
 
         datasink = Node(interface=DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
-        datasink.inputs.parametrization = False
+        datasink.inputs.parametrization = True
 
         self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
         self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
