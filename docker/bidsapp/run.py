@@ -281,11 +281,13 @@ if __name__ == '__main__':
                                srID=sr_params['sr-id'],
                                masks_derivatives_dir=args.masks_derivatives_dir,
                                masks_desc=masks_desc,
-                               dict_custom_interfaces = dict_custom_interfaces,
+                               dict_custom_interfaces=dict_custom_interfaces,
                                number_of_cores=nipype_nb_of_cores,
                                memory=args.memory,
                                save_profiler_log=args.profiling)
-
     else:
-        print('ERROR: Processing of all dataset not implemented yet\n At least one participant label should be provided')
+        print(
+            'ERROR: Processing of all dataset not implemented yet\n '
+            'At least one participant label should be provided'
+        )
         sys.exit(2)
