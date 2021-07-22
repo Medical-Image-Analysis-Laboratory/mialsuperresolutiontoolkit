@@ -33,9 +33,6 @@ class AnatomicalPipeline:
 
     Attributes
     -----------
-    pipeline_name : string
-        BIDS root directory (required)
-
     bids_dir : string
         BIDS root directory (required)
 
@@ -47,10 +44,6 @@ class AnatomicalPipeline:
 
     wf : nipype.pipeline.Workflow
         Nipype workflow of the reconstruction pipeline
-
-    dictsink : nipype.interfaces.io.JSONFileSink
-        Nipype node used to generate a JSON file that store provenance metadata
-        for the SR-reconstructed images
 
     deltatTV : string
         Super-resolution optimization time-step
@@ -89,22 +82,22 @@ class AnatomicalPipeline:
     m_skip_stacks_ordering : bool (optional)
         Weither the automatic stacks ordering should be skipped. (default is False)
 
-
     Examples
     --------
     >>> from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
     >>> # Create a new instance
-    >>> pipeline = AnatomicalPipeline(pipeline_name='srr_pipeline',
-                                      '/path/to/bids_dir',
-                                      '/path/to/output_dir',
-                                      'sub-01',
-                                      [1,3,2,0],
-                                      01,
-                                      None,
+    >>> pipeline = AnatomicalPipeline(bids_dir='/path/to/bids_dir',
+                                      output_dir='/path/to/output_dir',
+                                      subject='sub-01',
+                                      p_stacks=[1,3,2,0],
+                                      sr_id=1,
+                                      session=None,
                                       paramTV={deltatTV = "0.001",
                                                lambdaTV = "0.75",
                                                primal_dual_loops = "20"},
-                                      use_manual_masks=False)
+                                      masks_derivatives_dir="/custom/mask_dir",
+                                      masks_desc=None,
+                                      p_dict_custom_interfaces=None)
     >>> # Create the super resolution Nipype workflow
     >>> pipeline.create_workflow()
     >>> # Execute the workflow
