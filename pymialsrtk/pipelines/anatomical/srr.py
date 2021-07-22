@@ -5,7 +5,7 @@
 """Module for the super-resolution reconstruction pipeline."""
 
 import os
-
+import shutil
 import pkg_resources
 
 from nipype import config, logging
@@ -211,9 +211,6 @@ class AnatomicalPipeline:
                                          self.subject,
                                          self.session)
 
-        # #if self.sr_id is not None:
-        # wf_base_dir = os.path.join(wf_base_dir, self.sr_id)
-
         if not os.path.exists(wf_base_dir):
             os.makedirs(wf_base_dir)
         print("Process directory: {}".format(wf_base_dir))
@@ -221,7 +218,6 @@ class AnatomicalPipeline:
         # Initialization (Not sure we can control the name of nipype log)
         if os.path.isfile(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log")):
             os.unlink(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log"))
-            # open(os.path.join(self.output_dir,"pypeline.log"), 'a').close()
 
         if save_profiler_log:
             log_filename = os.path.join(wf_base_dir, 'pypeline_stats.log')
@@ -229,7 +225,6 @@ class AnatomicalPipeline:
                 os.unlink(log_filename)
 
         self.wf = Workflow(name=self.pipeline_name,base_dir=wf_base_dir)
-        # srr_nipype_dir = os.path.join(self.wf.base_dir, self.wf.name )
 
         config.update_config(
             {
@@ -252,9 +247,9 @@ class AnatomicalPipeline:
             config.update_config(
                 {
                     'monitoring': {
-                            'enabled': save_profiler_log,
-                            'sample_frequency': "1.0",
-                            'summary_append': True
+                        'enabled': save_profiler_log,
+                        'sample_frequency': "1.0",
+                        'summary_append': True
                     }
                 }
             )
@@ -262,44 +257,46 @@ class AnatomicalPipeline:
 
         # Update logging with config
         logging.update_logging(config)
-
         # config.enable_provenance()
 
-        # Use nipype.interface logger to print some information messages
-        iflogger = logging.getLogger('nipype.interface')
-        iflogger.info("**** Processing ****")
-
         if self.use_manual_masks:
-            dg = Node(interface=DataGrabber(outfields=['T2ws', 'masks']),
-                      name='data_grabber')
-
+            dg = Node(
+                interface=DataGrabber(outfields=['T2ws', 'masks']),
+                name='data_grabber'
+            )
             dg.inputs.base_directory = self.bids_dir
             dg.inputs.template = '*'
             dg.inputs.raise_on_empty = False
             dg.inputs.sort_filelist = True
 
-            # self.m_masks_desc
             if self.session is not None:
-                t2ws_template = os.path.join(self.subject, self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz']))
-
+                t2ws_template = os.path.join(
+                    self.subject, self.session, 'anat',
+                    '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])
+                )
                 if self.m_masks_desc is not None:
-                    masks_template = os.path.join('derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-                                                  '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz']))
+                    masks_template = os.path.join(
+                        'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
+                        '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
+                    )
                 else:
-                    masks_template = os.path.join('derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-                                                  '_'.join([sub_ses, '*run-*', '*mask.nii.gz']))
-
-
+                    masks_template = os.path.join(
+                        'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
+                        '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
+                    )
             else:
                 t2ws_template=os.path.join(self.subject, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
 
                 if self.m_masks_desc is not None:
-                    masks_template = os.path.join('derivatives', self.m_masks_derivatives_dir, self.subject,self.session, 'anat',
-                                                  '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz']))
+                    masks_template = os.path.join(
+                        'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
+                        '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
+                    )
                 else:
-                    masks_template=os.path.join('derivatives', self.m_masks_derivatives_dir, self.subject, 'anat',
-                                                sub_ses + '*_run-*_*mask.nii.gz')
-
+                    masks_template = os.path.join(
+                        'derivatives', self.m_masks_derivatives_dir, self.subject, 'anat',
+                        sub_ses + '*_run-*_*mask.nii.gz'
+                    )
 
             dg.inputs.field_template = dict(T2ws=t2ws_template,
                                             masks=masks_template)
@@ -309,7 +306,8 @@ class AnatomicalPipeline:
                                 iterfield=['out_file'])
 
         else:
-            dg = Node(interface=DataGrabber(outfields=['T2ws']), name='data_grabber')
+            dg = Node(interface=DataGrabber(outfields=['T2ws']),
+                      name='data_grabber')
 
             dg.inputs.base_directory = self.bids_dir
             dg.inputs.template = '*'
@@ -324,8 +322,8 @@ class AnatomicalPipeline:
                                                                   self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
 
             if self.m_stacks is not None:
-                print('if is not self.m_stacks !!! ')
-                t2ws_filter_prior_masks = Node(interface=preprocess.FilteringByRunid(), name='t2ws_filter_prior_masks')
+                t2ws_filter_prior_masks = Node(interface=preprocess.FilteringByRunid(),
+                                               name='t2ws_filter_prior_masks')
                 t2ws_filter_prior_masks.inputs.stacks_id = self.m_stacks
 
             brainMask = MapNode(interface = preprocess.BrainExtraction(),
@@ -333,26 +331,34 @@ class AnatomicalPipeline:
                                 iterfield=['in_file'])
 
             brainMask.inputs.bids_dir = self.bids_dir
-            brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename("pymialsrtk",
-                                                                           os.path.join("data",
-                                                                                        "Network_checkpoints",
-                                                                                        "Network_checkpoints_localization",
-                                                                                        "Unet.ckpt-88000.index")).split('.index')[0]
+            brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename(
+                "pymialsrtk",
+                os.path.join("data",
+                             "Network_checkpoints",
+                             "Network_checkpoints_localization",
+                             "Unet.ckpt-88000.index")
+            ).split('.index')[0]
             brainMask.inputs.threshold_loc = 0.49
-            brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename("pymialsrtk",
-                                                                           os.path.join("data",
-                                                                                        "Network_checkpoints",
-                                                                                        "Network_checkpoints_segmentation",
-                                                                                        "Unet.ckpt-20000.index")).split('.index')[0]
+            brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename(
+                "pymialsrtk",
+                os.path.join("data",
+                             "Network_checkpoints",
+                             "Network_checkpoints_segmentation",
+                             "Unet.ckpt-20000.index")
+            ).split('.index')[0]
             brainMask.inputs.threshold_seg = 0.5
 
-        t2ws_filtered = Node(interface=preprocess.FilteringByRunid(), name='t2ws_filtered')
-        masks_filtered = Node(interface=preprocess.FilteringByRunid(), name='masks_filtered')
+        t2ws_filtered = Node(interface=preprocess.FilteringByRunid(),
+                             name='t2ws_filtered')
+        masks_filtered = Node(interface=preprocess.FilteringByRunid(),
+                              name='masks_filtered')
 
         if not self.m_skip_stacks_ordering:
-            stacksOrdering = Node(interface=preprocess.StacksOrdering(), name='stackOrdering')
+            stacksOrdering = Node(interface=preprocess.StacksOrdering(),
+                                  name='stackOrdering')
         else:
-            stacksOrdering = Node(interface=IdentityInterface(fields=['stacks_order']), name='stackOrdering')
+            stacksOrdering = Node(interface=IdentityInterface(fields=['stacks_order']),
+                                  name='stackOrdering')
             stacksOrdering.inputs.stacks_order = self.m_stacks
 
         if not self.m_skip_nlm_denoising:
@@ -370,12 +376,12 @@ class AnatomicalPipeline:
 
         srtkCorrectSliceIntensity01 = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                               name='srtkCorrectSliceIntensity01',
-                                                  iterfield=['in_file', 'in_mask'])
+                                              iterfield=['in_file', 'in_mask'])
         srtkCorrectSliceIntensity01.inputs.bids_dir = self.bids_dir
         srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
 
         srtkSliceBySliceN4BiasFieldCorrection = MapNode(interface=preprocess.MialsrtkSliceBySliceN4BiasFieldCorrection(),
-                                                     name='srtkSliceBySliceN4BiasFieldCorrection',
+                                                        name='srtkSliceBySliceN4BiasFieldCorrection',
                                                         iterfield=['in_file', 'in_mask'])
         srtkSliceBySliceN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
 
@@ -388,31 +394,37 @@ class AnatomicalPipeline:
         if not self.m_skip_nlm_denoising:
             srtkCorrectSliceIntensity02_nlm = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                                       name='srtkCorrectSliceIntensity02_nlm',
-                                                      iterfield=['in_file','in_mask'])
+                                                      iterfield=['in_file', 'in_mask'])
             srtkCorrectSliceIntensity02_nlm.inputs.bids_dir = self.bids_dir
 
-            srtkIntensityStandardization01_nlm = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization01_nlm')
+            srtkIntensityStandardization01_nlm = Node(interface=preprocess.MialsrtkIntensityStandardization(),
+                                                      name='srtkIntensityStandardization01_nlm')
             srtkIntensityStandardization01_nlm.inputs.bids_dir = self.bids_dir
 
-            srtkHistogramNormalization_nlm = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization_nlm')
+            srtkHistogramNormalization_nlm = Node(interface=preprocess.MialsrtkHistogramNormalization(),
+                                                  name='srtkHistogramNormalization_nlm')
             srtkHistogramNormalization_nlm.inputs.bids_dir = self.bids_dir
 
-            srtkIntensityStandardization02_nlm = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02_nlm')
+            srtkIntensityStandardization02_nlm = Node(interface=preprocess.MialsrtkIntensityStandardization(),
+                                                      name='srtkIntensityStandardization02_nlm')
             srtkIntensityStandardization02_nlm.inputs.bids_dir = self.bids_dir
 
         # 4-modules sequence to be defined as a stage.
         srtkCorrectSliceIntensity02 = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
-                                          name='srtkCorrectSliceIntensity02',
-                                          iterfield=['in_file', 'in_mask'])
+                                              name='srtkCorrectSliceIntensity02',
+                                              iterfield=['in_file', 'in_mask'])
         srtkCorrectSliceIntensity02.inputs.bids_dir = self.bids_dir
 
-        srtkIntensityStandardization01 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization01')
+        srtkIntensityStandardization01 = Node(interface=preprocess.MialsrtkIntensityStandardization(),
+                                              name='srtkIntensityStandardization01')
         srtkIntensityStandardization01.inputs.bids_dir = self.bids_dir
 
-        srtkHistogramNormalization = Node(interface=preprocess.MialsrtkHistogramNormalization(), name='srtkHistogramNormalization')
+        srtkHistogramNormalization = Node(interface=preprocess.MialsrtkHistogramNormalization(),
+                                          name='srtkHistogramNormalization')
         srtkHistogramNormalization.inputs.bids_dir = self.bids_dir
 
-        srtkIntensityStandardization02 = Node(interface=preprocess.MialsrtkIntensityStandardization(), name='srtkIntensityStandardization02')
+        srtkIntensityStandardization02 = Node(interface=preprocess.MialsrtkIntensityStandardization(),
+                                              name='srtkIntensityStandardization02')
         srtkIntensityStandardization02.inputs.bids_dir = self.bids_dir
 
         srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
@@ -420,12 +432,14 @@ class AnatomicalPipeline:
                                   iterfield=['in_file', 'in_mask'])
         srtkMaskImage01.inputs.bids_dir = self.bids_dir
 
-        srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(), name='srtkImageReconstruction')
+        srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(),
+                                       name='srtkImageReconstruction')
         srtkImageReconstruction.inputs.bids_dir = self.bids_dir
         srtkImageReconstruction.inputs.sub_ses = sub_ses
         srtkImageReconstruction.inputs.no_reg = self.m_skip_svr
 
-        srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(), name='srtkTVSuperResolution')
+        srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(),
+                                     name='srtkTVSuperResolution')
         srtkTVSuperResolution.inputs.bids_dir = self.bids_dir
         srtkTVSuperResolution.inputs.sub_ses = sub_ses
         srtkTVSuperResolution.inputs.in_loop = self.primal_dual_loops
@@ -433,17 +447,24 @@ class AnatomicalPipeline:
         srtkTVSuperResolution.inputs.in_lambda = self.lambdaTV
         srtkTVSuperResolution.inputs.use_manual_masks = self.use_manual_masks
 
-        srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(), name='srtkN4BiasFieldCorrection')
+        srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
+                                         name='srtkN4BiasFieldCorrection')
         srtkN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
 
         if self.m_do_refine_hr_mask:
-            srtkHRMask = Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(), name='srtkHRMask')
+            srtkHRMask = Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(),
+                              name='srtkHRMask')
             srtkHRMask.inputs.bids_dir = self.bids_dir
         else:
-            srtkHRMask = Node(interface=Function(input_names=["input_image"], output_names=["output_srmask"],
-                                    function=postprocess.binarize_image), name='srtkHRMask')
+            srtkHRMask = Node(interface=Function(
+                              input_names=["input_image"],
+                              output_names=["output_srmask"],
+                              function=postprocess.binarize_image
+                              ),
+                              name='srtkHRMask')
 
-        srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(), name='srtkMaskImage02')
+        srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(),
+                               name='srtkMaskImage02')
         srtkMaskImage02.inputs.bids_dir = self.bids_dir
 
         # Build workflow : connections of the nodes
@@ -534,15 +555,17 @@ class AnatomicalPipeline:
         self.wf.connect(srtkHRMask, "output_srmask", srtkN4BiasFieldCorrection, "input_mask")
 
         # Datasinker
-        finalFilenamesGeneration = Node(postprocess.FilenamesGeneration(), name='filenames_gen')
+        finalFilenamesGeneration = Node(interface=postprocess.FilenamesGeneration(),
+                                        name='filenames_gen')
         finalFilenamesGeneration.inputs.sub_ses = sub_ses
         finalFilenamesGeneration.inputs.sr_id = self.sr_id
         finalFilenamesGeneration.inputs.use_manual_masks = self.use_manual_masks
 
         self.wf.connect(stacksOrdering, "stacks_order", finalFilenamesGeneration, "stacks_order")
 
-        datasink = Node(DataSink(), name='data_sinker')
+        datasink = Node(interface=DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
+        datasink.inputs.parametrization = False
 
         self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
         self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
