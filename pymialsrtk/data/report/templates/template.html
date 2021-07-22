@@ -26,21 +26,51 @@ img {
 </style>
 <body>
 
+
 <!-- Main content: shift it to the right by 250 pixels when the sidebar is visible -->
 <div class="w3-main" style="margin-left:150px">
-  <h1 class="w3-text-teal">Super-Resolution Report of Subject {{subject}}</h1>
+  <h1 class="w3-text-teal">Subject {{subject}} - Processing Report </h1>
 
   <div class="w3-row w3-padding-16">
     <div class="w3-container">
+       <h1 class="w3-text-teal">Configuration summary</h1>
       <p>
         <ul>
+          <li>SR reconstruction index (sr-*): {{sr_id}}</li>
           <li>Number of scans: {{sr_json_metadata["CustomMetaData"]["Number of scans used"]}}</li>
-          <li>In-plane resolution: {{in_plane_res}}</li>
-          <li>Slice thickness: {{slice_thickness}}</li>
+          <li>Input scan run index order: {{stacks}}</li>
+          <li>NLM denoising: {{nlm_denoising}}</li>
+          <li>Automatic brain extraction: {{use_auto_masks}}</li>
+          {% if custom_masks_dir is defined and custom_masks_dir is not None %}
+          <li>Custom brain mask directory: {{custom_masks_dir}}</li>
+          {% endif %}
+          <li>Slice-to-volume registration: {{svr}}</li>
+          <li>SR brain mask refinement: {{do_refine_hr_mask}}</li>
         </ul>
       </p>
     </div>
   </div>
+
+  <div class="w3-row w3-padding-16">
+    <div class="w3-container">
+       <h1 class="w3-text-teal">Computing Environment</h1>
+      <p>
+        <ul>
+          {% if os is defined %}
+          <li>OS: {{os}}</li>
+          {% endif %}
+          {% if python is defined %}
+          <li>Python: {{python}}</li>
+          {% endif %}
+          {% if nipype_threads is defined and nipype_threads is not None%}
+          <li>Number of threads in parallel (Nipype): {{nipype_threads}}</li>
+          {% endif %}
+          {% if openmp_threads is defined and openmp_threads is not None %}
+          <li>Number of threads in parallel (OpenMP): {{openmp_threads}}</li>
+          {% endif %}
+        </ul>
+      </p>
+    </div>
 
   <div class="w3-container">
     <h1 class="w3-text-teal">Workflow</h1>
@@ -49,33 +79,29 @@ img {
     </p>
   </div>
 
+  {% if stacks_ordering=="on" %}
   <div class="w3-row w3-padding-16">
-    <div class="w3-third w3-container">
-      <h1 class="w3-text-teal">Motion</h1>
-      <p>
-        <ul>
-          <li>Input run index order : {{sr_json_metadata["Input sources run order"]}}</li>
-        </ul>
-      </p>
-    </div>
-    <div class="w3-twothird w3-container">
+    <div class="w3-container">
+      <h1 class="w3-text-teal">Motion and stack order</h1>
       <p class="w3-padding-large w3-padding-32 w3-center">
           <img src="{{motion_report_image}}">
       </p>
     </div>
   </div>
+  {% endif %}
 
   <div class="w3-row">
     <div class="w3-third w3-container">
       <h1 class="w3-text-teal">Super-Resolution</h1>
       <p>
         <ul>
+          <li>Input scan run index order: {{sr_json_metadata["Input sources run order"]}}</li>
+          <li>Output resolution: {{sr_resolution}}</li>
           <li>Algorithm: Total-Variation</li>
           <li>Regularization weight (Lambda): {{sr_json_metadata["CustomMetaData"]["TV regularization weight lambda"]}}</li>
           <li>Optimization time step: {{sr_json_metadata["CustomMetaData"]["Optimization time step"]}}</li>
           <li>Number of primal/dual iterations: {{sr_json_metadata["CustomMetaData"]["Primal/dual loops"]}}</li>
         </ul>
-
       .</p>
     </div>
     <div class="w3-twothird w3-container">

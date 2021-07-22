@@ -5,6 +5,8 @@
 """Module for the super-resolution reconstruction pipeline."""
 
 import os
+import sys
+import platform
 import json
 import shutil
 import pkg_resources
@@ -131,10 +133,14 @@ class AnatomicalPipeline:
     use_manual_masks = False
     m_masks_desc = None
 
+    openmp_number_of_cores = None
+    nipype_number_of_cores = None
+
     def __init__(
         self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
         session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
-        p_dict_custom_interfaces=None
+        p_dict_custom_interfaces=None,
+        openmp_number_of_cores=None, nipype_number_of_cores=None,
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -145,6 +151,9 @@ class AnatomicalPipeline:
         self.sr_id = sr_id
         self.session = session
         self.m_stacks = p_stacks
+
+        self.openmp_number_of_cores = openmp_number_of_cores
+        self.nipype_number_of_cores = nipype_number_of_cores
 
         # (default) sr tv parameters
         if paramTV is None:
@@ -745,14 +754,25 @@ class AnatomicalPipeline:
 
         # Generate the report
         report_html_content = template.render(
-                subject=report_subject_text,
-                in_plane_res=f"{sx}mm x {sy}mm",
-                slice_thickness=f"{sz}mm",
-                sr_json_metadata=sr_json_metadata,
-                workflow_graph=workflow_image,
-                sr_png_image=sr_png_image,
-                motion_report_image=motion_report_image,
-                version=__version__
+            subject=report_subject_text,
+            sr_id=self.sr_id,
+            stacks=self.m_stacks,
+            svr="on" if not self.m_skip_svr else "off",
+            nlm_denoising="on" if not self.m_skip_nlm_denoising else "off",
+            stacks_ordering="on" if not self.m_skip_stacks_ordering else "off",
+            do_refine_hr_mask="on" if self.m_do_refine_hr_mask else "off",
+            use_auto_masks="on" if self.m_masks_derivatives_dir is None else "off",
+            custom_masks_dir=self.m_masks_derivatives_dir if self.m_masks_derivatives_dir is not None else None,
+            sr_resolution=f"{sx}mm x {sy}mm x {sz}mm",
+            sr_json_metadata=sr_json_metadata,
+            workflow_graph=workflow_image,
+            sr_png_image=sr_png_image,
+            motion_report_image=motion_report_image,
+            version=__version__,
+            os=f'{platform.system()} {platform.release()}',
+            python=f'{sys.version}',
+            openmp_threads=self.openmp_number_of_cores,
+            nipype_threads=self.nipype_number_of_cores
         )
         print(f'DEBUG: Report content={report_html_content}')
         # Create the report directory if it does not exist
