@@ -264,13 +264,31 @@ class FilenamesGeneration(BaseInterface):
                                         self.inputs.sr_id) + '_desc-preprocSDI_T2w.nii.gz'))
 
             if not self.inputs.use_manual_masks:
-                self.m_substitutions.append(('_brainExtraction*/', ''))
+                self.m_substitutions.append(('_brainExtraction0/', ''))
+                self.m_substitutions.append(('_brainExtraction1/', ''))
+                self.m_substitutions.append(('_brainExtraction2/', ''))
+                self.m_substitutions.append(('_brainExtraction3/', ''))
+                self.m_substitutions.append(('_brainExtraction4/', ''))
+                self.m_substitutions.append(('_brainExtraction5/', ''))
+                self.m_substitutions.append(('_brainExtraction6/', ''))
+                self.m_substitutions.append(('_brainExtraction7/', ''))
+                self.m_substitutions.append(('_brainExtraction8/', ''))
+                self.m_substitutions.append(('_brainExtraction9/', ''))
                 self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) +
                                              '_T2w_brainMask.nii.gz',
                                             self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
                                             self.inputs.sr_id) + '_mod-T2w_desc-brain_mask.nii.gz'))
 
-            self.m_substitutions.append(('_srtkMaskImage*/', ''))
+            self.m_substitutions.append(('_srtkMaskImage010/', ''))
+            self.m_substitutions.append(('_srtkMaskImage011/', ''))
+            self.m_substitutions.append(('_srtkMaskImage012/', ''))
+            self.m_substitutions.append(('_srtkMaskImage013/', ''))
+            self.m_substitutions.append(('_srtkMaskImage014/', ''))
+            self.m_substitutions.append(('_srtkMaskImage015/', ''))
+            self.m_substitutions.append(('_srtkMaskImage016/', ''))
+            self.m_substitutions.append(('_srtkMaskImage017/', ''))
+            self.m_substitutions.append(('_srtkMaskImage018/', ''))
+            self.m_substitutions.append(('_srtkMaskImage019/', ''))
             self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) +
                                          '_T2w_uni_bcorr_histnorm.nii.gz',
                                         self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
