@@ -91,6 +91,24 @@ img {
     </div>
   </div>
 
+  {% if resources_stats is defined and resources_stats is not none %}
+  <div class="w3-row w3-padding-16">
+    <h1 class="w3-text-teal">Computational resources</h1>
+    <div class="w3-container">
+      <p>
+        <ul>
+          <li><span class="w3-text-orange">Report file:</span> <a href="{{resources_stats}}"><span class="w3-light-grey w3-text-dark-grey">{{resources_stats}}</span></a></li>
+        </ul>
+      </p>
+      <p>
+        <iframe id="resourcesReport"
+          title="Computing resources report"
+          src="{{resources_stats}}">
+        </iframe>
+      </p>
+    </div>
+  </div>
+
   <div class="w3-container">
     <h1 class="w3-text-teal">Workflow</h1>
     <p class="w3-padding-large w3-padding-8 w3-center">

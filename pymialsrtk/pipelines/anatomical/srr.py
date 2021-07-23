@@ -734,6 +734,28 @@ class AnatomicalPipeline:
                                  space_between_minutes=50,
                                  pipeline_name=os.path.join(self.wf.base_dir,
                                                             self.wf.name))
+            # Copy and rename the computational resources log
+            src = os.path.join(self.wf.base_dir, self.wf.name, "run_stats.log.html")
+            if self.session is not None:
+                dst = os.path.join(
+                        self.output_dir,
+                        '-'.join(["pymialsrtk", __version__]),
+                        self.subject,
+                        self.session,
+                        'logs',
+                        f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
+                )
+            else:
+                dst = os.path.join(
+                        self.output_dir,
+                        '-'.join(["pymialsrtk", __version__]),
+                        self.subject,
+                        'logs',
+                        f'{self.subject}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
+                )
+            # Make the copy
+            iflogger.info(f'\t > Copy {src} to {dst}...')
+            shutil.copy(src=src, dst=dst)
 
         return res
 
@@ -798,6 +820,17 @@ class AnatomicalPipeline:
             f'{sub_ses}_rec-SR_id-{self.sr_id}_log.txt'
         )
 
+        if os.path.exists(os.path.join(
+            final_res_dir, 'logs',
+            f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
+        )):
+            resources_log_file = os.path.join(
+                '..', 'logs',
+                f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
+            )
+        else:
+            resources_log_file = None
+
         # Create the text for {{subject}} field in template
         if self.session is None:
             report_subject_text = f'{self.subject.split("-")[-1]}'
@@ -811,6 +844,7 @@ class AnatomicalPipeline:
             processing_datetime=self.run_start_time,
             run_time=self.run_elapsed_time,
             log=log_file,
+            resources_stats=resources_log_file,
             sr_id=self.sr_id,
             stacks=self.m_stacks,
             svr="on" if not self.m_skip_svr else "off",
