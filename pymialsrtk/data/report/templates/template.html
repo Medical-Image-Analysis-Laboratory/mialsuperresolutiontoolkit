@@ -32,20 +32,27 @@ img {
   <h1 class="w3-text-teal">Subject {{subject}} - Processing Report </h1>
 
   <div class="w3-row w3-padding-16">
-    <div class="w3-container">
-       <h1 class="w3-text-teal">Configuration summary</h1>
+    <h1 class="w3-text-teal">Configuration</h1>
+    <div class="w3-third w3-container">
       <p>
         <ul>
-          <li>SR reconstruction index (sr-*): {{sr_id}}</li>
-          <li>Number of scans: {{sr_json_metadata["CustomMetaData"]["Number of scans used"]}}</li>
-          <li>Input scan run index order: {{stacks}}</li>
-          <li>NLM denoising: {{nlm_denoising}}</li>
-          <li>Automatic brain extraction: {{use_auto_masks}}</li>
+          <li><span class="w3-text-orange">SR reconstruction index:</span> {{sr_id}}</li>
+          <li><span class="w3-text-orange">Number of scans:</span> {{sr_json_metadata["CustomMetaData"]["Number of scans used"]}}</li>
+          <li><span class="w3-text-orange">Original scan run index order:</span> {{stacks}}</li>
+        </ul>
+      </p>
+    </div>
+    <div class="w3-twothird w3-container">
+      <p>
+        <ul>
+          <li><span class="w3-text-orange">Motion-based stack auto-ordering:</span> {{stack_ordering}}</li>
+          <li><span class="w3-text-orange">NLM denoising:</span> {{nlm_denoising}}</li>
+          <li><span class="w3-text-orange">Automatic brain extraction:</span> {{use_auto_masks}}</li>
           {% if custom_masks_dir is defined and custom_masks_dir is not none %}
-          <li>Custom brain mask directory: {{custom_masks_dir}}</li>
+          <li><span class="w3-text-orange">Custom brain mask directory:</span> {{custom_masks_dir}}</li>
           {% endif %}
-          <li>Slice-to-volume registration: {{svr}}</li>
-          <li>SR brain mask refinement: {{do_refine_hr_mask}}</li>
+          <li><span class="w3-text-orange">Slice-to-volume registration:</span> {{svr}}</li>
+          <li><span class="w3-text-orange">SR brain mask refinement:</span> {{do_refine_hr_mask}}</li>
         </ul>
       </p>
     </div>
@@ -53,24 +60,15 @@ img {
 
   <div class="w3-row w3-padding-16">
     <div class="w3-container">
-       <h1 class="w3-text-teal">Computing Environment</h1>
+      <h1 class="w3-text-teal">Execution</h1>
       <p>
         <ul>
-          {% if os is defined %}
-          <li>OS: {{os}}</li>
-          {% endif %}
-          {% if python is defined %}
-          <li>Python: {{python}}</li>
-          {% endif %}
-          {% if nipype_threads is defined and nipype_threads is not none %}
-          <li>Number of threads in parallel (Nipype): {{nipype_threads}}</li>
-          {% endif %}
-          {% if openmp_threads is defined and openmp_threads is not none %}
-          <li>Number of threads in parallel (OpenMP): {{openmp_threads}}</li>
-          {% endif %}
+          <li><span class="w3-text-orange">Starting processing time/date:</span> {{processing_datetime}}</li>
+          <li><span class="w3-text-orange">Elapsed time:</span> {{run_time}}</li>
         </ul>
       </p>
     </div>
+  </div>
 
   <div class="w3-container">
     <h1 class="w3-text-teal">Workflow</h1>
@@ -95,18 +93,47 @@ img {
       <h1 class="w3-text-teal">Super-Resolution</h1>
       <p>
         <ul>
-          <li>Input scan run index order: {{sr_json_metadata["Input sources run order"]}}</li>
-          <li>Output resolution: {{sr_resolution}}</li>
-          <li>Algorithm: Total-Variation</li>
-          <li>Regularization weight (Lambda): {{sr_json_metadata["CustomMetaData"]["TV regularization weight lambda"]}}</li>
-          <li>Optimization time step: {{sr_json_metadata["CustomMetaData"]["Optimization time step"]}}</li>
-          <li>Number of primal/dual iterations: {{sr_json_metadata["CustomMetaData"]["Primal/dual loops"]}}</li>
+          <li><span class="w3-text-orange">Input scan run index order:</span> {{sr_json_metadata["Input sources run order"]}}</li>
+          <li><span class="w3-text-orange">Output resolution:</span> {{sr_resolution}}</li>
+          <li><span class="w3-text-orange">Algorithm:</span> Total-Variation</li>
+          <li><span class="w3-text-orange">Regularization weight (Lambda):</span> {{sr_json_metadata["CustomMetaData"]["TV regularization weight lambda"]}}</li>
+          <li><span class="w3-text-orange">Optimization time step:</span> {{sr_json_metadata["CustomMetaData"]["Optimization time step"]}}</li>
+          <li><span class="w3-text-orange">Number of primal/dual iterations:</span> {{sr_json_metadata["CustomMetaData"]["Primal/dual loops"]}}</li>
         </ul>
       .</p>
     </div>
     <div class="w3-twothird w3-container">
       <p class="w3-padding-large w3-padding-32 w3-center">
           <img src="{{sr_png_image}}">
+      </p>
+    </div>
+  </div>
+
+  <div class="w3-row w3-padding-16">
+    <div class="w3-half w3-container">
+      <h1 class="w3-text-teal">Computing Environment</h1>
+      <p>
+        <ul>
+          {% if python is defined %}
+          <li><span class="w3-text-orange">Python:</span> {{python}}</li>
+          {% endif %}
+          {% if os is defined %}
+          <li><span class="w3-text-orange">OS:</span> {{os}}</li>
+          {% endif %}
+        </ul>
+      </p>
+    </div>
+    <div class="w3-half w3-container">
+      <h1 class="w3-text-teal">Multithreading</h1>
+      <p>
+        <ul>
+          {% if nipype_threads is defined and nipype_threads is not none %}
+          <li><span class="w3-text-orange">Nipype:</span> {{nipype_threads}}</li>
+          {% endif %}
+          {% if openmp_threads is defined and openmp_threads is not none %}
+          <li><span class="w3-text-orange">OpenMP:</span> {{openmp_threads}}</li>
+          {% endif %}
+        </ul>
       </p>
     </div>
   </div>
