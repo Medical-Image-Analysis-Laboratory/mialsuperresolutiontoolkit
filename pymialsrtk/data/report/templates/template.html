@@ -41,7 +41,7 @@ img {
           <li>Input scan run index order: {{stacks}}</li>
           <li>NLM denoising: {{nlm_denoising}}</li>
           <li>Automatic brain extraction: {{use_auto_masks}}</li>
-          {% if custom_masks_dir is defined and custom_masks_dir is not None %}
+          {% if custom_masks_dir is defined and custom_masks_dir is not none %}
           <li>Custom brain mask directory: {{custom_masks_dir}}</li>
           {% endif %}
           <li>Slice-to-volume registration: {{svr}}</li>
@@ -62,10 +62,10 @@ img {
           {% if python is defined %}
           <li>Python: {{python}}</li>
           {% endif %}
-          {% if nipype_threads is defined and nipype_threads is not None%}
+          {% if nipype_threads is defined and nipype_threads is not none %}
           <li>Number of threads in parallel (Nipype): {{nipype_threads}}</li>
           {% endif %}
-          {% if openmp_threads is defined and openmp_threads is not None %}
+          {% if openmp_threads is defined and openmp_threads is not none %}
           <li>Number of threads in parallel (OpenMP): {{openmp_threads}}</li>
           {% endif %}
         </ul>
