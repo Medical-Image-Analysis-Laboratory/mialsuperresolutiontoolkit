@@ -668,25 +668,23 @@ class AnatomicalPipeline:
             logger.addHandler(handler)
 
         iflogger.info("**** Processing ****")
-
         # datetime object containing current start date and time
         start = datetime.now()
-        self.run_start_time = start.strftime("%H:%M:%S, %B %d, %Y")
-        print(f" Start time / date: {self.run_start_time}")
+        self.run_start_time = start.strftime("%B %d, %Y / %H:%M:%S")
+        print(f" Start date / time : {self.run_start_time}")
 
         # Execute the workflow
         res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
 
         # datetime object containing current end date and time
         end = datetime.now()
-        self.run_end_time = end.strftime("%H:%M:%S, %B %d, %Y")
-        print(f" End time / date: {self.run_end_time}")
+        self.run_end_time = end.strftime("%B %d, %Y / %H:%M:%S")
+        print(f" End date / time : {self.run_end_time}")
+
         # Compute elapsed running time in minutes and seconds
         duration = end - start
         (minutes, seconds) = divmod(duration.total_seconds(), 60)
-        # time (H:M:S), month abbreviation day and year
-        self.run_elapsed_time = f'{minutes}min. and {seconds}sec.'
-
+        self.run_elapsed_time = f'{int(minutes)} minutes and {int(seconds)} seconds'
         print(f" Elapsed time: {self.run_end_time}")
 
         iflogger.info("**** Write dataset derivatives description ****")
@@ -788,7 +786,7 @@ class AnatomicalPipeline:
             do_refine_hr_mask="on" if self.m_do_refine_hr_mask else "off",
             use_auto_masks="on" if self.m_masks_derivatives_dir is None else "off",
             custom_masks_dir=self.m_masks_derivatives_dir if self.m_masks_derivatives_dir is not None else None,
-            sr_resolution=f"{sx}mm x {sy}mm x {sz}mm",
+            sr_resolution=f"{sx} x {sy} x {sz} mm<sup>3</sup>",
             sr_json_metadata=sr_json_metadata,
             workflow_graph=workflow_image,
             sr_png_image=sr_png_image,
