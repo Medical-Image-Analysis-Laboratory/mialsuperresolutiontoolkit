@@ -722,9 +722,6 @@ class AnatomicalPipeline:
                 pipeline_name=toolbox
             )
 
-        iflogger.info("**** Super-resolution HTML report creation ****")
-        self.create_subject_report()
-
         if save_profiler_log:
             iflogger.info("**** Workflow execution profiling ****")
             iflogger.info(f'\t > Creation of report...')
@@ -756,6 +753,9 @@ class AnatomicalPipeline:
             # Make the copy
             iflogger.info(f'\t > Copy {src} to {dst}...')
             shutil.copy(src=src, dst=dst)
+
+        iflogger.info("**** Super-resolution HTML report creation ****")
+        self.create_subject_report()
 
         return res
 
