@@ -228,8 +228,8 @@ class AnatomicalPipeline:
         print("Process directory: {}".format(wf_base_dir))
 
         # Initialization (Not sure we can control the name of nipype log)
-        if os.path.isfile(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log")):
-            os.unlink(os.path.join(wf_base_dir, "pypeline_" + sub_ses + ".log"))
+        if os.path.isfile(os.path.join(wf_base_dir, "pypeline.log")):
+            os.unlink(os.path.join(wf_base_dir, "pypeline.log"))
 
         if save_profiler_log:
             log_filename = os.path.join(wf_base_dir, 'pypeline_stats.log')
@@ -676,6 +676,32 @@ class AnatomicalPipeline:
         # Execute the workflow
         res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
 
+        # Copy and rename the workflow execution log
+        src = os.path.join(self.wf.base_dir, "pypeline.log")
+        if self.session is not None:
+            dst = os.path.join(
+                    self.output_dir,
+                    '-'.join(["pymialsrtk", __version__]),
+                    self.subject,
+                    self.session,
+                    'logs',
+                    f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_log.txt'
+            )
+        else:
+            dst = os.path.join(
+                    self.output_dir,
+                    '-'.join(["pymialsrtk", __version__]),
+                    self.subject,
+                    'logs',
+                    f'{self.subject}_rec-SR_id-{self.sr_id}_log.txt'
+            )
+        # Create the logs/ and parent directories if they do not exist
+        logs_dir = os.path.dirname(dst)
+        os.makedirs(logs_dir, exist_ok=True)
+        # Make the copy
+        iflogger.info(f'\t > Copy {src} to {dst}...')
+        shutil.copy(src=src, dst=dst)
+
         # datetime object containing current end date and time
         end = datetime.now()
         self.run_end_time = end.strftime("%B %d, %Y / %H:%M:%S")
@@ -766,6 +792,11 @@ class AnatomicalPipeline:
             f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-motion_stats.png'
         )
 
+        log_file = os.path.join(
+            '..', 'logs',
+            f'{sub_ses}_rec-SR_id-{self.sr_id}_log.txt'
+        )
+
         # Create the text for {{subject}} field in template
         if self.session is None:
             report_subject_text = f'{self.subject.split("-")[-1]}'
@@ -778,6 +809,7 @@ class AnatomicalPipeline:
             subject=report_subject_text,
             processing_datetime=self.run_start_time,
             run_time=self.run_elapsed_time,
+            log=log_file,
             sr_id=self.sr_id,
             stacks=self.m_stacks,
             svr="on" if not self.m_skip_svr else "off",
@@ -797,7 +829,7 @@ class AnatomicalPipeline:
             openmp_threads=self.openmp_number_of_cores,
             nipype_threads=self.nipype_number_of_cores
         )
-        print(f'DEBUG: Report content={report_html_content}')
+        print(f'DEBUG: Report content=\n{report_html_content}')
         # Create the report directory if it does not exist
         report_dir = os.path.join(final_res_dir, 'report')
         os.makedirs(report_dir, exist_ok=True)
