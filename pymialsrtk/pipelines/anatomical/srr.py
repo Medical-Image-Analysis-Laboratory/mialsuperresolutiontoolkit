@@ -10,6 +10,7 @@ import platform
 import json
 import shutil
 import pkg_resources
+from datetime import datetime
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -111,6 +112,10 @@ class AnatomicalPipeline:
     """
 
     pipeline_name = "srr_pipeline"
+    run_start_time = None
+    run_end_time = None
+    run_elapsed_time = None
+
     bids_dir = None
     output_dir = None
     subject = None
@@ -663,8 +668,26 @@ class AnatomicalPipeline:
             logger.addHandler(handler)
 
         iflogger.info("**** Processing ****")
-        res = self.wf.run(plugin='MultiProc',
-                          plugin_args=args_dict)
+
+        # datetime object containing current start date and time
+        start = datetime.now()
+        self.run_start_time = start.strftime("%H:%M:%S, %B %d, %Y")
+        print(f" Start time / date: {self.run_start_time}")
+
+        # Execute the workflow
+        res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
+
+        # datetime object containing current end date and time
+        end = datetime.now()
+        self.run_end_time = end.strftime("%H:%M:%S, %B %d, %Y")
+        print(f" End time / date: {self.run_end_time}")
+        # Compute elapsed running time in minutes and seconds
+        duration = end - start
+        (minutes, seconds) = divmod(duration.total_seconds(), 60)
+        # time (H:M:S), month abbreviation day and year
+        self.run_elapsed_time = f'{minutes}min. and {seconds}sec.'
+
+        print(f" Elapsed time: {self.run_end_time}")
 
         iflogger.info("**** Write dataset derivatives description ****")
         for toolbox in ["pymialsrtk", "nipype"]:
@@ -755,6 +778,8 @@ class AnatomicalPipeline:
         # Generate the report
         report_html_content = template.render(
             subject=report_subject_text,
+            processing_datetime=self.run_start_time,
+            run_time=self.run_elapsed_time,
             sr_id=self.sr_id,
             stacks=self.m_stacks,
             svr="on" if not self.m_skip_svr else "off",
