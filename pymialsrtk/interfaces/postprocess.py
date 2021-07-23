@@ -264,13 +264,13 @@ class FilenamesGeneration(BaseInterface):
                                         self.inputs.sr_id) + '_desc-preprocSDI_T2w.nii.gz'))
 
             if not self.inputs.use_manual_masks:
-                self.m_substitutions.append(('_brainExtraction[0-9]/', ''))
+                self.m_substitutions.append(('_brainExtraction*/', ''))
                 self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) +
                                              '_T2w_brainMask.nii.gz',
                                             self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
                                             self.inputs.sr_id) + '_mod-T2w_desc-brain_mask.nii.gz'))
 
-            self.m_substitutions.append(('_srtkMaskImage01[0-9]/', ''))
+            self.m_substitutions.append(('_srtkMaskImage*/', ''))
             self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) +
                                          '_T2w_uni_bcorr_histnorm.nii.gz',
                                         self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
