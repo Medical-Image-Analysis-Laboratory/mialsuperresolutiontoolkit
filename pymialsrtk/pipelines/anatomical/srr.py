@@ -13,6 +13,7 @@ import pkg_resources
 from datetime import datetime
 
 from jinja2 import Environment, FileSystemLoader
+from jinja2 import __version__ as __jinja2_version__
 
 import nibabel as nib
 
@@ -827,7 +828,8 @@ class AnatomicalPipeline:
             os=f'{platform.system()} {platform.release()}',
             python=f'{sys.version}',
             openmp_threads=self.openmp_number_of_cores,
-            nipype_threads=self.nipype_number_of_cores
+            nipype_threads=self.nipype_number_of_cores,
+            jinja_version=__jinja2_version__
         )
         print(f'DEBUG: Report content=\n{report_html_content}')
         # Create the report directory if it does not exist
