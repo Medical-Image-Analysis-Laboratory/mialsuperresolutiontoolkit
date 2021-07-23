@@ -61,7 +61,7 @@ img {
           <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-red">&#x2717;</span></li>
           {% endif %}
           {% if custom_masks_dir is defined and custom_masks_dir is not none %}
-      <li><span class="w3-text-orange">Custom brain mask directory:</span> <span class="w3-light-grey w3-text-red">derivatives/{{custom_masks_dir}}</span></li>
+      <li><span class="w3-text-orange">Custom brain mask directory:</span> <span class="w3-light-grey w3-text-dark-grey">derivatives/{{custom_masks_dir}}</span></li>
           {% endif %}
           {% if svr=="on" %}
           <li><span class="w3-text-orange">Slice-to-volume registration:</span> <span class="w3-text-green">&#x2713;</span></li>
@@ -79,8 +79,8 @@ img {
   </div>
 
   <div class="w3-row w3-padding-16">
+    <h1 class="w3-text-teal">Execution</h1>
     <div class="w3-container">
-      <h1 class="w3-text-teal">Execution</h1>
       <p>
         <ul>
           <li><span class="w3-text-orange">Starting processing date / time:</span> {{processing_datetime}}</li>
@@ -100,8 +100,8 @@ img {
 
   {% if stacks_ordering=="on" %}
   <div class="w3-row w3-padding-16">
+    <h1 class="w3-text-teal">Motion and stack order</h1>
     <div class="w3-container">
-      <h1 class="w3-text-teal">Motion and stack order</h1>
       <p class="w3-padding-large w3-padding-32 w3-center">
           <img src="{{motion_report_image}}">
       </p>
@@ -110,20 +110,28 @@ img {
   {% endif %}
 
   <div class="w3-row">
-    <div class="w3-third w3-container">
-      <h1 class="w3-text-teal">Super-Resolution</h1>
+    <h1 class="w3-text-teal">Super-Resolution</h1>
+    <div class="w3-half w3-container">
       <p>
         <ul>
           <li><span class="w3-text-orange">Input scan run index order:</span> {{sr_json_metadata["Input sources run order"]}}</li>
           <li><span class="w3-text-orange">Output resolution:</span> {{sr_resolution}}</li>
           <li><span class="w3-text-orange">Algorithm:</span> Total-Variation</li>
+        </ul>
+      </p>
+    </div>
+    <div class="w3-half w3-container">
+      <p>
+        <h1 class="w3-text-teal"> </h1>
+        <ul>
           <li><span class="w3-text-orange">Regularization weight (Lambda):</span> {{sr_json_metadata["CustomMetaData"]["TV regularization weight lambda"]}}</li>
           <li><span class="w3-text-orange">Optimization time step:</span> {{sr_json_metadata["CustomMetaData"]["Optimization time step"]}}</li>
           <li><span class="w3-text-orange">Number of primal/dual iterations:</span> {{sr_json_metadata["CustomMetaData"]["Primal/dual loops"]}}</li>
         </ul>
-      .</p>
+      </p>
     </div>
-    <div class="w3-twothird w3-container">
+    <br>
+    <div class="w3-container">
       <p class="w3-padding-large w3-padding-32 w3-center">
           <img src="{{sr_png_image}}">
       </p>
