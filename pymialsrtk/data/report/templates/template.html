@@ -61,7 +61,7 @@ img {
           <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-red">&#x2717;</span></li>
           {% endif %}
           {% if custom_masks_dir is defined and custom_masks_dir is not none %}
-      <li><span class="w3-text-orange">Custom brain mask directory:</span> <span class="w3-light-grey w3-text-dark-grey">derivatives/{{custom_masks_dir}}</span></li>
+          <li><span class="w3-text-orange">Custom brain mask directory:</span> <span class="w3-light-grey w3-text-dark-grey">derivatives/{{custom_masks_dir}}</span></li>
           {% endif %}
           {% if svr=="on" %}
           <li><span class="w3-text-orange">Slice-to-volume registration:</span> <span class="w3-text-green">&#x2713;</span></li>
