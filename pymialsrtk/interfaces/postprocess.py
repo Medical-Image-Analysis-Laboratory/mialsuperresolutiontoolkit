@@ -277,7 +277,9 @@ class FilenamesGeneration(BaseInterface):
                 self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) +
                                              '_T2w_brainMask.nii.gz',
                                             self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
-                                            self.inputs.sr_id) + '_mod-T2w_desc-brain_mask.nii.gz'))
+                                            self.inputs.sr_id) + '_desc-brain_mask.nii.gz'))
+
+            self.m_substitutions.append(('_T2w_desc-brain_', '_desc-brain_'))
 
             self.m_substitutions.append(('_srtkMaskImage010/', ''))
             self.m_substitutions.append(('_srtkMaskImage011/', ''))
@@ -303,7 +305,7 @@ class FilenamesGeneration(BaseInterface):
             self.m_substitutions.append((self.inputs.sub_ses + '_run-' + str(stack) +
                                          '_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
                                         self.inputs.sub_ses + '_run-' + str(stack) + '_id-' + str(
-                                        self.inputs.sr_id) + '_mod-T2w_desc-brain_mask.nii.gz'))
+                                        self.inputs.sr_id) + '_desc-brain_mask.nii.gz'))
 
         self.m_substitutions.append(('SDI_' + self.inputs.sub_ses + '_' +
                                      str(len(self.inputs.stacks_order)) + 'V_rad1.nii.gz',
