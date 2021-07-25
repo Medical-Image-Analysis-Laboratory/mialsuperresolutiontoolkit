@@ -831,16 +831,17 @@ class AnatomicalPipeline:
         else:
             resources_log_file = None
 
-        # Create the text for {{subject}} field in template
-        if self.session is None:
-            report_subject_text = f'{self.subject.split("-")[-1]}'
+        # Create the text for {{subject}} and {{session}} fields in template
+        report_subject_text = f'{self.subject.split("-")[-1]}'
+        if self.session is not None:
+            report_session_text = f'{self.session.split("-")[-1]}'
         else:
-            report_subject_text = f'{self.subject.split("-")[-1]} '\
-                                  + f'(Session {self.session.split("-")[-1]})'
+            report_session_text = None
 
         # Generate the report
         report_html_content = template.render(
             subject=report_subject_text,
+            session=report_session_text,
             processing_datetime=self.run_start_time,
             run_time=self.run_elapsed_time,
             log=log_file,

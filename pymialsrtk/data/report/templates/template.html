@@ -29,20 +29,41 @@ img {
 
 <!-- Main content: shift it to the right by 100 pixels -->
 <div class="w3-main" style="margin-left:100px">
-  <h1 class="w3-text-teal">Processing Report - Subject {{subject}}</h1>
+  <h1 class="w3-text-teal">Super-Resolution Reconstruction Report</h1>
+
+  <div class="w3-row w3-padding-16">
+    <div class="w3-container">
+      <p>
+        <ul>
+          <li><span class="w3-text-orange">Subject:</span> {{subject}}</li>
+          {% if session is defined and session is not none %}
+          <li><span class="w3-text-orange">Session:</span> {{session}}</li>
+          {% endif %}
+          <li><span class="w3-text-orange">Reconstruction ID:</span> {{sr_id}}</li>
+        </ul>
+      </p>
+    </div>
+  </div>
 
   <div class="w3-row w3-padding-16">
     <h1 class="w3-text-teal">Configuration</h1>
     <div class="w3-third w3-container">
       <p>
         <ul>
-          <li><span class="w3-text-orange">SR reconstruction index:</span> {{sr_id}}</li>
           <li><span class="w3-text-orange">Number of scans:</span> {{sr_json_metadata["CustomMetaData"]["Number of scans used"]}}</li>
           <li><span class="w3-text-orange">Original scan run index order:</span> {{stacks}}</li>
           {% if stacks_ordering=="on" %}
           <li><span class="w3-text-orange">Motion-based scan auto-ordering:</span> <span class="w3-text-green">&#x2713;</span></li>
           {% else %}
           <li><span class="w3-text-orange">Motion-based scan auto-ordering:</span> <span class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
+          {% if use_auto_masks=="on" %}
+          <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-green">&#x2713;</span></li>
+          {% else %}
+          <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
+          {% if custom_masks_dir is defined and custom_masks_dir is not none %}
+          <li><span class="w3-text-orange">Custom brain mask directory:</span> <span class="w3-light-grey w3-text-dark-grey">derivatives/{{custom_masks_dir}}</span></li>
           {% endif %}
         </ul>
       </p>
@@ -55,14 +76,6 @@ img {
           {% else %}
           <li><span class="w3-text-orange">NLM denoising:</span> <span class="w3-text-red">&#x2717;</span></li>
           {% endif %}
-          {% if use_auto_masks=="on" %}
-          <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-green">&#x2713;</span></li>
-          {% else %}
-          <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-red">&#x2717;</span></li>
-          {% endif %}
-          {% if custom_masks_dir is defined and custom_masks_dir is not none %}
-          <li><span class="w3-text-orange">Custom brain mask directory:</span> <span class="w3-light-grey w3-text-dark-grey">derivatives/{{custom_masks_dir}}</span></li>
-          {% endif %}
           {% if svr=="on" %}
           <li><span class="w3-text-orange">Slice-to-volume registration:</span> <span class="w3-text-green">&#x2713;</span></li>
           {% else %}
@@ -73,7 +86,21 @@ img {
           {% else %}
           <li><span class="w3-text-orange">SR brain mask refinement:</span> <span class="w3-text-red">&#x2717;</span></li>
           {% endif %}
+          {% if resources_stats is defined and resources_stats is not none %}
+          <li><span class="w3-text-orange">Computational resources profiling:</span> <span class="w3-text-green">&#x2713;</span></li>
+          {% else %}
+          <li><span class="w3-text-orange">Computational resources profiling:</span> <span class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
         </ul>
+      </p>
+    </div>
+  </div>
+
+  <div class="w3-row w3-padding-16">
+    <h1 class="w3-text-teal">Workflow</h1>
+    <div class="w3-container">
+      <p class="w3-padding-large w3-padding-8 w3-center">
+        <img src="{{workflow_graph}}">
       </p>
     </div>
   </div>
@@ -86,35 +113,12 @@ img {
           <li><span class="w3-text-orange">Starting processing date / time:</span> {{processing_datetime}}</li>
           <li><span class="w3-text-orange">Elapsed time:</span> {{run_time}}</li>
           <li><span class="w3-text-orange">Log file:</span> <a href="{{log}}"><span class="w3-light-grey w3-text-dark-grey">{{log}}</span></a></li>
+           {% if resources_stats is defined and resources_stats is not none %}
+           <li><span class="w3-text-orange">Computational resources report:</span> <a href="{{resources_stats}}"><span class="w3-light-grey w3-text-dark-grey">{{resources_stats}}</span></a></li>
+           {% endif %}
         </ul>
       </p>
     </div>
-  </div>
-
-  {% if resources_stats is defined and resources_stats is not none %}
-  <div class="w3-row w3-padding-16">
-    <h1 class="w3-text-teal">Computational resources</h1>
-    <div class="w3-container">
-      <p>
-        <ul>
-          <li><span class="w3-text-orange">Report file:</span> <a href="{{resources_stats}}"><span class="w3-light-grey w3-text-dark-grey">{{resources_stats}}</span></a></li>
-        </ul>
-      </p>
-      <p>
-        <iframe id="resourcesReport"
-          title="Computing resources report"
-          src="{{resources_stats}}">
-        </iframe>
-      </p>
-    </div>
-  </div>
-  {% endif %}
-
-  <div class="w3-container">
-    <h1 class="w3-text-teal">Workflow</h1>
-    <p class="w3-padding-large w3-padding-8 w3-center">
-      <img src="{{workflow_graph}}">
-    </p>
   </div>
 
   {% if stacks_ordering=="on" %}
@@ -174,6 +178,7 @@ img {
     <div class="w3-half w3-container">
       <h1 class="w3-text-teal">Multithreading</h1>
       <p>
+        Number of threads for:
         <ul>
           {% if nipype_threads is defined and nipype_threads is not none %}
           <li><span class="w3-text-orange">Nipype:</span> {{nipype_threads}}</li>
