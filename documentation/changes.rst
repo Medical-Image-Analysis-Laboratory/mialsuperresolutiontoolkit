@@ -6,7 +6,7 @@ Changes
 Version 2.0.2
 --------------
 
-Date: March/April XX, 2020
+Date: August 23, 2021
 
 This corresponds to the release of MIAL Super-Resolution Toolkit 2.0.2,
 that includes in particular the following changes.
@@ -14,15 +14,25 @@ that includes in particular the following changes.
 New feature
 =============
 
-* ``pymialsrtk`` enables to monitor resources (time, threads, memory) used by the
+- ``pymialsrtk`` enables to monitor resources (time, threads, memory) used by the
   interface of the pipeline at execution with the ``--profiling`` option flag.
   This includes the creation of a new module `pymialsrtk.utils.monitoring` that
   includes all methods originating from Nipype and modified to support this task
   (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
 
-* ``pymialsrtk`` enables to fix the maximal amount of memory (in Gb) that could be used by the
+- ``pymialsrtk`` enables to fix the maximal amount of memory (in Gb) that could be used by the
   pipelines at execution with the ``--memory MEMORY_Gb`` option flag.
   (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
+
+- ``pymialsrtk`` generates a HTML processing report for each subject in `sub-<label>/report/sub-<label>.html`.
+  It includes the following:
+    - Pipeline/workflow configuration summary
+    - Nipype workflow execution graph
+    - Links to the log and the profiling output report
+    - Plots for the quality check of the automatic reordering step based on the motion index.
+    - Three orthogonal cuts of the reconstructed image
+    - Computing environment summary
+  (See pull requests `97 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/97>`_, `102 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/102>`_, and `103 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/103>`_).
 
 Python update
 ===============
@@ -48,7 +58,7 @@ Bug fix
 ========
 
 * Correct the output filename of the high-resolution brain mask sunk
-  in ``mialsrtk/sub-<label>/anat``
+  in ``mialsrtk-<variant>/sub-<label>/anat``
   (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
 
 Software development life cycle
