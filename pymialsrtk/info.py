@@ -34,3 +34,5 @@ __url__ = 'https://github.com/sebastientourbier/{name}'.format(name=__packagenam
 DOWNLOAD_URL = (
     'https://github.com/sebastientourbier/{name}/archive/{ver}.tar.gz'.format(
         name=__packagename__, ver=__version__))
+
+DOCKER_HUB = 'sebastientourbier/mialsuperresolutiontoolkit'

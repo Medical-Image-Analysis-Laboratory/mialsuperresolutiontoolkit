@@ -143,7 +143,8 @@ def main(bids_dir, output_dir,
          masks_derivatives_dir='',
          masks_desc=None,
          dict_custom_interfaces=None,
-         number_of_cores=1,
+         nipype_number_of_cores=1,
+         openmp_number_of_cores=1,
          memory=0,
          save_profiler_log=False):
     """Main function that creates and executes the workflow of the BIDS App on one subject.
@@ -184,8 +185,11 @@ def main(bids_dir, output_dir,
     dict_custom_interfaces : {'do_refine_hr_mask': False, 'skip_nlm_denoising': False, 'skip_stacks_ordering': False}
         Dictionary that customize the workflow (skip interfaces).
 
-    number_of_cores : int
+    nipype_number_of_cores : int
         Number of cores / CPUs used by the Nipype worflow execution engine
+
+    openmp_number_of_cores : int
+        Number of threads used by OpenMP
 
     memory : int
         Maximal amount of memory used by the workflow
@@ -216,13 +220,16 @@ def main(bids_dir, output_dir,
                                   paramTV,
                                   masks_derivatives_dir,
                                   masks_desc,
-                                  p_dict_custom_interfaces=dict_custom_interfaces)
+                                  p_dict_custom_interfaces=dict_custom_interfaces,
+                                  openmp_number_of_cores=openmp_number_of_cores,
+                                  nipype_number_of_cores=nipype_number_of_cores
+                                  )
 
     # Create the super resolution Nipype workflow
     pipeline.create_workflow(save_profiler_log=save_profiler_log)
 
     # Execute the workflow
-    res = pipeline.run(number_of_cores=number_of_cores,
+    res = pipeline.run(number_of_cores=nipype_number_of_cores,
                        memory=memory,
                        save_profiler_log=save_profiler_log)
 
@@ -281,11 +288,14 @@ if __name__ == '__main__':
                                srID=sr_params['sr-id'],
                                masks_derivatives_dir=args.masks_derivatives_dir,
                                masks_desc=masks_desc,
-                               dict_custom_interfaces = dict_custom_interfaces,
-                               number_of_cores=nipype_nb_of_cores,
+                               dict_custom_interfaces=dict_custom_interfaces,
+                               nipype_number_of_cores=nipype_nb_of_cores,
+                               openmp_number_of_cores=openmp_nb_of_cores,
                                memory=args.memory,
                                save_profiler_log=args.profiling)
-
     else:
-        print('ERROR: Processing of all dataset not implemented yet\n At least one participant label should be provided')
+        print(
+            'ERROR: Processing of all dataset not implemented yet\n '
+            'At least one participant label should be provided'
+        )
         sys.exit(2)
