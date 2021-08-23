@@ -110,7 +110,7 @@ Anatomical derivatives
 
     .. raw:: html
 
-        <iframe src="_static/run_stats.log.html" height="345px" width="100%"></iframe>
+        <iframe src="_static/run_stats.log.html" height="345px" width="100%"></iframe><br>
 
 
 Nipype Workflow Derivatives
