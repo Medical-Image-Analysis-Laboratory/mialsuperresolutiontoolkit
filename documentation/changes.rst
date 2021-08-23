@@ -6,7 +6,7 @@ Changes
 Version 2.0.2
 --------------
 
-Date: March/April XX, 2020
+Date: August 23, 2021
 
 This corresponds to the release of MIAL Super-Resolution Toolkit 2.0.2,
 that includes in particular the following changes.
@@ -23,6 +23,15 @@ New feature
 * ``pymialsrtk`` enables to fix the maximal amount of memory (in Gb) that could be used by the
   pipelines at execution with the ``--memory MEMORY_Gb`` option flag.
   (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
+
+* ``pymialsrtk`` generates a HTML processing report for each subject in `sub-<label>/report/sub-<label>.html`. It includes the following:
+
+  * Pipeline/workflow configuration summary
+  * Nipype workflow execution graph
+  * Links to the log and the profiling output report
+  * Plots for the quality check of the automatic reordering step based on the motion index.
+  * Three orthogonal cuts of the reconstructed image
+  * Computing environment summary
 
 Python update
 ===============
