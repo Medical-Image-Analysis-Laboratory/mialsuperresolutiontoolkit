@@ -25,7 +25,6 @@ New feature
   (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
 
 * ``pymialsrtk`` generates a HTML processing report for each subject in `sub-<label>/report/sub-<label>.html`. It includes the following:
-
     * Pipeline/workflow configuration summary
     * Nipype workflow execution graph
     * Links to the log and the profiling output report
@@ -57,7 +56,7 @@ Bug fix
 ========
 
 * Correct the output filename of the high-resolution brain mask sunk
-  in ``mialsrtk/sub-<label>/anat``
+  in ``mialsrtk-<variant>/sub-<label>/anat``
   (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
 
 Software development life cycle
