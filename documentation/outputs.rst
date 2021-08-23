@@ -74,6 +74,20 @@ Anatomical derivatives
     - ``xfm/sub-<label>(_ses-<label>)_run-3_id-<label>_T2w_from-origin_to-SDI_mode-image_xfm.txt``
     - ...
 
+* The HTML processing report which provides in one place: pipeline/workflow configuration summary, Nipype workflow execution graph, links to the log and the profiling output report, plots for the quality check of the automatic reordering step based on the motion index, three orthogonal cuts of the reconstructed image, and computing environment summary:
+
+    - ``report/sub-<label>.html``
+
+.. image:: images/html_report_1.png
+    :width: 600
+    :align: center
+.. image:: images/html_report_2.png
+    :width: 600
+    :align: center
+.. image:: images/html_report_3.png
+    :width: 600
+    :align: center
+
 Nipype Workflow Derivatives
 ==========================================
 
