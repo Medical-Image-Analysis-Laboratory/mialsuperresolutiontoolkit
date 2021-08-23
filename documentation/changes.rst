@@ -26,12 +26,12 @@ New feature
 
 * ``pymialsrtk`` generates a HTML processing report for each subject in `sub-<label>/report/sub-<label>.html`. It includes the following:
 
-  * Pipeline/workflow configuration summary
-  * Nipype workflow execution graph
-  * Links to the log and the profiling output report
-  * Plots for the quality check of the automatic reordering step based on the motion index.
-  * Three orthogonal cuts of the reconstructed image
-  * Computing environment summary
+    * Pipeline/workflow configuration summary
+    * Nipype workflow execution graph
+    * Links to the log and the profiling output report
+    * Plots for the quality check of the automatic reordering step based on the motion index.
+    * Three orthogonal cuts of the reconstructed image
+    * Computing environment summary
 
 Python update
 ===============
