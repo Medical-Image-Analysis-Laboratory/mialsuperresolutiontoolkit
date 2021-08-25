@@ -61,6 +61,16 @@
         "bug",
         "test"
       ]
+    },
+    {
+      "login": "pahagman",
+      "name": "Patric Hagmann",
+      "avatar_url": "https://avatars.githubusercontent.com/u/411192?v=4",
+      "profile": "https://wp.unil.ch/connectomics",
+      "contributions": [
+        "data",
+        "fundingFinding"
+      ]
     }
   ],
   "contributorsPerLine": 7,
