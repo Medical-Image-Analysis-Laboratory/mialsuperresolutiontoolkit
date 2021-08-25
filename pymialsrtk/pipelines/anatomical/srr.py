@@ -579,8 +579,9 @@ class AnatomicalPipeline:
         datasink = Node(interface=DataSink(), name='data_sinker')
         datasink.inputs.base_directory = final_res_dir
 
-        self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
-        self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
+        if not self.m_skip_stacks_ordering:
+            self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
+            self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
         self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), datasink, 'anat.@LRmasks')
         self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsPreproc')
         self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), datasink, 'xfm.@transforms')
@@ -866,13 +867,12 @@ class AnatomicalPipeline:
             nipype_threads=self.nipype_number_of_cores,
             jinja_version=__jinja2_version__
         )
-        print(f'DEBUG: Report content=\n{report_html_content}')
         # Create the report directory if it does not exist
         report_dir = os.path.join(final_res_dir, 'report')
         os.makedirs(report_dir, exist_ok=True)
 
         # Save the HTML report file
         out_report_filename = os.path.join(report_dir, f'{sub_ses}.html')
-        print(f'DEBUG: Save HTML report as {out_report_filename}...')
+        print(f'\t* Save HTML report as {out_report_filename}...')
         with open(out_report_filename, "w+") as file:
             file.write(report_html_content)
