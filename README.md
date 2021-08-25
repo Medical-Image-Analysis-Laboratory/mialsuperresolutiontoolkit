@@ -43,21 +43,23 @@ The BIDS App of MIALSRTK has the following command line arguments:
                   [--param_file PARAM_FILE]
                   [--openmp_nb_of_cores OPENMP_NB_OF_CORES]
                   [--nipype_nb_of_cores NIPYPE_NB_OF_CORES]
+                  [--memory MEMORY]
                   [--masks_derivatives_dir MASKS_DERIVATIVES_DIR]
+                  [--profiling]
                   [-v]
                   bids_dir output_dir {participant}
-
-    Entrypoint script to the MIALSRTK BIDS App
+    
+    Argument parser of the MIALSRTK BIDS App
 
     positional arguments:
       bids_dir              The directory with the input dataset formatted
-                            according to the BIDS standard.
+                           according to the BIDS standard.
       output_dir            The directory where the output files should be stored.
-                            If you are running group level analysis this folder
-                            should be prepopulated with the results of
-                            theparticipant level analysis.
+                           If you are running group level analysis this folder
+                           should be prepopulated with the results of the
+                           participant level analysis.
       {participant}         Level of the analysis that will be performed. Only
-                            participant is available
+                           participant is available
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -72,21 +74,30 @@ The BIDS App of MIALSRTK has the following command line arguments:
                             Path to a JSON file containing subjects' exams
                             information and super-resolution total variation
                             parameters.
-      --openmp_nb_of_cores  Specify number of cores used by OpenMP threads.
-                            Especially useful for NLM denoising and slice-to-volume
-                            registration.
-                            (Default: 0, meaning it will be determined automatically)      
+      --openmp_nb_of_cores OPENMP_NB_OF_CORES
+                            Specify number of cores used by OpenMP threads
+                            Especially useful for NLM denoising and slice-to-
+                            volume registration. (Default: 0, meaning it will be
+                            determined automatically)
+      --nipype_nb_of_cores NIPYPE_NB_OF_CORES
                             Specify number of cores used by the Niype workflow
                             library to distribute the execution of independent
-                            processing workflow nodes (i.e. interfaces).
-      --nipype_nb_of_cores  Especially useful in the case of slice-by-slice bias
+                            processing workflow nodes (i.e. interfaces)
+                            (Especially useful in the case of slice-by-slice bias
                             field correction and intensity standardization steps
-                            for example.
-                            (Default: 0, meaning it will be determined automatically)
-      --masks_derivatives_dir
-                            Use manual brain masks found in the specified directory
-      --profiling
-                            Generate performance/memory profiling reports
+                            for example). (Default: 0, meaning it will be
+                            determined automatically)
+      --memory MEMORY       Limit the workflow to using the amount of specified
+                            memory [in gb] (Default: 0, the workflow memory
+                            consumption is not limited)
+      --masks_derivatives_dir MASKS_DERIVATIVES_DIR
+                            Use manual brain masks found in
+                            ``<output_dir>/<masks_derivatives_dir>/ directory``
+                            directory
+      --profiling           Save node runtime statistics (processing times, number
+                            of threads, memory) in a JSON-style `run_stats.log`
+                            and in the form of a gantt chart in a HTML
+                            `run_stats.log.html`
       -v, --version         show program's version number and exit
 
 ## Credits 
