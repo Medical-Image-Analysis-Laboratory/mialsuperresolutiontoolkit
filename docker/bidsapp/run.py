@@ -7,6 +7,7 @@
 import os
 import sys
 import json
+from glob import glob
 # from traits.api import *
 
 import multiprocessing
@@ -259,43 +260,51 @@ if __name__ == '__main__':
         print(participants_params.keys())
     print()
 
-    if len(args.participant_label) >= 1:
-        for sub in args.participant_label:
-
-            if sub in participants_params.keys():
-                sr_list = participants_params[sub]
-                print(sr_list)
-
-                for sr_params in sr_list:
-
-                    ses = sr_params["session"] if "session" in sr_params.keys() else None
-                    stacks = sr_params['stacks'] if 'stacks' in sr_params.keys() else None
-                    paramTV = sr_params['paramTV'] if 'paramTV' in sr_params.keys() else None
-                    masks_desc = sr_params['masks_desc'] if 'masks_desc' in sr_params.keys() else None
-
-                    dict_custom_interfaces = sr_params['custom_interfaces'] if 'custom_interfaces' in sr_params.keys() else None
-
-                    if "sr-id" not in sr_params.keys():
-                        print('Do not process subjects %s because of missing parameters.' % sub)
-                        continue
-
-                    res = main(bids_dir=args.bids_dir,
-                               output_dir=args.output_dir,
-                               subject=sub,
-                               session=ses,
-                               p_stacks=stacks,
-                               paramTV=paramTV,
-                               srID=sr_params['sr-id'],
-                               masks_derivatives_dir=args.masks_derivatives_dir,
-                               masks_desc=masks_desc,
-                               dict_custom_interfaces=dict_custom_interfaces,
-                               nipype_number_of_cores=nipype_nb_of_cores,
-                               openmp_number_of_cores=openmp_nb_of_cores,
-                               memory=args.memory,
-                               save_profiler_log=args.profiling)
+    subjects_to_analyze = []
+    # only for a subset of subjects
+    if args.participant_label:
+        subjects_to_analyze = args.participant_label
+    # for all subjects
     else:
-        print(
-            'ERROR: Processing of all dataset not implemented yet\n '
-            'At least one participant label should be provided'
-        )
-        sys.exit(2)
+        subject_dirs = glob(os.path.join(args.bids_dir, "sub-*"))
+        subjects_to_analyze = [
+            subject_dir.split("-")[-1] for subject_dir in subject_dirs
+        ]
+
+    for sub in subjects_to_analyze:
+        if sub in participants_params.keys():
+
+            sr_list = participants_params[sub]
+            print(sr_list)
+
+            for sr_params in sr_list:
+
+                ses = sr_params["session"] if "session" in sr_params.keys() else None
+                stacks = sr_params['stacks'] if 'stacks' in sr_params.keys() else None
+                paramTV = sr_params['paramTV'] if 'paramTV' in sr_params.keys() else None
+                masks_desc = sr_params['masks_desc'] if 'masks_desc' in sr_params.keys() else None
+
+                dict_custom_interfaces = sr_params['custom_interfaces'] if 'custom_interfaces' in sr_params.keys() else None
+
+                if "sr-id" not in sr_params.keys():
+                    print('WARNING: Do not process subjects %s because of missing parameters.' % sub)
+                    continue
+
+                res = main(bids_dir=args.bids_dir,
+                           output_dir=args.output_dir,
+                           subject=sub,
+                           session=ses,
+                           p_stacks=stacks,
+                           paramTV=paramTV,
+                           srID=sr_params['sr-id'],
+                           masks_derivatives_dir=args.masks_derivatives_dir,
+                           masks_desc=masks_desc,
+                           dict_custom_interfaces=dict_custom_interfaces,
+                           nipype_number_of_cores=nipype_nb_of_cores,
+                           openmp_number_of_cores=openmp_nb_of_cores,
+                           memory=args.memory,
+                           save_profiler_log=args.profiling)
+        else:
+            print('WARNING: Do not process subjects %s because of missing configuration.' % sub)
+
+    sys.exit(0)
