@@ -1,4 +1,4 @@
-# Copyright © 2016-2020 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -13,18 +13,25 @@ histogram normalization and both manual or deep learning based automatic brain e
 import os
 import traceback
 from glob import glob
+import pathlib
 
 import numpy as np
+from traits.api import *
+
 import nibabel
 import cv2
 import skimage.measure
-
 import scipy.ndimage as snd
 from skimage import morphology
 from scipy.signal import argrelextrema
+import pandas as pd
+
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 try:
-    import tensorflow as tf
+    import tensorflow.compat.v1 as tf
 except ImportError:
     print("Tensorflow not available. Can not run brain extraction")
 
@@ -33,9 +40,6 @@ try:
     from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
 except ImportError:
     print("tflearn not available. Can not run brain extraction")
-
-
-from traits.api import *
 
 from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
@@ -893,7 +897,8 @@ class FilteringByRunidOutputSpec(TraitedSpec):
 class FilteringByRunid(BaseInterface):
     """Runs a filtering of files.
 
-    This module filters the input files matching the specified run-ids. Other files are discarded.
+    This module filters the input files matching the specified run-ids.
+    Other files are discarded.
 
     Examples
     --------
@@ -943,6 +948,8 @@ class StacksOrderingOutputSpec(TraitedSpec):
     """Class used to represent outputs of the StacksOrdering interface."""
 
     stacks_order = traits.List(desc='Order of image `run-id` to be used for reconstruction')
+    motion_tsv = File(desc='Output TSV file with results used to create `report_image`')
+    report_image = File(desc='Output PNG image for report')
 
 
 class StacksOrdering(BaseInterface):
@@ -954,8 +961,19 @@ class StacksOrdering(BaseInterface):
     --------
     >>> from pymialsrtk.interfaces.preprocess import StacksOrdering
     >>> stacksOrdering = StacksOrdering()
-    >>> stacksOrdering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz', 'sub-01_run-4_mask.nii.gz', 'sub-01_run-2_mask.nii.gz']
+    >>> stacksOrdering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz',
+    >>>                                      'sub-01_run-4_mask.nii.gz',
+    >>>                                      'sub-01_run-2_mask.nii.gz']
     >>> stacksOrdering.run() # doctest: +SKIP
+
+    .. note:: In the case of discontinuous brain masks, the centroid coordinates of
+        the slices excluded from the mask are set to `numpy.nan` and are not
+        anymore considered in the motion index computation since `v2.0.2` release.
+        Prior to this release, the centroids of these slices were set to zero
+        that has shown to drastically increase the motion index with respect
+        to the real motion during acquisition. However the motion in the remaining
+        slices that were actually used for SR reconstruction might not correspond
+        to the high value of this index.
 
     """
 
@@ -966,7 +984,7 @@ class StacksOrdering(BaseInterface):
 
     def _run_interface(self, runtime):
         try:
-            self.m_stack_order = self._compute_stack_order(self.inputs.input_masks)
+            self.m_stack_order = self._compute_stack_order()
         except Exception as e:
             print('Failed')
             print(e)
@@ -975,20 +993,25 @@ class StacksOrdering(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['stacks_order'] = self.m_stack_order
+        outputs['report_image'] = os.path.abspath('motion_index_QC.png')
+        outputs['motion_tsv'] = os.path.abspath('motion_index_QC.tsv')
         return outputs
 
     def _compute_motion_index(self, in_file):
         """Function to compute the motion index.
 
-        The motion index is computed from the inter-slice displacement of the centroid of the brain mask.
+        The motion index is computed from the inter-slice displacement of
+        the centroid of the brain mask.
+
         """
         central_third = True
 
         img = nibabel.load(in_file)
-
-        # Todo: Compute centroid displacement as a distance instead of a number of voxel
-        # voxelspacing = img.header['pixdim'][2]
         data = img.get_fdata()
+
+        # To compute centroid displacement as a distance
+        # instead of a number of voxel
+        sx, sy, sz = img.header.get_zooms()
 
         z = np.where(data)[2]
         data = data[..., int(min(z)):int(max(z) + 1)]
@@ -1003,37 +1026,237 @@ class StacksOrdering(BaseInterface):
 
         for i in range(data.shape[2]):
             moments = skimage.measure.moments(data[..., i])
-            centroid_coord[i, :] = [moments[0, 1] / moments[0, 0], moments[1, 0] / moments[0, 0]]
+
+            try:
+                centroid_coordx = moments[0, 1] / moments[0, 0]
+                centroid_coordy = moments[1, 0] / moments[0, 0]
+            # This happens in the case of discontinuous brain masks
+            except ZeroDivisionError:
+                centroid_coordx = np.nan
+                centroid_coordy = np.nan
+
+            centroid_coord[i, :] = [centroid_coordx, centroid_coordy]
+
+        nb_of_notnans = np.count_nonzero(~np.isnan(centroid_coord))
+        nb_of_nans = np.count_nonzero(np.isnan(centroid_coord))
+        print(f'  Info: Number of NaNs = {nb_of_nans}')
+        prop_of_nans = nb_of_nans / (nb_of_nans + nb_of_notnans)
 
         centroid_coord = centroid_coord[~np.isnan(centroid_coord)]
         centroid_coord = np.reshape(centroid_coord, (int(centroid_coord.shape[0] / 2), 2))
 
-        nSlices = data.shape[2]
-        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / nSlices
+        # Zero-centering
+        centroid_coord[:, 0] -= np.mean(centroid_coord[:, 0])
+        centroid_coord[:, 1] -= np.mean(centroid_coord[:, 1])
 
-        return score
+        # Convert from "number of voxels" to "mm" based on the voxel size
+        centroid_coord[:, 0] *= sx
+        centroid_coord[:, 1] *= sy
 
-    def _compute_stack_order(self, in_files):
+        nb_slices = centroid_coord.shape[0]
+        score = (np.var(centroid_coord[:, 0]) + np.var(centroid_coord[:, 1])) / ( nb_slices * sz)
+
+        return score, prop_of_nans, centroid_coord[:, 0], centroid_coord[:, 1]
+
+    def _create_report_image(self, score, prop_of_nans, centroid_coordx, centroid_coordy):
+        # Output report image basename
+        image_basename = 'motion_index_QC'
+
+        print("\t>> Create report image...")
+        # Visualization setup
+        matplotlib.use('agg')
+        sns.set_style("whitegrid")
+        sns.set(font_scale=1)
+
+        # Compute mean centroid coordinates for each image
+        mean_centroid_coordx = {}
+        mean_centroid_coordy = {}
+        for f in self.inputs.input_masks:
+            mean_centroid_coordx[f] = np.nanmean(centroid_coordx[f])
+            mean_centroid_coordy[f] = np.nanmean(centroid_coordy[f])
+
+        # Format data and create a Pandas DataFrame
+        print("\t\t\t - Format data...")
+        df_files = []
+        df_slices = []
+        df_motion_ind = []
+        df_prop_of_nans = []
+        df_centroid_coordx = []
+        df_centroid_coordy = []
+        df_centroid_displ = []
+
+        for f in self.inputs.input_masks:
+            # Extract only filename with extension from the absolute path
+            path = pathlib.Path(f)
+            # Extract the "run-xx" part in the filename
+            fname = path.stem.split('_T2w_')[0].split('_')[1]
+
+            for i, (coordx, coordy) in enumerate(zip(centroid_coordx[f], centroid_coordy[f])):
+                df_files.append(fname)
+                df_slices.append(i)
+                df_motion_ind.append(score[f])
+                df_prop_of_nans.append(prop_of_nans[f])
+                df_centroid_coordx.append(coordx)
+                df_centroid_coordy.append(coordy)
+                if not np.isnan(coordx) and not np.isnan(coordy):
+                    df_centroid_displ.append(
+                        np.sqrt(coordx * coordx + coordy * coordy)
+                    )
+                else:
+                    df_centroid_displ.append(np.nan)
+
+        # Create a dataframe to facilitate handling with the results
+        print("\t\t\t - Create DataFrame...")
+        df = pd.DataFrame(
+            {
+                "Scan": df_files,
+                "Slice": df_files,
+                "Motion Index": df_motion_ind,
+                "Proportion of NaNs (%)": df_prop_of_nans,
+                "X (mm)": df_centroid_coordx,
+                "Y (mm)": df_centroid_coordy,
+                "Displacement Magnitude (mm)": df_centroid_displ,
+            }
+        )
+        df = df.sort_values(by=['Motion Index', 'Scan', 'Slice'])
+
+        # Save the results in a TSV file
+        tsv_file = os.path.abspath('motion_index_QC.tsv')
+        print(f"\t\t\t - Save motion results to {tsv_file}...")
+        df.to_csv(tsv_file, sep='\t')
+
+        # Make multiple figures with seaborn,
+        # Saved in temporary png image and
+        # combined in a final report image
+        print("\t\t\t - Create figures...")
+
+        # Show the zero-centered positions of the centroids
+        sf0 = sns.jointplot(
+            data=df, x="X (mm)", y="Y (mm)",
+            hue="Scan",
+            height=6,
+        )
+        # Save the temporary report image
+        image_filename = os.path.abspath(image_basename + '_0.png')
+        print(f'\t\t\t - Save report image 0 as {image_filename}...')
+        sf0.savefig(image_filename, dpi=150)
+        plt.close(sf0.fig)
+
+        # Show the scan motion index
+        sf1 = sns.catplot(
+                data=df, y="Scan", x="Motion Index",
+                kind="bar"
+        )
+        sf1.ax.set_yticklabels(
+            sf1.ax.get_yticklabels(),
+            rotation=0
+        )
+        sf1.fig.set_size_inches(6, 2)
+        # Save the temporary report image
+        image_filename = os.path.abspath(image_basename + '_1.png')
+        print(f'\t\t\t - Save report image 1 as {image_filename}...')
+        sf1.savefig(image_filename, dpi=150)
+        plt.close(sf1.fig)
+
+        # Show the displacement magnitude of the centroids
+        sf2 = sns.catplot(
+                data=df, y="Scan", x="Displacement Magnitude (mm)",
+                kind="violin",
+                inner='stick'
+        )
+        sf2.ax.set_yticklabels(
+            sf2.ax.get_yticklabels(),
+            rotation=0
+        )
+        sf2.fig.set_size_inches(6, 2)
+        # Save the temporary report image
+        image_filename = os.path.abspath(image_basename + '_2.png')
+        print(f'\t\t\t - Save report image 2 as {image_filename}...')
+        sf2.savefig(image_filename, dpi=150)
+        plt.close(sf2.fig)
+
+        # Show the percentage of slice with NaNs for centroids.
+        # It can occur when the brain mask does not cover the slice
+        sf3 = sns.catplot(
+                data=df, y="Scan", x="Proportion of NaNs (%)",
+                kind="bar"
+        )
+        sf3.ax.set_yticklabels(
+            sf3.ax.get_yticklabels(),
+            rotation=0
+        )
+        sf3.fig.set_size_inches(6, 2)
+        # Save the temporary report image
+        image_filename = os.path.abspath(image_basename + '_3.png')
+        print(f'\t\t\t - Save report image 3 as {image_filename}...')
+        sf3.savefig(image_filename, dpi=150)
+        plt.close(sf3.fig)
+
+        # Define a method to load the temporary report images
+        def read_image(filename):
+            """Read the PNG image with matplotlib.
+
+            Parameters
+            ----------
+            filename : string
+                Image filename without the absolute path
+
+            """
+            return matplotlib.image.imread(os.path.abspath(filename))
+
+        # Create the final report image that combines the
+        # four temporary report images
+
+        fig = plt.figure(constrained_layout=True, figsize=(20, 10))
+
+        subfigs = fig.subfigures(1, 2)
+
+        axs = subfigs.flat[0].subplots(1, 1)
+        axs.imshow(read_image(image_basename + '_0.png'))
+        axs.set_axis_off()
+
+        axs = subfigs.flat[1].subplots(3, 1)
+        for i, ax in enumerate(axs):
+            ax.imshow(read_image(image_basename + f'_{i+1}.png'))
+            ax.set_axis_off()
+
+        # Save the final report image
+        image_filename = os.path.abspath('motion_index_QC.png')
+        print(f'\t\t\t - Save final report image as {image_filename}...')
+        plt.savefig(image_filename, dpi=150)
+
+    def _compute_stack_order(self):
         """Function to compute the stacks order.
 
-        The motion index is computed for each mask. Stacks are ordered according to their motion index.
-        When the view plane is specified in the filenames (tag `vp`), stacks are ordered such that the 3 first ones are
-        othogonal / in three different orientations.
+        The motion index is computed for each mask.
+        Stacks are ordered according to their motion index.
+        When the view plane is specified in the filenames (tag `vp`),
+        stacks are ordered such that the 3 first ones are
+        orthogonal / in three different orientations.
         """
         motion_ind = []
 
-        for f in in_files:
-            motion_ind.append(self._compute_motion_index(f))
+        score = {}
+        prop_of_nans = {}
+        centroid_coordx = {}
+        centroid_coordy = {}
 
-        vp_defined = -1 not in [f.find('vp') for f in in_files]
+        for f in self.inputs.input_masks:
+            score[f], prop_of_nans[f], centroid_coordx[f], centroid_coordy[f] = self._compute_motion_index(f)
+            motion_ind.append(score[f])
+
+        self._create_report_image(score, prop_of_nans, centroid_coordx, centroid_coordy)
+
+        vp_defined = -1 not in [f.find('vp') for f in self.inputs.input_masks]
         if vp_defined:
             orientations_ = []
-            for f in in_files:
+            for f in self.inputs.input_masks:
                 orientations_.append((f.split('_vp-')[1]).split('_')[0])
-            _, images_ordered, orientations_ordered = (list(t) for t in zip(
-                *sorted(zip(motion_ind, in_files, orientations_))))
+            _, images_ordered, orientations_ordered = (
+                list(t) for t in zip(*sorted(zip(motion_ind, self.inputs.input_masks, orientations_)))
+            )
         else:
-            _, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, in_files))))
+            _, images_ordered = (list(t) for t in zip(*sorted(zip(motion_ind, self.inputs.input_masks))))
 
         run_order = [int(f.split('run-')[1].split('_')[0]) for f in images_ordered]
 
@@ -1162,7 +1385,7 @@ class BrainExtraction(BaseInterface):
 
         """
 
-        ##### Step 1: Brain localization #####
+        # Step 1: Brain localization
         normalize = "local_max"
         width = 128
         height = 128
@@ -1172,27 +1395,28 @@ class BrainExtraction(BaseInterface):
 
         img_nib = nibabel.load(os.path.join(dataPath))
         image_data = img_nib.get_data()
+        max_val = np.max(image_data)
         images = np.zeros((image_data.shape[2], width, height, n_channels))
         pred3dFinal = np.zeros((image_data.shape[2], image_data.shape[0], image_data.shape[1], n_channels))
 
         slice_counter = 0
         for ii in range(image_data.shape[2]):
-           img_patch = cv2.resize(image_data[:, :, ii], dsize=(width, height), fx=width,
-                                   fy=height)
+            img_patch = cv2.resize(image_data[:, :, ii],
+                                  dsize=(width, height),
+                                  fx=width, fy=height)
+            if normalize:
+                if normalize == "local_max":
+                    images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
+                elif normalize == "global_max":
+                    images[slice_counter, :, :, 0] = img_patch / max_val
+                elif normalize == "mean_std":
+                    images[slice_counter, :, :, 0] = (img_patch - np.mean(img_patch)) / np.std(img_patch)
+                else:
+                    raise ValueError('Please select a valid normalization')
+            else:
+                images[slice_counter, :, :, 0] = img_patch
 
-           if normalize:
-              if normalize == "local_max":
-                 images[slice_counter, :, :, 0] = img_patch / np.max(img_patch)
-              elif normalize == "global_max":
-                 images[slice_counter, :, :, 0] = img_patch / max_val
-              elif normalize == "mean_std":
-                 images[slice_counter, :, :, 0] = (img_patch-np.mean(img_patch))/np.std(img_patch)
-              else:
-                 raise ValueError('Please select a valid normalization')
-           else:
-              images[slice_counter, :, :, 0] = img_patch
-
-           slice_counter += 1
+            slice_counter += 1
 
         # Tensorflow graph
         g = tf.Graph()
@@ -1245,7 +1469,6 @@ class BrainExtraction(BaseInterface):
         # Thresholding parameter to binarize predictions
         percentileLoc = thresholdLoc*100
 
-        im = np.zeros((1, width, height, n_channels))
         pred3d = []
         with tf.Session(graph=g) as sess_test_loc:
             # Restore the model
@@ -1263,7 +1486,6 @@ class BrainExtraction(BaseInterface):
                 pred_bin = np.where(pred_ > theta, 1, 0)
                 pred3d.append(pred_bin[0, :, :, 0].astype('float64'))
 
-            #####
             pred3d = np.asarray(pred3d)
             heights = []
             widths = []
@@ -1297,7 +1519,7 @@ class BrainExtraction(BaseInterface):
             y_beg = med_y-half_max_y-border_y
             y_end = med_y+half_max_y+border_y
 
-        ##### Step 2: Brain segmentation #####
+        # Step 2: Brain segmentation
         width = 96
         height = 96
 
@@ -1372,7 +1594,6 @@ class BrainExtraction(BaseInterface):
             tf_saver.restore(sess_test_seg, modelCkptSeg)
 
             for idx in range(images.shape[0]):
-
                 im = np.reshape(images[idx, :, :], [1, width, height, n_channels])
                 feed_dict = {x: im}
                 pred_ = sess_test_seg.run(pred, feed_dict=feed_dict)
@@ -1380,18 +1601,27 @@ class BrainExtraction(BaseInterface):
                 theta = np.percentile(pred_, percentileSeg)
                 pred_bin = np.where(pred_ > theta, 1, 0)
                 # Map predictions to original indices and size
-                pred_bin = cv2.resize(pred_bin[0, :, :, 0], dsize=(y_end-y_beg, x_end-x_beg), interpolation=cv2.INTER_NEAREST)
+                pred_bin = cv2.resize(
+                    pred_bin[0, :, :, 0],
+                    dsize=(y_end-y_beg, x_end-x_beg),
+                    interpolation=cv2.INTER_NEAREST)
                 pred3dFinal[idx, x_beg:x_end, y_beg:y_end,0] = pred_bin.astype('float64')
 
             pppp = True
             if pppp:
                 pred3dFinal = self._post_processing(np.asarray(pred3dFinal))
-            pred3d = [cv2.resize(elem, dsize=(image_data.shape[1], image_data.shape[0]), interpolation=cv2.INTER_NEAREST) for elem in pred3dFinal]
+            pred3d = [
+                cv2.resize(
+                    elem,
+                    dsize=(image_data.shape[1], image_data.shape[0]),
+                    interpolation=cv2.INTER_NEAREST
+                ) for elem in pred3dFinal
+            ]
             pred3d = np.asarray(pred3d)
-            upsampled = np.swapaxes(np.swapaxes(pred3d,1,2),0,2) #if Orient module applied, no need for this line(?)
-            up_mask = nibabel.Nifti1Image(upsampled,img_nib.affine)
-            # Save output mask
+            upsampled = np.swapaxes(np.swapaxes(pred3d, 1, 2), 0, 2)  # if Orient module applied, no need for this line(?)
+            up_mask = nibabel.Nifti1Image(upsampled, img_nib.affine)
 
+            # Save output mask
             save_file = self._gen_filename('out_file')
             nibabel.save(up_mask, save_file)
 
@@ -1413,169 +1643,144 @@ class BrainExtraction(BaseInterface):
         largest_cc[output == max_label] = 255
         return largest_cc.astype('uint8')
 
-    def _post_processing(self, pred_lbl):
+    def _post_processing(self, pred_lbl, verbose=False):
         """Post-processing the binarized network output by Priscille de Dumast."""
 
-        # post_proc = True
         post_proc_cc = True
         post_proc_fill_holes = True
 
         post_proc_closing_minima = True
         post_proc_opening_maxima = True
         post_proc_extremity = False
-        # stackmodified = True
 
         crt_stack = pred_lbl.copy()
         crt_stack_pp = crt_stack.copy()
 
-        if 1:
+        distrib = []
+        for iSlc in range(crt_stack.shape[0]):
+            distrib.append(np.sum(crt_stack[iSlc]))
 
-            distrib = []
-            for iSlc in range(crt_stack.shape[0]):
-                distrib.append(np.sum(crt_stack[iSlc]))
+        if post_proc_cc:
+            crt_stack_cc = crt_stack.copy()
+            labeled_array, _ = snd.measurements.label(crt_stack_cc)
+            unique, counts = np.unique(labeled_array, return_counts=True)
 
-            if post_proc_cc:
-                # print("post_proc_cc")
-                crt_stack_cc = crt_stack.copy()
-                labeled_array, _ = snd.measurements.label(crt_stack_cc)
-                unique, counts = np.unique(labeled_array, return_counts=True)
+            # Try to remove false positives seen as independent connected components #2ndBrain
+            for ind, _ in enumerate(unique):
+                if 5 < counts[ind] < 300:
+                    wherr = np.where(labeled_array == unique[ind])
+                    for ii in range(len(wherr[0])):
+                        crt_stack_cc[wherr[0][ii], wherr[1][ii], wherr[2][ii]] = 0
 
-                # Try to remove false positives seen as independent connected components #2ndBrain
-                for ind, _ in enumerate(unique):
-                    if 5 < counts[ind] and counts[ind] < 300:
-                        wherr = np.where(labeled_array == unique[ind])
-                        for ii in range(len(wherr[0])):
-                            crt_stack_cc[wherr[0][ii], wherr[1][ii], wherr[2][ii]] = 0
+            crt_stack_pp = crt_stack_cc.copy()
 
-                crt_stack_pp = crt_stack_cc.copy()
+        if post_proc_fill_holes:
+            crt_stack_holes = crt_stack_pp.copy()
 
-            if post_proc_fill_holes:
-                # print("post_proc_fill_holes")
-                crt_stack_holes = crt_stack_pp.copy()
+            inv_mask = 1 - crt_stack_holes
+            labeled_holes, _ = snd.measurements.label(inv_mask)
+            unique, counts = np.unique(labeled_holes, return_counts=True)
 
-                inv_mask = 1 - crt_stack_holes
-                labeled_holes, _ = snd.measurements.label(inv_mask)
-                unique, counts = np.unique(labeled_holes, return_counts=True)
+            for lbl in unique[2:]:
+                trou = np.where(labeled_holes == lbl)
+                for ind in range(len(trou[0])):
+                    inv_mask[trou[0][ind], trou[1][ind], trou[2][ind]] = 0
 
-                for lbl in unique[2:]:
-                    trou = np.where(labeled_holes == lbl)
-                    for ind in range(len(trou[0])):
-                        inv_mask[trou[0][ind], trou[1][ind], trou[2][ind]] = 0
+            crt_stack_holes = 1 - inv_mask
+            crt_stack_pp = crt_stack_holes.copy()
 
-                crt_stack_holes = 1 - inv_mask
-                crt_stack_cc = crt_stack_holes.copy()
-                crt_stack_pp = crt_stack_holes.copy()
+            distrib_cc = []
+            for iSlc in range(crt_stack_pp.shape[0]):
+                distrib_cc.append(np.sum(crt_stack_pp[iSlc]))
 
-                distrib_cc = []
+        if post_proc_closing_minima or post_proc_opening_maxima:
+
+            if post_proc_closing_minima:
+                crt_stack_closed_minima = crt_stack_pp.copy()
+
+                # for local minima
+                local_minima = argrelextrema(np.asarray(distrib_cc), np.less)[0]
+                local_maxima = argrelextrema(np.asarray(distrib_cc), np.greater)[0]
+
+                for iMin, _ in enumerate(local_minima):
+                    for iMax in range(len(local_maxima) - 1):
+                        # find between which maxima is the minima localized
+                        if local_maxima[iMax] < local_minima[iMin] < local_maxima[iMax + 1]:
+                            # check if diff max-min is large enough to be considered
+                            if ((distrib_cc[local_maxima[iMax]] - distrib_cc[local_minima[iMin]] > 50) and
+                               (distrib_cc[local_maxima[iMax + 1]] - distrib_cc[local_minima[iMin]] > 50)):
+                                sub_stack = crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :]
+                                sub_stack = morphology.binary_closing(sub_stack)
+                                crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :] = sub_stack
+                crt_stack_pp = crt_stack_closed_minima.copy()
+
+                distrib_closed = []
+                for iSlc in range(crt_stack_closed_minima.shape[0]):
+                    distrib_closed.append(np.sum(crt_stack_closed_minima[iSlc]))
+
+            if post_proc_opening_maxima:
+                crt_stack_opened_maxima = crt_stack_pp.copy()
+
+                local = True
+                if local:
+                    local_maxima_n = argrelextrema(
+                        np.asarray(distrib_closed), np.greater
+                    )[0]  # default is mode='clip'. Doesn't consider extremity as being an extrema
+
+                    for iMax, _ in enumerate(local_maxima_n):
+                        # Check if this local maxima is a "peak"
+                        if ((distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] - 1] > 50) and
+                           (distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] + 1] > 50)):
+
+                            if verbose:
+                                print("Ceci est un pic de au moins 50.",
+                                      distrib[local_maxima_n[iMax]],
+                                      "en",
+                                      local_maxima_n[iMax])
+                                print("                                bordé de",
+                                      distrib[local_maxima_n[iMax] - 1],
+                                      "en",
+                                      local_maxima_n[iMax] - 1)
+                                print("                                et",
+                                      distrib[local_maxima_n[iMax] + 1],
+                                      "en",
+                                      local_maxima_n[iMax] + 1)
+                                print("")
+
+                            sub_stack = crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :]
+                            sub_stack = morphology.binary_opening(sub_stack)
+                            crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :] = sub_stack
+                else:
+                    crt_stack_opened_maxima = morphology.binary_opening(crt_stack_opened_maxima)
+                crt_stack_pp = crt_stack_opened_maxima.copy()
+
+                distrib_opened = []
                 for iSlc in range(crt_stack_pp.shape[0]):
-                    distrib_cc.append(np.sum(crt_stack_pp[iSlc]))
+                    distrib_opened.append(np.sum(crt_stack_pp[iSlc]))
 
-            if post_proc_closing_minima or post_proc_opening_maxima:
+            if post_proc_extremity:
+                crt_stack_extremity = crt_stack_pp.copy()
 
-                if 0:  # closing GLOBAL
-                    crt_stack_closed_minima = crt_stack_pp.copy()
-                    crt_stack_closed_minima = morphology.binary_closing(crt_stack_closed_minima)
-                    crt_stack_pp = crt_stack_closed_minima.copy()
+                # check si y a un maxima sur une extremite
+                maxima_extrema = argrelextrema(np.asarray(distrib_closed),
+                                               np.greater,
+                                               mode='wrap')[0]
 
-                    distrib_closed = []
-                    for iSlc in range(crt_stack_closed_minima.shape[0]):
-                        distrib_closed.append(np.sum(crt_stack_closed_minima[iSlc]))
+                if distrib_opened[0] - distrib_opened[1] > 40:
+                    sub_stack = crt_stack_extremity[0:2, :, :]
+                    sub_stack = morphology.binary_opening(sub_stack)
+                    crt_stack_extremity[0:2, :, :] = sub_stack
 
-                if post_proc_closing_minima:
-                    # if 0:
-                    crt_stack_closed_minima = crt_stack_pp.copy()
+                if pred_lbl.shape[0] - 1 in maxima_extrema:
+                    sub_stack = crt_stack_opened_maxima[-2:, :, :]
+                    sub_stack = morphology.binary_opening(sub_stack)
+                    crt_stack_opened_maxima[-2:, :, :] = sub_stack
 
-                    # for local minima
-                    local_minima = argrelextrema(np.asarray(distrib_cc), np.less)[0]
-                    local_maxima = argrelextrema(np.asarray(distrib_cc), np.greater)[0]
+                crt_stack_pp = crt_stack_extremity.copy()
 
-                    for iMin, _ in enumerate(local_minima):
-                        for iMax in range(len(local_maxima) - 1):
-                            # print(local_maxima[iMax], "<", local_minima[iMin], "AND", local_minima[iMin], "<", local_maxima[iMax+1], "   ???")
-
-                            # find between which maxima is the minima localized
-                            if local_maxima[iMax] < local_minima[iMin] and local_minima[iMin] < local_maxima[iMax + 1]:
-
-                                # check if diff max-min is large enough to be considered
-                                if ((distrib_cc[local_maxima[iMax]] - distrib_cc[local_minima[iMin]] > 50) and
-                                   (distrib_cc[local_maxima[iMax + 1]] - distrib_cc[local_minima[iMin]] > 50)):
-                                    sub_stack = crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :]
-
-                                    # print("We did 3d close.")
-                                    sub_stack = morphology.binary_closing(sub_stack)
-                                    crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :] = sub_stack
-
-                    crt_stack_pp = crt_stack_closed_minima.copy()
-
-                    distrib_closed = []
-                    for iSlc in range(crt_stack_closed_minima.shape[0]):
-                        distrib_closed.append(np.sum(crt_stack_closed_minima[iSlc]))
-
-                if post_proc_opening_maxima:
-                    crt_stack_opened_maxima = crt_stack_pp.copy()
-
-                    local = True
-                    if local:
-                        local_maxima_n = argrelextrema(np.asarray(distrib_closed), np.greater)[
-                            0]  # default is mode='clip'. Doesn't consider extremity as being an extrema
-
-                        for iMax, _ in enumerate(local_maxima_n):
-
-                            # Check if this local maxima is a "peak"
-                            if ((distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] - 1] > 50) and
-                               (distrib[local_maxima_n[iMax]] - distrib[local_maxima_n[iMax] + 1] > 50)):
-
-                                if 0:
-                                    print("Ceci est un pic de au moins 50.", distrib[local_maxima_n[iMax]], "en",
-                                          local_maxima_n[iMax])
-                                    print("                                bordé de", distrib[local_maxima_n[iMax] - 1],
-                                          "en", local_maxima_n[iMax] - 1)
-                                    print("                                et", distrib[local_maxima_n[iMax] + 1], "en",
-                                          local_maxima_n[iMax] + 1)
-                                    print("")
-
-                                sub_stack = crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :]
-                                sub_stack = morphology.binary_opening(sub_stack)
-                                crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :] = sub_stack
-                    else:
-                        crt_stack_opened_maxima = morphology.binary_opening(crt_stack_opened_maxima)
-
-                    crt_stack_pp = crt_stack_opened_maxima.copy()
-
-                    distrib_opened = []
-                    for iSlc in range(crt_stack_pp.shape[0]):
-                        distrib_opened.append(np.sum(crt_stack_pp[iSlc]))
-
-                if post_proc_extremity:
-
-                    crt_stack_extremity = crt_stack_pp.copy()
-
-                    # check si y a un maxima sur une extremite
-                    maxima_extrema = argrelextrema(np.asarray(distrib_closed), np.greater, mode='wrap')[0]
-                    # print("maxima_extrema", maxima_extrema, "     numslices",numslices, "     numslices-1",numslices-1)
-
-                    if distrib_opened[0] - distrib_opened[1] > 40:
-                        # print("First slice of ", distrib_opened, " is a maxima")
-                        sub_stack = crt_stack_extremity[0:2, :, :]
-                        sub_stack = morphology.binary_opening(sub_stack)
-                        crt_stack_extremity[0:2, :, :] = sub_stack
-                        # print("On voulait close 1st slices",  sub_stack.shape[0])
-
-                    if pred_lbl.shape[0] - 1 in maxima_extrema:
-                        # print(numslices-1, "in maxima_extrema", maxima_extrema )
-
-                        sub_stack = crt_stack_opened_maxima[-2:, :, :]
-                        sub_stack = morphology.binary_opening(sub_stack)
-                        crt_stack_opened_maxima[-2:, :, :] = sub_stack
-
-                        # print("On voulait close last slices",  sub_stack.shape[0])
-
-                    crt_stack_pp = crt_stack_extremity.copy()
-
-                    distrib_opened_border = []
-                    for iSlc in range(crt_stack_pp.shape[0]):
-                        distrib_opened_border.append(np.sum(crt_stack_pp[iSlc]))
-
+                distrib_opened_border = []
+                for iSlc in range(crt_stack_pp.shape[0]):
+                    distrib_opened_border.append(np.sum(crt_stack_pp[iSlc]))
         return crt_stack_pp
 
     def _list_outputs(self):

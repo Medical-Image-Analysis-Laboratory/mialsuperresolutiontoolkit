@@ -2,10 +2,10 @@
 
 _version_major = 2
 _version_minor = 0
-_version_micro = 1
+_version_micro = 2
 _version_extra = ''
 
-__release_date__ = '24.12.2020'
+__release_date__ = '23.08.2021'
 
 __minor_version__ = "%s.%s" % (_version_major,
                                _version_minor)
@@ -16,7 +16,7 @@ __version__ = "%s.%s.%s%s" % (_version_major,
                               _version_extra)
 
 # __current_year__ = datetime.datetime.now().strftime("%Y")
-__current_year__ = '2020'
+__current_year__ = '2021'
 
 __author__ = 'The MIAL Super-Resolution ToolKit developers'
 __copyright__ = 'Copyright 2016-{}, Medical Image Analysis Laboratory (MIAL), Lausanne'.format(__current_year__)
@@ -34,3 +34,5 @@ __url__ = 'https://github.com/sebastientourbier/{name}'.format(name=__packagenam
 DOWNLOAD_URL = (
     'https://github.com/sebastientourbier/{name}/archive/{ver}.tar.gz'.format(
         name=__packagename__, ver=__version__))
+
+DOCKER_HUB = 'sebastientourbier/mialsuperresolutiontoolkit'

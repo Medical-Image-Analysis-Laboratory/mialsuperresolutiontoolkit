@@ -1,4 +1,4 @@
-# Copyright © 2016-2020 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -15,13 +15,13 @@ def run(command, env=None, cwd=None):
 
     Parameters
     ----------
-    command <string>
+    command : string
         String containing the command to be executed (required)
 
-    env <os.environ>
+    env : os.environ
         Specify a custom os.environ
 
-    cwd <Directory>
+    cwd : Directory
         Specify a custom current working directory
 
     Examples
@@ -56,7 +56,7 @@ def sort_ascending(p_files):
 
     Parameters
     ----------
-    p_files <list<string>>
+    p_files : list
         List of image paths to be sorted in ascending order
 
     Examples
@@ -65,8 +65,15 @@ def sort_ascending(p_files):
     >>> sort_ascending(in_files)
 
     """
-    p_files.sort()
-    return p_files
+    from operator import itemgetter
+    import os
+    path_basename = []
+    for f in p_files:
+        path_basename.append((os.path.basename(f), f))
+
+    path_basename = sorted(path_basename, key=itemgetter(0))
+    # p_files.sort()
+    return [f[1] for f in path_basename]
 
 
 def reorder_by_run_ids(p_files, p_order):
