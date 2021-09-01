@@ -597,7 +597,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_sr_png", datasink, 'figures.@SRpng')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
-    def run(self, number_of_cores=1, memory=None):
+    def run(self, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.
 
         Nipype execution engine will take care of the management and execution of
@@ -607,9 +607,6 @@ class AnatomicalPipeline:
 
         Parameters
         ----------
-        number_of_cores : int
-            Number of cores / CPUs used by the workflow
-
         memory : int
             Maximal memory used by the workflow
         """
@@ -649,7 +646,7 @@ class AnatomicalPipeline:
         args_dict = {
             # 'maxtasksperchild': 1,
             # 'raise_insufficient': False,
-            # 'n_procs': number_of_cores
+            # 'n_procs': self.nipype_number_of_cores
         }
 
         if (memory is not None) and (memory > 0):
@@ -675,7 +672,7 @@ class AnatomicalPipeline:
         print(f" Start date / time : {self.run_start_time}")
 
         # Execute the workflow
-        if number_of_cores > 1:
+        if self.nipype_number_of_cores > 1:
             res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
         else:
             res = self.wf.run()
@@ -729,7 +726,7 @@ class AnatomicalPipeline:
             iflogger.info("**** Workflow execution profiling ****")
             iflogger.info(f'\t > Creation of report...')
             generate_gantt_chart(logfile=callback_log_path,
-                                 cores=number_of_cores,
+                                 cores=self.nipype_number_of_cores,
                                  minute_scale=10,
                                  space_between_minutes=50,
                                  pipeline_name=os.path.join(self.wf.base_dir,
