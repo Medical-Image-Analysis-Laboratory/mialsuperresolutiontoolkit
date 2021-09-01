@@ -22,7 +22,7 @@ from nipype import config
 from nipype import logging as nipype_logging
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.pipeline import Node, MapNode, Workflow
-from nipype.interfaces.utility import IdentityInterface, Function
+from nipype.interfaces.utility import IdentityInterface
 
 # Import the implemented interface from pymialsrtk
 import pymialsrtk.interfaces.preprocess as preprocess
@@ -473,12 +473,7 @@ class AnatomicalPipeline:
                               name='srtkHRMask')
             srtkHRMask.inputs.bids_dir = self.bids_dir
         else:
-            srtkHRMask = Node(interface=Function(
-                              input_names=["input_image"],
-                              output_names=["output_srmask"],
-                              function=postprocess.binarize_image
-                              ),
-                              name='srtkHRMask')
+            srtkHRMask = Node(interface=postprocess.BinarizeImage(), name='srtkHRMask')
 
         srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(),
                                name='srtkMaskImage02')
