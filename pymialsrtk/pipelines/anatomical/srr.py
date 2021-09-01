@@ -18,7 +18,8 @@ from jinja2 import __version__ as __jinja2_version__
 import nibabel as nib
 
 from nipype.info import __version__ as __nipype_version__
-from nipype import config, logging
+from nipype import config
+from nipype import logging as nipype_logging
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.pipeline import Node, MapNode, Workflow
 from nipype.interfaces.utility import IdentityInterface, Function
@@ -271,8 +272,8 @@ class AnatomicalPipeline:
             )
             config.enable_resource_monitor()
 
-        # Update logging with config
-        logging.update_logging(config)
+        # Update nypipe logging with config
+        nipype_logging.update_logging(config)
         # config.enable_provenance()
 
         if self.use_manual_masks:
@@ -612,7 +613,6 @@ class AnatomicalPipeline:
         memory : int
             Maximal memory used by the workflow
         """
-        from nipype import logging as nipype_logging
 
         # Use nipype.interface logger to print some information messages
         iflogger = nipype_logging.getLogger('nipype.interface')
