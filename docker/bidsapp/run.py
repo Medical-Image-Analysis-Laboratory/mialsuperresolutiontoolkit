@@ -231,8 +231,7 @@ def main(bids_dir, output_dir,
     pipeline.create_workflow()
 
     # Execute the workflow
-    res = pipeline.run(number_of_cores=nipype_number_of_cores,
-                       memory=memory)
+    res = pipeline.run(memory=memory)
 
     return res
 
