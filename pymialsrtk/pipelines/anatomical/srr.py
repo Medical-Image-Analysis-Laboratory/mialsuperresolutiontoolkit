@@ -89,6 +89,9 @@ class AnatomicalPipeline:
     m_skip_stacks_ordering : bool (optional)
         Weither the automatic stacks ordering should be skipped. (default is False)
 
+    m_save_profiler_log : bool
+        If `True`, save node runtime statistics to a JSON-style log file.
+
     Examples
     --------
     >>> from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
@@ -142,11 +145,14 @@ class AnatomicalPipeline:
     openmp_number_of_cores = None
     nipype_number_of_cores = None
 
+    m_save_profiler_log = None
+
     def __init__(
         self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
         session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
         p_dict_custom_interfaces=None,
         openmp_number_of_cores=None, nipype_number_of_cores=None,
+        p_save_profiler_log=None
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -160,6 +166,8 @@ class AnatomicalPipeline:
 
         self.openmp_number_of_cores = openmp_number_of_cores
         self.nipype_number_of_cores = nipype_number_of_cores
+
+        self.m_save_profiler_log = p_save_profiler_log if p_save_profiler_log is not None else False
 
         # (default) sr tv parameters
         if paramTV is None:
@@ -188,16 +196,11 @@ class AnatomicalPipeline:
             self.m_skip_nlm_denoising =  False
             self.m_skip_stacks_ordering = False
 
-    def create_workflow(self, save_profiler_log=False):
+    def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
 
         It is composed of a succession of Nodes and their corresponding parameters,
         where the output of node i goes to the input of node i+1.
-
-        Parameters
-        ----------
-        save_profiler_log : bool
-            If `True`, save node runtime statistics to a JSON-style log file.
 
         """
 
@@ -232,7 +235,7 @@ class AnatomicalPipeline:
         if os.path.isfile(os.path.join(wf_base_dir, "pypeline.log")):
             os.unlink(os.path.join(wf_base_dir, "pypeline.log"))
 
-        if save_profiler_log:
+        if self.m_save_profiler_log:
             log_filename = os.path.join(wf_base_dir, 'pypeline_stats.log')
             if os.path.isfile(log_filename):
                 os.unlink(log_filename)
@@ -256,11 +259,11 @@ class AnatomicalPipeline:
             }
         )
 
-        if save_profiler_log:
+        if self.m_save_profiler_log:
             config.update_config(
                 {
                     'monitoring': {
-                        'enabled': save_profiler_log,
+                        'enabled': self.m_save_profiler_log,
                         'sample_frequency': "1.0",
                         'summary_append': True
                     }
@@ -593,7 +596,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_sr_png", datasink, 'figures.@SRpng')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
-    def run(self, number_of_cores=1, memory=None, save_profiler_log=False):
+    def run(self, number_of_cores=1, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.
 
         Nipype execution engine will take care of the management and execution of
@@ -608,10 +611,6 @@ class AnatomicalPipeline:
 
         memory : int
             Maximal memory used by the workflow
-
-        save_profiler_log : bool
-            If `True`, generates the profiling callback log
-            (Default: `False`)
         """
         from nipype import logging as nipype_logging
 
@@ -656,7 +655,7 @@ class AnatomicalPipeline:
         if (memory is not None) and (memory > 0):
             args_dict['memory_gb'] = memory
 
-        if save_profiler_log:
+        if self.m_save_profiler_log:
             args_dict['status_callback'] = log_nodes_cb
             # Set path to log file and create callback logger
             callback_log_path = os.path.join(self.wf.base_dir,
@@ -723,7 +722,7 @@ class AnatomicalPipeline:
                 pipeline_name=toolbox
             )
 
-        if save_profiler_log:
+        if self.m_save_profiler_log:
             iflogger.info("**** Workflow execution profiling ****")
             iflogger.info(f'\t > Creation of report...')
             generate_gantt_chart(logfile=callback_log_path,

@@ -223,16 +223,16 @@ def main(bids_dir, output_dir,
                                   masks_desc,
                                   p_dict_custom_interfaces=dict_custom_interfaces,
                                   openmp_number_of_cores=openmp_number_of_cores,
-                                  nipype_number_of_cores=nipype_number_of_cores
+                                  nipype_number_of_cores=nipype_number_of_cores,
+                                  p_save_profiler_log=save_profiler_log
                                   )
 
     # Create the super resolution Nipype workflow
-    pipeline.create_workflow(save_profiler_log=save_profiler_log)
+    pipeline.create_workflow()
 
     # Execute the workflow
     res = pipeline.run(number_of_cores=nipype_number_of_cores,
-                       memory=memory,
-                       save_profiler_log=save_profiler_log)
+                       memory=memory)
 
     return res
 
