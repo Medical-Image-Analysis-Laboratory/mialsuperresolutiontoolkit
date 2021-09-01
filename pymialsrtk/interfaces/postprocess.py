@@ -18,6 +18,7 @@ from nipype.interfaces.base import traits, \
 
 from pymialsrtk.interfaces.utils import run
 import nibabel as nib
+import numpy as np
 
 #######################
 #  Refinement HR mask
@@ -387,10 +388,11 @@ class BinarizeImage(BaseInterface):
 
     def _binarize_image(self, in_image):
 
-        im = nib.load(in_image)
+        image_nii = nib.load(in_image)
+        image = np.asanyarray(image_nii.dataobj)
 
-        out = nib.Nifti1Image(dataobj=(im.get_fdata() > 0.01).astype(int), affine=im.affine)
-        out._header = im.header
+        out = nib.Nifti1Image(dataobj=1 * (image > 0), affine=image_nii.affine)
+        out._header = image_nii.header
 
         nib.save(filename=self._gen_filename('output_srmask'), img=out)
 
@@ -408,36 +410,3 @@ class BinarizeImage(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_srmask'] = self._gen_filename('output_srmask')
         return outputs
-
-
-def binarize_image(input_image):
-    """Binarize an image and save the mask.
-
-    Parameters
-    ----------
-    input_image : string
-        Path of input image
-
-    Returns
-    -------
-    output_mask : string
-        Absolute path of output mask
-
-    """
-    import nibabel as nib
-    import os
-    from nipype.utils.filemanip import split_filename
-
-    im = nib.load(input_image)
-
-    out = nib.Nifti1Image(dataobj=(im.get_fdata() > 0.01).astype(int),
-                          affine=im.affine)
-    out._header = im.header
-
-    _, name, ext = split_filename(input_image)
-    output_mask = name + '_srMask' + ext
-    nib.save(filename=output_mask, img=out)
-    output_mask = os.path.abspath(output_mask)
-
-    return output_mask
-
