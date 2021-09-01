@@ -10,17 +10,15 @@ It encompasses a High Resolution mask refinement and an N4 global bias field cor
 
 import os
 
-from glob import glob
-
 from traits.api import *
 
 from nipype.utils.filemanip import split_filename
-# from nipype.interfaces.base import isdefined, CommandLine, CommandLineInputSpec
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
 from pymialsrtk.interfaces.utils import run
-
+import nibabel as nib
+import numpy as np
 
 #######################
 #  Refinement HR mask
@@ -357,33 +355,58 @@ class FilenamesGeneration(BaseInterface):
         return outputs
 
 
-def binarize_image(input_image):
-    """Binarize an image and save the mask.
+class BinarizeImageInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the BinarizeImage interface."""
 
-    Parameters
-    ----------
-    input_image : string
-        Path of input image
+    input_image = File(desc='Input image filename to be binarized',mandatory=True)
 
-    Returns
-    -------
-    output_mask : string
-        Absolute path of output mask
 
+class BinarizeImageOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the BinarizeImage interface."""
+
+    output_srmask = File(desc='Image mask (binarized input)')
+
+
+class BinarizeImage(BaseInterface):
+    """Runs the MIAL SRTK mask image module.
+    Example
+    =======
+    >>> from pymialsrtk.interfaces.postprocess import BinarizeImageImage
+    >>> maskImg = MialsrtkMaskImage()
+    >>> maskImg.inputs.input_image = 'input_image.nii.gz'
     """
-    import nibabel as nib
-    import os
-    from nipype.utils.filemanip import split_filename
 
-    im = nib.load(input_image)
+    input_spec = BinarizeImageInputSpec
+    output_spec = BinarizeImageOutputSpec
 
-    out = nib.Nifti1Image(dataobj=(im.get_fdata() > 0.01).astype(int),
-                          affine=im.affine)
-    out._header = im.header
+    def _gen_filename(self, name):
+        if name == 'output_srmask':
+            _, name, ext = split_filename(self.inputs.input_image)
+            output = name + '_srMask' + ext
+            return os.path.abspath(output)
+        return None
 
-    _, name, ext = split_filename(input_image)
-    output_mask = name + '_srMask' + ext
-    nib.save(filename=output_mask, img=out)
-    output_mask = os.path.abspath(output_mask)
+    def _binarize_image(self, in_image):
 
-    return output_mask
+        image_nii = nib.load(in_image)
+        image = np.asanyarray(image_nii.dataobj)
+
+        out = nib.Nifti1Image(dataobj=1 * (image > 0), affine=image_nii.affine)
+        out._header = image_nii.header
+
+        nib.save(filename=self._gen_filename('output_srmask'), img=out)
+
+        return
+
+    def _run_interface(self, runtime):
+        try:
+            self._binarize_image(self.inputs.input_image)
+        except Exception as e:
+            print('Failed')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_srmask'] = self._gen_filename('output_srmask')
+        return outputs
