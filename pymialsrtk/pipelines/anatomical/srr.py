@@ -647,9 +647,9 @@ class AnatomicalPipeline:
 
         # Create dictionary of arguments passed to plugin_args
         args_dict = {
-            'maxtasksperchild': 1,
-            'raise_insufficient': False,
-            'n_procs': number_of_cores
+            # 'maxtasksperchild': 1,
+            # 'raise_insufficient': False,
+            # 'n_procs': number_of_cores
         }
 
         if (memory is not None) and (memory > 0):
@@ -675,7 +675,10 @@ class AnatomicalPipeline:
         print(f" Start date / time : {self.run_start_time}")
 
         # Execute the workflow
-        res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
+        if number_of_cores > 1:
+            res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
+        else:
+            res = self.wf.run()
 
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
