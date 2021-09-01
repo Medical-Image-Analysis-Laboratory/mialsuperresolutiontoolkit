@@ -10,17 +10,14 @@ It encompasses a High Resolution mask refinement and an N4 global bias field cor
 
 import os
 
-from glob import glob
-
 from traits.api import *
 
 from nipype.utils.filemanip import split_filename
-# from nipype.interfaces.base import isdefined, CommandLine, CommandLineInputSpec
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
 from pymialsrtk.interfaces.utils import run
-
+import nibabel as nib
 
 #######################
 #  Refinement HR mask
@@ -357,6 +354,62 @@ class FilenamesGeneration(BaseInterface):
         return outputs
 
 
+class BinarizeImageInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the BinarizeImage interface."""
+
+    input_image = File(desc='Input image filename to be binarized',mandatory=True)
+
+
+class BinarizeImageOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the BinarizeImage interface."""
+
+    output_srmask = File(desc='Image mask (binarized input)')
+
+
+class BinarizeImage(BaseInterface):
+    """Runs the MIAL SRTK mask image module.
+    Example
+    =======
+    >>> from pymialsrtk.interfaces.postprocess import BinarizeImageImage
+    >>> maskImg = MialsrtkMaskImage()
+    >>> maskImg.inputs.input_image = 'input_image.nii.gz'
+    """
+
+    input_spec = BinarizeImageInputSpec
+    output_spec = BinarizeImageOutputSpec
+
+    def _gen_filename(self, name):
+        if name == 'output_srmask':
+            _, name, ext = split_filename(self.inputs.input_image)
+            output = name + '_srMask' + ext
+            return os.path.abspath(output)
+        return None
+
+    def _binarize_image(self, in_image):
+
+        im = nib.load(in_image)
+
+        out = nib.Nifti1Image(dataobj=(im.get_fdata() > 0.01).astype(int), affine=im.affine)
+        out._header = im.header
+
+        nib.save(filename=self._gen_filename('output_srmask'), img=out)
+
+        return
+
+    def _run_interface(self, runtime):
+        try:
+            self._binarize_image(self.inputs.input_image)
+        except Exception as e:
+            print('Failed')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_srmask'] = self._gen_filename('output_srmask')
+        return outputs
+
+
 def binarize_image(input_image):
     """Binarize an image and save the mask.
 
@@ -387,3 +440,4 @@ def binarize_image(input_image):
     output_mask = os.path.abspath(output_mask)
 
     return output_mask
+
