@@ -20,7 +20,7 @@ dependencies:
 - pip:
     - coverage==5.1
     - duecredit==0.8.0
-    - apptools==4.4.0
+#    - apptools==4.4.0
     - graphviz
     - numpy==1.16.6
     # - niworkflows==0.10.2
