@@ -3,6 +3,7 @@ FROM ubuntu:14.04
 ##############################################################
 # Ubuntu system setup
 ##############################################################
+ENV CONDA_ENV_PATH /opt/conda
 RUN apt-get update && \
     apt-get install software-properties-common -y && \
     apt-add-repository ppa:saiarcot895/myppa -y && \
@@ -36,14 +37,14 @@ RUN apt-get update && \
         libncurses5-dev \
     libann-dev && \
     curl -sSL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh && \
-    bash /tmp/miniconda.sh -bfp /opt/conda && \
+    bash /tmp/miniconda.sh -bfp "$CONDA_ENV_PATH" && \
     rm -rf /tmp/miniconda.sh && \
     rm -rf /var/lib/apt/lists/*
 
 ##############################################################
 # Setup and update miniconda
 ##############################################################
-ENV PATH "/opt/conda/bin:$PATH"
+ENV PATH "$CONDA_ENV_PATH/bin:$PATH"
 RUN conda update conda && \
     conda clean --all --yes
 
@@ -54,29 +55,12 @@ RUN groupadd -r -g 1000 mialsrtk && \
     useradd -r -M -u 1000 -g mialsrtk mialsrtk
 
 ##############################################################
-# Copy only code inside the docker image
+# Copy and compile C++ MIALSRTK code
 ##############################################################
 # Copy only C++ source code
 RUN mkdir -p /opt/mialsuperresolutiontoolkit/src
 COPY src/ /opt/mialsuperresolutiontoolkit/src/
 
-# Copy PyMIALSRTK code
-RUN mkdir -p /opt/mialsuperresolutiontoolkit/pymialsrtk
-COPY pymialsrtk/ /opt/mialsuperresolutiontoolkit/pymialsrtk/
-COPY setup.py /opt/mialsuperresolutiontoolkit/setup.py
-COPY get_version.py /opt/mialsuperresolutiontoolkit/get_version.py
-
-# Copy LICENSE and README files
-COPY LICENSE.txt /opt/mialsuperresolutiontoolkit/LICENSE.txt
-COPY README.md /opt/mialsuperresolutiontoolkit/README.md
-COPY .zenodo.json /opt/mialsuperresolutiontoolkit/.zenodo.json
-
-# Copy docker directories
-COPY docker/ /opt/mialsuperresolutiontoolkit/docker/
-
-##############################################################
-# Compile C++ MIALSRTK tools
-##############################################################
 # Create the build directory and set the working directory
 # to this directory
 WORKDIR /opt/mialsuperresolutiontoolkit
@@ -97,9 +81,68 @@ ENV BIN_DIR "/usr/local/bin"
 ENV PATH "${BIN_DIR}:$PATH"
 
 ##############################################################
+# Python cache setup and creation of conda environment
+##############################################################
+# Create .cache and set right permissions for generated
+# Python egg cache
+RUN mkdir /.cache && \
+    chmod -R 777 /.cache
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Store command related variables
+ENV MY_CONDA_PY3ENV "pymialsrtk-env"
+# This is how you will activate this conda environment
+ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
+
+# Create the conda environment
+COPY docker/bidsapp/environment.yml /app/environment.yml
+RUN conda env create -f /app/environment.yml
+
+##############################################################
+# Setup for tensorflow 
+##############################################################
+# Filter out all messages 
+# ENV TF_CPP_MIN_LOG_LEVEL "0"
+
+# Make tensorflow happy: Use jemalloc instead of malloc.
+# Jemalloc suffers less from fragmentation when allocating
+# and deallocating large objects
+RUN apt-get update && apt-get install -y libjemalloc-dev && \
+    rm -rf /var/lib/apt/lists/*
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
+
+# Use tcmalloc instead of malloc in TensorFLow
+# that suffers less from fragmentation when
+# allocating and deallocating large objects
+# RUN apt-get update && apt-get install -y google-perftools && \
+#     rm -rf /var/lib/apt/lists/*
+# ENV LD_PRELOAD=/usr/lib/libtcmalloc.so.4
+
+##############################################################
 # Initialize fake DISPLAY
 ##############################################################
 ENV DISPLAY :0
+
+##############################################################
+# Copy the rest of the files (Pymialsrtk, license, readme and
+# bidsapp entrypoint script) at the end to prevent recompiling
+# again the C++ code even if no change was introduced
+##############################################################
+
+# Copy PyMIALSRTK code
+RUN mkdir -p /opt/mialsuperresolutiontoolkit/pymialsrtk
+COPY pymialsrtk/ /opt/mialsuperresolutiontoolkit/pymialsrtk/
+COPY setup.py /opt/mialsuperresolutiontoolkit/setup.py
+COPY get_version.py /opt/mialsuperresolutiontoolkit/get_version.py
+
+##############################################################
+# Copy LICENSE and README and .zenodo.json contributors files
+##############################################################
+COPY LICENSE.txt /opt/mialsuperresolutiontoolkit/LICENSE.txt
+COPY README.md /opt/mialsuperresolutiontoolkit/README.md
+COPY .zenodo.json /opt/mialsuperresolutiontoolkit/.zenodo.json
 
 ##############################################################
 # Arguments passed to the docker build command
