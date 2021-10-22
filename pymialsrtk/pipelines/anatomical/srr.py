@@ -30,7 +30,6 @@ import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.utils as utils
 from pymialsrtk.bids.utils import write_bids_derivative_description
-from pymialsrtk.utils.monitoring import log_nodes_cb, generate_gantt_chart
 
 # Get pymialsrtk version
 from pymialsrtk.info import __version__
@@ -90,9 +89,6 @@ class AnatomicalPipeline:
     m_skip_stacks_ordering : bool (optional)
         Weither the automatic stacks ordering should be skipped. (default is False)
 
-    m_save_profiler_log : bool
-        If `True`, save node runtime statistics to a JSON-style log file.
-
     Examples
     --------
     >>> from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
@@ -146,14 +142,11 @@ class AnatomicalPipeline:
     openmp_number_of_cores = None
     nipype_number_of_cores = None
 
-    m_save_profiler_log = None
-
     def __init__(
         self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
         session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
         p_dict_custom_interfaces=None,
-        openmp_number_of_cores=None, nipype_number_of_cores=None,
-        p_save_profiler_log=None
+        openmp_number_of_cores=None, nipype_number_of_cores=None
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -167,8 +160,6 @@ class AnatomicalPipeline:
 
         self.openmp_number_of_cores = openmp_number_of_cores
         self.nipype_number_of_cores = nipype_number_of_cores
-
-        self.m_save_profiler_log = p_save_profiler_log if p_save_profiler_log is not None else False
 
         # (default) sr tv parameters
         if paramTV is None:
@@ -204,7 +195,6 @@ class AnatomicalPipeline:
         where the output of node i goes to the input of node i+1.
 
         """
-
         sub_ses = self.subject
         if self.session is not None:
             sub_ses = ''.join([sub_ses, '_', self.session])
@@ -236,11 +226,6 @@ class AnatomicalPipeline:
         if os.path.isfile(os.path.join(wf_base_dir, "pypeline.log")):
             os.unlink(os.path.join(wf_base_dir, "pypeline.log"))
 
-        if self.m_save_profiler_log:
-            log_filename = os.path.join(wf_base_dir, 'pypeline_stats.log')
-            if os.path.isfile(log_filename):
-                os.unlink(log_filename)
-
         self.wf = Workflow(name=self.pipeline_name,base_dir=wf_base_dir)
 
         config.update_config(
@@ -259,18 +244,6 @@ class AnatomicalPipeline:
                 }
             }
         )
-
-        if self.m_save_profiler_log:
-            config.update_config(
-                {
-                    'monitoring': {
-                        'enabled': self.m_save_profiler_log,
-                        'sample_frequency': "1.0",
-                        'summary_append': True
-                    }
-                }
-            )
-            config.enable_resource_monitor()
 
         # Update nypipe logging with config
         nipype_logging.update_logging(config)
@@ -639,26 +612,12 @@ class AnatomicalPipeline:
 
         # Create dictionary of arguments passed to plugin_args
         args_dict = {
-            # 'maxtasksperchild': 1,
             'raise_insufficient': False,
             'n_procs': self.nipype_number_of_cores
         }
 
         if (memory is not None) and (memory > 0):
             args_dict['memory_gb'] = memory
-
-        if self.m_save_profiler_log:
-            args_dict['status_callback'] = log_nodes_cb
-            # Set path to log file and create callback logger
-            callback_log_path = os.path.join(self.wf.base_dir,
-                                             self.wf.name,
-                                             'run_stats.log')
-            import logging
-            import logging.handlers
-            logger = logging.getLogger('callback')
-            logger.setLevel(logging.DEBUG)
-            handler = logging.FileHandler(callback_log_path)
-            logger.addHandler(handler)
 
         iflogger.info("**** Processing ****")
         # datetime object containing current start date and time
@@ -716,38 +675,6 @@ class AnatomicalPipeline:
                 deriv_dir=self.output_dir,
                 pipeline_name=toolbox
             )
-
-        if self.m_save_profiler_log:
-            iflogger.info("**** Workflow execution profiling ****")
-            iflogger.info(f'\t > Creation of report...')
-            generate_gantt_chart(logfile=callback_log_path,
-                                 cores=self.nipype_number_of_cores,
-                                 minute_scale=10,
-                                 space_between_minutes=50,
-                                 pipeline_name=os.path.join(self.wf.base_dir,
-                                                            self.wf.name))
-            # Copy and rename the computational resources log
-            src = os.path.join(self.wf.base_dir, self.wf.name, "run_stats.log.html")
-            if self.session is not None:
-                dst = os.path.join(
-                        self.output_dir,
-                        '-'.join(["pymialsrtk", __version__]),
-                        self.subject,
-                        self.session,
-                        'logs',
-                        f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
-                )
-            else:
-                dst = os.path.join(
-                        self.output_dir,
-                        '-'.join(["pymialsrtk", __version__]),
-                        self.subject,
-                        'logs',
-                        f'{self.subject}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
-                )
-            # Make the copy
-            iflogger.info(f'\t > Copy {src} to {dst}...')
-            shutil.copy(src=src, dst=dst)
 
         iflogger.info("**** Super-resolution HTML report creation ****")
         self.create_subject_report()
@@ -815,17 +742,6 @@ class AnatomicalPipeline:
             f'{sub_ses}_rec-SR_id-{self.sr_id}_log.txt'
         )
 
-        if os.path.exists(os.path.join(
-            final_res_dir, 'logs',
-            f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
-        )):
-            resources_log_file = os.path.join(
-                '..', 'logs',
-                f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
-            )
-        else:
-            resources_log_file = None
-
         # Create the text for {{subject}} and {{session}} fields in template
         report_subject_text = f'{self.subject.split("-")[-1]}'
         if self.session is not None:
@@ -840,7 +756,6 @@ class AnatomicalPipeline:
             processing_datetime=self.run_start_time,
             run_time=self.run_elapsed_time,
             log=log_file,
-            resources_stats=resources_log_file,
             sr_id=self.sr_id,
             stacks=self.m_stacks,
             svr="on" if not self.m_skip_svr else "off",

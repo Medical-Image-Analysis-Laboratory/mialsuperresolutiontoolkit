@@ -146,8 +146,7 @@ def main(bids_dir, output_dir,
          dict_custom_interfaces=None,
          nipype_number_of_cores=1,
          openmp_number_of_cores=1,
-         memory=0,
-         save_profiler_log=False):
+         memory=0):
     """Main function that creates and executes the workflow of the BIDS App on one subject.
 
     It creates an instance of the class :class:`pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline`,
@@ -196,9 +195,6 @@ def main(bids_dir, output_dir,
         Maximal amount of memory used by the workflow
         (Default: 0, workflow uses all available memory)
 
-    save_profiler_log : bool (optional)
-        Save the node profiler (runtime stats) log. (default is False)
-
     """
 
     if paramTV is None:
@@ -223,8 +219,7 @@ def main(bids_dir, output_dir,
                                   masks_desc,
                                   p_dict_custom_interfaces=dict_custom_interfaces,
                                   openmp_number_of_cores=openmp_number_of_cores,
-                                  nipype_number_of_cores=nipype_number_of_cores,
-                                  p_save_profiler_log=save_profiler_log
+                                  nipype_number_of_cores=nipype_number_of_cores
                                   )
 
     # Create the super resolution Nipype workflow
@@ -301,8 +296,7 @@ if __name__ == '__main__':
                            dict_custom_interfaces=dict_custom_interfaces,
                            nipype_number_of_cores=nipype_nb_of_cores,
                            openmp_number_of_cores=openmp_nb_of_cores,
-                           memory=args.memory,
-                           save_profiler_log=args.profiling)
+                           memory=args.memory)
         else:
             print('WARNING: Do not process subjects %s because of missing configuration.' % sub)
 
