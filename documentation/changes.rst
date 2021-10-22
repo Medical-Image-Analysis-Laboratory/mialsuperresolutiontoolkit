@@ -3,6 +3,54 @@ Changes
 **************
 
 
+Version 2.0.3
+--------------
+
+Date: October 25, 2021
+
+This corresponds to the release of MIAL Super-Resolution Toolkit 2.0.3 that provides a
+number of changes made by `pull request 110 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/110>`_
+to correct the unstable behaviour of version 2.0.2. This includes in particular the following.
+
+Bug fix
+========
+
+* Downgrade tensorflow to a version compiled with GCC 4.8.
+  All versions greater than 1.14 are compiled with a newer GCC version and seems to
+  get stuck while getting access to the CPU device and eventually cause
+  unresponsiveness of the `preprocess.BrainExtraction` interface.
+
+* Remove all code related to profiling because of its instability
+
+Package update
+===============
+
+* traits from `5.1.2` to `6.3.0`
+* nipype from `1.6.0` to `1.7.0`
+* nilearn from `0.7.1` to `0.8.1`
+* numpy from `1.16.6` to `1.21.3`
+* scikit-learn from `0.20` to `1.0.0`
+* scikit-image from `0.14` to `0.18`
+
+Package downgrade
+=================
+
+* tflearn from `0.5.0` to `0.3.2`
+* tensorflow from `2.3.0` to `1.13.1`
+* pandas from `1.2.3` to `1.1.5`
+
+Software development life cycle
+================================
+
+* Remove `--profiling` option flag to test-02 and test-04
+
+More...
+========
+
+Please check the `pull request 110 page <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/110>`_
+for more change details and development discussions.
+
+
 Version 2.0.2
 --------------
 
