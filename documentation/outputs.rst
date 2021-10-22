@@ -102,17 +102,6 @@ Anatomical derivatives
         :width: 600
         :align: center
 
-.. topic:: Profiling report
-
-    The `--profiling` option flag enables `MIALSRTK` to monitor the computational resources used by each interface / node of the workflow.
-    It generates in each subject's ``logs/`` subfolder a ``sub-01_rec-SR_id-1_desc-profiling_log.html`` file which reports
-    run times, number of executed threads, and amount of used memory in the form of the following HTML gantt chart:
-
-    .. raw:: html
-
-        <iframe src="_static/run_stats.log.html" height="345px" width="100%"></iframe>
-
-
 Nipype Workflow Derivatives
 ==========================================
 
