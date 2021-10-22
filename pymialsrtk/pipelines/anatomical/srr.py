@@ -640,8 +640,8 @@ class AnatomicalPipeline:
         # Create dictionary of arguments passed to plugin_args
         args_dict = {
             # 'maxtasksperchild': 1,
-            # 'raise_insufficient': False,
-            # 'n_procs': self.nipype_number_of_cores
+            'raise_insufficient': False,
+            'n_procs': self.nipype_number_of_cores
         }
 
         if (memory is not None) and (memory > 0):
