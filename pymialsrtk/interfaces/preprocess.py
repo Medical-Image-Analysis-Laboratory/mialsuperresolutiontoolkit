@@ -247,7 +247,9 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
         cmd = 'mialsrtkCorrectSliceIntensity "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            env_cpp = os.environ.copy()
+            env_cpp['LD_PRELOAD'] = ""
+            run(cmd, env=env_cpp, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -537,6 +539,7 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
         outputs = self._outputs().get()
         outputs['out_im_file'] = self._gen_filename('out_im_file')
         return outputs
+
 
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MultipleMialsrtkSliceBySliceCorrectBiasField interface."""
