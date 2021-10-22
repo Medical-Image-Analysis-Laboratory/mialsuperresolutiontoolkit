@@ -670,7 +670,7 @@ class AnatomicalPipeline:
         if self.nipype_number_of_cores > 1:
             res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
         else:
-            res = self.wf.run(plugin_args=args_dict)
+            res = self.wf.run()
 
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
