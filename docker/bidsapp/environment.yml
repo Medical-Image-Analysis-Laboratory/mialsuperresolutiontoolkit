@@ -8,33 +8,26 @@ channels:
 dependencies:
 - python=3.7.10
 - pip=21.0.1
-- nibabel=3.0.1
-- pandas=1.2.3
-- nipype=1.6.0
-- traits=5.1.2
-- nilearn=0.7.1
+- pandas=1.1.5
+- nipype=1.7.0
+- nilearn=0.8.1
 - pydotplus=2.0.2
-- pandoc=2.11.0.1
-- seaborn=0.11.1
+- pandoc=2.14.2
+- seaborn=0.11.2
+- matplotlib=3.4
+- tensorflow==1.13.1
+- scikit-learn
+- scikit-image
 
 - pip:
     - coverage==5.1
     - duecredit==0.8.0
-#    - apptools==4.4.0
     - graphviz
-    - numpy==1.16.6
-    # - niworkflows==0.10.2
-    - tensorflow==2.3.0
-    - tensorflow-estimator==2.3.0
-    - tensorboard==2.3.0
-    - tflearn==0.5.0
+    - tflearn==0.3.2
     - MedPy==0.4.0
     - opencv-python==4.1.0.25
-    - scikit-learn==0.20.3
-    - scikit-image==0.14.2
     - sphinx==1.8.5
     - sphinx_rtd_theme==0.4.3
     - sphinx-argparse==0.2.5
     - nbsphinx==0.7.1
     - recommonmark==0.5.0
-    - matplotlib==3.4
