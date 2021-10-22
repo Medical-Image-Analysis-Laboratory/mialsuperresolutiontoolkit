@@ -1,23 +1,10 @@
-#!/usr/bin/bash
+#!/bin/sh
+SCRIPTSDIR=$(cd "$(dirname "$0")"; pwd)
+BASEDIR="$(dirname "$SCRIPTSDIR")"
+cd "$BASEDIR"
 
-realpath() {
-    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
-}
+echo "Building documentation in $BASEDIR/documentation/_build/html"
 
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
-        # Linux
-        DIR="$(dirname $(readlink -f "$0"))"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-        # Mac OSX
-        DIR="$(dirname $(realpath "$0"))"
-fi
-
-echo "Building documentation in $DIR/documentation/_build/html"
-
-OLDPWD="$PWD"
-
-cd "$DIR/documentation"
+cd "$BASEDIR/documentation"
 make clean
 make html
-
-cd "$OLDPWD"
