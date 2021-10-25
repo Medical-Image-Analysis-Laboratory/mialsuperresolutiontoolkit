@@ -2,7 +2,8 @@
 SCRIPTSDIR=$(cd "$(dirname "$0")"; pwd)
 BASEDIR="$(dirname "$SCRIPTSDIR")"
 
-DOCKER_IMAGE="docker.io/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:v2.0.3"
+# DOCKER_IMAGE="docker.io/sebastientourbier/mialsuperresolutiontoolkit-bidsapp:v2.0.3"
+DOCKER_IMAGE="sebastientourbier/mialsuperresolutiontoolkit-bidsapp:v2.0.3"
 
 docker run -it --rm -u $(id -u):$(id -g) \
     -v "$BASEDIR/data":/bids_dir \
