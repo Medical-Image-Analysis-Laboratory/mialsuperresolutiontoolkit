@@ -499,6 +499,16 @@ int main( int argc, char *argv[] )
 
           try
             {
+              float old_min_step = registration[im] -> GetMinStepLength();
+              float old_max_step = registration[im] -> GetMaxStepLength();
+
+              float new_min_step = 0.5 * 0.5 * old_min_step;
+              float new_max_step = 0.5 * 0.5 * old_max_step;
+              std::cout << std::endl << " Reducing registration step length. Default values were: [" << old_min_step << ";"<< old_max_step << "]. New values are: [" << new_min_step << ";"<< new_max_step << "]."<< std::endl ;
+
+              registration[im] -> SetMinStepLength(new_min_step);
+              registration[im] -> SetMaxStepLength(new_max_step);
+
             registration[im] -> StartRegistration();
             }
           catch( itk::ExceptionObject & err )
