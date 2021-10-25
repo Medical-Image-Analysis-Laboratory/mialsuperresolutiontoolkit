@@ -8,41 +8,52 @@ Version 2.0.3
 
 Date: October 25, 2021
 
-This corresponds to the release of MIAL Super-Resolution Toolkit 2.0.3 that provides a
-number of changes made by `pull request 110 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/110>`_
-to correct the unstable behaviour of version 2.0.2. This includes in particular the following.
+This corresponds to the release of MIAL Super-Resolution Toolkit `v2.0.3`. It provides the following
+changes to correct in particular a number of problems encountered in version `v2.0.2`, such as the issue with Nodes getting stuck in
+a running state and different `Segmentation Fault` errors.
 
-Bug fix
-========
+Major bug fix
+==============
 
-* Downgrade tensorflow to a version compiled with GCC 4.8.
+* Review the versions of python packages and libraries that were causing the problem of nodes getting stuck
+  in a running state. More especially, tensorflow was downgraded to a version compiled with GCC 4.8.
   All versions greater than 1.14 are compiled with a newer GCC version and seems to
   get stuck while getting access to the CPU device and eventually cause
-  unresponsiveness of the `preprocess.BrainExtraction` interface.
+  unresponsiveness of the `preprocess.BrainExtraction` interface. This has led to the following package changes:
+
+    * *Package update*
+
+        * traits from `5.1.2` to ``6.3.0``
+        * nipype from `1.6.0` to ``1.7.0``
+        * nilearn from `0.7.1` to ``0.8.1``
+        * numpy from `1.16.6` to ``1.21.3``
+        * scikit-learn from `0.20` to ``1.0.0``
+        * scikit-image from `0.14` to ``0.18``
+
+    * *Package downgrade*
+
+        * tflearn from `0.5.0` to ``0.3.2``
+        * tensorflow from `2.3.0` to ``1.13.1``
+        * pandas from `1.2.3` to ``1.1.5``
 
 * Remove all code related to profiling because of its instability
 
-Package update
-===============
+* The following Sphinx extension packages were added to the conda environment, that were required if one wish
+  to build the documentation locally:
+    * sphinxcontrib-apidoc ``0.3.0``
+    * sphinxcontrib-napoleon ``0.7``
 
-* traits from `5.1.2` to `6.3.0`
-* nipype from `1.6.0` to `1.7.0`
-* nilearn from `0.7.1` to `0.8.1`
-* numpy from `1.16.6` to `1.21.3`
-* scikit-learn from `0.20` to `1.0.0`
-* scikit-image from `0.14` to `0.18`
+Refactoring
+============
 
-Package downgrade
-=================
-
-* tflearn from `0.5.0` to `0.3.2`
-* tensorflow from `2.3.0` to `1.13.1`
-* pandas from `1.2.3` to `1.1.5`
+* The method `pymialsrtk.postprocess.binarize_image()` has been modified and encapsulated in a new interface
+  called `pymialsrtk.postprocess.BinarizeImage`.
 
 Software development life cycle
 ================================
 
 * Remove `--profiling` option flag to test-02 and test-04
+* Remove profiling-related outputs from the list of outputs for test-02 and test-04.
 
 More...
 ========
@@ -197,7 +208,7 @@ Software development life cycle
 * Adopt CircleCI for continuous integration testing and run the following regression tests:
 
 	* Test 01: Run BIDS App on the sample `data/` BIDS dataset with the ``--manual_masks`` option.
-	
+
 	* Test 02: Run BIDS App on the sample `data/` BIDS dataset with automated brain extraction (masking).
 
 	See `CircleCI project page <https://app.circleci.com/pipelines/github/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit>`_.
