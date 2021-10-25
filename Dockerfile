@@ -77,7 +77,7 @@ RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_
 ##############################################################
 # Make MIALSRTK happy
 ##############################################################
-ENV BIN_DIR "/usr/local/bin" 
+ENV BIN_DIR "/usr/local/bin"
 ENV PATH "${BIN_DIR}:$PATH"
 
 ##############################################################
@@ -90,6 +90,7 @@ RUN mkdir /.cache && \
 
 # Set the working directory to /app
 WORKDIR /app
+RUN chmod -R 777 /app
 
 # Store command related variables
 ENV MY_CONDA_PY3ENV "pymialsrtk-env"
@@ -101,9 +102,15 @@ COPY docker/bidsapp/environment.yml /app/environment.yml
 RUN conda env create -f /app/environment.yml
 
 ##############################################################
-# Setup for tensorflow 
+# Setup for scikit-image
 ##############################################################
-# Filter out all messages 
+ENV SKIMAGE_DATADIR "/app/sklearn"
+RUN mkdir -p "${SKIMAGE_DATADIR}"
+
+##############################################################
+# Setup for tensorflow
+##############################################################
+# Filter out all messages
 # ENV TF_CPP_MIN_LOG_LEVEL "0"
 
 # Make tensorflow happy: Use jemalloc instead of malloc.
