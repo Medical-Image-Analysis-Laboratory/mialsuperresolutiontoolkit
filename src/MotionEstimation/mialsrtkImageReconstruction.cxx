@@ -1,7 +1,7 @@
 
 /*=========================================================================
 
-Program: Performs slice to volume registration and Scattered Data Interpolation 
+Program: Performs slice to volume registration and Scattered Data Interpolation
 Language: C++
 Date: $Date: 2012-28-12 14:00:00 +0100 (Fri, 28 Dec 2012) $
 Version: $Revision: 1 $
@@ -320,7 +320,7 @@ int main( int argc, char *argv[] )
         lowToHighResFilter -> SetRegionArray( i, rois[i] );
 
 
-      } 
+      }
       // use the entire image (longer computation)
       else if ( allSwitchArg.isSet() )
         {
@@ -390,7 +390,7 @@ int main( int argc, char *argv[] )
 
   // Image registration performed slice by slice or affine 3D according to
   // the user selection
-    
+
   if(computeRefImage)
   {
     std::cout << "Get global rigid HR image" << std::endl;
@@ -422,7 +422,7 @@ int main( int argc, char *argv[] )
 
   /** Anisotropic diffusion Gaussian filtering for computing the SNR measure */
   // typedef itk::CurvatureAnisotropicDiffusionImageFilter< ImageType, ImageType >  ADGaussianFilterType;
-  
+
   // typedef itk::SubtractImageFilter< InputImageType, ImageType, ImageType > SubtractFilterType;
   // typedef itk::ResampleImageFilter< ImageType, ImageType > ResampleFilterType;
 
@@ -482,6 +482,15 @@ int main( int argc, char *argv[] )
           registration[im] = RegistrationType::New();
           registration[im] -> SetFixedImage( images[im] );
           registration[im] -> SetMovingImage( hrRefImage );
+          if (it == 1)
+          {
+            registration[im] -> SetMovingImage( hrRefImage );
+          }
+          else
+          {
+              std::cout << "Iteration " << it << " > 1 :    Updating 2D/3D registration reference image to 'hrImage'. " << std::endl << std::endl;
+              registration[im] -> SetMovingImage( hrImage );
+          }
           registration[im] -> SetImageMask( imageMasks[im] );
           registration[im] -> SetTransform( transforms[im] );
 
@@ -638,4 +647,3 @@ int main( int argc, char *argv[] )
   } catch (TCLAP::ArgException &e)  // catch any exceptions
   { std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
 }
-
