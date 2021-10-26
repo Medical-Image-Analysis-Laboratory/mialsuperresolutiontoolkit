@@ -358,7 +358,7 @@ class FilenamesGeneration(BaseInterface):
 class BinarizeImageInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the BinarizeImage interface."""
 
-    input_image = File(desc='Input image filename to be binarized',mandatory=True)
+    input_image = File(desc='Input image filename to be binarized', mandatory=True)
 
 
 class BinarizeImageOutputSpec(TraitedSpec):
