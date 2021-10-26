@@ -104,9 +104,10 @@ RUN conda env create -f /app/environment.yml
 ##############################################################
 # Setup for scikit-image
 ##############################################################
-ENV SKIMAGE_DATADIR "/app/sklearn"
-RUN mkdir -p "${SKIMAGE_DATADIR}" && \
-    chmod -R 777 "${SKIMAGE_DATADIR}"
+ENV SKIMAGE_VERSION "0.18.3"
+ENV SKIMAGE_DATADIR "/app/skimage"
+RUN mkdir -p "${SKIMAGE_DATADIR}/${SKIMAGE_VERSION}" && \
+    chmod -R 777 "${SKIMAGE_DATADIR}/${SKIMAGE_VERSION}"
 
 ##############################################################
 # Setup for tensorflow
