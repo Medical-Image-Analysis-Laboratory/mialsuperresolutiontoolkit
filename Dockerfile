@@ -105,7 +105,8 @@ RUN conda env create -f /app/environment.yml
 # Setup for scikit-image
 ##############################################################
 ENV SKIMAGE_DATADIR "/app/sklearn"
-RUN mkdir -p "${SKIMAGE_DATADIR}"
+RUN mkdir -p "${SKIMAGE_DATADIR}" && \
+    chmod -R 777 "${SKIMAGE_DATADIR}"
 
 ##############################################################
 # Setup for tensorflow
