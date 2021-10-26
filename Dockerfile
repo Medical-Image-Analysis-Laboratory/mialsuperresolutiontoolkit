@@ -108,6 +108,8 @@ ENV SKIMAGE_VERSION "0.18.3"
 ENV SKIMAGE_DATADIR "/app/skimage"
 RUN mkdir -p "${SKIMAGE_DATADIR}/${SKIMAGE_VERSION}" && \
     chmod -R 777 "${SKIMAGE_DATADIR}/${SKIMAGE_VERSION}"
+RUN . $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV && \
+    python -c "import skimage"
 
 ##############################################################
 # Setup for tensorflow
