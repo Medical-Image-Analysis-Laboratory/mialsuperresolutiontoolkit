@@ -441,8 +441,14 @@ int main( int argc, char *argv[] )
 
   float previousMetric = 0.0;
   float currentMetric = 0.0;
+
+  // Default registration step lengths
   float min_step = 0.0001;
   float max_step = 0.2;
+
+  // Reduce default registration step lengths
+  min_step = 0.5 * min_step;
+  max_step = 0.5 * max_step;
 
   for(unsigned int it=1; it <= itMax; it++)
   {
@@ -489,19 +495,14 @@ int main( int argc, char *argv[] )
             std::cout << "Iteration " << it << ":" << std::endl;
             std::cout << "  - Use the initial reference image for slice-to-volume registration. " << std::endl;
             registration[im] -> SetMovingImage( hrRefImage );
-            std::cout << "  - Use default registration step lengths: [" << min_step << ";"<< max_step << "]" << std::endl << std::cout.flush();
           }
           else
           {
-              std::cout << "Iteration " << it << " > 1 :" << std::endl;
-              std::cout << "  - Update the reference image for slice-to-volume registration with reconstructed HR image of previous iteration. " << std::endl;
-              registration[im] -> SetMovingImage( hrImage );
-              std::cout << "  - Reduce registration step lengths. ";
-              std::cout << "Old min/max values are: [" << min_step << ";"<< max_step << "]. ";
-              min_step = 0.5 * 0.5 * min_step;
-              max_step = 0.5 * 0.5 * max_step;
-              std::cout << "New min/max values are: [" << min_step << ";"<< max_step << "]."<< std::endl << std::cout.flush();
+            std::cout << "Iteration " << it << " > 1 :" << std::endl;
+            std::cout << "  - Update the reference image for slice-to-volume registration with reconstructed HR image of previous iteration. " << std::endl;
+            registration[im] -> SetMovingImage( hrImage );
           }
+          std::cout << "  - Use constant registration step lengths: [" << min_step << ";"<< max_step << "]" << std::endl << std::cout.flush();
           registration[im] -> SetMinStepLength(min_step);
           registration[im] -> SetMaxStepLength(max_step);
           registration[im] -> SetImageMask( imageMasks[im] );
