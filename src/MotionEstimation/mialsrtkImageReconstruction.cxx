@@ -224,7 +224,7 @@ int main( int argc, char *argv[] )
   typedef itk::CastImageFilter<ImageType,ImageMaskType> CasterType;
   typedef itk::ImageDuplicator<ImageType> DuplicatorType;
 
-    // Filter setup
+  // Filter setup
   unsigned int numberOfImages = input.size();
   std::vector< ImagePointer >         images(numberOfImages);
   std::vector< ImageMaskPointer >     imageMasks(numberOfImages);
@@ -484,12 +484,25 @@ int main( int argc, char *argv[] )
           registration[im] -> SetMovingImage( hrRefImage );
           if (it == 1)
           {
+            std::cout << "Iteration " << it << ":" << std::endl;
+            std::cout << "  - Use the initial reference image for slice-to-volume registration. " << std::endl;
             registration[im] -> SetMovingImage( hrRefImage );
+            float min_step = registration[im] -> GetMinStepLength();
+            float max_step = registration[im] -> GetMaxStepLength();
+            std::cout << "  - Use default registration step lengths: [" << min_step << ";"<< max_step << "]" << std::endl << std::cout.flush();
           }
           else
           {
-              std::cout << "Iteration " << it << " > 1 :    Updating 2D/3D registration reference image to 'hrImage'. " << std::endl << std::endl;
+              std::cout << "Iteration " << it << " > 1 :" << std::endl;
+              std::cout << "  - Update the reference image for slice-to-volume registration with reconstructed HR image of previous iteration. " << std::endl;
               registration[im] -> SetMovingImage( hrImage );
+              std::cout << "  - Reduce registration step lengths. ";
+              std::cout << "Old min/max values are: [" << min_step << ";"<< max_step << "]. ";
+              min_step = 0.5 * 0.5 * min_step;
+              max_step = 0.5 * 0.5 * max_step;
+              std::cout << "New min/max values are: [" << min_step << ";"<< max_step << "]."<< std::endl << std::cout.flush();
+              registration[im] -> SetMinStepLength(min_step);
+              registration[im] -> SetMaxStepLength(max_step);
           }
           registration[im] -> SetImageMask( imageMasks[im] );
           registration[im] -> SetTransform( transforms[im] );
@@ -499,17 +512,7 @@ int main( int argc, char *argv[] )
 
           try
             {
-              float old_min_step = registration[im] -> GetMinStepLength();
-              float old_max_step = registration[im] -> GetMaxStepLength();
-
-              float new_min_step = 0.5 * 0.5 * old_min_step;
-              float new_max_step = 0.5 * 0.5 * old_max_step;
-              std::cout << std::endl << " Reducing registration step length. Default values were: [" << old_min_step << ";"<< old_max_step << "]. New values are: [" << new_min_step << ";"<< new_max_step << "]."<< std::endl ;
-
-              registration[im] -> SetMinStepLength(new_min_step);
-              registration[im] -> SetMaxStepLength(new_max_step);
-
-            registration[im] -> StartRegistration();
+                registration[im] -> StartRegistration();
             }
           catch( itk::ExceptionObject & err )
             {
