@@ -3,81 +3,16 @@ Changes
 **************
 
 
-Version 2.0.3
---------------
-
-Date: October 27, 2021
-
-This corresponds to the release of MIAL Super-Resolution Toolkit `v2.0.3`. It provides the following
-changes to correct in particular a number of problems encountered in version `v2.0.2`, such as the
-issue with Nodes getting stuck in a running state and different `Segmentation Fault` errors.
-
-Major bug fix
-==============
-
-* Review the versions of python packages and libraries that were causing the problem of nodes getting stuck
-  in a running state. More especially, tensorflow was downgraded to a version compiled with GCC 4.8.
-  All versions greater than 1.14 are compiled with a newer GCC version and seems to get stuck while
-  getting access to the CPU device and eventually cause unresponsiveness of the
-  `preprocess.BrainExtraction` interface. This has led to the following package changes:
-
-    * *Package update*
-
-        * traits from `5.1.2` to ``6.3.0``
-        * nipype from `1.6.0` to ``1.7.0``
-        * nilearn from `0.7.1` to ``0.8.1``
-        * numpy from `1.16.6` to ``1.21.3``
-        * scikit-learn from `0.20` to ``1.0.1``
-        * scikit-image from `0.14` to ``0.16.2``
-
-    * *Package downgrade*
-
-        * tflearn from `0.5.0` to ``0.3.2``
-        * tensorflow from `2.3.0` to ``1.13.1``
-        * pandas from `1.2.3` to ``1.1.5``
-
-* Remove all code related to profiling because of its instability
-
-* The following Sphinx extension packages were added to the conda environment, that were required if one wish
-  to build the documentation locally:
-    * sphinxcontrib-apidoc ``0.3.0``
-    * sphinxcontrib-napoleon ``0.7``
-
-Refactoring
-============
-
-* The method `pymialsrtk.postprocess.binarize_image()` has been modified and encapsulated in a new interface
-  called `pymialsrtk.postprocess.BinarizeImage`.
-
-Software development life cycle
-================================
-
-* Remove `--profiling` option flag to test-02 and test-04
-* Remove profiling-related outputs from the list of outputs for test-02 and test-04.
-
-More...
-========
-
-Please check the `pull request 110 page <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/110>`_
-for more change details and development discussions.
-
-
 Version 2.0.2
 --------------
 
-Date: August 23, 2021
+Date: October 28, 2021
 
 This corresponds to the release of MIAL Super-Resolution Toolkit 2.0.2,
 that includes in particular the following changes.
 
 New feature
 =============
-
-- ``pymialsrtk`` enables to monitor resources (time, threads, memory) used by the
-  interface of the pipeline at execution with the ``--profiling`` option flag.
-  This includes the creation of a new module `pymialsrtk.utils.monitoring` that
-  includes all methods originating from Nipype and modified to support this task
-  (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
 
 - ``pymialsrtk`` enables to fix the maximal amount of memory (in Gb) that could be used by the
   pipelines at execution with the ``--memory MEMORY_Gb`` option flag.
@@ -93,6 +28,12 @@ New feature
     - Computing environment summary
   (See pull requests `97 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/97>`_, `102 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/102>`_, and `103 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/103>`_).
 
+Major change
+=============
+
+* The method `pymialsrtk.postprocess.binarize_image()` has been modified and encapsulated in a new interface
+  called `pymialsrtk.postprocess.BinarizeImage`.
+
 Python update
 ===============
 
@@ -101,17 +42,19 @@ Python update
 New package
 ==============
 
-* pandas `1.2.3`
+* pandas `1.1.5`
+* sphinxcontrib-apidoc ``0.3.0`` (required to build documentation)
+* sphinxcontrib-napoleon ``0.7`` (required to build documentation)
 
 Package update
 ===============
 
-* pip from `19.0.3` to `21.0.1`
-* numpy from `1.16.4` to `1.16.6`
-* tflearn from `0.3.2` to `0.5.0`
-* tensorflow from `1.13.1` to `2.3.0`
-* tensorflow-estimator from `1.13.0` to `2.3.0`
-* tensorboard from `1.13.1` to `2.3.0`
+* traits from `5.1.2` to ``6.3.0``
+* nipype from `1.6.0` to ``1.7.0``
+* nilearn from `0.7.1` to ``0.8.1``
+* numpy from `1.16.6` to ``1.21.3``
+* scikit-learn from `0.20` to ``1.0.1``
+* scikit-image from `0.14` to ``0.16.2``
 
 Bug fix
 ========
@@ -120,16 +63,29 @@ Bug fix
   in ``mialsrtk-<variant>/sub-<label>/anat``
   (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
 
-Software development life cycle
-================================
+* The following Sphinx extension packages were added to the conda environment, that were required if one wish
+  to build the documentation locally:
+    * sphinxcontrib-apidoc ``0.3.0``
+    * sphinxcontrib-napoleon ``0.7``
 
-* Add `--profiling` option flag to test-02 and test-04
-  (See `pull request 92 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/92>`_).
+* ``mialsrtkImageReconstruction`` updates the reference image used for
+  slice-to-volume registration using the high-resolution image reconstructed
+  by SDI at the previous iteration.
+
+Note
+====
+
+It was not possible to update the version of tensorflow for the moment.
+All versions of tensorflow greater than 1.14 are in fact compiled with
+a version of GCC much more recent than the one available in Ubuntu 14.04.
+This seems to cause unresponsiveness of the `preprocess.BrainExtraction`
+interface node which can get stuck while getting access to the CPU device.
 
 More...
 ========
 
 Please check `pull request 70 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/70>`_
+and  `pull request 110 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/110>`_
 for more change details and development discussions.
 
 
