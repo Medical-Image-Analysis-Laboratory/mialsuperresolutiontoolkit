@@ -490,6 +490,7 @@ int main( int argc, char *argv[] )
           registration[im] = RegistrationType::New();
           registration[im] -> SetFixedImage( images[im] );
           registration[im] -> SetMovingImage( hrRefImage );
+
           if (it == 1)
           {
             std::cout << "Iteration " << it << ":" << std::endl;
