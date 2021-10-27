@@ -103,13 +103,29 @@ RUN conda env create -f /app/environment.yml
 
 ##############################################################
 # Setup for scikit-image
+#
+# Commented for now as it causes issues with Singularity
+# for scikit-image = 0.18.3 with OSError:
+# [Errno 30] Read-only file system: '/app/skimage/0.18.3/data'
+#
+# The creation of the datadir for skimage has been introduced
+# in 0.17 and so prior versions such as 0.16.2 should not
+# perform this process, the version that is now used.
+#
+# See https://github.com/scikit-image/scikit-image/issues/4664
+# for reference.
+#
+# Similar error encountered for:
+#   - fmriprep: https://github.com/nipreps/fmriprep/issues/1777
+#   - mriqc: https://neurostars.org/t/read-only-error-in-mriqc-using-singularity-on-cluster/2022
+#
 ##############################################################
-ENV SKIMAGE_VERSION "0.18.3"
-ENV SKIMAGE_DATADIR "/app/skimage"
-RUN mkdir -p "${SKIMAGE_DATADIR}/${SKIMAGE_VERSION}" && \
-    chmod -R 777 "${SKIMAGE_DATADIR}/${SKIMAGE_VERSION}"
-RUN . $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV && \
-    python -c "import skimage"
+# ENV SKIMAGE_VERSION "0.18.3"
+# ENV SKIMAGE_DATADIR "/app/skimage"
+# RUN mkdir -p "${SKIMAGE_DATADIR}/${SKIMAGE_VERSION}" && \
+#     chmod -R 777 "${SKIMAGE_DATADIR}/${SKIMAGE_VERSION}"
+# RUN . $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV && \
+#     python -c "import skimage"
 
 ##############################################################
 # Setup for tensorflow
