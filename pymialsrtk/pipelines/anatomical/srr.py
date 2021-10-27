@@ -25,9 +25,9 @@ from nipype.pipeline import Node, MapNode, Workflow
 from nipype.interfaces.utility import IdentityInterface
 
 # Import the implemented interface from pymialsrtk
-import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
+import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.utils as utils
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
