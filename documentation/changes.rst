@@ -6,20 +6,20 @@ Changes
 Version 2.0.3
 --------------
 
-Date: October 25, 2021
+Date: October 27, 2021
 
 This corresponds to the release of MIAL Super-Resolution Toolkit `v2.0.3`. It provides the following
-changes to correct in particular a number of problems encountered in version `v2.0.2`, such as the issue with Nodes getting stuck in
-a running state and different `Segmentation Fault` errors.
+changes to correct in particular a number of problems encountered in version `v2.0.2`, such as the
+issue with Nodes getting stuck in a running state and different `Segmentation Fault` errors.
 
 Major bug fix
 ==============
 
 * Review the versions of python packages and libraries that were causing the problem of nodes getting stuck
   in a running state. More especially, tensorflow was downgraded to a version compiled with GCC 4.8.
-  All versions greater than 1.14 are compiled with a newer GCC version and seems to
-  get stuck while getting access to the CPU device and eventually cause
-  unresponsiveness of the `preprocess.BrainExtraction` interface. This has led to the following package changes:
+  All versions greater than 1.14 are compiled with a newer GCC version and seems to get stuck while
+  getting access to the CPU device and eventually cause unresponsiveness of the
+  `preprocess.BrainExtraction` interface. This has led to the following package changes:
 
     * *Package update*
 
@@ -27,8 +27,8 @@ Major bug fix
         * nipype from `1.6.0` to ``1.7.0``
         * nilearn from `0.7.1` to ``0.8.1``
         * numpy from `1.16.6` to ``1.21.3``
-        * scikit-learn from `0.20` to ``1.0.0``
-        * scikit-image from `0.14` to ``0.18``
+        * scikit-learn from `0.20` to ``1.0.1``
+        * scikit-image from `0.14` to ``0.16.2``
 
     * *Package downgrade*
 

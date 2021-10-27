@@ -5,7 +5,7 @@ _version_minor = 0
 _version_micro = 3
 _version_extra = ''
 
-__release_date__ = '25.10.2021'
+__release_date__ = '27.10.2021'
 
 __minor_version__ = "%s.%s" % (_version_major,
                                _version_minor)
