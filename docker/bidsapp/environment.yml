@@ -17,7 +17,7 @@ dependencies:
 - matplotlib=3.4
 - tensorflow==1.13.1
 - scikit-learn=1.0.1
-- scikit-image=0.18.3
+- scikit-image=0.16.2
 
 - pip:
     - coverage==5.1
