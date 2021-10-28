@@ -205,7 +205,7 @@ def main(bids_dir, output_dir,
         session = 'ses-' + session
 
     if srID is None:
-        srID = "01"
+        srID = 1
 
     # Initialize an instance of AnatomicalPipeline
     pipeline = AnatomicalPipeline(bids_dir,
@@ -273,6 +273,7 @@ if __name__ == '__main__':
 
             for sr_params in sr_list:
 
+                srID = sr_params['sr-id'] if 'sr-id' in sr_params.keys() else None
                 ses = sr_params["session"] if "session" in sr_params.keys() else None
                 stacks = sr_params['stacks'] if 'stacks' in sr_params.keys() else None
                 paramTV = sr_params['paramTV'] if 'paramTV' in sr_params.keys() else None
@@ -280,7 +281,7 @@ if __name__ == '__main__':
 
                 dict_custom_interfaces = sr_params['custom_interfaces'] if 'custom_interfaces' in sr_params.keys() else None
 
-                if "sr-id" not in sr_params.keys():
+                if srID is None:
                     print('WARNING: Do not process subjects %s because of missing parameters.' % sub)
                     continue
 
@@ -290,7 +291,7 @@ if __name__ == '__main__':
                            session=ses,
                            p_stacks=stacks,
                            paramTV=paramTV,
-                           srID=sr_params['sr-id'],
+                           srID=srID,
                            masks_derivatives_dir=args.masks_derivatives_dir,
                            masks_desc=masks_desc,
                            dict_custom_interfaces=dict_custom_interfaces,
