@@ -371,7 +371,7 @@ class BinarizeImage(BaseInterface):
     """Runs the MIAL SRTK mask image module.
     Example
     =======
-    >>> from pymialsrtk.interfaces.postprocess import BinarizeImageImage
+    >>> from pymialsrtk.interfaces.postprocess import BinarizeImage
     >>> maskImg = MialsrtkMaskImage()
     >>> maskImg.inputs.input_image = 'input_image.nii.gz'
     """
