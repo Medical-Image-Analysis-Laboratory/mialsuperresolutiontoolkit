@@ -295,6 +295,11 @@ class AnatomicalPipeline:
                                 name='brain_masks_bypass',
                                 iterfield=['out_file'])
 
+            if self.m_stacks is not None:
+                custom_masks_filter = Node(interface=preprocess.FilteringByRunid(),
+                                           name='custom_masks_filter')
+                custom_masks_filter.inputs.stacks_id = self.m_stacks
+
         else:
             dg = Node(interface=DataGrabber(outfields=['T2ws']),
                       name='data_grabber')
@@ -455,7 +460,11 @@ class AnatomicalPipeline:
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
         if self.use_manual_masks:
-            self.wf.connect(dg, "masks", brainMask, "out_file")
+            if self.m_stacks is not None:
+                self.wf.connect(dg, "masks", custom_masks_filter, "input_files")
+                self.wf.connect(custom_masks_filter, "output_files", brainMask, "out_file")
+            else:
+                self.wf.connect(dg, "masks", brainMask, "out_file")
         else:
             if self.m_stacks is not None:
                 self.wf.connect(dg, "T2ws", t2ws_filter_prior_masks, "input_files")
