@@ -480,15 +480,16 @@ class AnatomicalPipeline:
 
         self.wf.connect(stacksOrdering, "stacks_order", masks_filtered, "stacks_id")
         self.wf.connect(brainMask, "out_file", masks_filtered, "input_files")
-        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_file")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_mask")  ## Comment to match docker process
 
         if not self.m_skip_nlm_denoising:
+            self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_file")
+            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_mask")  ## Comment to match docker process
+
             self.wf.connect(nlmDenoise, ("out_file", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_file")
             self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_mask")
 
-            self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_file")
-            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_mask")
+        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_file")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_mask")
 
         if not self.m_skip_nlm_denoising:
             self.wf.connect(srtkCorrectSliceIntensity01_nlm, ("out_file", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_file")
