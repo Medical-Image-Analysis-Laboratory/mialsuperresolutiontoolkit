@@ -11,8 +11,11 @@ ehthumbs.db
 Icon?
 Thumbs.db
 
-docs
-docs/*
+documentation
+documentation/*
+
+data
+data/*
 
 debian
 debian/*
@@ -27,4 +30,12 @@ _build
 _static
 _templates
 
+notebooks
+notebooks/*
 *.ipynb_checkpoints
+
+examples
+examples/*
+
+scripts
+scripts/*

@@ -1,5 +1,9 @@
 #!/bin/sh
-CMP_BUILD_DATE="$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")"
+SCRIPTSDIR=$(cd "$(dirname "$0")"; pwd)
+BASEDIR="$(dirname "$SCRIPTSDIR")"
+cd "$BASEDIR"
+
+CMP_BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 echo "$CMP_BUILD_DATE"
 
 VERSION="v$(python get_version.py)"
@@ -14,10 +18,12 @@ echo "$MAIN_DOCKER"
 docker build --rm --build-arg BUILD_DATE="$CMP_BUILD_DATE" \
 				  --build-arg VCS_REF="$VCS_REF" \
 				  --build-arg VERSION="$VERSION" \
-				  -t "${MAIN_DOCKER}" . \
+				  -t "${MAIN_DOCKER}" "$BASEDIR" \
 
-docker build --no-cache --rm --build-arg BUILD_DATE="$CMP_BUILD_DATE" \
+JUPYTER_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-jupyter:${VERSION}"
+
+docker build --rm --build-arg BUILD_DATE="$CMP_BUILD_DATE" \
                              --build-arg VERSION="$VERSION" \
                              --build-arg VCS_REF="$VCS_REF" \
                              --build-arg MAIN_DOCKER="$MAIN_DOCKER" \
-                             -t sebastientourbier/mialsuperresolutiontoolkit-bidsapp:"${VERSION}" ./docker/bidsapp
+                             -t "${JUPYTER_DOCKER}" "$BASEDIR/docker/jupyter"

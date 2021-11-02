@@ -242,8 +242,7 @@ jobs:
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
-                --nipype_nb_of_cores 1 \
-                --profiling
+                --nipype_nb_of_cores 1
 
             # Rename log
             mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt \
@@ -391,8 +390,7 @@ jobs:
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
-                --nipype_nb_of_cores 1 \
-                --profiling
+                --nipype_nb_of_cores 1
       - run:
           name: "Test-04 - Checking outputs of MIALSRTK BIDS App run"
           command: |

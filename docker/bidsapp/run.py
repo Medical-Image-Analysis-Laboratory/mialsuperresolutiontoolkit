@@ -146,8 +146,7 @@ def main(bids_dir, output_dir,
          dict_custom_interfaces=None,
          nipype_number_of_cores=1,
          openmp_number_of_cores=1,
-         memory=0,
-         save_profiler_log=False):
+         memory=0):
     """Main function that creates and executes the workflow of the BIDS App on one subject.
 
     It creates an instance of the class :class:`pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline`,
@@ -196,9 +195,6 @@ def main(bids_dir, output_dir,
         Maximal amount of memory used by the workflow
         (Default: 0, workflow uses all available memory)
 
-    save_profiler_log : bool (optional)
-        Save the node profiler (runtime stats) log. (default is False)
-
     """
 
     if paramTV is None:
@@ -209,7 +205,7 @@ def main(bids_dir, output_dir,
         session = 'ses-' + session
 
     if srID is None:
-        srID = "01"
+        srID = 1
 
     # Initialize an instance of AnatomicalPipeline
     pipeline = AnatomicalPipeline(bids_dir,
@@ -227,12 +223,10 @@ def main(bids_dir, output_dir,
                                   )
 
     # Create the super resolution Nipype workflow
-    pipeline.create_workflow(save_profiler_log=save_profiler_log)
+    pipeline.create_workflow()
 
     # Execute the workflow
-    res = pipeline.run(number_of_cores=nipype_number_of_cores,
-                       memory=memory,
-                       save_profiler_log=save_profiler_log)
+    res = pipeline.run(memory=memory)
 
     return res
 
@@ -279,6 +273,7 @@ if __name__ == '__main__':
 
             for sr_params in sr_list:
 
+                srID = sr_params['sr-id'] if 'sr-id' in sr_params.keys() else None
                 ses = sr_params["session"] if "session" in sr_params.keys() else None
                 stacks = sr_params['stacks'] if 'stacks' in sr_params.keys() else None
                 paramTV = sr_params['paramTV'] if 'paramTV' in sr_params.keys() else None
@@ -286,7 +281,7 @@ if __name__ == '__main__':
 
                 dict_custom_interfaces = sr_params['custom_interfaces'] if 'custom_interfaces' in sr_params.keys() else None
 
-                if "sr-id" not in sr_params.keys():
+                if srID is None:
                     print('WARNING: Do not process subjects %s because of missing parameters.' % sub)
                     continue
 
@@ -296,14 +291,13 @@ if __name__ == '__main__':
                            session=ses,
                            p_stacks=stacks,
                            paramTV=paramTV,
-                           srID=sr_params['sr-id'],
+                           srID=srID,
                            masks_derivatives_dir=args.masks_derivatives_dir,
                            masks_desc=masks_desc,
                            dict_custom_interfaces=dict_custom_interfaces,
                            nipype_number_of_cores=nipype_nb_of_cores,
                            openmp_number_of_cores=openmp_nb_of_cores,
-                           memory=args.memory,
-                           save_profiler_log=args.profiling)
+                           memory=args.memory)
         else:
             print('WARNING: Do not process subjects %s because of missing configuration.' % sub)
 

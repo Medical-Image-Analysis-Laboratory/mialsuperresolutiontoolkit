@@ -18,18 +18,18 @@ from jinja2 import __version__ as __jinja2_version__
 import nibabel as nib
 
 from nipype.info import __version__ as __nipype_version__
-from nipype import config, logging
+from nipype import config
+from nipype import logging as nipype_logging
 from nipype.interfaces.io import DataGrabber, DataSink
 from nipype.pipeline import Node, MapNode, Workflow
-from nipype.interfaces.utility import IdentityInterface, Function
+from nipype.interfaces.utility import IdentityInterface
 
 # Import the implemented interface from pymialsrtk
-import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
+import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.utils as utils
 from pymialsrtk.bids.utils import write_bids_derivative_description
-from pymialsrtk.utils.monitoring import log_nodes_cb, generate_gantt_chart
 
 # Get pymialsrtk version
 from pymialsrtk.info import __version__
@@ -124,7 +124,7 @@ class AnatomicalPipeline:
     deltatTV = "0.75"
     lambdaTV = "0.001"
     primal_dual_loops = "20"
-    sr_id = 1
+    sr_id = None
     session = None
 
     m_stacks = None
@@ -146,7 +146,7 @@ class AnatomicalPipeline:
         self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
         session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
         p_dict_custom_interfaces=None,
-        openmp_number_of_cores=None, nipype_number_of_cores=None,
+        openmp_number_of_cores=None, nipype_number_of_cores=None
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -188,19 +188,13 @@ class AnatomicalPipeline:
             self.m_skip_nlm_denoising =  False
             self.m_skip_stacks_ordering = False
 
-    def create_workflow(self, save_profiler_log=False):
+    def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
 
         It is composed of a succession of Nodes and their corresponding parameters,
         where the output of node i goes to the input of node i+1.
 
-        Parameters
-        ----------
-        save_profiler_log : bool
-            If `True`, save node runtime statistics to a JSON-style log file.
-
         """
-
         sub_ses = self.subject
         if self.session is not None:
             sub_ses = ''.join([sub_ses, '_', self.session])
@@ -232,11 +226,6 @@ class AnatomicalPipeline:
         if os.path.isfile(os.path.join(wf_base_dir, "pypeline.log")):
             os.unlink(os.path.join(wf_base_dir, "pypeline.log"))
 
-        if save_profiler_log:
-            log_filename = os.path.join(wf_base_dir, 'pypeline_stats.log')
-            if os.path.isfile(log_filename):
-                os.unlink(log_filename)
-
         self.wf = Workflow(name=self.pipeline_name,base_dir=wf_base_dir)
 
         config.update_config(
@@ -256,20 +245,8 @@ class AnatomicalPipeline:
             }
         )
 
-        if save_profiler_log:
-            config.update_config(
-                {
-                    'monitoring': {
-                        'enabled': save_profiler_log,
-                        'sample_frequency': "1.0",
-                        'summary_append': True
-                    }
-                }
-            )
-            config.enable_resource_monitor()
-
-        # Update logging with config
-        logging.update_logging(config)
+        # Update nypipe logging with config
+        nipype_logging.update_logging(config)
         # config.enable_provenance()
 
         if self.use_manual_masks:
@@ -317,6 +294,11 @@ class AnatomicalPipeline:
             brainMask = MapNode(interface=IdentityInterface(fields=['out_file']),
                                 name='brain_masks_bypass',
                                 iterfield=['out_file'])
+
+            if self.m_stacks is not None:
+                custom_masks_filter = Node(interface=preprocess.FilteringByRunid(),
+                                           name='custom_masks_filter')
+                custom_masks_filter.inputs.stacks_id = self.m_stacks
 
         else:
             dg = Node(interface=DataGrabber(outfields=['T2ws']),
@@ -469,12 +451,7 @@ class AnatomicalPipeline:
                               name='srtkHRMask')
             srtkHRMask.inputs.bids_dir = self.bids_dir
         else:
-            srtkHRMask = Node(interface=Function(
-                              input_names=["input_image"],
-                              output_names=["output_srmask"],
-                              function=postprocess.binarize_image
-                              ),
-                              name='srtkHRMask')
+            srtkHRMask = Node(interface=postprocess.BinarizeImage(), name='srtkHRMask')
 
         srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(),
                                name='srtkMaskImage02')
@@ -483,7 +460,11 @@ class AnatomicalPipeline:
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
         if self.use_manual_masks:
-            self.wf.connect(dg, "masks", brainMask, "out_file")
+            if self.m_stacks is not None:
+                self.wf.connect(dg, "masks", custom_masks_filter, "input_files")
+                self.wf.connect(custom_masks_filter, "output_files", brainMask, "out_file")
+            else:
+                self.wf.connect(dg, "masks", brainMask, "out_file")
         else:
             if self.m_stacks is not None:
                 self.wf.connect(dg, "T2ws", t2ws_filter_prior_masks, "input_files")
@@ -499,15 +480,16 @@ class AnatomicalPipeline:
 
         self.wf.connect(stacksOrdering, "stacks_order", masks_filtered, "stacks_id")
         self.wf.connect(brainMask, "out_file", masks_filtered, "input_files")
-        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_file")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_mask")  ## Comment to match docker process
 
         if not self.m_skip_nlm_denoising:
+            self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_file")
+            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_mask")  ## Comment to match docker process
+
             self.wf.connect(nlmDenoise, ("out_file", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_file")
             self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_mask")
 
-            self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_file")
-            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_mask")
+        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_file")
+        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_mask")
 
         if not self.m_skip_nlm_denoising:
             self.wf.connect(srtkCorrectSliceIntensity01_nlm, ("out_file", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_file")
@@ -593,7 +575,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_sr_png", datasink, 'figures.@SRpng')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
 
-    def run(self, number_of_cores=1, memory=None, save_profiler_log=False):
+    def run(self, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.
 
         Nipype execution engine will take care of the management and execution of
@@ -603,17 +585,9 @@ class AnatomicalPipeline:
 
         Parameters
         ----------
-        number_of_cores : int
-            Number of cores / CPUs used by the workflow
-
         memory : int
             Maximal memory used by the workflow
-
-        save_profiler_log : bool
-            If `True`, generates the profiling callback log
-            (Default: `False`)
         """
-        from nipype import logging as nipype_logging
 
         # Use nipype.interface logger to print some information messages
         iflogger = nipype_logging.getLogger('nipype.interface')
@@ -648,26 +622,12 @@ class AnatomicalPipeline:
 
         # Create dictionary of arguments passed to plugin_args
         args_dict = {
-            'maxtasksperchild': 1,
             'raise_insufficient': False,
-            'n_procs': number_of_cores
+            'n_procs': self.nipype_number_of_cores
         }
 
         if (memory is not None) and (memory > 0):
             args_dict['memory_gb'] = memory
-
-        if save_profiler_log:
-            args_dict['status_callback'] = log_nodes_cb
-            # Set path to log file and create callback logger
-            callback_log_path = os.path.join(self.wf.base_dir,
-                                             self.wf.name,
-                                             'run_stats.log')
-            import logging
-            import logging.handlers
-            logger = logging.getLogger('callback')
-            logger.setLevel(logging.DEBUG)
-            handler = logging.FileHandler(callback_log_path)
-            logger.addHandler(handler)
 
         iflogger.info("**** Processing ****")
         # datetime object containing current start date and time
@@ -676,7 +636,10 @@ class AnatomicalPipeline:
         print(f" Start date / time : {self.run_start_time}")
 
         # Execute the workflow
-        res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
+        if self.nipype_number_of_cores > 1:
+            res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
+        else:
+            res = self.wf.run()
 
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
@@ -722,38 +685,6 @@ class AnatomicalPipeline:
                 deriv_dir=self.output_dir,
                 pipeline_name=toolbox
             )
-
-        if save_profiler_log:
-            iflogger.info("**** Workflow execution profiling ****")
-            iflogger.info(f'\t > Creation of report...')
-            generate_gantt_chart(logfile=callback_log_path,
-                                 cores=number_of_cores,
-                                 minute_scale=10,
-                                 space_between_minutes=50,
-                                 pipeline_name=os.path.join(self.wf.base_dir,
-                                                            self.wf.name))
-            # Copy and rename the computational resources log
-            src = os.path.join(self.wf.base_dir, self.wf.name, "run_stats.log.html")
-            if self.session is not None:
-                dst = os.path.join(
-                        self.output_dir,
-                        '-'.join(["pymialsrtk", __version__]),
-                        self.subject,
-                        self.session,
-                        'logs',
-                        f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
-                )
-            else:
-                dst = os.path.join(
-                        self.output_dir,
-                        '-'.join(["pymialsrtk", __version__]),
-                        self.subject,
-                        'logs',
-                        f'{self.subject}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
-                )
-            # Make the copy
-            iflogger.info(f'\t > Copy {src} to {dst}...')
-            shutil.copy(src=src, dst=dst)
 
         iflogger.info("**** Super-resolution HTML report creation ****")
         self.create_subject_report()
@@ -821,17 +752,6 @@ class AnatomicalPipeline:
             f'{sub_ses}_rec-SR_id-{self.sr_id}_log.txt'
         )
 
-        if os.path.exists(os.path.join(
-            final_res_dir, 'logs',
-            f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
-        )):
-            resources_log_file = os.path.join(
-                '..', 'logs',
-                f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-profiling_log.html'
-            )
-        else:
-            resources_log_file = None
-
         # Create the text for {{subject}} and {{session}} fields in template
         report_subject_text = f'{self.subject.split("-")[-1]}'
         if self.session is not None:
@@ -846,7 +766,6 @@ class AnatomicalPipeline:
             processing_datetime=self.run_start_time,
             run_time=self.run_elapsed_time,
             log=log_file,
-            resources_stats=resources_log_file,
             sr_id=self.sr_id,
             stacks=self.m_stacks,
             svr="on" if not self.m_skip_svr else "off",

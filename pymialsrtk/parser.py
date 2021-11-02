@@ -84,15 +84,6 @@ def get_parser():
     )
 
     p.add_argument(
-        "--profiling",
-        help="Save node runtime statistics (processing times, number of threads, memory) "
-        "in a JSON-style `run_stats.log` and in the form "
-        "of a gantt chart in a HTML `run_stats.log.html`",
-        action="store_true",
-        default=False,
-    )
-
-    p.add_argument(
         "-v",
         "--version",
         action="version",

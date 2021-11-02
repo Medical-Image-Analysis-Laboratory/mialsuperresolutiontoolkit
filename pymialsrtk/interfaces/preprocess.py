@@ -15,31 +15,22 @@ import traceback
 from glob import glob
 import pathlib
 
+from skimage.morphology import binary_opening, binary_closing
+
 import numpy as np
 from traits.api import *
 
 import nibabel
-import cv2
-import skimage.measure
-import scipy.ndimage as snd
-from skimage import morphology
-from scipy.signal import argrelextrema
-import pandas as pd
 
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-try:
-    import tensorflow.compat.v1 as tf
-except ImportError:
-    print("Tensorflow not available. Can not run brain extraction")
-
-try:
-    import tflearn
-    from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d
-except ImportError:
-    print("tflearn not available. Can not run brain extraction")
+import skimage.measure
+from scipy.signal import argrelextrema
+import scipy.ndimage as snd
+import pandas as pd
+import cv2
 
 from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
@@ -256,7 +247,9 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
         cmd = 'mialsrtkCorrectSliceIntensity "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            env_cpp = os.environ.copy()
+            env_cpp['LD_PRELOAD'] = ""
+            run(cmd, env=env_cpp, cwd=os.path.abspath(self.inputs.bids_dir))
         except Exception as e:
             print('Failed')
             print(e)
@@ -546,6 +539,7 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
         outputs = self._outputs().get()
         outputs['out_im_file'] = self._gen_filename('out_im_file')
         return outputs
+
 
 class MultipleMialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MultipleMialsrtkSliceBySliceCorrectBiasField interface."""
@@ -1384,6 +1378,18 @@ class BrainExtraction(BaseInterface):
             Suffix of the automatically generated mask (default is '_brainMask.nii.gz')
 
         """
+        try:
+            import tflearn  # noqa: E402
+            from tflearn.layers.conv import conv_2d, max_pool_2d, upsample_2d  # noqa: E402
+        except ImportError:
+            print("tflearn not available. Can not run brain extraction")
+            raise ImportError
+
+        try:
+            import tensorflow.compat.v1 as tf  # noqa: E402
+        except ImportError:
+            print("Tensorflow not available. Can not run brain extraction")
+            raise ImportError
 
         # Step 1: Brain localization
         normalize = "local_max"
@@ -1418,7 +1424,6 @@ class BrainExtraction(BaseInterface):
 
             slice_counter += 1
 
-        # Tensorflow graph
         g = tf.Graph()
         with g.as_default():
 
@@ -1710,7 +1715,7 @@ class BrainExtraction(BaseInterface):
                             if ((distrib_cc[local_maxima[iMax]] - distrib_cc[local_minima[iMin]] > 50) and
                                (distrib_cc[local_maxima[iMax + 1]] - distrib_cc[local_minima[iMin]] > 50)):
                                 sub_stack = crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :]
-                                sub_stack = morphology.binary_closing(sub_stack)
+                                sub_stack = binary_closing(sub_stack)
                                 crt_stack_closed_minima[local_maxima[iMax] - 1:local_maxima[iMax + 1] + 1, :, :] = sub_stack
                 crt_stack_pp = crt_stack_closed_minima.copy()
 
@@ -1748,10 +1753,10 @@ class BrainExtraction(BaseInterface):
                                 print("")
 
                             sub_stack = crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :]
-                            sub_stack = morphology.binary_opening(sub_stack)
+                            sub_stack = binary_opening(sub_stack)
                             crt_stack_opened_maxima[local_maxima_n[iMax] - 1:local_maxima_n[iMax] + 2, :, :] = sub_stack
                 else:
-                    crt_stack_opened_maxima = morphology.binary_opening(crt_stack_opened_maxima)
+                    crt_stack_opened_maxima = binary_opening(crt_stack_opened_maxima)
                 crt_stack_pp = crt_stack_opened_maxima.copy()
 
                 distrib_opened = []
@@ -1768,12 +1773,12 @@ class BrainExtraction(BaseInterface):
 
                 if distrib_opened[0] - distrib_opened[1] > 40:
                     sub_stack = crt_stack_extremity[0:2, :, :]
-                    sub_stack = morphology.binary_opening(sub_stack)
+                    sub_stack = binary_opening(sub_stack)
                     crt_stack_extremity[0:2, :, :] = sub_stack
 
                 if pred_lbl.shape[0] - 1 in maxima_extrema:
                     sub_stack = crt_stack_opened_maxima[-2:, :, :]
-                    sub_stack = morphology.binary_opening(sub_stack)
+                    sub_stack = binary_opening(sub_stack)
                     crt_stack_opened_maxima[-2:, :, :] = sub_stack
 
                 crt_stack_pp = crt_stack_extremity.copy()

@@ -1,7 +1,7 @@
 
 /*=========================================================================
 
-Program: Performs slice to volume registration and Scattered Data Interpolation 
+Program: Performs slice to volume registration and Scattered Data Interpolation
 Language: C++
 Date: $Date: 2012-28-12 14:00:00 +0100 (Fri, 28 Dec 2012) $
 Version: $Revision: 1 $
@@ -224,7 +224,7 @@ int main( int argc, char *argv[] )
   typedef itk::CastImageFilter<ImageType,ImageMaskType> CasterType;
   typedef itk::ImageDuplicator<ImageType> DuplicatorType;
 
-    // Filter setup
+  // Filter setup
   unsigned int numberOfImages = input.size();
   std::vector< ImagePointer >         images(numberOfImages);
   std::vector< ImageMaskPointer >     imageMasks(numberOfImages);
@@ -320,7 +320,7 @@ int main( int argc, char *argv[] )
         lowToHighResFilter -> SetRegionArray( i, rois[i] );
 
 
-      } 
+      }
       // use the entire image (longer computation)
       else if ( allSwitchArg.isSet() )
         {
@@ -390,7 +390,7 @@ int main( int argc, char *argv[] )
 
   // Image registration performed slice by slice or affine 3D according to
   // the user selection
-    
+
   if(computeRefImage)
   {
     std::cout << "Get global rigid HR image" << std::endl;
@@ -422,7 +422,7 @@ int main( int argc, char *argv[] )
 
   /** Anisotropic diffusion Gaussian filtering for computing the SNR measure */
   // typedef itk::CurvatureAnisotropicDiffusionImageFilter< ImageType, ImageType >  ADGaussianFilterType;
-  
+
   // typedef itk::SubtractImageFilter< InputImageType, ImageType, ImageType > SubtractFilterType;
   // typedef itk::ResampleImageFilter< ImageType, ImageType > ResampleFilterType;
 
@@ -441,6 +441,14 @@ int main( int argc, char *argv[] )
 
   float previousMetric = 0.0;
   float currentMetric = 0.0;
+
+  // Default registration step lengths
+  float min_step = 0.0001;
+  float max_step = 0.2;
+
+  // Reduce default registration step lengths
+  min_step = 0.5 * min_step;
+  max_step = 0.5 * max_step;
 
   for(unsigned int it=1; it <= itMax; it++)
   {
@@ -482,6 +490,22 @@ int main( int argc, char *argv[] )
           registration[im] = RegistrationType::New();
           registration[im] -> SetFixedImage( images[im] );
           registration[im] -> SetMovingImage( hrRefImage );
+
+          if (it == 1)
+          {
+            std::cout << "Iteration " << it << ":" << std::endl;
+            std::cout << "  - Use the initial reference image for slice-to-volume registration. " << std::endl;
+            registration[im] -> SetMovingImage( hrRefImage );
+          }
+          else
+          {
+            std::cout << "Iteration " << it << " > 1 :" << std::endl;
+            std::cout << "  - Update the reference image for slice-to-volume registration with reconstructed HR image of previous iteration. " << std::endl;
+            registration[im] -> SetMovingImage( hrImage );
+          }
+          std::cout << "  - Use constant registration step lengths: [" << min_step << ";"<< max_step << "]" << std::endl << std::cout.flush();
+          registration[im] -> SetMinStepLength(min_step);
+          registration[im] -> SetMaxStepLength(max_step);
           registration[im] -> SetImageMask( imageMasks[im] );
           registration[im] -> SetTransform( transforms[im] );
 
@@ -490,7 +514,7 @@ int main( int argc, char *argv[] )
 
           try
             {
-            registration[im] -> StartRegistration();
+                registration[im] -> StartRegistration();
             }
           catch( itk::ExceptionObject & err )
             {
@@ -638,4 +662,3 @@ int main( int argc, char *argv[] )
   } catch (TCLAP::ArgException &e)  // catch any exceptions
   { std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
 }
-

@@ -21,28 +21,8 @@ RUN mkdir /output_dir && \
     chmod -R 777 /output_dir
 
 ##############################################################
-# Create .cache and set right permissions for generated
-# Python egg cache
-##############################################################
-RUN mkdir /.cache && \
-    chmod -R 777 /.cache
-
-##############################################################
 # Installation of pyMIALSRTK
 ##############################################################
-# Set the working directory to /app
-WORKDIR /app
-
-# Store command related variables
-ENV CONDA_ENV_PATH /opt/conda
-ENV MY_CONDA_PY3ENV "pymialsrtk-env"
-# This is how you will activate this conda environment
-ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
-
-# Create the conda environment
-COPY environment.yml /app/environment.yml
-RUN conda env create -f /app/environment.yml
-
 # Set the working directory to /opt/mialsuperresolutiontoolkit and install pymialsrtk
 WORKDIR /opt/mialsuperresolutiontoolkit
 RUN /bin/bash -c 'ls -al && $CONDA_ACTIVATE && pip install .'
@@ -50,18 +30,15 @@ RUN /bin/bash -c 'ls -al && $CONDA_ACTIVATE && pip install .'
 # Set the working directory back to /app
 WORKDIR /app
 
-##############################################################
-# Use jemalloc instead of malloc in TensorFLow
-# that suffers less from fragmentation when
-# allocating and deallocating large objects
-##############################################################
-RUN apt-get update && apt-get install -y libjemalloc-dev && \
-    rm -rf /var/lib/apt/lists/*
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
+# Make nipype profiler happy
+RUN chmod -R 777 /app
 
 ##############################################################
 # Create entrypoint scripts
 ##############################################################
+# Copy BIDSapp python script called by the entrypoint scripts
+COPY run.py /app/run.py
+
 # Copy main BIDSapp entrypoint script
 COPY entrypoints/run_srr.sh /app/run_srr.sh
 RUN chmod 775 /app/run_srr.sh

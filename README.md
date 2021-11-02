@@ -45,7 +45,6 @@ The BIDS App of MIALSRTK has the following command line arguments:
                   [--nipype_nb_of_cores NIPYPE_NB_OF_CORES]
                   [--memory MEMORY]
                   [--masks_derivatives_dir MASKS_DERIVATIVES_DIR]
-                  [--profiling]
                   [-v]
                   bids_dir output_dir {participant}
     
@@ -94,10 +93,6 @@ The BIDS App of MIALSRTK has the following command line arguments:
                             Use manual brain masks found in
                             ``<output_dir>/<masks_derivatives_dir>/ directory``
                             directory
-      --profiling           Save node runtime statistics (processing times, number
-                            of threads, memory) in a JSON-style `run_stats.log`
-                            and in the form of a gantt chart in a HTML
-                            `run_stats.log.html`
       -v, --version         show program's version number and exit
 
 ## Credits 

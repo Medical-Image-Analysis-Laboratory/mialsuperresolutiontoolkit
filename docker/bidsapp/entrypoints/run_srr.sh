@@ -4,4 +4,4 @@ export && \
 echo "SHELL: $SHELL" && \
 echo "PATH: $PATH" && \
 . activate "${MY_CONDA_PY3ENV}" && \
-xvfb-run -a python /opt/mialsuperresolutiontoolkit/docker/bidsapp/run.py "$@"
+xvfb-run -a python /app/run.py "$@"
