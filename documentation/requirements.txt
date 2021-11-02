@@ -2,8 +2,7 @@ sphinx-argparse
 nbsphinx
 sphinxcontrib-apidoc
 sphinxcontrib-napoleon
-traits==5.1.2
+traits==6.3.1
 grabbit
 pybids
-nipype==1.5.1
-docutil==0.17.1
+nipype==1.7.0
