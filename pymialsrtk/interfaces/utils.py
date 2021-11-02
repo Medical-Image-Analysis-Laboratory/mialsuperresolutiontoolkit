@@ -84,10 +84,10 @@ def reorder_by_run_ids(p_files, p_order):
 
     Parameters
     ----------
-    p_files <list<string>>
+    p_files : list of string
         List of image paths - containing a 'run-' id tag, to be reordered
 
-    env <list<int>>
+    p_order : list of int
         List of expecting run id order.
 
     Examples
