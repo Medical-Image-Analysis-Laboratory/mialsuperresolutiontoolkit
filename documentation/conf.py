@@ -66,6 +66,8 @@ autodoc_mock_imports = [
     'cv2',
     'skimage',
     'matplotlib',
+    'seaborn',
+    'pandas',
     'nilearn',
     'tflearn',
     'tensorflow'
