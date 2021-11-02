@@ -69,7 +69,10 @@ extensions = ['sphinx.ext.autosectionlabel',
 autodoc_mock_imports = [
     'cv2',
     'skimage',
-    'matplotlib'
+    'matplotlib',
+    'nilearn',
+    'tflearn',
+    'tensorflow'
 ]
 
 # Allow errors in notebooks for doc
@@ -78,6 +81,10 @@ nbsphinx_allow_errors = True
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
+# Use Markdown and reStructuredText in the same Sphinx project
+source_parsers = {
+    '.md': CustomCommonMarkParser,
+}
 # The suffix of source filenames.
 source_suffix = ['.rst', '.md']
 

@@ -1,8 +1,11 @@
-sphinx-argparse
-nbsphinx
-sphinxcontrib-apidoc
-sphinxcontrib-napoleon
+sphinx==4.2.0
+sphinxcontrib-apidoc==0.3.0
+sphinx-argparse==0.3.1
+nbsphinx==0.8.7
+sphinx-rtd-theme==1.0.0
+recommonmark==0.7.1
 traits==6.3.1
 grabbit
 pybids
 nipype==1.7.0
+docutils==0.17.1
