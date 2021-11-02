@@ -3,6 +3,7 @@ sphinxcontrib-apidoc==0.3.0
 sphinx-argparse==0.3.1
 nbsphinx==0.8.7
 sphinx-rtd-theme==1.0.0
+sphinxcontrib-napoleon==0.7
 recommonmark==0.7.1
 traits==6.3.1
 grabbit
