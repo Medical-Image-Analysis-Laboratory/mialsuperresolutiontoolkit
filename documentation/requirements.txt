@@ -6,3 +6,4 @@ traits==5.1.2
 grabbit
 pybids
 nipype==1.5.1
+docutil==0.17.1

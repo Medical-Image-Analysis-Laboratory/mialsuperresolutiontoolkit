@@ -20,6 +20,7 @@ from pymialsrtk.interfaces.utils import run
 import nibabel as nib
 import numpy as np
 
+
 #######################
 #  Refinement HR mask
 #######################
@@ -51,7 +52,7 @@ class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
 
 
 class MialsrtkRefineHRMaskByIntersection(BaseInterface):
-    """Runs the MIAL SRTK mask refinement module.
+    """Runs the MIALSRTK mask refinement module.
 
     It uses the Simultaneous Truth And Performance Level Estimate (STAPLE) by Warfield et al. [1]_.
 
