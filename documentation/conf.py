@@ -51,7 +51,7 @@ extensions = ['sphinx.ext.autosectionlabel',
               'sphinx.ext.viewcode',
               'sphinxarg.ext',
               'sphinx.ext.inheritance_diagram',
-              # 'sphinxcontrib.apidoc',
+              'sphinxcontrib.apidoc',
               'nbsphinx',
               'nipype.sphinxext.plot_workflow',
               'nipype.sphinxext.apidoc',
@@ -72,6 +72,11 @@ autodoc_mock_imports = [
     'tflearn',
     'tensorflow'
 ]
+
+apidoc_module_dir = '../pymialsrtk'
+apidoc_output_dir = 'api/generated'
+# apidoc_excluded_paths = ['tests']
+apidoc_separate_modules = True
 
 # Allow errors in notebooks for doc
 nbsphinx_allow_errors = True
