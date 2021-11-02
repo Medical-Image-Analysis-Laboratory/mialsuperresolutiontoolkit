@@ -73,6 +73,24 @@ autodoc_mock_imports = [
     'tensorflow'
 ]
 
+# Accept custom section names to be parsed for numpy-style docstrings
+# of parameters.
+# Requires pinning sphinxcontrib-napoleon to a specific commit while
+# https://github.com/sphinx-contrib/napoleon/pull/10 is merged.
+napoleon_use_param = False
+napoleon_custom_sections = [
+    ("Inputs", "Parameters"),
+    ("Outputs", "Parameters"),
+    ("Attributes", "Parameters"),
+    ("Mandatory Inputs", "Parameters"),
+    ("Optional Inputs", "Parameters"),
+]
+
+
+on_rtd = os.environ.get("READTHEDOCS") == "True"
+if on_rtd:
+    extensions.append("readthedocs_ext.readthedocs")
+
 apidoc_module_dir = '../pymialsrtk'
 apidoc_output_dir = 'api/generated'
 # apidoc_excluded_paths = ['tests']
