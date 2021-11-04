@@ -2,7 +2,11 @@ version: 2.1
 
 orbs:
   coverage-reporter: codacy/coverage-reporter@11.0.1
-  singularity: singularity/singularity@1.0.10
+  singularity: singularity/singularity@1.0.11
+
+commands:
+
+
 
 jobs:
 
@@ -639,10 +643,11 @@ jobs:
           command: |
             mkdir -p ~/.singularity
             touch ~/.singularity/sylabs-token
+            echo "${SINGULARITY_TOKEN}"
             echo "${SINGULARITY_TOKEN}" > ~/.singularity/sylabs-token
             cat ~/.singularity/sylabs-token
             # https://sylabs.io/guides/3.1/user-guide/cli/singularity_remote_login.html
-            singularity remote login SylabsCloud --tokenfile ~/.singularity/sylabs-token
+            singularity remote login --tokenfile ~/.singularity/sylabs-token SylabsCloud
       - run:
           name: 'Deploy simg with latest tag to Sylabs.io'
           command: |
@@ -676,10 +681,11 @@ jobs:
           command: |
             mkdir -p ~/.singularity
             touch ~/.singularity/sylabs-token
+            echo "${SINGULARITY_TOKEN}"
             echo "${SINGULARITY_TOKEN}" > ~/.singularity/sylabs-token
             cat ~/.singularity/sylabs-token
             # https://sylabs.io/guides/3.1/user-guide/cli/singularity_remote_login.html
-            singularity remote login SylabsCloud --tokenfile ~/.singularity/sylabs-token
+            singularity remote login --tokenfile ~/.singularity/sylabs-token SylabsCloud
       - run:
           name: 'Deploy simg with version tag to Sylabs.io'
           command: |
