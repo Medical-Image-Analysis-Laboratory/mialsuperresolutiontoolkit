@@ -60,7 +60,7 @@ def create_docker_cmd(args):
 
     # MIALSRTK BIDS App inputs
     cmd += '--param_file /bids_dir/code/participants_params.json '
-    if args.masks_derivatives_dir != '':
+    if args.masks_derivatives_dir and args.masks_derivatives_dir != '':
         cmd += f'--masks_derivatives_dir {args.masks_derivatives_dir} '
     cmd += f'--openmp_nb_of_cores {args.openmp_nb_of_cores} '
     cmd += f'--nipype_nb_of_cores {args.nipype_nb_of_cores}'
