@@ -14,13 +14,11 @@ The original C++ MIALSRTK library includes all algorithms and methods for brain 
 
 MIALSRTK has been recently extended with the `pymialsrtk` Python3 library following recent advances in standardization of neuroimaging data organization and processing workflows such as the [Brain Imaging Data Structure (BIDS)](https://bids.neuroimaging.io/) and [BIDS App](https://bids-apps.neuroimaging.io/) standards. This library has a modular architecture built on top of the Nipype dataflow library which consists of (1) processing nodes that interface with each of the MIALSRTK C++ tools and (2) a processing pipeline that links the interfaces in a common workflow. 
 
-The processing pipeline with all dependencies including the C++ MIALSRTK tools are encapsulated in a Docker image container, which is now distributed as a `BIDS App` which handles datasets organized following the BIDS standard. For your convenience, a Singularity image is also made available for execution on high-performance computing cluster.
+The processing pipeline with all dependencies including the C++ MIALSRTK tools are encapsulated in a Docker image container, which handles datasets organized following the BIDS standard and is distributed as a `BIDS App` @ [Docker Hub](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit-bidsapp). For execution on high-performance computing cluster, a Singularity image is also made freely available @ [Sylabs Cloud](https://cloud.sylabs.io/library/_container/5fe46eb7517f0358917ab76c). To facilitate the use of Docker or Singularity, `pymialsrtk` provides two Python commandline wrappers (`mialsuperresolutiontoolkit_docker` and `mialsuperresolutiontoolkit_singularity`) that can generate and run the appropriate command.
 
 All these design considerations allow us not only to (1) represent the entire processing pipeline as an *execution graph, where each MIALSRTK C++ tools are connected*, but also to (2) provide a *mecanism to record data provenance and execution details*, and to (3) easily customize the BIDS App to suit specific needs as interfaces with *new tools can be added with relatively little effort* to account for additional algorithms.
 
-The Docker and Singularity images of the BIDS App are freely available @ [Docker Hub](https://store.docker.com/community/images/sebastientourbier/mialsuperresolutiontoolkit-bidsapp) and [Sylabs Cloud](https://cloud.sylabs.io/library/_container/5fe46eb7517f0358917ab76c).
-
-## Resources
+### Resources
 
 *   **BIDS App and `pymialsrtk` documentation:** [https://mialsrtk.readthedocs.io/](https://mialsrtk.readthedocs.io/)
 
@@ -32,34 +30,45 @@ The Docker and Singularity images of the BIDS App are freely available @ [Docker
     *   [Installation instructions on Ubuntu](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_ubuntu.md) / [Installation instructions on MACOSX](https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/devguide_mac.md)
     *   [C++ code documentation](https://htmlpreview.github.io/?https://github.com/sebastientourbier/mialsuperresolutiontoolkit/blob/master/documentation/doxygen_html/index.html)
 
+## Installation
+
+*   Install Docker or Singularity engine
+
+*   In a Python 3.7 environment, install `pymialsrtk` with `pip`:
+
+        pip install pymialsrtk
+
+*   You are ready to use MIALSRTK BIDS App wrappers! 
+
 ## Usage
 
-The BIDS App of MIALSRTK has the following command line arguments:
+`mialsuperresolutiontoolkit_docker` and `mialsuperresolutiontoolkit_singularity` python wrappers to the MIALSRTK BIDS App have the following command line arguments:
 
-    $ docker run -it sebastientourbier/mialsuperresolutiontoolkit --help
+    $ mialsuperresolutiontoolkit_[docker|singularity] -h
     
-    usage: run.py [-h]
-                  [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
-                  [--param_file PARAM_FILE]
-                  [--openmp_nb_of_cores OPENMP_NB_OF_CORES]
-                  [--nipype_nb_of_cores NIPYPE_NB_OF_CORES]
-                  [--memory MEMORY]
-                  [--masks_derivatives_dir MASKS_DERIVATIVES_DIR]
-                  [-v]
-                  bids_dir output_dir {participant}
-    
-    Argument parser of the MIALSRTK BIDS App
+    usage: mialsuperresolutiontoolkit_[docker|singularity] [-h]
+                                         [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
+                                         [--param_file PARAM_FILE]
+                                         [--openmp_nb_of_cores OPENMP_NB_OF_CORES]
+                                         [--nipype_nb_of_cores NIPYPE_NB_OF_CORES]
+                                         [--memory MEMORY]
+                                         [--masks_derivatives_dir MASKS_DERIVATIVES_DIR]
+                                         [-v]
+                                         [--codecarbon_output_dir CODECARBON_OUTPUT_DIR]
+                                         bids_dir output_dir {participant}
 
+    Argument parser of the MIALSRTK BIDS App Python wrapper
+    
     positional arguments:
       bids_dir              The directory with the input dataset formatted
-                           according to the BIDS standard.
+                            according to the BIDS standard.
       output_dir            The directory where the output files should be stored.
-                           If you are running group level analysis this folder
-                           should be prepopulated with the results of the
-                           participant level analysis.
+                            If you are running group level analysis this folder
+                            should be prepopulated with the results of the
+                            participant level analysis.
       {participant}         Level of the analysis that will be performed. Only
-                           participant is available
-
+                            participant is available
+    
     optional arguments:
       -h, --help            show this help message and exit
       --participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]
@@ -91,8 +100,12 @@ The BIDS App of MIALSRTK has the following command line arguments:
                             consumption is not limited)
       --masks_derivatives_dir MASKS_DERIVATIVES_DIR
                             Use manual brain masks found in
-                            ``<output_dir>/<masks_derivatives_dir>/ directory``
-                            directory
+                            ``<output_dir>/<masks_derivatives_dir>/`` directory
+      --codecarbon_output_dir CODECARBON_OUTPUT_DIR
+                            Directory path in which `codecarbon` saves a CSV file
+                            called `emissions.csv` reporting carbon footprint
+                            details of the overall run (Defaults to user’s home
+                            directory)
       -v, --version         show program's version number and exit
 
 ## Credits 
