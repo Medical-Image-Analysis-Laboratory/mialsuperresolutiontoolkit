@@ -11,6 +11,11 @@
 
 # General imports
 import sys
+from pathlib import Path
+import logging
+
+# Carbon footprint
+from codecarbon import EmissionsTracker
 
 # Own imports
 from pymialsrtk.info import __version__
@@ -81,10 +86,27 @@ def main():
     """
     # Create and parse arguments
     parser = get_parser()
+    parser.add_argument(
+        "--codecarbon_output_dir",
+        help="Directory path in which `codecarbon` saves a CSV file called "
+             "`emissions.csv` reporting carbon footprint details of the overall run "
+             "(Defaults to user’s home directory)",
+        default=None,
+        type=str,
+    )
     args = parser.parse_args()
 
     # Create the singularity run command
     cmd = create_singularity_cmd(args)
+
+    # Create and start the carbon footprint tracker
+    logging.getLogger("codecarbon").disabled = True  # Comment this line for debug
+    tracker = EmissionsTracker(
+        project_name=f"MIALSRTK{__version__}-singularity",
+        output_dir=args.codecarbon_output_dir if args.codecarbon_output_dir is not None else str(Path.home()),
+        measure_power_secs=15,
+    )
+    tracker.start()
 
     # Execute the singularity run command
     try:
@@ -95,6 +117,11 @@ def main():
         print('Failed')
         print(e)
         exit_code = 1
+
+    emissions: float = tracker.stop()
+    print("\n########### CARBON FOOTPRINT OF RUN ###########")
+    print(f"Total emissions: {emissions} kg")
+    print("###############################################")
 
     return exit_code
 

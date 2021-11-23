@@ -11,6 +11,11 @@
 
 # General imports
 import sys
+from pathlib import Path
+import logging
+
+# Carbon footprint
+from codecarbon import EmissionsTracker
 
 # Own imports
 from pymialsrtk.info import __version__
@@ -81,11 +86,28 @@ def main():
             * '1' in case of an error
     """
     # Create and parse arguments
+    logging.getLogger("codecarbon").disabled = True  # Comment this line for debug
     parser = get_parser()
+    parser.add_argument(
+        "--codecarbon_output_dir",
+        help="Directory path in which `codecarbon` saves a CSV file called "
+             "`emissions.csv` reporting carbon footprint details of the overall run "
+             "(Defaults to user’s home directory)",
+        default=None,
+        type=str,
+    )
     args = parser.parse_args()
 
     # Create the docker run command
     cmd = create_docker_cmd(args)
+
+    # Create and start the carbon footprint tracker
+    tracker = EmissionsTracker(
+        project_name=f"MIALSRTK{__version__}-docker",
+        output_dir=args.codecarbon_output_dir if args.codecarbon_output_dir is not None else str(Path.home()),
+        measure_power_secs=15,
+    )
+    tracker.start()
 
     # Execute the docker run command
     try:
@@ -96,6 +118,11 @@ def main():
         print('Failed')
         print(e)
         exit_code = 1
+
+    emissions: float = tracker.stop()
+    print("########### CARBON FOOTPRINT OF RUN ###########")
+    print(f"Total emissions: {emissions} kg")
+    print("###############################################")
 
     return exit_code
 
