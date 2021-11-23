@@ -83,7 +83,7 @@ where:
 Running `MIALSRTK`
 ===================
 
-You can run the `MIALSRTK` using the lightweight Docker or Singularity wrappers we created for convenience or you can interact directly with the Docker / SIngularity Engine via the docker or singularity run command. (See :ref:`installation`)
+You can run the `MIALSRTK` using the lightweight Docker or Singularity wrappers we created for convenience or you can interact directly with the Docker / Singularity Engine via the docker or singularity run command. (See :ref:`installation`)
 
 .. _wrapperusage:
 
