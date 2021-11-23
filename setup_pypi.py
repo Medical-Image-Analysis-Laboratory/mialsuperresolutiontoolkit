@@ -58,6 +58,9 @@ if include_conda_pip_dependencies:
                 dependency_links.append(line)
                 # Adds package name to dependencies
                 install_requires.append(line)
+# Install automatically codecarbon with pymialsrtk
+install_requires.append('codecarbon==1.2.0')
+install_requires.append('dash-bootstrap-components==0.13.1')
 print(f'Install requires: {install_requires}')
 print(f'Dependency links: {dependency_links}')
 
