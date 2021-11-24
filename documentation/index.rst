@@ -53,6 +53,9 @@ The processing pipeline with all dependencies including the C++ MIALSRTK tools a
 
 All these design considerations allow us not only to (1) represent the entire processing pipeline as an *execution graph, where each MIALSRTK C++ tools are connected*, but also to (2) provide a *mecanism to record data provenance and execution details*, and to (3) easily customize the BIDS App to suit specific needs as interfaces with *new tools can be added with relatively little effort* to account for additional algorithms. 
 
+.. role:: raw-html(raw)
+   :format: html
+
 .. admonition:: New
 
     You can now be aware about the adverse impact of your processing on the environment :raw-html:`&#x1F30D;`!
