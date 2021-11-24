@@ -9,4 +9,4 @@ mialsuperresolutiontoolkit_docker \
     --param_file "$BASEDIR/data/code/participants_params.json" \
     --nipype_nb_of_cores 1 \
     --openmp_nb_of_cores 1 \
-    --codecarbon_output_dir "$BASEDIR/data/code"
+    --track_carbon_footprint

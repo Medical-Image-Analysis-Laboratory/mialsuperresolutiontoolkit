@@ -19,7 +19,7 @@ from codecarbon import EmissionsTracker
 
 # Own imports
 from pymialsrtk.info import __version__
-from pymialsrtk.parser import get_parser
+from pymialsrtk.parser import get_wrapper_parser
 from pymialsrtk.interfaces.utils import run
 
 
@@ -86,28 +86,21 @@ def main():
             * '1' in case of an error
     """
     # Create and parse arguments
-    logging.getLogger("codecarbon").disabled = True  # Comment this line for debug
-    parser = get_parser()
-    parser.add_argument(
-        "--codecarbon_output_dir",
-        help="Directory path in which `codecarbon` saves a CSV file called "
-             "`emissions.csv` reporting carbon footprint details of the overall run "
-             "(Defaults to user’s home directory)",
-        default=None,
-        type=str,
-    )
+    parser = get_wrapper_parser("Docker")
     args = parser.parse_args()
 
     # Create the docker run command
     cmd = create_docker_cmd(args)
 
     # Create and start the carbon footprint tracker
-    tracker = EmissionsTracker(
-        project_name=f"MIALSRTK{__version__}-docker",
-        output_dir=args.codecarbon_output_dir if args.codecarbon_output_dir is not None else str(Path.home()),
-        measure_power_secs=15,
-    )
-    tracker.start()
+    if args.track_carbon_footprint:
+        logging.getLogger("codecarbon").disabled = True  # Comment this line for debug
+        tracker = EmissionsTracker(
+            project_name=f"MIALSRTK{__version__}-docker",
+            output_dir=str(Path(args.bids_dir) / "code"),
+            measure_power_secs=15,
+        )
+        tracker.start()
 
     # Execute the docker run command
     try:
@@ -119,10 +112,11 @@ def main():
         print(e)
         exit_code = 1
 
-    emissions: float = tracker.stop()
-    print("########### CARBON FOOTPRINT OF RUN ###########")
-    print(f"Total emissions: {emissions} kg")
-    print("###############################################")
+    if args.track_carbon_footprint:
+        emissions: float = tracker.stop()
+        print("########### CARBON FOOTPRINT OF RUN ###########")
+        print(f"Total emissions: {emissions} kg")
+        print("###############################################")
 
     return exit_code
 
