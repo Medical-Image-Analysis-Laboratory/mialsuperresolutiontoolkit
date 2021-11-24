@@ -56,6 +56,7 @@ extensions = ['sphinx.ext.autosectionlabel',
               'nipype.sphinxext.plot_workflow',
               'nipype.sphinxext.apidoc',
               'nipype.sphinxext.documenter',
+              'sphinxemoji.sphinxemoji',
               ]
 
 # autodoc_default_options = {
@@ -98,6 +99,9 @@ apidoc_separate_modules = True
 
 # Allow errors in notebooks for doc
 nbsphinx_allow_errors = True
+
+# Consistent emoticon style
+sphinxemoji_style = 'twemoji'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

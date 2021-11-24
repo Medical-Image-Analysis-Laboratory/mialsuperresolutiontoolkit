@@ -55,7 +55,9 @@ All these design considerations allow us not only to (1) represent the entire pr
 
 .. admonition:: New
 
-    You can now track the carbon footprint of your processing with MIALSRTK with `--track_carbon_footprint` option of the `mialsuperresolutiontoolkit_docker` and `mialsuperresolutiontoolkit_singularity` BIDS App python wrappers, that will use `codecarbon <https://codecarbon.io/>`_ to estimate the amount of carbon dioxide (CO2) produced to execute the code by the computing resources and save the results in ``<bids_dir>/code/emissions.csv` file.
+    You can now be aware about the adverse impact of your processing on the environment |:earth_africa:|!
+
+    You can track the carbon footprint of your processing with MIALSRTK with `--track_carbon_footprint` option of the `mialsuperresolutiontoolkit_docker` and `mialsuperresolutiontoolkit_singularity` BIDS App python wrappers, that will use `codecarbon <https://codecarbon.io/>`_ to estimate the amount of carbon dioxide (CO2) produced to execute the code by the computing resources and save the results in ``<bids_dir>/code/emissions.csv` file.
 
     Then, to visualize, interpret and track the evolution of the CO2 emissions incurred, you can use the visualization tool of `codecarbon` aka `carbonboard` that takes as input the `.csv` created::
 
