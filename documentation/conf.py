@@ -65,6 +65,7 @@ extensions = ['sphinx.ext.autosectionlabel',
 
 autodoc_mock_imports = [
     'cv2',
+    'codecarbon',
     'skimage',
     'matplotlib',
     'seaborn',
