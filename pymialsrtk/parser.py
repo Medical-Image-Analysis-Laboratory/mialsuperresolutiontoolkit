@@ -108,10 +108,10 @@ def get_wrapper_parser(container_type):
     return p
 
 
-def get_singularity_wrapper_parser(container_type):
+def get_singularity_wrapper_parser():
     """Create and return the parser object of the python wrappers of the BIDS App."""
-    p = get_wrapper_parser()
-    p.description = f"Argument parser of the python wrapper of MIALSRTK BIDS App ({container_type}) via Singularity"
+    p = get_wrapper_parser('Singularity')
+    p.description = f"Argument parser of the python wrapper of MIALSRTK BIDS App via Singularity"
     p.add_argument(
         '--singularity_image',
         dest='singularity_image',
