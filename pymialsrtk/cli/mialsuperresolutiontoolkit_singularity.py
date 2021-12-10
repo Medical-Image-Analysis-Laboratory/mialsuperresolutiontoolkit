@@ -89,7 +89,7 @@ def main():
             * '1' in case of an error
     """
     # Create and parse arguments
-    parser = get_singularity_wrapper_parser("Singularity")
+    parser = get_singularity_wrapper_parser()
     args = parser.parse_args()
 
     # Create the singularity run command
