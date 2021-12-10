@@ -20,7 +20,11 @@ from codecarbon import EmissionsTracker
 # Own imports
 from pymialsrtk.info import __version__
 from pymialsrtk.parser import get_wrapper_parser
-from pymialsrtk.interfaces.utils import run
+from pymialsrtk.interfaces.utils import(
+    run,
+    get_emission_car_miles_equivalent,
+    get_emission_tv_time_equivalent
+)
 
 
 def create_docker_cmd(args):
@@ -114,9 +118,26 @@ def main():
 
     if args.track_carbon_footprint:
         emissions: float = tracker.stop()
-        print("########### CARBON FOOTPRINT OF RUN ###########")
-        print(f"Total emissions: {emissions} kg")
-        print("###############################################")
+        print("############################################################")
+        print(f"CARBON FOOTPRINT OF {len(args.participant_label)} SUBJECT(S) PROCESSED")
+        print("############################################################")
+        print(f" * Estimated Co2 emissions: {emissions} kg")
+        car_kms = get_emission_car_miles_equivalent(emissions)
+        print(f" * Equivalent in distance travelled by avg car: {car_kms} kms")
+        tv_time = get_emission_tv_time_equivalent(emissions)
+        print(f" * Equivalent in amount of time watching a 32-inch LCD flat screen TV: {tv_time}")
+        print("############################################################")
+        print(f"PREDICTED CARBON FOOTPRINT OF 100 SUBJECTS PROCESSED")
+        print("############################################################")
+        pred_emissions = 100 * emissions / len(args.participant_label)
+        print(f" * Estimated Co2 emissions: {pred_emissions} kg")
+        car_kms = get_emission_car_miles_equivalent(pred_emissions)
+        print(f" * Equivalent in distance travelled by avg car: {car_kms} kms")
+        tv_time = get_emission_tv_time_equivalent(pred_emissions)
+        print(f" * Equivalent in amount of time watching a 32-inch LCD flat screen TV: {tv_time}")
+        print("############################################################")
+        print("Results can be visualized with the codecarbon visualization tool using following command:\n")
+        print(f'\t$ carbonboard --filepath="{args.bids_dir}/code/emissions.csv" --port=9999\n')
 
     return exit_code
 
