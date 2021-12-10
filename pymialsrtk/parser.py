@@ -106,3 +106,18 @@ def get_wrapper_parser(container_type):
              "a CSV file called ``emissions.csv`` in the ``<bids_dir>/code`` directory.",
     )
     return p
+
+
+def get_singularity_wrapper_parser(container_type):
+    """Create and return the parser object of the python wrappers of the BIDS App."""
+    p = get_wrapper_parser()
+    p.description = f"Argument parser of the python wrapper of MIALSRTK BIDS App ({container_type}) via Singularity"
+    p.add_argument(
+        '--singularity_image',
+        dest='singularity_image',
+        default=f'library://tourbier/mialsuperresolutiontoolkit-bidsapp:v{__version__}',
+        type=str,
+        help="Specify the path to the singularity image. "
+             f"If not specified, library://tourbier/mialsuperresolutiontoolkit-bidsapp:v{__version__} is used.",
+    )
+    return p

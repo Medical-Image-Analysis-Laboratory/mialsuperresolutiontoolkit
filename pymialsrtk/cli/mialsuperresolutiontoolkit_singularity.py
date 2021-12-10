@@ -19,7 +19,7 @@ from codecarbon import EmissionsTracker
 
 # Own imports
 from pymialsrtk.info import __version__
-from pymialsrtk.parser import get_wrapper_parser
+from pymialsrtk.parser import get_singularity_wrapper_parser
 from pymialsrtk.interfaces.utils import (
     get_emission_car_miles_equivalent,
     get_emission_tv_time_equivalent,
@@ -56,7 +56,7 @@ def create_singularity_cmd(args):
     cmd += f'--bind {args.bids_dir}:/bids_dir '
     cmd += f'--bind {args.output_dir}:/output_dir '
     cmd += f'--bind {args.param_file}:/bids_dir/code/participants_params.json '
-    cmd += f'library://tourbier/mialsuperresolutiontoolkit-bidsapp:v{__version__} '
+    cmd += f'{args.singularity_image} '
 
     # Standard BIDS App inputs
     cmd += '/bids_dir '
@@ -89,7 +89,7 @@ def main():
             * '1' in case of an error
     """
     # Create and parse arguments
-    parser = get_wrapper_parser("Singularity")
+    parser = get_singularity_wrapper_parser("Singularity")
     args = parser.parse_args()
 
     # Create the singularity run command
