@@ -27,13 +27,6 @@ def get_parser():
     )
 
     p.add_argument(
-        "analysis_level",
-        help="Level of the analysis that will be performed. "
-             "Only participant is available",
-        choices=["participant"],
-    )
-
-    p.add_argument(
         "--participant_label",
         help="The label(s) of the participant(s) that should be analyzed. "
              "The label corresponds to sub-<participant_label> from the BIDS spec "
