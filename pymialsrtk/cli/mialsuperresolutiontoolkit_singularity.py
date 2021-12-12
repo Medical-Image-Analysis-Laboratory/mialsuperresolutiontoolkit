@@ -61,7 +61,7 @@ def create_singularity_cmd(args):
     # Standard BIDS App inputs
     cmd += '/bids_dir '
     cmd += '/output_dir '
-    cmd += f'{args.analysis_level} '
+    cmd += 'participant '
     cmd += '--participant_label '
     for label in args.participant_label:
         cmd += f'{label} '
