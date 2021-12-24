@@ -84,10 +84,10 @@ def main():
             name='pymialsrtk',
             version=__version__,
             description='PyMIALSRTK: Nipype pipelines for the MIAL Super Resolution Toolkit ',
-            long_description="""PyMIALSRTK interfaces with MIALSRTK C++ tools and implements
-                              a full processing pipeline using the NiPype dataflow library,
-                              from motion-corrupted anisotropic multi-slice MRI scans
-                              to a motion-free isotropic high-resolution image. """,
+            long_description="PyMIALSRTK interfaces with MIALSRTK C++ tools and implements "
+                             "a full processing pipeline using the NiPype dataflow library, "
+                             "from motion-corrupted anisotropic multi-slice MRI scans "
+                             "to a motion-free isotropic high-resolution image.",
             author='Sebastien Tourbier',
             author_email='sebastien.tourbier@alumni.epfl.ch',
             url='https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit',

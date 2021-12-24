@@ -53,6 +53,20 @@ The processing pipeline with all dependencies including the C++ MIALSRTK tools a
 
 All these design considerations allow us not only to (1) represent the entire processing pipeline as an *execution graph, where each MIALSRTK C++ tools are connected*, but also to (2) provide a *mecanism to record data provenance and execution details*, and to (3) easily customize the BIDS App to suit specific needs as interfaces with *new tools can be added with relatively little effort* to account for additional algorithms. 
 
+.. role:: raw-html(raw)
+   :format: html
+
+.. admonition:: New
+
+    You can now be aware about the adverse impact of your processing on the environment :raw-html:`&#x1F30D;`!
+
+    With the new `--track_carbon_footprint` option of the `mialsuperresolutiontoolkit_docker` and `mialsuperresolutiontoolkit_singularity` BIDS App python wrappers, you can use `codecarbon <https://codecarbon.io/>`_ to estimate the amount of carbon dioxide (CO2) produced to execute the code by the computing resources and save the results in ``<bids_dir>/code/emissions.csv``.
+
+    Then, to visualize, interpret and track the evolution of the CO2 emissions incurred, you can use the visualization tool of `codecarbon` aka `carbonboard` that takes as input the `.csv` created::
+
+        carbonboard --filepath="<bids_dir>/code/emissions.csv" --port=xxxx
+
+
 Aknowledgment
 --------------
 

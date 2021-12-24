@@ -6,11 +6,15 @@ import os
 import sys
 import setuptools
 from setuptools.command.install import install
+from pathlib import Path
 
 from pymialsrtk.info import __version__
 
+# Get the project root directory
+directory = Path(__file__).parent
 
-directory = os.path.dirname(os.path.abspath(__file__))
+# read the contents of your README file
+long_description = (directory / "README.md").read_text()
 
 if os.path.exists('MANIFEST'):
     os.remove('MANIFEST')
@@ -34,7 +38,7 @@ include_conda_pip_dependencies = False
 install_requires = []
 dependency_links = []
 if include_conda_pip_dependencies:
-    path = os.path.join(directory, 'docker', 'bidsapp', 'environment.yml')
+    path = str(directory / 'docker' / 'bidsapp' / 'environment.yml')
     with open(path) as read_file:
         state = "PREAMBLE"
         for line in read_file:
@@ -58,6 +62,9 @@ if include_conda_pip_dependencies:
                 dependency_links.append(line)
                 # Adds package name to dependencies
                 install_requires.append(line)
+# Install automatically codecarbon with pymialsrtk
+install_requires.append('codecarbon==1.2.0')
+install_requires.append('dash-bootstrap-components==0.13.1')
 print(f'Install requires: {install_requires}')
 print(f'Dependency links: {dependency_links}')
 
@@ -80,11 +87,9 @@ def main():
     setuptools.setup(
             name='pymialsrtk',
             version=__version__,
-            description='PyMIALSRTK: Nipype pipelines for the MIAL Super Resolution Toolkit ',
-            long_description="""PyMIALSRTK interfaces with MIALSRTK C++ tools and implements
-                              a full processing pipeline using the NiPype dataflow library,
-                              from motion-corrupted anisotropic multi-slice MRI scans
-                              to a motion-free isotropic high-resolution image. """,
+            description="PyMIALSRTK: Nipype pipelines for the MIAL Super Resolution Toolkit",
+            long_description=long_description,
+            long_description_content_type='text/markdown',
             author='Sebastien Tourbier',
             author_email='sebastien.tourbier@alumni.epfl.ch',
             url='https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit',

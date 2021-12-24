@@ -83,7 +83,21 @@ where:
 Running `MIALSRTK`
 ===================
 
-You can run the `MIALSRTK` using the lightweight Docker or Singularity wrappers we created for convenience or you can interact directly with the Docker / SIngularity Engine via the docker or singularity run command. (See :ref:`installation`)
+You can run the `MIALSRTK` using the lightweight Docker or Singularity wrappers we created for convenience or you can interact directly with the Docker / Singularity Engine via the docker or singularity run command. (See :ref:`installation`)
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. admonition:: New
+
+    You can now be aware about the adverse impact of your processing on the environment :raw-html:`&#x1F30D;`!
+
+    With the new `--track_carbon_footprint` option of the `mialsuperresolutiontoolkit_docker` and `mialsuperresolutiontoolkit_singularity` BIDS App python wrappers, you can use `codecarbon <https://codecarbon.io/>`_ to estimate the amount of carbon dioxide (CO2) produced to execute the code by the computing resources and save the results in ``<bids_dir>/code/emissions.csv``.
+
+    Then, to visualize, interpret and track the evolution of the CO2 emissions incurred, you can use the visualization tool of `codecarbon` aka `carbonboard` that takes as input the `.csv` created::
+
+        carbonboard --filepath="<bids_dir>/code/emissions.csv" --port=xxxx
+
 
 .. _wrapperusage:
 
@@ -98,6 +112,7 @@ When you run ``mialsuperresolutiontoolkit_docker``, it will generate a Docker co
             /home/localadmin/data/ds001 /media/localadmin/data/ds001/derivatives \
             participant --participant_label 01 \
             --param_file /home/localadmin/data/ds001/code/participants_params.json \
+            --track_carbon_footprint \
             (--openmp_nb_of_cores 4) \
             (--nipype_nb_of_cores 4)
 
@@ -110,6 +125,7 @@ When you run ``mialsuperresolutiontoolkit_singularity``, it will generate a Sing
             /home/localadmin/data/ds001 /media/localadmin/data/ds001/derivatives \
             participant --participant_label 01 \
             --param_file /home/localadmin/data/ds001/code/participants_params.json \
+            --track_carbon_footprint \
             (--openmp_nb_of_cores 4) \
             (--nipype_nb_of_cores 4)
 

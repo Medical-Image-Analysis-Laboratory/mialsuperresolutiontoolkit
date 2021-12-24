@@ -11,11 +11,20 @@
 
 # General imports
 import sys
+from pathlib import Path
+import logging
+
+# Carbon footprint
+from codecarbon import EmissionsTracker
 
 # Own imports
 from pymialsrtk.info import __version__
-from pymialsrtk.parser import get_parser
-from pymialsrtk.interfaces.utils import run
+from pymialsrtk.parser import get_singularity_wrapper_parser
+from pymialsrtk.interfaces.utils import (
+    get_emission_car_miles_equivalent,
+    get_emission_tv_time_equivalent,
+    run
+)
 
 
 def create_singularity_cmd(args):
@@ -47,7 +56,7 @@ def create_singularity_cmd(args):
     cmd += f'--bind {args.bids_dir}:/bids_dir '
     cmd += f'--bind {args.output_dir}:/output_dir '
     cmd += f'--bind {args.param_file}:/bids_dir/code/participants_params.json '
-    cmd += f'library://tourbier/mialsuperresolutiontoolkit-bidsapp:v{__version__} '
+    cmd += f'{args.singularity_image} '
 
     # Standard BIDS App inputs
     cmd += '/bids_dir '
@@ -59,7 +68,7 @@ def create_singularity_cmd(args):
 
     # MIALSRTK BIDS App inputs
     cmd += '--param_file /bids_dir/code/participants_params.json '
-    if args.masks_derivatives_dir != '':
+    if args.masks_derivatives_dir and args.masks_derivatives_dir != '':
         cmd += f'--masks_derivatives_dir {args.masks_derivatives_dir} '
     cmd += f'--openmp_nb_of_cores {args.openmp_nb_of_cores} '
     cmd += f'--nipype_nb_of_cores {args.nipype_nb_of_cores}'
@@ -80,11 +89,21 @@ def main():
             * '1' in case of an error
     """
     # Create and parse arguments
-    parser = get_parser()
+    parser = get_singularity_wrapper_parser()
     args = parser.parse_args()
 
     # Create the singularity run command
     cmd = create_singularity_cmd(args)
+
+    # Create and start the carbon footprint tracker
+    if args.track_carbon_footprint:
+        logging.getLogger("codecarbon").disabled = True  # Comment this line for debug
+        tracker = EmissionsTracker(
+                project_name=f"MIALSRTK{__version__}-docker",
+                output_dir=str(Path(args.bids_dir) / "code"),
+                measure_power_secs=15,
+        )
+        tracker.start()
 
     # Execute the singularity run command
     try:
@@ -95,6 +114,29 @@ def main():
         print('Failed')
         print(e)
         exit_code = 1
+
+    if args.track_carbon_footprint:
+        emissions: float = tracker.stop()
+        print("############################################################")
+        print(f"CARBON FOOTPRINT OF {len(args.participant_label)} SUBJECT(S) PROCESSED")
+        print("############################################################")
+        print(f" * Estimated Co2 emissions: {emissions} kg")
+        car_kms = get_emission_car_miles_equivalent(emissions)
+        print(f" * Equivalent in distance travelled by avg car: {car_kms} kms")
+        tv_time = get_emission_tv_time_equivalent(emissions)
+        print(f" * Equivalent in amount of time watching a 32-inch LCD flat screen TV: {tv_time}")
+        print("############################################################")
+        print(f"PREDICTED CARBON FOOTPRINT OF 100 SUBJECTS PROCESSED")
+        print("############################################################")
+        pred_emissions = 100 * emissions / len(args.participant_label)
+        print(f" * Estimated Co2 emissions: {pred_emissions} kg")
+        car_kms = get_emission_car_miles_equivalent(pred_emissions)
+        print(f" * Equivalent in distance travelled by avg car: {car_kms} kms")
+        tv_time = get_emission_tv_time_equivalent(pred_emissions)
+        print(f" * Equivalent in amount of time watching a 32-inch LCD flat screen TV: {tv_time}")
+        print("############################################################")
+        print("Results can be visualized with the codecarbon visualization tool using following command:\n")
+        print(f'\t$ carbonboard --filepath="{args.bids_dir}/code/emissions.csv" --port=9999\n')
 
     return exit_code
 
