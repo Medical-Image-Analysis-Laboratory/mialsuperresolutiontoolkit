@@ -439,7 +439,7 @@ jobs:
         type: string
         default: latest
     docker:
-      - image: cimg/python:<< parameters.version >>
+      - image: circleci/python:<< parameters.version >>
     steps:
       - checkout
       - run:
@@ -468,7 +468,7 @@ jobs:
 
   deploy-pypi-release:
     docker:
-      - image: cimg/python:3.6
+      - image: circleci/python:3.6
     steps:
       - checkout
       - run:
