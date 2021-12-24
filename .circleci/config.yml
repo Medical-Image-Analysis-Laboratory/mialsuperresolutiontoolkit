@@ -439,7 +439,7 @@ jobs:
         type: string
         default: latest
     docker:
-      - image: circleci/python:<< parameters.version >>
+      - image: cimg/python:<< parameters.version >>
     steps:
       - checkout
       - run:
@@ -468,7 +468,7 @@ jobs:
 
   deploy-pypi-release:
     docker:
-      - image: circleci/python:3.6
+      - image: cimg/python:3.6
     steps:
       - checkout
       - run:
@@ -479,7 +479,7 @@ jobs:
       - run:
           name: "Verify git tag vs. version"
           command: |
-            python3 setup.py verify
+            python3 setup_pypi.py verify
       - run:
           name: "init .pypirc"
           command: |
