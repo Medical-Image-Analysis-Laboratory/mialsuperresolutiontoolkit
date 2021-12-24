@@ -2,6 +2,25 @@
 Changes
 **************
 
+Version 2.0.3
+--------------
+
+Date: December 24, 2021
+
+This corresponds to the release of MIAL Super-Resolution Toolkit 2.0.3, that includes in particular the following changes.
+
+New feature
+=============
+
+- You can now be aware about the adverse impact of your processing on the environment :raw-html:`&#x1F30D;`:raw-html:`&#x2728;`:raw-html:`&#127876;`! A new `--track_carbon_footprint` option has been added to the `mialsuperresolutiontoolkit_docker` and `mialsuperresolutiontoolkit_singularity` python wrappers of the BIDS App, which will use `codecarbon <https://codecarbon.io/>`_ to estimate the amount of carbon dioxide (CO2) produced to execute the BIDS App. Results are saved in ``<bids_dir>/code/emissions.csv``.
+
+- Functions `get_emission_car_miles_equivalent` and `get_emission_tv_time_equivalent` that convert the CO2 emission in terms of (i) kms traveled by an average car and (ii) time of watching a 32-inch screen have been added to `pymialsrtk.interfaces.util` module.
+
+More...
+========
+
+Please check `pull request 113 <https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pull/113>`_ for more change details and development discussions.
+
 
 Version 2.0.2
 --------------
