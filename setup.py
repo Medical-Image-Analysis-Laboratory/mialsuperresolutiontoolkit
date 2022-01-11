@@ -21,7 +21,8 @@ packages = [
     "pymialsrtk.cli",
     "pymialsrtk.interfaces",
     "pymialsrtk.pipelines",
-    "pymialsrtk.pipelines.anatomical"
+    "pymialsrtk.pipelines.anatomical",
+    "pymialsrtk.sphinxext",
 ]
 
 package_data = {
