@@ -55,7 +55,7 @@ extensions = ['sphinx.ext.autosectionlabel',
               'nbsphinx',
               'nipype.sphinxext.plot_workflow',
               'nipype.sphinxext.apidoc',
-              'nipype.sphinxext.documenter',
+              'pymialsrtk.sphinxext.documenter',
               'sphinxemoji.sphinxemoji',
               ]
 
