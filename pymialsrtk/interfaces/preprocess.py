@@ -1886,14 +1886,18 @@ class ReduceFieldOfView(BaseInterface):
         return None
 
     def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[10, 10, 0]):
+        import SimpleITK as sitk
+        reader = sitk.ImageFileReader()
 
-        mask = nib.load(in_mask)
-        mask_np = np.asanyarray(mask.dataobj)
+        reader.SetFileName(in_mask)
+        mask = reader.Execute()
+        mask_np = sitk.GetArrayFromImage(mask)
 
-        image = nib.load(in_image)
-        image_np = np.asanyarray(image.dataobj)
+        reader.SetFileName(in_image)
+        image = reader.Execute()
+        image_np = sitk.GetArrayFromImage(image)
 
-        im_shape= list(image_np.shape)
+        im_shape = list(image_np.shape)
 
         # Compute ROI bounding box
         minimums = [0, 0, 0]
@@ -1903,7 +1907,8 @@ class ReduceFieldOfView(BaseInterface):
 
         # Convert padding from mm to voxels
         paddings = [0, 0, 0]
-        resolutions = image._header['pixdim'][1:4]
+        resolutions = list(image.GetSpacing())
+        resolutions.reverse()
         for i in range(3):
             paddings[i] = int(np.round(paddings_mm[i] / resolutions[i]))
 
@@ -1916,13 +1921,32 @@ class ReduceFieldOfView(BaseInterface):
         image_np = image_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
         mask_np = mask_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
 
-        out = nib.Nifti1Image(dataobj=image_np, affine=image.affine)
-        out._header = image.header
-        nib.save(filename=self._gen_filename('output_image'), img=out)
+        minimums.reverse()
 
-        out = nib.Nifti1Image(dataobj=mask_np, affine=image.affine)
-        out._header = image.header
-        nib.save(filename=self._gen_filename('output_mask'), img=out)
+        new_origin = list(image.TransformContinuousIndexToPhysicalPoint(minimums))
+        new_direction = list(image.GetDirection())
+        new_spacing = list(image.GetSpacing())
+
+
+        image_cropped = sitk.GetImageFromArray(image_np)
+        image_cropped.SetOrigin(new_origin)
+        image_cropped.SetDirection(new_direction)
+        image_cropped.SetSpacing(new_spacing)
+
+        writer = sitk.ImageFileWriter()
+        writer.SetFileName(self._gen_filename('output_image'))
+        writer.Execute(image_cropped)
+
+
+        mask_cropped = sitk.GetImageFromArray(mask_np)
+        mask_cropped.SetOrigin(new_origin)
+        mask_cropped.SetDirection(new_direction)
+        mask_cropped.SetSpacing(new_spacing)
+
+        writer = sitk.ImageFileWriter()
+        writer.SetFileName(self._gen_filename('output_mask'))
+        writer.Execute(mask_cropped)
+
 
         return
 
