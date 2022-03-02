@@ -1878,9 +1878,11 @@ class ReduceFieldOfView(BaseInterface):
     input_spec = ReduceFieldOfViewInputSpec
     output_spec = ReduceFieldOfViewOutputSpec
 
-    def _gen_filename(self, orig, name):
-        if name == 'output_image' or name == 'output_mask':
-            return os.path.abspath(os.path.basename(orig))
+    def _gen_filename(self, name):
+        if name == 'output_image':
+            return os.path.abspath(os.path.basename(self.inputs.input_image))
+        elif name == 'output_mask':
+            return os.path.abspath(os.path.basename(self.inputs.input_mask))
         return None
 
     def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[10, 10, 0]):
@@ -1890,6 +1892,8 @@ class ReduceFieldOfView(BaseInterface):
 
         image = nib.load(in_image)
         image_np = np.asanyarray(image.dataobj)
+
+        im_shape= list(image_np.shape)
 
         # Compute ROI bounding box
         minimums = [0, 0, 0]
@@ -1933,6 +1937,6 @@ class ReduceFieldOfView(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_image'] = self._gen_filename(self.inputs.input_image, 'output_image')
-        outputs['output_mask'] = self._gen_filename(self.inputs.input_mask, 'output_mask')
+        outputs['output_image'] = self._gen_filename('output_image')
+        outputs['output_mask'] = self._gen_filename('output_mask')
         return outputs
