@@ -1857,27 +1857,27 @@ class MultipleBrainExtraction(BaseInterface):
 # Crop LR images
 ###########################
 
-class MialsrtkReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
+class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
     """Class."""
 
-    input_images = InputMultiPath(File(mandatory=True), desc='Input image filenames to be normalized')
+    input_images = InputMultiPath(File(mandatory=True), desc='Input image filenames')
     input_masks = InputMultiPath(File(mandatory=False), desc='Input mask filenames')
 
 
-class MialsrtkReduceFieldOfViewOutputSpec(TraitedSpec):
+class ReduceFieldOfViewOutputSpec(TraitedSpec):
     """Class"""
 
     output_images = OutputMultiPath(File(), desc='Cropped images')
     output_masks = OutputMultiPath(File(), desc='Cropped masks')
 
 
-class MialsrtkReduceFieldOfView(BaseInterface):
+class ReduceFieldOfView(BaseInterface):
     """Runs the
 
     """
 
-    input_spec = MialsrtkReduceFieldOfViewInputSpec
-    output_spec = MialsrtkReduceFieldOfViewOutputSpec
+    input_spec = ReduceFieldOfViewInputSpec
+    output_spec = ReduceFieldOfViewOutputSpec
 
     def _gen_filename(self, orig, name):
         if name == 'output_images' or name == 'output_masks':

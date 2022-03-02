@@ -348,6 +348,8 @@ class AnatomicalPipeline:
         masks_filtered = Node(interface=preprocess.FilteringByRunid(),
                               name='masks_filtered')
 
+        reduceFOV = Node(interface=preprocess.ReduceFieldOfView(), name='reduceFOV')
+
         if not self.m_skip_stacks_ordering:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(),
                                   name='stackOrdering')
@@ -480,6 +482,9 @@ class AnatomicalPipeline:
 
         self.wf.connect(stacksOrdering, "stacks_order", masks_filtered, "stacks_id")
         self.wf.connect(brainMask, "out_file", masks_filtered, "input_files")
+
+        self.wf.connect(t2ws_filtered, "output_files", reduceFOV, "input_images")
+        self.wf.connect(masks_filtered, "output_files", reduceFOV, "input_masks")
 
         if not self.m_skip_nlm_denoising:
             self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_file")
