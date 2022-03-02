@@ -1851,3 +1851,54 @@ class MultipleBrainExtraction(BaseInterface):
         outputs['masks'] = glob(os.path.abspath("*.nii.gz"))
         return outputs
 
+
+
+###########################
+# Crop LR images
+###########################
+
+class MialsrtkReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
+    """Class."""
+
+    input_images = InputMultiPath(File(mandatory=True), desc='Input image filenames to be normalized')
+    input_masks = InputMultiPath(File(mandatory=False), desc='Input mask filenames')
+
+
+class MialsrtkReduceFieldOfViewOutputSpec(TraitedSpec):
+    """Class"""
+
+    output_images = OutputMultiPath(File(), desc='Cropped images')
+    output_masks = OutputMultiPath(File(), desc='Cropped masks')
+
+
+class MialsrtkReduceFieldOfView(BaseInterface):
+    """Runs the
+
+    """
+
+    input_spec = MialsrtkReduceFieldOfViewInputSpec
+    output_spec = MialsrtkReduceFieldOfViewOutputSpec
+
+    def _gen_filename(self, orig, name):
+        if name == 'output_images' or name == 'output_masks':
+            return os.path.abspath(os.path.basename(orig))
+        return None
+
+    def _process(self):
+        pass
+
+    def _run_interface(self, runtime):
+
+        try:
+            self._process()
+        except Exception as e:
+            print('Failed')
+            print(e)
+
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_images'] = [self._gen_filename(in_file, 'output_images') for in_file in self.inputs.input_images]
+        outputs['output_masks'] = [self._gen_filename(in_file, 'output_masks') for in_file in self.inputs.input_images]
+        return outputs
