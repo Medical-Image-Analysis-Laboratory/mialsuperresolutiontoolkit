@@ -1860,45 +1860,79 @@ class MultipleBrainExtraction(BaseInterface):
 class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
     """Class."""
 
-    input_images = InputMultiPath(File(mandatory=True), desc='Input image filenames')
-    input_masks = InputMultiPath(File(mandatory=False), desc='Input mask filenames')
+    input_image = File(mandatory=True, desc='Input image filename')
+    input_mask = File(mandatory=True, desc='Input mask filename')
 
 
 class ReduceFieldOfViewOutputSpec(TraitedSpec):
     """Class"""
 
-    output_images = OutputMultiPath(File(), desc='Cropped images')
-    output_masks = OutputMultiPath(File(), desc='Cropped masks')
+    output_image = File(desc='Cropped images')
+    output_mask = File(desc='Cropped masks')
 
 
 class ReduceFieldOfView(BaseInterface):
     """Runs the
 
     """
-
     input_spec = ReduceFieldOfViewInputSpec
     output_spec = ReduceFieldOfViewOutputSpec
 
     def _gen_filename(self, orig, name):
-        if name == 'output_images' or name == 'output_masks':
+        if name == 'output_image' or name == 'output_mask':
             return os.path.abspath(os.path.basename(orig))
         return None
 
-    def _process(self):
-        pass
+    def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[10, 10, 0]):
+
+        mask = nib.load(in_mask)
+        mask_np = np.asanyarray(mask.dataobj)
+
+        image = nib.load(in_image)
+        image_np = np.asanyarray(image.dataobj)
+
+        # Compute ROI bounding box
+        minimums = [0, 0, 0]
+        maximums = list(mask_np.shape)
+        ri = skimage.measure.regionprops((mask_np > 0).astype(np.uint8), image_np)
+        minimums[0], minimums[1], minimums[2], maximums[0], maximums[1], maximums[2] = ri[0].bbox
+
+        # Convert padding from mm to voxels
+        paddings = [0, 0, 0]
+        resolutions = image._header['pixdim'][1:4]
+        for i in range(3):
+            paddings[i] = int(np.round(paddings_mm[i] / resolutions[i]))
+
+        # Update ROI bounding box with padding
+        for i in range(3):
+            minimums[i] = int(max(0, minimums[i] - paddings[i]))
+            maximums[i] = int(min(im_shape[i], maximums[i] + paddings[i]))
+
+        # Crop ROI FOV
+        image_np = image_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
+        mask_np = mask_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
+
+        out = nib.Nifti1Image(dataobj=image_np, affine=image.affine)
+        out._header = image.header
+        nib.save(filename=self._gen_filename('output_image'), img=out)
+
+        out = nib.Nifti1Image(dataobj=mask_np, affine=image.affine)
+        out._header = image.header
+        nib.save(filename=self._gen_filename('output_mask'), img=out)
+
+        return
 
     def _run_interface(self, runtime):
 
         try:
-            self._process()
+            self._crop_image_and_mask(self.inputs.input_image, self.inputs.input_mask)
         except Exception as e:
             print('Failed')
             print(e)
-
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_images'] = [self._gen_filename(in_file, 'output_images') for in_file in self.inputs.input_images]
-        outputs['output_masks'] = [self._gen_filename(in_file, 'output_masks') for in_file in self.inputs.input_images]
+        outputs['output_image'] = self._gen_filename(self.inputs.input_image, 'output_image')
+        outputs['output_mask'] = self._gen_filename(self.inputs.input_mask, 'output_mask')
         return outputs
