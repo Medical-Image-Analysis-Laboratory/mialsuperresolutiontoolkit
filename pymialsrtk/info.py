@@ -2,8 +2,8 @@
 
 _version_major = 2
 _version_minor = 0
-_version_micro = 3
-_version_extra = ''
+_version_micro = 4
+_version_extra = '-dev'
 
 __release_date__ = '24.12.2021'
 
