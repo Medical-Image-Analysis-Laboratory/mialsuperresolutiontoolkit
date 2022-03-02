@@ -20,7 +20,7 @@ from skimage.morphology import binary_opening, binary_closing
 import numpy as np
 from traits.api import *
 
-import nibabel
+import nibabel as nib
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -1000,7 +1000,7 @@ class StacksOrdering(BaseInterface):
         """
         central_third = True
 
-        img = nibabel.load(in_file)
+        img = nib.load(in_file)
         data = img.get_fdata()
 
         # To compute centroid displacement as a distance
@@ -1399,7 +1399,7 @@ class BrainExtraction(BaseInterface):
         border_y = 15
         n_channels = 1
 
-        img_nib = nibabel.load(os.path.join(dataPath))
+        img_nib = nib.load(os.path.join(dataPath))
         image_data = img_nib.get_data()
         max_val = np.max(image_data)
         images = np.zeros((image_data.shape[2], width, height, n_channels))
@@ -1624,11 +1624,11 @@ class BrainExtraction(BaseInterface):
             ]
             pred3d = np.asarray(pred3d)
             upsampled = np.swapaxes(np.swapaxes(pred3d, 1, 2), 0, 2)  # if Orient module applied, no need for this line(?)
-            up_mask = nibabel.Nifti1Image(upsampled, img_nib.affine)
+            up_mask = nib.Nifti1Image(upsampled, img_nib.affine)
 
             # Save output mask
             save_file = self._gen_filename('out_file')
-            nibabel.save(up_mask, save_file)
+            nib.save(up_mask, save_file)
 
     def _extractLargestCC(self, image):
         """Function returning largest connected component of an object."""
@@ -1854,7 +1854,7 @@ class MultipleBrainExtraction(BaseInterface):
 
 
 ###########################
-# Crop LR images
+# Crop LR image
 ###########################
 
 class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
@@ -1867,8 +1867,8 @@ class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
 class ReduceFieldOfViewOutputSpec(TraitedSpec):
     """Class"""
 
-    output_image = File(desc='Cropped images')
-    output_mask = File(desc='Cropped masks')
+    output_image = File(desc='Cropped image')
+    output_mask = File(desc='Cropped mask')
 
 
 class ReduceFieldOfView(BaseInterface):
