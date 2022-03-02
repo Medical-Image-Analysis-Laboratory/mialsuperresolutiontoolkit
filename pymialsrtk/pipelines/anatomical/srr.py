@@ -348,7 +348,8 @@ class AnatomicalPipeline:
         masks_filtered = Node(interface=preprocess.FilteringByRunid(),
                               name='masks_filtered')
 
-        reduceFOV = Node(interface=preprocess.ReduceFieldOfView(), name='reduceFOV')
+        reduceFOV = MapNode(interface=preprocess.ReduceFieldOfView(), name='reduceFOV',
+                                                      iterfield=['input_image', 'input_mask'])
 
         if not self.m_skip_stacks_ordering:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(),
@@ -483,66 +484,66 @@ class AnatomicalPipeline:
         self.wf.connect(stacksOrdering, "stacks_order", masks_filtered, "stacks_id")
         self.wf.connect(brainMask, "out_file", masks_filtered, "input_files")
 
-        self.wf.connect(t2ws_filtered, "output_files", reduceFOV, "input_images")
-        self.wf.connect(masks_filtered, "output_files", reduceFOV, "input_masks")
+        self.wf.connect(t2ws_filtered, "output_files", reduceFOV, "input_image")
+        self.wf.connect(masks_filtered, "output_files", reduceFOV, "input_mask")
 
         if not self.m_skip_nlm_denoising:
-            self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_file")
-            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), nlmDenoise, "in_mask")  ## Comment to match docker process
+            self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending), nlmDenoise, "in_file")
+            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), nlmDenoise, "in_mask")  ## Comment to match docker process
 
             self.wf.connect(nlmDenoise, ("out_file", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_file")
-            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_mask")
+            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_mask")
 
-        self.wf.connect(t2ws_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_file")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_mask")
+        self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_file")
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_mask")
 
         if not self.m_skip_nlm_denoising:
             self.wf.connect(srtkCorrectSliceIntensity01_nlm, ("out_file", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_file")
         else:
             self.wf.connect(srtkCorrectSliceIntensity01, ("out_file", utils.sort_ascending),srtkSliceBySliceN4BiasFieldCorrection, "in_file")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_mask")
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_mask")
 
         self.wf.connect(srtkCorrectSliceIntensity01, ("out_file", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_file")
         self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("out_fld_file", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_field")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_mask")
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_mask")
 
         if not self.m_skip_nlm_denoising:
             self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("out_im_file", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "in_file")
-            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "in_mask")
+            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "in_mask")
             self.wf.connect(srtkCorrectSliceIntensity02_nlm, ("out_file", utils.sort_ascending), srtkIntensityStandardization01_nlm, "input_images")
             self.wf.connect(srtkIntensityStandardization01_nlm, ("output_images", utils.sort_ascending), srtkHistogramNormalization_nlm, "input_images")
-            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHistogramNormalization_nlm, "input_masks")
+            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkHistogramNormalization_nlm, "input_masks")
             self.wf.connect(srtkHistogramNormalization_nlm, ("output_images", utils.sort_ascending), srtkIntensityStandardization02_nlm, "input_images")
 
         self.wf.connect(srtkSliceBySliceCorrectBiasField, ("out_im_file", utils.sort_ascending), srtkCorrectSliceIntensity02, "in_file")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkCorrectSliceIntensity02, "in_mask")
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkCorrectSliceIntensity02, "in_mask")
         self.wf.connect(srtkCorrectSliceIntensity02, ("out_file", utils.sort_ascending), srtkIntensityStandardization01, "input_images")
 
         self.wf.connect(srtkIntensityStandardization01, ("output_images", utils.sort_ascending), srtkHistogramNormalization, "input_images")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHistogramNormalization, "input_masks")
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkHistogramNormalization, "input_masks")
         self.wf.connect(srtkHistogramNormalization, ("output_images", utils.sort_ascending), srtkIntensityStandardization02, "input_images")
 
         if not self.m_skip_nlm_denoising:
             self.wf.connect(srtkIntensityStandardization02_nlm, ("output_images", utils.sort_ascending), srtkMaskImage01, "in_file")
-            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkMaskImage01, "in_mask")
+            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkMaskImage01, "in_mask")
         else:
             self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkMaskImage01, "in_file")
-            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkMaskImage01, "in_mask")
+            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkMaskImage01, "in_mask")
 
         self.wf.connect(srtkMaskImage01, "out_im_file", srtkImageReconstruction, "input_images")
-        self.wf.connect(masks_filtered, "output_files", srtkImageReconstruction, "input_masks")
+        self.wf.connect(reduceFOV, "output_mask", srtkImageReconstruction, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
 
         self.wf.connect(srtkIntensityStandardization02, "output_images", srtkTVSuperResolution, "input_images")
         self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkTVSuperResolution, "input_transforms")
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkTVSuperResolution, "input_masks")
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkTVSuperResolution, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
 
         self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
 
         if self.m_do_refine_hr_mask:
             self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkHRMask, "input_images")
-            self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), srtkHRMask, "input_masks")
+            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkHRMask, "input_masks")
             self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkHRMask, "input_transforms")
             self.wf.connect(srtkTVSuperResolution, "output_sr", srtkHRMask, "input_sr")
         else:
@@ -569,7 +570,7 @@ class AnatomicalPipeline:
         if not self.m_skip_stacks_ordering:
             self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
             self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
-        self.wf.connect(masks_filtered, ("output_files", utils.sort_ascending), datasink, 'anat.@LRmasks')
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), datasink, 'anat.@LRmasks')
         self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), datasink, 'anat.@LRsPreproc')
         self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), datasink, 'xfm.@transforms')
         self.wf.connect(finalFilenamesGeneration, "substitutions", datasink, "substitutions")
