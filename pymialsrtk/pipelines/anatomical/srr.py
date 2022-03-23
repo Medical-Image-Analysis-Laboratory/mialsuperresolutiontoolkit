@@ -359,18 +359,17 @@ class AnatomicalPipeline:
                                   name='stackOrdering')
             stacksOrdering.inputs.stacks_order = self.m_stacks
 
-        if not self.m_skip_nlm_denoising:
-            nlmDenoise = MapNode(interface=preprocess.BtkNLMDenoising(),
-                                 name='nlmDenoise',
-                                 iterfield=['in_file', 'in_mask'])
-            nlmDenoise.inputs.bids_dir = self.bids_dir
+        nlmDenoise = MapNode(interface=preprocess.BtkNLMDenoising(),
+                             name='nlmDenoise',
+                             iterfield=['in_file', 'in_mask'])
+        nlmDenoise.inputs.bids_dir = self.bids_dir
 
-            # Sans le mask le premier correct slice intensity...
-            srtkCorrectSliceIntensity01_nlm = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
-                                                      name='srtkCorrectSliceIntensity01_nlm',
-                                                      iterfield=['in_file', 'in_mask'])
-            srtkCorrectSliceIntensity01_nlm.inputs.bids_dir = self.bids_dir
-            srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
+        # Sans le mask le premier correct slice intensity...
+        srtkCorrectSliceIntensity01_nlm = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
+                                                  name='srtkCorrectSliceIntensity01_nlm',
+                                                  iterfield=['in_file', 'in_mask'])
+        srtkCorrectSliceIntensity01_nlm.inputs.bids_dir = self.bids_dir
+        srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
 
         srtkCorrectSliceIntensity01 = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                               name='srtkCorrectSliceIntensity01',
@@ -487,21 +486,18 @@ class AnatomicalPipeline:
         self.wf.connect(t2ws_filtered, "output_files", reduceFOV, "input_image")
         self.wf.connect(masks_filtered, "output_files", reduceFOV, "input_mask")
 
-        if not self.m_skip_nlm_denoising:
-            self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending), nlmDenoise, "in_file")
-            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), nlmDenoise, "in_mask")  ## Comment to match docker process
+        self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending), nlmDenoise, "in_file")
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), nlmDenoise, "in_mask")  ## Comment to match docker process
 
-            self.wf.connect(nlmDenoise, ("out_file", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_file")
-            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_mask")
+        self.wf.connect(nlmDenoise, ("out_file", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_file")
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkCorrectSliceIntensity01_nlm, "in_mask")
+
+        self.wf.connect(srtkCorrectSliceIntensity01_nlm, ("out_file", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_file")
+        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_mask")
 
         self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_file")
         self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkCorrectSliceIntensity01, "in_mask")
 
-        if not self.m_skip_nlm_denoising:
-            self.wf.connect(srtkCorrectSliceIntensity01_nlm, ("out_file", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_file")
-        else:
-            self.wf.connect(srtkCorrectSliceIntensity01, ("out_file", utils.sort_ascending),srtkSliceBySliceN4BiasFieldCorrection, "in_file")
-        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkSliceBySliceN4BiasFieldCorrection, "in_mask")
 
         self.wf.connect(srtkCorrectSliceIntensity01, ("out_file", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_file")
         self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("out_fld_file", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_field")
