@@ -83,8 +83,8 @@ class AnatomicalPipeline:
     m_do_refine_hr_mask : bool
         Weither a refinement of the HR mask should be performed. (default is False)
 
-    m_skip_nlm_denoising : bool
-        Weither the NLM denoising preprocessing should be skipped. (default is False)
+    m_do_nlm_denoising : bool
+        Weither the NLM denoising preprocessing should be performed prior to motion estimation. (default is False)
 
     m_skip_stacks_ordering : bool (optional)
         Weither the automatic stacks ordering should be skipped. (default is False)
@@ -131,7 +131,7 @@ class AnatomicalPipeline:
 
     # Custom interfaces options
     m_skip_svr = None
-    m_skip_nlm_denoising = None
+    m_do_nlm_denoising = None
     m_skip_stacks_ordering = None
     m_do_refine_hr_mask = None
 
@@ -178,14 +178,14 @@ class AnatomicalPipeline:
         if p_dict_custom_interfaces is not None:
             self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] if 'skip_svr' in p_dict_custom_interfaces.keys() else False
             self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() else False
-            self.m_skip_nlm_denoising = p_dict_custom_interfaces['skip_nlm_denoising'] if 'skip_nlm_denoising' in p_dict_custom_interfaces.keys() else False
+            self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising'] if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() else False
 
             self.m_skip_stacks_ordering = p_dict_custom_interfaces['skip_stacks_ordering'] if \
                 ((self.m_stacks is not None) and ('skip_stacks_ordering' in p_dict_custom_interfaces.keys())) else False
         else:
             self.m_skip_svr = False
             self.m_do_refine_hr_mask = False
-            self.m_skip_nlm_denoising =  False
+            self.m_do_nlm_denoising =  False
             self.m_skip_stacks_ordering = False
 
     def create_workflow(self):
@@ -388,7 +388,7 @@ class AnatomicalPipeline:
         srtkSliceBySliceCorrectBiasField.inputs.bids_dir = self.bids_dir
 
         # 4-modules sequence to be defined as a stage.
-        if not self.m_skip_nlm_denoising:
+        if self.m_do_nlm_denoising:
             srtkCorrectSliceIntensity02_nlm = MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                                       name='srtkCorrectSliceIntensity02_nlm',
                                                       iterfield=['in_file', 'in_mask'])
@@ -503,7 +503,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("out_fld_file", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_field")
         self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkSliceBySliceCorrectBiasField, "in_mask")
 
-        if not self.m_skip_nlm_denoising:
+        if self.m_do_nlm_denoising:
             self.wf.connect(srtkSliceBySliceN4BiasFieldCorrection, ("out_im_file", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "in_file")
             self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkCorrectSliceIntensity02_nlm, "in_mask")
             self.wf.connect(srtkCorrectSliceIntensity02_nlm, ("out_file", utils.sort_ascending), srtkIntensityStandardization01_nlm, "input_images")
@@ -519,7 +519,7 @@ class AnatomicalPipeline:
         self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkHistogramNormalization, "input_masks")
         self.wf.connect(srtkHistogramNormalization, ("output_images", utils.sort_ascending), srtkIntensityStandardization02, "input_images")
 
-        if not self.m_skip_nlm_denoising:
+        if self.m_do_nlm_denoising:
             self.wf.connect(srtkIntensityStandardization02_nlm, ("output_images", utils.sort_ascending), srtkMaskImage01, "in_file")
             self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkMaskImage01, "in_mask")
         else:
@@ -771,7 +771,7 @@ class AnatomicalPipeline:
             sr_id=self.sr_id,
             stacks=self.m_stacks,
             svr="on" if not self.m_skip_svr else "off",
-            nlm_denoising="on" if not self.m_skip_nlm_denoising else "off",
+            nlm_denoising="on" if self.m_do_nlm_denoising else "off",
             stacks_ordering="on" if not self.m_skip_stacks_ordering else "off",
             do_refine_hr_mask="on" if self.m_do_refine_hr_mask else "off",
             use_auto_masks="on" if self.m_masks_derivatives_dir is None else "off",

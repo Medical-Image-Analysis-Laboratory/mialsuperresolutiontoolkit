@@ -182,7 +182,7 @@ def main(bids_dir, output_dir,
     masks_desc : string
         BIDS description tag of masks to use (optional)
 
-    dict_custom_interfaces : {'do_refine_hr_mask': False, 'skip_nlm_denoising': False, 'skip_stacks_ordering': False}
+    dict_custom_interfaces : {'do_refine_hr_mask': False, 'm_do_nlm_denoising': False, 'skip_stacks_ordering': False}
         Dictionary that customize the workflow (skip interfaces).
 
     nipype_number_of_cores : int
