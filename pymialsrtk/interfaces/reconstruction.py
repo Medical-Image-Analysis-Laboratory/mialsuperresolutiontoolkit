@@ -193,7 +193,7 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
                              desc='Parameter deltat of TV optimizer')
     in_lambda = traits.Float(mandatory=True,
                              desc='TV regularization factor which weights the data fidelity term in TV optimizer')
-    in_bregman_loop = traits.Int(1,
+    in_bregman_loop = traits.Int(3,
                                  desc='Number of Bregman loops',
                                  usedefault=True)
     in_iter = traits.Int(50,
