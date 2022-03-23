@@ -72,7 +72,7 @@ where:
 
         * ``"do_refine_hr_mask"`` (optional) indicates weither a refinement of the HR mask should be performed. (default is False)
 
-        * ``"skip_nlm_denoising"`` (optional) indicates weither the NLM denoising preprocessing should be skipped. (default is False)
+        * ``"do_nlm_denoising"`` (optional) indicates weither the NLM denoising preprocessing should be performed prior to motion estimation. (default is False)
 
         * ``"skip_stacks_ordering"`` (optional) indicates weither the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
 
