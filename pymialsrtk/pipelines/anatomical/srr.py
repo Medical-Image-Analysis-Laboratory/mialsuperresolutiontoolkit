@@ -58,8 +58,24 @@ class AnatomicalPipeline:
     lambdaTV : float
         Regularization weight (default is 0.75)
 
-    primal_dual_loops : string
-        Number of primal/dual loops used in the optimization of the total-variation
+    num_iterations : string
+        Number of iterations in the primal/dual loops used in the optimization of the total-variation
+        super-resolution algorithm.
+
+    num_primal_dual_loops : string
+        Number of primal/dual (inner) loops used in the optimization of the total-variation
+        super-resolution algorithm.
+
+    num_bregman_loops : string
+        Number of Bregman (outer) loops used in the optimization of the total-variation
+        super-resolution algorithm.
+
+    step_scale : string
+        Step scale parameter used in the optimization of the total-variation
+        super-resolution algorithm.
+
+    gamma : string
+        Gamma parameter used in the optimization of the total-variation
         super-resolution algorithm.
 
     sr_id : string
@@ -101,7 +117,7 @@ class AnatomicalPipeline:
                                       session=None,
                                       paramTV={deltatTV = "0.001",
                                                lambdaTV = "0.75",
-                                               primal_dual_loops = "20"},
+                                               num_primal_dual_loops = "20"},
                                       masks_derivatives_dir="/custom/mask_dir",
                                       masks_desc=None,
                                       p_dict_custom_interfaces=None)
@@ -121,11 +137,16 @@ class AnatomicalPipeline:
     output_dir = None
     subject = None
     wf = None
-    deltatTV = "0.75"
-    lambdaTV = "0.001"
-    primal_dual_loops = "20"
     sr_id = None
     session = None
+
+    deltatTV = None
+    lambdaTV = None
+    num_iterations = None
+    num_primal_dual_loops = None
+    num_bregman_loops = None
+    step_scale = None
+    gamma = None
 
     m_stacks = None
 
@@ -166,7 +187,13 @@ class AnatomicalPipeline:
             paramTV = dict()
         self.deltatTV = paramTV["deltatTV"] if "deltatTV" in paramTV.keys() else 0.01
         self.lambdaTV = paramTV["lambdaTV"] if "lambdaTV" in paramTV.keys() else 0.75
-        self.primal_dual_loops = paramTV["primal_dual_loops"] if "primal_dual_loops" in paramTV.keys() else 10
+
+        self.num_iterations = paramTV["num_iterations"] if "num_iterations" in paramTV.keys() else 50
+        self.num_primal_dual_loops = paramTV["num_primal_dual_loops"] if "num_primal_dual_loops" in paramTV.keys() else 10
+        self.num_bregman_loops = paramTV["num_bregman_loops"] if "num_bregman_loops" in paramTV.keys() else 3
+        self.step_scale = paramTV["step_scale"] if "step_scale" in paramTV.keys() else 1
+        self.gamma = paramTV["gamma"] if "gamma" in paramTV.keys() else 1
+
 
         # Use manual/custom brain masks
         # If masks directory is not specified use the automated brain extraction method.
@@ -439,10 +466,15 @@ class AnatomicalPipeline:
                                      name='srtkTVSuperResolution')
         srtkTVSuperResolution.inputs.bids_dir = self.bids_dir
         srtkTVSuperResolution.inputs.sub_ses = sub_ses
-        srtkTVSuperResolution.inputs.in_loop = self.primal_dual_loops
+        srtkTVSuperResolution.inputs.use_manual_masks = self.use_manual_masks
+
+        srtkTVSuperResolution.inputs.in_iter = self.num_iterations
+        srtkTVSuperResolution.inputs.in_loop = self.num_primal_dual_loops
+        srtkTVSuperResolution.inputs.in_bregman_loop = self.num_bregman_loops
+        srtkTVSuperResolution.inputs.in_step_scale = self.step_scale
+        srtkTVSuperResolution.inputs.in_gamma = self.gamma
         srtkTVSuperResolution.inputs.in_deltat = self.deltatTV
         srtkTVSuperResolution.inputs.in_lambda = self.lambdaTV
-        srtkTVSuperResolution.inputs.use_manual_masks = self.use_manual_masks
 
         srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
                                          name='srtkN4BiasFieldCorrection')

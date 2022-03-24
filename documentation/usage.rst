@@ -62,7 +62,8 @@ where:
 
     * ``"stacks"`` (optional) defines the list of scans to be used in the reconstruction. The specified order is considered if ``"skip_stacks_ordering"`` is False
 
-    * ``"paramTV"`` (optional): ``"lambdaTV"`` (regularization) and ``"deltaTV"`` (optimization time step) are parameters of the TV super-resolution algorithm.
+    * ``"paramTV"`` (optional): ``"lambdaTV"`` (regularization), ``"deltaTV"`` (optimization time step),
+``"num_iterations"``, ``"num_primal_dual_loops"``, ``"num_bregman_loops"``, ``"step_scale"``, ``"gamma"`` are parameters of the TV super-resolution algorithm.
 
     * ``"session"`` (optional) It MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
 
