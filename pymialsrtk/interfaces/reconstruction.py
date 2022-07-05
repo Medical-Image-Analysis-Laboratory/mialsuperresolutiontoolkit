@@ -450,14 +450,13 @@ class MialsrtkTVSuperResolution(BaseInterface):
         return outputs
 
 
-
-
 ########################
 # Image Reconstruction
 ########################
 
 class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the MialsrtkSDIComputation interface."""
+    """Class used to represent inputs of the
+    MialsrtkSDIComputation interface."""
 
     # in_roi = traits.Enum('mask', "all", "box", "mask",
     #                      desc="""Define region of interest (required):
@@ -466,29 +465,32 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
     #                                - `all`: Use the whole image FOV""",
     #                      mandatory=True,
     #                      usedefault=True)
-    input_images = InputMultiPath(File(), desc='Input images', mandatory = True)
+    input_images = InputMultiPath(File(), desc='Input images', mandatory=True)
     input_masks = InputMultiPath(File(),
-                                 desc='Masks of the input images', mandatory = True)
+                                 desc='Masks of the input images',
+                                 mandatory = True)
     input_transforms = InputMultiPath(File(),
-                                  desc='Input transformation files', mandatory = True)
+                                      desc='Input transformation files',
+                                      mandatory=True)
     input_reference = File( desc='Input reference image', mandatory = True)
     sub_ses = traits.Str("x",
                          desc='Subject and session BIDS identifier to construct output filename',
                          usedefault=True)
     stacks_order = traits.List(mandatory=True,
-                               desc='List of stack run-id that specify the order of the stacks')
+                               desc='List of stack run-id that '
+                                    'specify the order of the stacks')
 
 
 class MialsrtkSDIComputationOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the MialsrtkSDIComputation interface."""
+    """Class used to represent outputs of the
+    MialsrtkSDIComputation interface."""
 
     output_sdi = File(desc='Output scattered data interpolation image file')
 
 
 class MialsrtkSDIComputation(BaseInterface):
-    """Creates a high-resolution image from a set of low resolution images Todo.
-
-    >>> f
+    """Creates a high-resolution image
+    from a set of low resolution images Todo.
 
     """
 
@@ -528,14 +530,18 @@ class MialsrtkSDIComputation(BaseInterface):
         params = []
         # params.append(''.join(["--", self.inputs.in_roi]))
 
-        input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
-        input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
-        input_transforms = reorder_by_run_ids(self.inputs.input_transforms, self.inputs.stacks_order)
+        input_images = reorder_by_run_ids(self.inputs.input_images,
+                                          self.inputs.stacks_order)
+        input_masks = reorder_by_run_ids(self.inputs.input_masks,
+                                         self.inputs.stacks_order)
+        input_transforms = reorder_by_run_ids(self.inputs.input_transforms,
+                                              self.inputs.stacks_order)
 
         params.append("-r")
         params.append(empty_ref_image)
 
-        for in_image, in_mask, in_transform in zip(input_images, input_masks, input_transforms):
+        for in_image, in_mask, in_transform in \
+                zip(input_images, input_masks, input_transforms):
 
             params.append("-i")
             params.append(in_image)
@@ -559,7 +565,7 @@ class MialsrtkSDIComputation(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            run(cmd) #, cwd=os.getcwd())
+            run(cmd)
         except Exception as e:
             print('Failed')
             print(e)

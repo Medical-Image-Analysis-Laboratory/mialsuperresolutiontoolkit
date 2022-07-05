@@ -402,13 +402,15 @@ class AnatomicalPipeline:
         srtkImageReconstruction.inputs.no_reg = self.m_skip_svr
 
         if self.m_do_nlm_denoising:
-            srtkMaskImage01_nlm = MapNode(interface=preprocess.MialsrtkMaskImage(),
-                                      name='srtkMaskImage01_nlm',
-                                      iterfield=['in_file', 'in_mask'])
+            srtkMaskImage01_nlm = MapNode(
+                interface=preprocess.MialsrtkMaskImage(),
+                name='srtkMaskImage01_nlm',
+                iterfield=['in_file', 'in_mask'])
             srtkMaskImage01_nlm.inputs.bids_dir = self.bids_dir
 
-            sdiComputation = Node(interface=reconstruction.MialsrtkSDIComputation(),
-                                      name='sdiComputation')
+            sdiComputation = Node(
+                interface=reconstruction.MialsrtkSDIComputation(),
+                name='sdiComputation')
             sdiComputation.inputs.sub_ses = sub_ses
             sdiComputation.inputs.stacks_order = self.m_stacks
 
@@ -479,40 +481,53 @@ class AnatomicalPipeline:
                         srtkMaskImage01, "in_file")
 
         if self.m_do_nlm_denoising:
-            self.wf.connect(preprocessing_stage, ("outputnode.output_images_nlm", utils.sort_ascending),
+            self.wf.connect(preprocessing_stage, ("outputnode.output_images_nlm",
+                                                  utils.sort_ascending),
                             srtkMaskImage01_nlm, "in_file")
             self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending),
                             srtkMaskImage01_nlm, "in_mask")
 
-            self.wf.connect(srtkMaskImage01_nlm, "out_im_file", srtkImageReconstruction, "input_images")
+            self.wf.connect(srtkMaskImage01_nlm, "out_im_file",
+                            srtkImageReconstruction, "input_images")
         else:
-            self.wf.connect(srtkMaskImage01, "out_im_file", srtkImageReconstruction, "input_images")
+            self.wf.connect(srtkMaskImage01, "out_im_file",
+                            srtkImageReconstruction, "input_images")
 
         self.wf.connect(reduceFOV, "output_mask", srtkImageReconstruction, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkImageReconstruction, "stacks_order")
 
-        self.wf.connect(preprocessing_stage, ("outputnode.output_images", utils.sort_ascending),
+        self.wf.connect(preprocessing_stage, ("outputnode.output_images",
+                                              utils.sort_ascending),
                         srtkTVSuperResolution, "input_images")
 
-        self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkTVSuperResolution, "input_transforms")
+        self.wf.connect(srtkImageReconstruction, ("output_transforms",
+                                                  utils.sort_ascending),
+                        srtkTVSuperResolution, "input_transforms")
         self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkTVSuperResolution, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
 
 
         if self.m_do_nlm_denoising:
-            self.wf.connect(srtkMaskImage01, "out_im_file", sdiComputation, "input_images")
-            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), sdiComputation, "input_masks")
-            self.wf.connect(srtkImageReconstruction, "output_transforms", sdiComputation, "input_transforms")
-            self.wf.connect(srtkImageReconstruction, "output_sdi", sdiComputation, "input_reference")
+            self.wf.connect(srtkMaskImage01, "out_im_file",
+                            sdiComputation, "input_images")
+            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending),
+                            sdiComputation, "input_masks")
+            self.wf.connect(srtkImageReconstruction, "output_transforms",
+                            sdiComputation, "input_transforms")
+            self.wf.connect(srtkImageReconstruction, "output_sdi",
+                            sdiComputation, "input_reference")
 
-            self.wf.connect(sdiComputation, "output_sdi", srtkTVSuperResolution, "input_sdi")
+            self.wf.connect(sdiComputation, "output_sdi",
+                            srtkTVSuperResolution, "input_sdi")
         else:
-            self.wf.connect(srtkImageReconstruction, "output_sdi", srtkTVSuperResolution, "input_sdi")
+            self.wf.connect(srtkImageReconstruction, "output_sdi",
+                            srtkTVSuperResolution, "input_sdi")
 
         if self.m_do_refine_hr_mask:
             # self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkHRMask, "input_images")
-            self.wf.connect(preprocessing_stage, ("outputnode.output_images", utils.sort_ascending), srtkHRMask,
-                            "input_images")
+            self.wf.connect(preprocessing_stage, ("outputnode.output_images",
+                                                  utils.sort_ascending),
+                            srtkHRMask, "input_images")
 
             self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtkHRMask, "input_masks")
             self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtkHRMask, "input_transforms")
