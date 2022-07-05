@@ -20,6 +20,7 @@ packages = [
     "pymialsrtk.bids",
     "pymialsrtk.cli",
     "pymialsrtk.interfaces",
+    "pymialsrtk.workflows",
     "pymialsrtk.pipelines",
     "pymialsrtk.pipelines.anatomical",
     "pymialsrtk.sphinxext",
