@@ -499,7 +499,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkHRMask, "output_srmask", srtkMaskImage02, "in_mask")
 
         self.wf.connect(srtkTVSuperResolution, "output_sr", srtkN4BiasFieldCorrection, "input_image")
-        self.wf.connect(srtkHRMask, "output_srmask", srtkN4BiasFieldCorrection, "input_mask")
+        self.wf.connect(srtkMaskImage02, "out_im_file", srtkN4BiasFieldCorrection, "input_mask")
 
         # Datasinker
         finalFilenamesGeneration = Node(interface=postprocess.FilenamesGeneration(),
