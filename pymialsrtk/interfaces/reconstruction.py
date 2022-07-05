@@ -448,3 +448,124 @@ class MialsrtkTVSuperResolution(BaseInterface):
         outputs['output_sr_png'] = self._gen_filename('output_sr_png')
         outputs['output_json_path'] = self._gen_filename('output_json_path')
         return outputs
+
+
+
+
+########################
+# Image Reconstruction
+########################
+
+class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the MialsrtkSDIComputation interface."""
+
+    # in_roi = traits.Enum('mask', "all", "box", "mask",
+    #                      desc="""Define region of interest (required):
+    #                                - `box`: Use intersections for roi calculation
+    #                                - `mask`: Use masks for roi calculation
+    #                                - `all`: Use the whole image FOV""",
+    #                      mandatory=True,
+    #                      usedefault=True)
+    input_images = InputMultiPath(File(), desc='Input images', mandatory = True)
+    input_masks = InputMultiPath(File(),
+                                 desc='Masks of the input images', mandatory = True)
+    input_transforms = InputMultiPath(File(),
+                                  desc='Input transformation files', mandatory = True)
+    input_reference = File( desc='Input reference image', mandatory = True)
+    sub_ses = traits.Str("x",
+                         desc='Subject and session BIDS identifier to construct output filename',
+                         usedefault=True)
+    stacks_order = traits.List(mandatory=True,
+                               desc='List of stack run-id that specify the order of the stacks')
+
+
+class MialsrtkSDIComputationOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the MialsrtkSDIComputation interface."""
+
+    output_sdi = File(desc='Output scattered data interpolation image file')
+
+
+class MialsrtkSDIComputation(BaseInterface):
+    """Creates a high-resolution image from a set of low resolution images Todo.
+
+    >>> f
+
+    """
+
+    input_spec = MialsrtkSDIComputationInputSpec
+    output_spec = MialsrtkSDIComputationOutputSpec
+
+    def _gen_filename(self, name):
+        if name == 'output_sdi':
+            output = ''.join([self.inputs.sub_ses, '_', '_SDI', '.nii.gz'])
+            return os.path.abspath(output)
+
+        return None
+
+    def get_empty_ref_image(self, input_ref):
+        import SimpleITK as sitk
+        import numpy as np
+        reader = sitk.ImageFileReader()
+        writer = sitk.ImageFileWriter()
+
+        reader.SetFileName(input_ref)
+
+        image = reader.Execute()
+
+        multiply = sitk.MultiplyImageFilter()
+        image = multiply.Execute(0, image)
+
+        out_path = os.path.abspath(os.path.basename(input_ref))
+        writer.SetFileName(out_path)
+        writer.Execute(image)
+
+        return out_path
+
+    def _run_interface(self, runtime):
+
+        # Reference image must be empty
+        empty_ref_image = self.get_empty_ref_image(self.inputs.input_reference)
+        params = []
+        # params.append(''.join(["--", self.inputs.in_roi]))
+
+        input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
+        input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
+        input_transforms = reorder_by_run_ids(self.inputs.input_transforms, self.inputs.stacks_order)
+
+        params.append("-r")
+        params.append(empty_ref_image)
+
+        for in_image, in_mask, in_transform in zip(input_images, input_masks, input_transforms):
+
+            params.append("-i")
+            params.append(in_image)
+
+            # if self.inputs.in_roi == "mask":
+            params.append("-m")
+            params.append(in_mask)
+
+            params.append("-t")
+            params.append(in_transform)
+
+        out_file = self._gen_filename('output_sdi')
+        params.append("-o")
+        params.append(out_file)
+
+
+        cmd = ["mialsrtkSDIComputation"]
+        # cmd = ["mialsrtkImageReconstruction"]
+        cmd += params
+
+        try:
+            print('... cmd: {}'.format(cmd))
+            cmd = ' '.join(cmd)
+            run(cmd) #, cwd=os.getcwd())
+        except Exception as e:
+            print('Failed')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_sdi'] = self._gen_filename('output_sdi')
+        return outputs
