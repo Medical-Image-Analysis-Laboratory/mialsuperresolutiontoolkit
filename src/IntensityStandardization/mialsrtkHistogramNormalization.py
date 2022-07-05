@@ -221,9 +221,9 @@ def main(images,masks,outputs):
     while index<len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
         print('Process image', image_name)
-        image = nib.load(image_paths[index]).get_data()
+        image = nib.load(image_paths[index]).get_fdata()
         #image = scipy.ndimage.filters.gaussian_filter(image,1.0)
-        mask = nib.load(mask_paths[index]).get_data()
+        mask = nib.load(mask_paths[index]).get_fdata()
         maskedImage = np.reshape(image*mask,image.shape[0]*image.shape[1]*image.shape[2])
         displayHistogram(maskedImage,image_name,1,0)
         list_landmarks.append(extractImageLandmarks(maskedImage))
@@ -249,8 +249,8 @@ def main(images,masks,outputs):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
         print ('Map image', image_name)
         image = nib.load(image_paths[index])
-        image_data = image.get_data()
-        mask_data = nib.load(mask_paths[index]).get_data()
+        image_data = image.get_fdata()
+        mask_data = nib.load(mask_paths[index]).get_fdata()
         dimY=image.shape[0]
         dimX=image.shape[1]
         dimZ=image.shape[2]
@@ -260,7 +260,7 @@ def main(images,masks,outputs):
         maskedImageMapped = mapImage(maskedImage,mean_landmarks,list_landmarks[index]['quartiles'],s1,s2,list_landmarks[index]['p1'],list_landmarks[index]['p2'])
         displayHistogram(maskedImageMapped,image_name,1,0)
         o2o=verifyOne2OneMapping(s1,s2,list_landmarks[index],mean_landmarks)
-        new_image = nib.Nifti1Image(np.reshape(maskedImageMapped,np.array([dimY,dimX,dimZ])),image.get_affine(),header=image.get_header())
+        new_image = nib.Nifti1Image(np.reshape(maskedImageMapped,np.array([dimY,dimX,dimZ])),image.affine,header=image.header)
         print('Save normalized image', str(image_name), 'as', str(output_paths[index]), '(one 2 one mapping :', str(o2o), ')')
         nib.save(new_image,output_paths[index])
         index+=1
