@@ -16,6 +16,7 @@ jobs:
       SCRATCH: "/scratch"
     docker:
       - image: docker:19.03.1-git
+    resource_class: large
     working_directory: /mnt/ramdisk
     # working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
