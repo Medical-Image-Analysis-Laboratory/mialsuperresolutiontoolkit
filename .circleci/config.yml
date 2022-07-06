@@ -48,8 +48,9 @@ jobs:
           no_output_timeout: 120m
           command: |
             # Get version, update files.
-            python get_version.py
-            THISVERSION=v$( python get_version.py )
+            LSTMP=v$(ls tmp/src/mialsuperresolutiontoolkit)
+            echo "LSTMP : ${LSTMP}"
+            THISVERSION=v$( python tmp/src/mialsuperresolutiontoolkit/get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_TAG : ${CIRCLE_TAG}"
             if [[ ${THISVERSION:0:1} == "0" ]] ; then
