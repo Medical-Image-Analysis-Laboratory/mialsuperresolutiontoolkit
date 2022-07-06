@@ -16,7 +16,7 @@ jobs:
       SCRATCH: "/scratch"
     docker:
       - image: docker:19.03.1-git 
-    working_directory: tmp/src/mialsuperresolutiontoolkit
+    working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - run:
           name: "Install parallel gzip and python2"
@@ -48,9 +48,12 @@ jobs:
           no_output_timeout: 120m
           command: |
             # Get version, update files.
-            # THISVERSION=v$( python tmp/src/mialsuperresolutiontoolkit/get_version.py )
-            # echo "THISVERSION : ${THISVERSION}"
-            # echo "CIRCLE_TAG : ${CIRCLE_TAG}"
+            echo "ls -la /:"
+            ls -la /
+            echo "THISVERSION arrive"
+            THISVERSION=v$( python /tmp/src/mialsuperresolutiontoolkit/get_version.py )
+            echo "THISVERSION : ${THISVERSION}"
+            echo "CIRCLE_TAG : ${CIRCLE_TAG}"
             # if [[ ${THISVERSION:0:1} == "0" ]] ; then
               # echo "WARNING: latest git tag could not be found"
               # echo "Please, make sure you fetch all tags from upstream with"
