@@ -47,16 +47,16 @@ jobs:
           name: "Build Docker image"
           no_output_timeout: 120m
           command: |
-#            # Get version, update files.
-#            THISVERSION=v$( python tmp/src/mialsuperresolutiontoolkit/get_version.py )
-#            echo "THISVERSION : ${THISVERSION}"
-#            echo "CIRCLE_TAG : ${CIRCLE_TAG}"
-#            if [[ ${THISVERSION:0:1} == "0" ]] ; then
-#              echo "WARNING: latest git tag could not be found"
-#              echo "Please, make sure you fetch all tags from upstream with"
-#              echo "the command ``git fetch --tags --verbose`` and push"
-#              echo "them to your fork with ``git push origin --tags``"
-#            fi
+            # Get version, update files.
+            # THISVERSION=v$( python tmp/src/mialsuperresolutiontoolkit/get_version.py )
+            # echo "THISVERSION : ${THISVERSION}"
+            # echo "CIRCLE_TAG : ${CIRCLE_TAG}"
+            # if [[ ${THISVERSION:0:1} == "0" ]] ; then
+              # echo "WARNING: latest git tag could not be found"
+              # echo "Please, make sure you fetch all tags from upstream with"
+              # echo "the command ``git fetch --tags --verbose`` and push"
+              # echo "them to your fork with ``git push origin --tags``"
+            # fi
 
             # Build main docker image
             ls -la .
