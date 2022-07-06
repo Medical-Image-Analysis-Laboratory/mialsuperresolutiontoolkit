@@ -48,6 +48,7 @@ jobs:
           no_output_timeout: 120m
           command: |
             # Get version, update files.
+            python get_version.py
             THISVERSION=v$( python get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_TAG : ${CIRCLE_TAG}"
