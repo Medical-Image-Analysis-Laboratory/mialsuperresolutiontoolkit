@@ -15,8 +15,9 @@ jobs:
       TZ: "/usr/share/zoneinfo/Europe/Zurich"
       SCRATCH: "/scratch"
     docker:
-      - image: docker:19.03.1-git 
-    working_directory: /tmp/src/mialsuperresolutiontoolkit
+      - image: docker:19.03.1-git
+    working_directory: /mnt/ramdisk
+    # working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - run:
           name: "Install parallel gzip and python2"
@@ -48,10 +49,8 @@ jobs:
           no_output_timeout: 120m
           command: |
             # Get version, update files.
-            echo "ls -la /:"
-            ls -la /
             echo "THISVERSION arrive"
-            THISVERSION=v$( python /tmp/src/mialsuperresolutiontoolkit/get_version.py )
+            THISVERSION=v$( python get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_TAG : ${CIRCLE_TAG}"
             # if [[ ${THISVERSION:0:1} == "0" ]] ; then
