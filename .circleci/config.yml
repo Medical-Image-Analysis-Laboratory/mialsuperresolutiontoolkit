@@ -48,7 +48,7 @@ jobs:
           no_output_timeout: 120m
           command: |
             # Get version, update files.
-            LSTMP=v$(ls tmp/src/mialsuperresolutiontoolkit)
+            LSTMP=v$(ls)
             echo "LSTMP : ${LSTMP}"
             THISVERSION=v$( python tmp/src/mialsuperresolutiontoolkit/get_version.py )
             echo "THISVERSION : ${THISVERSION}"
