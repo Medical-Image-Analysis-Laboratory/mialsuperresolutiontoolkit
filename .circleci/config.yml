@@ -17,8 +17,8 @@ jobs:
     docker:
       - image: docker:19.03.1-git
     resource_class: large
-    working_directory: /mnt/ramdisk
-    # working_directory: /tmp/src/mialsuperresolutiontoolkit
+    # working_directory: /mnt/ramdisk
+    working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - run:
           name: "Install parallel gzip and python2"
@@ -49,6 +49,9 @@ jobs:
           name: "Build Docker image"
           no_output_timeout: 120m
           command: |
+            echo ""
+            df -h
+            echo ""
             # Get version, update files.
             echo "THISVERSION arrive"
             THISVERSION=v$( python get_version.py )
