@@ -94,7 +94,7 @@ jobs:
   build-singularity:
     machine:
       # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202104-01
     resource_class: large
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
