@@ -67,13 +67,13 @@ jobs:
             # Build main docker image
             ls -la .
             e=1 && for i in {1..5}; do
-              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 --rm=false --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=$VCS_REF --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 . \
+              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 --rm=false --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=$VCS_REF --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" --memory-swap -1 -t sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 . \
               && e=0 && break || sleep 15
             done && [ "$e" -eq "0" ]   
             # Build CMP BIDS App docker image
             ls -la ./docker/bidsapp
             e=1 && for i in {1..5}; do
-              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit ./docker/bidsapp \
+              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" --memory-swap -1 -t sebastientourbier/mialsuperresolutiontoolkit ./docker/bidsapp \
               && e=0 && break || sleep 15
             done && [ "$e" -eq "0" ]
       - run:
