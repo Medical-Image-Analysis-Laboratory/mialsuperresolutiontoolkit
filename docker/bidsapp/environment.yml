@@ -2,8 +2,8 @@ name: pymialsrtk-env
 
 channels:
 - conda-forge
-- defaults
-- anaconda
+# - defaults
+# - anaconda
 
 dependencies:
 - python=3.7.10
