@@ -99,6 +99,7 @@ ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
 
 # Create the conda environment
 COPY docker/bidsapp/environment.yml /app/environment.yml
+RUN conda update -n base conda
 RUN conda env create -f /app/environment.yml
 
 ##############################################################
