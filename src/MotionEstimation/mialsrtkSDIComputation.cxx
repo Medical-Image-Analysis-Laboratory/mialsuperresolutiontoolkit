@@ -2,10 +2,12 @@
 /*=========================================================================
 
 Program: Performs Scattered Data Interpolation from a set of LR images, applying transforms
+that are computed in mialsrtkImageReconstruction.
+This program is a stripped down version of mialsrtkImageReconstruction
 Language: C++
-Date: $Date: 2012-28-12 14:00:00 +0100 (Fri, 28 Dec 2012) $
+Date: $Date: 2022-07-12 14:00:00 +0100 (12 Jul 2022) $
 Version: $Revision: 1 $
-Author: $Sebastien Tourbier$ - Adapted by $Priscille de Dumast$
+Author: $ $Priscille de Dumast$
 
 Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
   This software is distributed WITHOUT ANY WARRANTY; without even
