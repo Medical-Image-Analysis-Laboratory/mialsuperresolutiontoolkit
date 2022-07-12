@@ -399,6 +399,8 @@ class AnatomicalPipeline:
         if self.m_do_reconstruct_labels:
             labels_filtered = Node(interface=preprocess.FilteringByRunid(),
                               name='labels_filtered')
+            labelmap_splitter = MapNode(interface=preprocess.SplitLabelMaps(), iterfield=['in_labelmap'],
+                                        name='labelmap_splitter')
 
         reduceFOV = MapNode(interface=preprocess.ReduceFieldOfView(), name='reduceFOV',
                                                       iterfield=(['input_image', 'input_mask', 'input_label'] if \
@@ -487,7 +489,8 @@ class AnatomicalPipeline:
             self.wf.connect(dg, "labels", labels_filtered, "input_files")
             self.wf.connect(labels_filtered, "output_files", reduceFOV, "input_label")
 
-            self.wf.connect(reduceFOV, "output_label", labels_splitter, "input_label")
+            self.wf.connect(reduceFOV, "output_label", labelmap_splitter, "in_labelmap")
+
 
 
         self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending),
