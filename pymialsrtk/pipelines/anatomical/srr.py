@@ -207,6 +207,7 @@ class AnatomicalPipeline:
             self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] if 'skip_svr' in p_dict_custom_interfaces.keys() else False
             self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() else False
             self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising'] if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() else False
+            self.m_do_reconstruct_labels = p_dict_custom_interfaces['do_reconstruct_labels'] if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() else False
 
             self.m_skip_stacks_ordering = p_dict_custom_interfaces['skip_stacks_ordering'] if \
                 ((self.m_stacks is not None) and ('skip_stacks_ordering' in p_dict_custom_interfaces.keys())) else False
@@ -215,6 +216,7 @@ class AnatomicalPipeline:
             self.m_do_refine_hr_mask = False
             self.m_do_nlm_denoising =  False
             self.m_skip_stacks_ordering = False
+            self.m_do_reconstruct_labels = False
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -278,8 +280,9 @@ class AnatomicalPipeline:
         # config.enable_provenance()
 
         if self.use_manual_masks:
+
             dg = Node(
-                interface=DataGrabber(outfields=['T2ws', 'masks']),
+                interface=DataGrabber(outfields=(['T2ws', 'masks', 'labels'] if self.m_do_reconstruct_labels else ['T2ws', 'masks'])),
                 name='data_grabber'
             )
             dg.inputs.base_directory = self.bids_dir
@@ -302,6 +305,11 @@ class AnatomicalPipeline:
                         'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
                         '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
                     )
+                if self.m_do_reconstruct_labels:
+                    labels_template = os.path.join(
+                        'derivatives', 'labels', self.subject, self.session, 'anat',
+                        '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
+                    )
             else:
                 t2ws_template=os.path.join(self.subject, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
 
@@ -316,8 +324,20 @@ class AnatomicalPipeline:
                         sub_ses + '*_run-*_*mask.nii.gz'
                     )
 
-            dg.inputs.field_template = dict(T2ws=t2ws_template,
-                                            masks=masks_template)
+                if self.m_do_reconstruct_labels:
+                    labels_template = os.path.join(
+                        'derivatives', 'labels', self.subject, 'anat',
+                        '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
+                    )
+
+
+            if self.m_do_reconstruct_labels:
+                dg.inputs.field_template = dict(T2ws=t2ws_template,
+                                            masks=masks_template,
+                                            labels=labels_template)
+            else:
+                dg.inputs.field_template = dict(T2ws=t2ws_template,
+                                                masks=masks_template)
 
             brainMask = MapNode(interface=IdentityInterface(fields=['out_file']),
                                 name='brain_masks_bypass',
@@ -376,8 +396,13 @@ class AnatomicalPipeline:
         masks_filtered = Node(interface=preprocess.FilteringByRunid(),
                               name='masks_filtered')
 
+        if self.m_do_reconstruct_labels:
+            labels_filtered = Node(interface=preprocess.FilteringByRunid(),
+                              name='labels_filtered')
+
         reduceFOV = MapNode(interface=preprocess.ReduceFieldOfView(), name='reduceFOV',
-                                                      iterfield=['input_image', 'input_mask'])
+                                                      iterfield=(['input_image', 'input_mask', 'input_label'] if \
+                                                                 self.m_do_reconstruct_labels else ['input_image', 'input_mask']))
 
         if not self.m_skip_stacks_ordering:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(),
@@ -456,6 +481,14 @@ class AnatomicalPipeline:
 
         self.wf.connect(t2ws_filtered, "output_files", reduceFOV, "input_image")
         self.wf.connect(masks_filtered, "output_files", reduceFOV, "input_mask")
+
+        if self.m_do_reconstruct_labels:
+            self.wf.connect(stacksOrdering, "stacks_order", labels_filtered, "stacks_id")
+            self.wf.connect(dg, "labels", labels_filtered, "input_files")
+            self.wf.connect(labels_filtered, "output_files", reduceFOV, "input_label")
+
+            self.wf.connect(reduceFOV, "output_label", labels_splitter, "input_label")
+
 
         self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending),
                         preprocessing_stage, "inputnode.input_images")
