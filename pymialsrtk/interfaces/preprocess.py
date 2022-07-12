@@ -21,6 +21,7 @@ import numpy as np
 from traits.api import *
 
 import nibabel as nib
+import SimpleITK as sitk
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -1985,3 +1986,69 @@ class ReduceFieldOfView(BaseInterface):
         outputs['output_mask'] = self._gen_filename('output_mask')
         outputs['output_label'] = self._gen_filename('output_label')
         return outputs
+
+
+class SplitLabelMapsInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the SplitLabelMaps interface."""
+
+    in_labelmap = File(desc='Input label map',mandatory=True)
+
+
+class SplitLabelMapsOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the SplitLabelMaps interface."""
+
+    out_labels = OutputMultiPath(File(), desc='Output masks')
+
+
+class SplitLabelMaps(BaseInterface):
+    """Split a multi-label labelmap
+    into one label map per label.
+    """
+
+    input_spec = SplitLabelMapsInputSpec
+    output_spec = SplitLabelMapsOutputSpec
+
+    all_labels = [0,1,2,3,4,5,6,7]
+
+    def _gen_filename(self, name, i):
+        if name == 'out_label':
+            _, name, ext = split_filename(self.inputs.in_labelmap)
+            if 'labels' in name:
+                output = name.replace('labels', 'label-'+str(i)) + ext
+            return os.path.abspath(output)
+        return None
+
+    def _extractlabelimage(self, in_labelmap):
+        reader = sitk.ImageFileReader()
+        writer = sitk.ImageFileWriter()
+
+        reader.SetFileName(in_labelmap)
+        labels = reader.Execute()
+
+        binarizer = sitk.BinaryThresholdImageFilter()
+
+        # self.all_labels = np.unique(sitk.GetArrayFromImage(labels).astype(int))
+        for label_id in self.all_labels:
+            binarizer.SetLowerThreshold(label_id)
+            binarizer.SetUpperThreshold(label_id)
+
+            label = binarizer.Execute(labels)
+
+            writer.SetFileName(self._gen_filename('out_label', label_id))
+            writer.Execute(label)
+
+
+    def _run_interface(self, runtime):
+
+        try:
+            self._extractlabelimage(self.inputs.in_labelmap)
+        except Exception as e:
+            print('Failed splitting labelmaps')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['out_labels'] = [self._gen_filename('out_label', i) for i in self.all_labels]
+        return outputs
+    
