@@ -458,13 +458,6 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the
     MialsrtkSDIComputation interface."""
 
-    # in_roi = traits.Enum('mask', "all", "box", "mask",
-    #                      desc="""Define region of interest (required):
-    #                                - `box`: Use intersections for roi calculation
-    #                                - `mask`: Use masks for roi calculation
-    #                                - `all`: Use the whole image FOV""",
-    #                      mandatory=True,
-    #                      usedefault=True)
     input_images = InputMultiPath(File(), desc='Input images', mandatory=True)
     input_masks = InputMultiPath(File(),
                                  desc='Masks of the input images',
@@ -490,7 +483,8 @@ class MialsrtkSDIComputationOutputSpec(TraitedSpec):
 
 class MialsrtkSDIComputation(BaseInterface):
     """Creates a high-resolution image
-    from a set of low resolution images Todo.
+    from a set of low resolution images and
+    their slice-by-slicemotion parameters.
 
     """
 
