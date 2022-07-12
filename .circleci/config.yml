@@ -16,7 +16,7 @@ jobs:
       SCRATCH: "/scratch"
     docker:
       - image: docker:19.03.1-git 
-    working_directory: tmp/src/mialsuperresolutiontoolkit
+    working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - run:
           name: "Install parallel gzip and python2"
