@@ -1862,6 +1862,7 @@ class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
 
     input_image = File(mandatory=True, desc='Input image filename')
     input_mask = File(mandatory=True, desc='Input mask filename')
+    input_label = File(mandatory=False, desc='Input label filename')
 
 
 class ReduceFieldOfViewOutputSpec(TraitedSpec):
@@ -1869,6 +1870,7 @@ class ReduceFieldOfViewOutputSpec(TraitedSpec):
 
     output_image = File(desc='Cropped image')
     output_mask = File(desc='Cropped mask')
+    output_label = File(desc='Cropped labels')
 
 
 class ReduceFieldOfView(BaseInterface):
@@ -1883,9 +1885,11 @@ class ReduceFieldOfView(BaseInterface):
             return os.path.abspath(os.path.basename(self.inputs.input_image))
         elif name == 'output_mask':
             return os.path.abspath(os.path.basename(self.inputs.input_mask))
+        elif name == 'output_label':
+            return os.path.abspath(os.path.basename(self.inputs.input_label))
         return None
 
-    def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[10, 10, 0]):
+    def _crop_image_and_mask(self, in_image, in_mask, in_label=None, paddings_mm=[10, 10, 10]):
         import SimpleITK as sitk
         reader = sitk.ImageFileReader()
 
@@ -1921,9 +1925,10 @@ class ReduceFieldOfView(BaseInterface):
         image_np = image_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
         mask_np = mask_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
 
-        minimums.reverse()
+        minimums_copy = minimums.copy()
+        minimums_copy.reverse()
 
-        new_origin = list(image.TransformContinuousIndexToPhysicalPoint(minimums))
+        new_origin = list(image.TransformContinuousIndexToPhysicalPoint(minimums_copy))
         new_direction = list(image.GetDirection())
         new_spacing = list(image.GetSpacing())
 
@@ -1947,13 +1952,28 @@ class ReduceFieldOfView(BaseInterface):
         writer.SetFileName(self._gen_filename('output_mask'))
         writer.Execute(mask_cropped)
 
+        if in_label is not None:
+            reader.SetFileName(in_label)
+            label = reader.Execute()
+            label_np = sitk.GetArrayFromImage(label)
 
-        return
+            label_np = label_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
+
+            label_cropped = sitk.GetImageFromArray(label_np)
+            label_cropped.SetOrigin(new_origin)
+            label_cropped.SetDirection(new_direction)
+            label_cropped.SetSpacing(new_spacing)
+
+            writer = sitk.ImageFileWriter()
+            writer.SetFileName(self._gen_filename('output_label'))
+            writer.Execute(label_cropped)
+
+        # return
 
     def _run_interface(self, runtime):
 
         try:
-            self._crop_image_and_mask(self.inputs.input_image, self.inputs.input_mask)
+            self._crop_image_and_mask(self.inputs.input_image, self.inputs.input_mask, self.inputs.input_label)
         except Exception as e:
             print('Failed')
             print(e)
@@ -1963,4 +1983,5 @@ class ReduceFieldOfView(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_image'] = self._gen_filename('output_image')
         outputs['output_mask'] = self._gen_filename('output_mask')
+        outputs['output_label'] = self._gen_filename('output_label')
         return outputs
