@@ -402,6 +402,13 @@ class AnatomicalPipeline:
             labelmap_splitter = MapNode(interface=preprocess.SplitLabelMaps(), iterfield=['in_labelmap'],
                                         name='labelmap_splitter')
 
+            lr_labelmaps_merger = Node(interface=preprocess.PathListsMerger(),
+                                       joinsource="labelmap_splitter",
+                                       joinfield="inputs",
+                                       name='lr_labelmaps_merger')
+
+            lr_labelmaps_merger.config = {'execution': {'keep_unnecessary_outputs': 'true'}}
+
         reduceFOV = MapNode(interface=preprocess.ReduceFieldOfView(), name='reduceFOV',
                                                       iterfield=(['input_image', 'input_mask', 'input_label'] if \
                                                                  self.m_do_reconstruct_labels else ['input_image', 'input_mask']))
@@ -491,6 +498,7 @@ class AnatomicalPipeline:
 
             self.wf.connect(reduceFOV, "output_label", labelmap_splitter, "in_labelmap")
 
+            self.wf.connect(labelmap_splitter, "out_labels", lr_labelmaps_merger, "inputs")
 
 
         self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending),

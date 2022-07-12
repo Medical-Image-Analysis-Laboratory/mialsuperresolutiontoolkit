@@ -2051,4 +2051,57 @@ class SplitLabelMaps(BaseInterface):
         outputs = self._outputs().get()
         outputs['out_labels'] = [self._gen_filename('out_label', i) for i in self.all_labels]
         return outputs
-    
+
+
+
+class PathListsMergerInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the PathListsMerger interface."""
+
+    inputs = traits.List()
+
+
+class PathListsMergerOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the PathListsMerger interface."""
+
+    outputs = OutputMultiPath(File(), desc='Output masks')
+
+
+class PathListsMerger(BaseInterface):
+    """Interface to merge list of paths or list of list of path
+
+    """
+
+    input_spec = PathListsMergerInputSpec
+    output_spec = PathListsMergerOutputSpec
+
+    m_list_of_files = []
+
+    def _gen_filename(self, name):
+        if name == 'outputs':
+            return self.m_list_of_files
+        return None
+
+
+    def _run_interface(self, runtime):
+        try:
+            for list_of_one_stack in self.inputs.inputs:
+                if isinstance(list_of_one_stack, list) or isinstance(list_of_one_stack, InputMultiPath):
+                    print('list_of_one_stack.isinstance(list)')
+                    for file in list_of_one_stack:
+                        self.m_list_of_files.append(file)
+                        print(file)
+                else:
+                    print(' **NOT** list_of_one_stack.isinstance(list)')
+                    print(list_of_one_stack)
+                    self.m_list_of_files.append(list_of_one_stack)
+
+        except Exception as e:
+            print('Failed')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['outputs'] = self._gen_filename('outputs')
+        return outputs
+
