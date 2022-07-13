@@ -413,6 +413,7 @@ class AnatomicalPipeline:
             stacksOrdering.inputs.stacks_order = self.m_stacks
 
         preprocessing_stage = preproc_stage.create_preproc_stage(p_do_nlm_denoising=self.m_do_nlm_denoising,
+                                                                 p_do_reconstruct_labels=self.m_do_reconstruct_labels,
                                                                  bids_dir=self.bids_dir)
 
         srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
@@ -495,11 +496,12 @@ class AnatomicalPipeline:
         if self.m_do_reconstruct_labels:
             self.wf.connect(stacksOrdering, "stacks_order", labels_filtered, "stacks_id")
             self.wf.connect(dg, "labels", labels_filtered, "input_files")
-            self.wf.connect(labels_filtered, "output_files", reduceFOV, "input_label")
+            self.wf.connect(labels_filtered, "output_files",
+                        preprocessing_stage, "inputnode.input_labels")
 
-            self.wf.connect(reduceFOV, "output_label",
+            self.wf.connect(preprocessing_stage, "outputnode.output_labels",
                             reconstruct_labels_stage, "inputnode.input_labels")
-            self.wf.connect(reduceFOV, "output_mask",
+            self.wf.connect(preprocessing_stage, "outputnode.output_masks",
                             reconstruct_labels_stage, "inputnode.input_masks")
             self.wf.connect(srtkImageReconstruction, "output_transforms",
                             reconstruct_labels_stage, "inputnode.input_transforms")
