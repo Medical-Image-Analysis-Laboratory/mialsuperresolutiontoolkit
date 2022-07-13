@@ -1992,6 +1992,7 @@ class SplitLabelMapsInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the SplitLabelMaps interface."""
 
     in_labelmap = File(desc='Input label map',mandatory=True)
+    all_labels = traits.List(mandatory=True)
 
 
 class SplitLabelMapsOutputSpec(TraitedSpec):
@@ -2007,8 +2008,6 @@ class SplitLabelMaps(BaseInterface):
 
     input_spec = SplitLabelMapsInputSpec
     output_spec = SplitLabelMapsOutputSpec
-
-    all_labels = [0,1,2,3,4,5,6,7]
 
     def _gen_filename(self, name, i):
         if name == 'out_label':
@@ -2027,8 +2026,7 @@ class SplitLabelMaps(BaseInterface):
 
         binarizer = sitk.BinaryThresholdImageFilter()
 
-        # self.all_labels = np.unique(sitk.GetArrayFromImage(labels).astype(int))
-        for label_id in self.all_labels:
+        for label_id in self.inputs.all_labels:
             binarizer.SetLowerThreshold(label_id)
             binarizer.SetUpperThreshold(label_id)
 
@@ -2049,7 +2047,7 @@ class SplitLabelMaps(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['out_labels'] = [self._gen_filename('out_label', i) for i in self.all_labels]
+        outputs['out_labels'] = [self._gen_filename('out_label', i) for i in self.inputs.all_labels]
         return outputs
 
 
