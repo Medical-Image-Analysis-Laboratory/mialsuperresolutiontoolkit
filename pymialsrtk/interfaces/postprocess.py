@@ -446,16 +446,11 @@ class MergeMajorityVote(BaseInterface):
 
         reader = sitk.ImageFileReader()
 
-        masks_np = []
+        arrays = []
         for p in in_images:
             reader.SetFileName(p)
             mask_c = reader.Execute()
-
-            masks_np.append(sitk.GetArrayFromImage(mask_c))
-
-        # mask = 1-np.sum(np.asarray(masks_np), axis=0)
-
-        arrays = masks_np
+            arrays.append(sitk.GetArrayFromImage(mask_c))
 
         maps = np.stack(arrays)
         maps = np.argmax(maps, axis=0)
