@@ -93,9 +93,9 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
     labels_reconstruct_hr_maps.inputs.sub_ses = sub_ses
 
     labels_merge_hr_maps = Node(interface=preprocess.PathListsMerger(),
-                        joinsource="labels_merge_hr_maps",
+                        joinsource="labels_reconstruct_hr_maps",
                         joinfield="inputs",
-                        name='sr_labelmaps')
+                        name='labels_merge_hr_maps')
 
     labels_majorityvoting = Node(interface=postprocess.MergeMajorityVote(),
               name='labels_majorityvoting')
@@ -107,7 +107,7 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
                                labelmap_splitter, "in_labelmap")
 
     recon_labels_stage.connect(labelmap_splitter, "out_labels",
-                               lr_labelmaps_merger, "inputs")
+                               labels_merge_lr_maps, "inputs")
 
     recon_labels_stage.connect(inputnode, "label_ids",
                                labels_reconstruct_hr_maps, "label_id")
@@ -119,7 +119,7 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
                                labels_reconstruct_hr_maps,"input_transforms")
     recon_labels_stage.connect(inputnode, ("input_masks", utils.sort_ascending),
                                labels_reconstruct_hr_maps, "input_masks")
-    recon_labels_stage.connect(lr_labelmaps_merger, ("outputs", utils.sort_ascending),
+    recon_labels_stage.connect(labels_merge_lr_maps, ("outputs", utils.sort_ascending),
                                labels_reconstruct_hr_maps, "input_images")
 
     recon_labels_stage.connect(labels_reconstruct_hr_maps, "output_hr",

@@ -493,7 +493,7 @@ class MialsrtkSDIComputation(BaseInterface):
     output_spec = MialsrtkSDIComputationOutputSpec
 
     def _gen_filename(self, name):
-        if name == 'output_sdi':
+        if name == 'output_hr':
             output = ''.join([self.inputs.sub_ses, '_', 'HR', '.nii.gz'])
             return os.path.abspath(output)
 
