@@ -1853,11 +1853,6 @@ class MultipleBrainExtraction(BaseInterface):
         return outputs
 
 
-
-###########################
-# Crop LR image
-###########################
-
 class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
     """Class."""
 
@@ -1933,7 +1928,6 @@ class ReduceFieldOfView(BaseInterface):
         new_direction = list(image.GetDirection())
         new_spacing = list(image.GetSpacing())
 
-
         image_cropped = sitk.GetImageFromArray(image_np)
         image_cropped.SetOrigin(new_origin)
         image_cropped.SetDirection(new_direction)
@@ -1968,8 +1962,6 @@ class ReduceFieldOfView(BaseInterface):
             writer = sitk.ImageFileWriter()
             writer.SetFileName(self._gen_filename('output_label'))
             writer.Execute(label_cropped)
-
-        # return
 
     def _run_interface(self, runtime):
 

@@ -461,11 +461,11 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
     input_images = InputMultiPath(File(), desc='Input images', mandatory=True)
     input_masks = InputMultiPath(File(),
                                  desc='Masks of the input images',
-                                 mandatory = True)
+                                 mandatory=True)
     input_transforms = InputMultiPath(File(),
                                       desc='Input transformation files',
                                       mandatory=True)
-    input_reference = File( desc='Input reference image', mandatory = True)
+    input_reference = File(desc='Input reference image', mandatory=True)
     sub_ses = traits.Str("x",
                          desc='Subject and session BIDS identifier to construct output filename',
                          usedefault=True)
@@ -549,7 +549,6 @@ class MialsrtkSDIComputation(BaseInterface):
             params.append("-i")
             params.append(in_image)
 
-            # if self.inputs.in_roi == "mask":
             params.append("-m")
             params.append(in_mask)
 
@@ -560,9 +559,7 @@ class MialsrtkSDIComputation(BaseInterface):
         params.append("-o")
         params.append(out_file)
 
-
         cmd = ["mialsrtkSDIComputation"]
-        # cmd = ["mialsrtkImageReconstruction"]
         cmd += params
 
         try:
