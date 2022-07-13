@@ -29,6 +29,7 @@ import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.workflows.preproc_stage as preproc_stage
+import pymialsrtk.workflows.recon_labels_stage as recon_labels_stage
 import pymialsrtk.interfaces.utils as utils
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
@@ -397,40 +398,12 @@ class AnatomicalPipeline:
                               name='masks_filtered')
 
         if self.m_do_reconstruct_labels:
-            all_labels = [0,1,2,3,4,5,6,7]
-
             labels_filtered = Node(interface=preprocess.FilteringByRunid(),
                               name='labels_filtered')
 
-            labelmap_splitter = MapNode(interface=preprocess.SplitLabelMaps(),
-                                        iterfield=['in_labelmap'],
-                                        name='labelmap_splitter')
-            labelmap_splitter.inputs.all_labels = all_labels
+            reconstruct_labels_stage = recon_labels_stage.create_recon_labels_stage(sub_ses=sub_ses)
+            reconstruct_labels_stage.inputs.inputnode.label_ids = [0,1,2,3,4,5,6,7]
 
-            lr_labelmaps_merger = Node(interface=preprocess.PathListsMerger(),
-                                       joinsource="labelmap_splitter",
-                                       joinfield="inputs",
-                                       name='lr_labelmaps_merger')
-
-            lr_labelmaps_merger.config = {'execution': {'keep_unnecessary_outputs': 'true'}}
-
-            srtk_reconstruct_HR_maps = MapNode(interface=reconstruction.MialsrtkSDIComputation(),
-                                       iterfield=['label_id'],
-                                       name='srtk_reconstruct_HR_maps')
-            srtk_reconstruct_HR_maps.inputs.label_id = all_labels
-            srtk_reconstruct_HR_maps.inputs.sub_ses = sub_ses
-            srtk_reconstruct_HR_maps.config = {'execution': {'keep_unnecessary_outputs': 'true'}}
-
-            sr_labelmaps = Node(interface=preprocess.PathListsMerger(),
-                                 joinsource="srtk_reconstruct_HR_maps",
-                                 joinfield="inputs",
-                                 name='sr_labelmaps')
-
-            mv = Node(interface=postprocess.MergeMajorityVote(),
-                      # joinsource = "srtk_SRLabelmaps",
-                      # joinfield = "input_images",
-                      name='mv')
-            mv.config = {'execution': {'keep_unnecessary_outputs': 'true'}}
 
         reduceFOV = MapNode(interface=preprocess.ReduceFieldOfView(), name='reduceFOV',
                                                       iterfield=(['input_image', 'input_mask', 'input_label'] if \
@@ -532,20 +505,18 @@ class AnatomicalPipeline:
             self.wf.connect(dg, "labels", labels_filtered, "input_files")
             self.wf.connect(labels_filtered, "output_files", reduceFOV, "input_label")
 
-            self.wf.connect(reduceFOV, "output_label", labelmap_splitter, "in_labelmap")
+            self.wf.connect(reduceFOV, "output_label",
+                            reconstruct_labels_stage, "inputnode.input_labels")
+            self.wf.connect(reduceFOV, "output_mask",
+                            reconstruct_labels_stage, "inputnode.input_masks")
+            self.wf.connect(srtkImageReconstruction, "output_transforms",
+                            reconstruct_labels_stage, "inputnode.input_transforms")
 
-            self.wf.connect(labelmap_splitter, "out_labels", lr_labelmaps_merger, "inputs")
+            self.wf.connect(srtkImageReconstruction, "output_sdi",
+                            reconstruct_labels_stage, "inputnode.input_reference")
+            self.wf.connect(stacksOrdering, "stacks_order",
+                            reconstruct_labels_stage, "inputnode.stacks_order")
 
-            self.wf.connect(stacksOrdering, "stacks_order", srtk_reconstruct_HR_maps, "stacks_order")
-            self.wf.connect(srtkImageReconstruction, "output_sdi", srtk_reconstruct_HR_maps, "input_reference")
-
-            self.wf.connect(lr_labelmaps_merger, ("outputs", utils.sort_ascending), srtk_reconstruct_HR_maps, "input_images")
-            self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), srtk_reconstruct_HR_maps,
-                            "input_transforms")
-            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), srtk_reconstruct_HR_maps, "input_masks")
-
-            self.wf.connect(srtk_reconstruct_HR_maps, "output_sdi", sr_labelmaps, "inputs")
-            self.wf.connect(sr_labelmaps, "outputs", mv, "input_images")
 
         self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending),
                         preprocessing_stage, "inputnode.input_images")
@@ -652,6 +623,11 @@ class AnatomicalPipeline:
         self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
         self.wf.connect(srtkTVSuperResolution, "output_sr_png", datasink, 'figures.@SRpng')
         self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
+
+        if self.m_do_reconstruct_labels:
+            self.wf.connect(reconstruct_labels_stage, "outputnode.output_labelmap",
+                            datasink, 'anat.@HRlabel')
+
 
     def run(self, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.
