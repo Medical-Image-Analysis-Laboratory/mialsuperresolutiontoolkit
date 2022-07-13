@@ -472,6 +472,7 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that '
                                     'specify the order of the stacks')
+    label_id = traits.Int(mandatory=False)
 
 
 class MialsrtkSDIComputationOutputSpec(TraitedSpec):
@@ -524,12 +525,20 @@ class MialsrtkSDIComputation(BaseInterface):
         params = []
         # params.append(''.join(["--", self.inputs.in_roi]))
 
-        input_images = reorder_by_run_ids(self.inputs.input_images,
+        input_images = self.inputs.input_images
+
+        if self.inputs.label_id:
+            input_images = [im for im in input_images if 'label-'+str(self.inputs.label_id) in im]
+
+
+        input_images = reorder_by_run_ids(input_images,
                                           self.inputs.stacks_order)
         input_masks = reorder_by_run_ids(self.inputs.input_masks,
                                          self.inputs.stacks_order)
         input_transforms = reorder_by_run_ids(self.inputs.input_transforms,
                                               self.inputs.stacks_order)
+
+
 
         params.append("-r")
         params.append(empty_ref_image)
