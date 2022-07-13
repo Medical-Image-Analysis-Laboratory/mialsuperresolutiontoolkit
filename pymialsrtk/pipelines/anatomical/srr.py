@@ -376,9 +376,6 @@ class AnatomicalPipeline:
         masks_filtered = Node(interface=preprocess.FilteringByRunid(),
                               name='masks_filtered')
 
-        reduceFOV = MapNode(interface=preprocess.ReduceFieldOfView(), name='reduceFOV',
-                                                      iterfield=['input_image', 'input_mask'])
-
         if not self.m_skip_stacks_ordering:
             stacksOrdering = Node(interface=preprocess.StacksOrdering(),
                                   name='stackOrdering')
@@ -467,15 +464,12 @@ class AnatomicalPipeline:
         self.wf.connect(stacksOrdering, "stacks_order", masks_filtered, "stacks_id")
         self.wf.connect(brainMask, "out_file", masks_filtered, "input_files")
 
-        self.wf.connect(t2ws_filtered, "output_files", reduceFOV, "input_image")
-        self.wf.connect(masks_filtered, "output_files", reduceFOV, "input_mask")
-
-        self.wf.connect(reduceFOV, ("output_image", utils.sort_ascending),
+        self.wf.connect(t2ws_filtered, "output_files",
                         preprocessing_stage, "inputnode.input_images")
-        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending),
+        self.wf.connect(masks_filtered, "output_files",
                         preprocessing_stage, "inputnode.input_masks")
 
-        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending),
+        self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
                         srtkMaskImage01, "in_mask")
 
         self.wf.connect(preprocessing_stage, ("outputnode.output_images", utils.sort_ascending),
@@ -485,7 +479,7 @@ class AnatomicalPipeline:
             self.wf.connect(preprocessing_stage, ("outputnode.output_images_nlm",
                                                   utils.sort_ascending),
                             srtkMaskImage01_nlm, "in_file")
-            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending),
+            self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
                             srtkMaskImage01_nlm, "in_mask")
 
             self.wf.connect(srtkMaskImage01_nlm, "out_im_file",
@@ -494,7 +488,7 @@ class AnatomicalPipeline:
             self.wf.connect(srtkMaskImage01, "out_im_file",
                             srtkImageReconstruction, "input_images")
 
-        self.wf.connect(reduceFOV, "output_mask",
+        self.wf.connect(preprocessing_stage, "outputnode.output_masks",
                         srtkImageReconstruction, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order",
                         srtkImageReconstruction, "stacks_order")
@@ -506,7 +500,7 @@ class AnatomicalPipeline:
         self.wf.connect(srtkImageReconstruction, ("output_transforms",
                                                   utils.sort_ascending),
                         srtkTVSuperResolution, "input_transforms")
-        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending),
+        self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
                         srtkTVSuperResolution, "input_masks")
         self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
 
@@ -514,7 +508,7 @@ class AnatomicalPipeline:
         if self.m_do_nlm_denoising:
             self.wf.connect(srtkMaskImage01, "out_im_file",
                             sdiComputation, "input_images")
-            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending),
+            self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
                             sdiComputation, "input_masks")
             self.wf.connect(srtkImageReconstruction, "output_transforms",
                             sdiComputation, "input_transforms")
@@ -533,7 +527,7 @@ class AnatomicalPipeline:
                                                   utils.sort_ascending),
                             srtkHRMask, "input_images")
 
-            self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending),
+            self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
                             srtkHRMask, "input_masks")
             self.wf.connect(srtkImageReconstruction, ("output_transforms",
                                                       utils.sort_ascending),
@@ -565,7 +559,7 @@ class AnatomicalPipeline:
         if not self.m_skip_stacks_ordering:
             self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
             self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
-        self.wf.connect(reduceFOV, ("output_mask", utils.sort_ascending), datasink, 'anat.@LRmasks')
+        self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending), datasink, 'anat.@LRmasks')
         self.wf.connect(preprocessing_stage, ("outputnode.output_images", utils.sort_ascending), datasink, 'anat.@LRsPreproc')
         self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), datasink, 'xfm.@transforms')
         self.wf.connect(finalFilenamesGeneration, "substitutions", datasink, "substitutions")
