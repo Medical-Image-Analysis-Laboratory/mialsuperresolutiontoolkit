@@ -122,7 +122,7 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
     recon_labels_stage.connect(lr_labelmaps_merger, ("outputs", utils.sort_ascending),
                                labels_reconstruct_hr_maps, "input_images")
 
-    recon_labels_stage.connect(labels_reconstruct_hr_maps, "output_sdi",
+    recon_labels_stage.connect(labels_reconstruct_hr_maps, "output_hr",
                                labels_merge_hr_maps, "inputs")
 
     recon_labels_stage.connect(labels_merge_hr_maps, "outputs",

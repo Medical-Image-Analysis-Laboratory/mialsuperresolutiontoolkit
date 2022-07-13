@@ -569,7 +569,7 @@ class AnatomicalPipeline:
             self.wf.connect(srtkImageReconstruction, "output_sdi",
                             sdiComputation, "input_reference")
 
-            self.wf.connect(sdiComputation, "output_sdi",
+            self.wf.connect(sdiComputation, "output_hr",
                             srtkTVSuperResolution, "input_sdi")
         else:
             self.wf.connect(srtkImageReconstruction, "output_sdi",

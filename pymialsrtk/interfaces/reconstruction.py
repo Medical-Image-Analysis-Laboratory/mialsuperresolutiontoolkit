@@ -479,7 +479,7 @@ class MialsrtkSDIComputationOutputSpec(TraitedSpec):
     """Class used to represent outputs of the
     MialsrtkSDIComputation interface."""
 
-    output_sdi = File(desc='Output scattered data interpolation image file')
+    output_hr = File(desc='Output scattered data interpolation image file')
 
 
 class MialsrtkSDIComputation(BaseInterface):
@@ -494,7 +494,7 @@ class MialsrtkSDIComputation(BaseInterface):
 
     def _gen_filename(self, name):
         if name == 'output_sdi':
-            output = ''.join([self.inputs.sub_ses, '_', '_SDI', '.nii.gz'])
+            output = ''.join([self.inputs.sub_ses, '_', 'HR', '.nii.gz'])
             return os.path.abspath(output)
 
         return None
@@ -556,7 +556,7 @@ class MialsrtkSDIComputation(BaseInterface):
             params.append("-t")
             params.append(in_transform)
 
-        out_file = self._gen_filename('output_sdi')
+        out_file = self._gen_filename('output_hr')
         params.append("-o")
         params.append(out_file)
 
@@ -576,5 +576,5 @@ class MialsrtkSDIComputation(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_sdi'] = self._gen_filename('output_sdi')
+        outputs['output_hr'] = self._gen_filename('output_hr')
         return outputs
