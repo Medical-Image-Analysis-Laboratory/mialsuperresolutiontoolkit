@@ -82,10 +82,10 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
                                 iterfield=['in_labelmap'],
                                 name='labelmap_splitter')
 
-    lr_labelmaps_merger = Node(interface=preprocess.PathListsMerger(),
+    labels_merge_lr_maps = Node(interface=preprocess.PathListsMerger(),
                                joinsource="labelmap_splitter",
                                joinfield="inputs",
-                               name='lr_labelmaps_merger')
+                               name='labels_merge_lr_maps')
 
     labels_reconstruct_hr_maps = MapNode(interface=reconstruction.MialsrtkSDIComputation(),
                                        iterfield=['label_id'],
@@ -93,7 +93,7 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
     labels_reconstruct_hr_maps.inputs.sub_ses = sub_ses
 
     labels_merge_hr_maps = Node(interface=preprocess.PathListsMerger(),
-                        joinsource="srtk_reconstruct_HR_maps",
+                        joinsource="labels_merge_hr_maps",
                         joinfield="inputs",
                         name='sr_labelmaps')
 
