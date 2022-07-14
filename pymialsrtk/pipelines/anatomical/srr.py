@@ -30,6 +30,7 @@ import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
+import pymialsrtk.workflows.srr_output_stage as srr_output_stage
 import pymialsrtk.interfaces.utils as utils
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
