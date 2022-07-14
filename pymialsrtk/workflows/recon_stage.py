@@ -194,6 +194,9 @@ def create_recon_stage(p_paramTV,
     else:
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
                             outputnode, "output_sdi")
+
+    recon_stage.connect(srtkImageReconstruction, "output_transforms",
+                        outputnode, "output_transforms")
     recon_stage.connect(srtkTVSuperResolution, "output_sr",
                         outputnode, "output_sr")
     recon_stage.connect(srtkHRMask, "output_srmask",
