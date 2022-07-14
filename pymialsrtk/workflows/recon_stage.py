@@ -170,12 +170,15 @@ def create_recon_stage(p_paramTV,
                         srtkTVSuperResolution, "input_transforms")
     recon_stage.connect(inputnode, "input_masks",
                         srtkTVSuperResolution, "input_masks")
-    recon_stage.connect(inputnode, "stacks_order", srtkTVSuperResolution, "stacks_order")
+    recon_stage.connect(inputnode, "stacks_order",
+                        srtkTVSuperResolution, "stacks_order")
 
     if p_do_refine_hr_mask:
-        recon_stage.connect(inputnode, "input_images", srtkHRMask, "input_images")
+        recon_stage.connect(inputnode, "input_images",
+                            srtkHRMask, "input_images")
 
-        recon_stage.connect(inputnode, "input_masks", srtkHRMask, "input_masks")
+        recon_stage.connect(inputnode, "input_masks",
+                            srtkHRMask, "input_masks")
         recon_stage.connect(srtkImageReconstruction, ("output_transforms",
                                                       utils.sort_ascending),
                             srtkHRMask, "input_transforms")
