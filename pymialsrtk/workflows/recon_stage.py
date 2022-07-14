@@ -155,7 +155,7 @@ def create_recon_stage(p_paramTV,
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
                             sdiComputation, "input_reference")
 
-        recon_stage.connect(sdiComputation, "output_sdi",
+        recon_stage.connect(sdiComputation, "output_hr",
                             srtkTVSuperResolution, "input_sdi")
     else:
         recon_stage.connect(inputnode, "input_images",
@@ -189,7 +189,7 @@ def create_recon_stage(p_paramTV,
                             srtkHRMask, "input_image")
 
     if p_do_nlm_denoising:
-        recon_stage.connect(sdiComputation, "output_sdi",
+        recon_stage.connect(sdiComputation, "output_hr",
                             outputnode, "output_sdi")
     else:
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
