@@ -401,7 +401,12 @@ class AnatomicalPipeline:
                                   name='srtkMaskImage01',
                                   iterfield=['in_file', 'in_mask'])
         srtkMaskImage01.inputs.bids_dir = self.bids_dir
-
+        if self.m_do_nlm_denoising:
+            srtkMaskImage01_nlm = MapNode(
+                interface=preprocess.MialsrtkMaskImage(),
+                name='srtkMaskImage01_nlm',
+                iterfield=['in_file', 'in_mask'])
+            srtkMaskImage01_nlm.inputs.bids_dir = self.bids_dir
 
 
         srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
@@ -463,9 +468,6 @@ class AnatomicalPipeline:
 
         self.wf.connect(preprocessing_stage, "outputnode.output_masks",
                         reconstruction_stage, "inputnode.input_masks")
-        if self.m_do_nlm_denoising:
-            self.wf.connect(preprocessing_stage, "outputnode.output_images_nlm",
-                            reconstruction_stage, "inputnode.input_images_nlm")
 
         self.wf.connect(stacksOrdering, "stacks_order",
                         reconstruction_stage, "inputnode.stacks_order")

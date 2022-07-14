@@ -64,8 +64,8 @@ def create_recon_stage(p_paramTV,
     """
     input_fields = ['input_images', 'input_masks', 'stacks_order']
 
-    if not p_do_nlm_denoising:
-        input_fields += ['output_images_nlm']
+    if p_do_nlm_denoising:
+        input_fields += ['input_images_nlm']
 
     inputnode = pe.Node(
         interface=util.IdentityInterface(
@@ -99,11 +99,11 @@ def create_recon_stage(p_paramTV,
     srtkImageReconstruction.inputs.no_reg = p_skip_svr
 
     if p_do_nlm_denoising:
-        srtkMaskImage01_nlm = pe.MapNode(
-            interface=preprocess.MialsrtkMaskImage(),
-            name='srtkMaskImage01_nlm',
-            iterfield=['in_file', 'in_mask'])
-        srtkMaskImage01_nlm.inputs.bids_dir = p_bids_dir
+        # srtkMaskImage01_nlm = pe.MapNode(
+        #     interface=preprocess.MialsrtkMaskImage(),
+        #     name='srtkMaskImage01_nlm',
+        #     iterfield=['in_file', 'in_mask'])
+        # srtkMaskImage01_nlm.inputs.bids_dir = p_bids_dir
 
         sdiComputation = pe.Node(
             interface=reconstruction.MialsrtkSDIComputation(),
@@ -131,27 +131,18 @@ def create_recon_stage(p_paramTV,
     else:
         srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(), name='srtkHRMask')
 
-
     recon_stage.connect(inputnode, "input_masks",
                     srtkImageReconstruction, "input_masks")
-    recon_stage.connect(inputnode, "input_images",
-                    srtkImageReconstruction, "input_images")
     recon_stage.connect(inputnode, "stacks_order",
                     srtkImageReconstruction, "stacks_order")
 
-    recon_stage.connect(inputnode, "input_images",
-                    srtkTVSuperResolution, "input_images")
-
-    recon_stage.connect(srtkImageReconstruction, "output_transforms",
-                    srtkTVSuperResolution, "input_transforms")
-    recon_stage.connect(inputnode, "input_masks",
-                    srtkTVSuperResolution, "input_masks")
-    recon_stage.connect(inputnode, "stacks_order", srtkTVSuperResolution, "stacks_order")
-
     if p_do_nlm_denoising:
+        recon_stage.connect(inputnode, "input_images_nlm",
+                        srtkImageReconstruction, "input_images")
+
         recon_stage.connect(inputnode, "stacks_order",
                         sdiComputation, "stacks_order")
-        recon_stage.connect(inputnode, "input_images",
+        recon_stage.connect(inputnode, "input_images_nlm",
                         sdiComputation, "input_images")
         recon_stage.connect(inputnode, "input_masks",
                         sdiComputation, "input_masks")
@@ -163,17 +154,24 @@ def create_recon_stage(p_paramTV,
         recon_stage.connect(sdiComputation, "output_sdi",
                         srtkTVSuperResolution, "input_sdi")
     else:
+        recon_stage.connect(inputnode, "input_images",
+                        srtkImageReconstruction, "input_images")
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
                         srtkTVSuperResolution, "input_sdi")
 
-    if p_do_refine_hr_mask:
-        # recon_stage.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkHRMask, "input_images")
-        recon_stage.connect(inputnode, ("input_images",
-                                              utils.sort_ascending),
-                        srtkHRMask, "input_images")
+    recon_stage.connect(inputnode, "input_images",
+                    srtkTVSuperResolution, "input_images")
 
-        recon_stage.connect(inputnode, ("input_masks", utils.sort_ascending),
-                        srtkHRMask, "input_masks")
+    recon_stage.connect(srtkImageReconstruction, "output_transforms",
+                    srtkTVSuperResolution, "input_transforms")
+    recon_stage.connect(inputnode, "input_masks",
+                    srtkTVSuperResolution, "input_masks")
+    recon_stage.connect(inputnode, "stacks_order", srtkTVSuperResolution, "stacks_order")
+
+    if p_do_refine_hr_mask:
+        recon_stage.connect(inputnode, "input_images",srtkHRMask, "input_images")
+
+        recon_stage.connect(inputnode, "input_masks", srtkHRMask, "input_masks")
         recon_stage.connect(srtkImageReconstruction, ("output_transforms",
                                                   utils.sort_ascending),
                         srtkHRMask, "input_transforms")
