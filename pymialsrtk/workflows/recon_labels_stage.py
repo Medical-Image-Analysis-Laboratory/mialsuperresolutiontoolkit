@@ -72,7 +72,7 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(fields=['output_labelmap']),
-    name='outputnode')
+        name='outputnode')
 
 
     """
@@ -83,22 +83,22 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
                                 name='labelmap_splitter')
 
     labels_merge_lr_maps = Node(interface=preprocess.PathListsMerger(),
-                               joinsource="labelmap_splitter",
-                               joinfield="inputs",
-                               name='labels_merge_lr_maps')
+                                joinsource="labelmap_splitter",
+                                joinfield="inputs",
+                                name='labels_merge_lr_maps')
 
     labels_reconstruct_hr_maps = MapNode(interface=reconstruction.MialsrtkSDIComputation(),
-                                       iterfield=['label_id'],
-                                       name='labels_reconstruct_hr_maps')
+                                         iterfield=['label_id'],
+                                         name='labels_reconstruct_hr_maps')
     labels_reconstruct_hr_maps.inputs.sub_ses = sub_ses
 
     labels_merge_hr_maps = Node(interface=preprocess.PathListsMerger(),
-                        joinsource="labels_reconstruct_hr_maps",
-                        joinfield="inputs",
-                        name='labels_merge_hr_maps')
+                                joinsource="labels_reconstruct_hr_maps",
+                                joinfield="inputs",
+                                name='labels_merge_hr_maps')
 
     labels_majorityvoting = Node(interface=postprocess.MergeMajorityVote(),
-              name='labels_majorityvoting')
+                                 name='labels_majorityvoting')
 
     recon_labels_stage.connect(inputnode, "label_ids",
                                labelmap_splitter, "all_labels")
@@ -115,7 +115,7 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
     recon_labels_stage.connect(inputnode, "input_reference",
                                labels_reconstruct_hr_maps, "input_reference")
     recon_labels_stage.connect(inputnode, "input_transforms",
-                               labels_reconstruct_hr_maps,"input_transforms")
+                               labels_reconstruct_hr_maps, "input_transforms")
     recon_labels_stage.connect(inputnode, "input_masks",
                                labels_reconstruct_hr_maps, "input_masks")
     recon_labels_stage.connect(labels_merge_lr_maps, "outputs",

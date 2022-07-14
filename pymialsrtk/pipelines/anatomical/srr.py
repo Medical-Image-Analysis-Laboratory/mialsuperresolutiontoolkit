@@ -204,10 +204,14 @@ class AnatomicalPipeline:
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
-            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] if 'skip_svr' in p_dict_custom_interfaces.keys() else False
-            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() else False
-            self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising'] if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() else False
-            self.m_do_reconstruct_labels = p_dict_custom_interfaces['do_reconstruct_labels'] if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() else False
+            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
+                if 'skip_svr' in p_dict_custom_interfaces.keys() else False
+            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] \
+                if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() else False
+            self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising'] \
+                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() else False
+            self.m_do_reconstruct_labels = p_dict_custom_interfaces['do_reconstruct_labels'] \
+                if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() else False
 
             self.m_skip_stacks_ordering = p_dict_custom_interfaces['skip_stacks_ordering'] if \
                 ((self.m_stacks is not None) and ('skip_stacks_ordering' in p_dict_custom_interfaces.keys())) else False
@@ -281,7 +285,8 @@ class AnatomicalPipeline:
 
         if self.use_manual_masks:
             dg = pe.Node(
-                interface=DataGrabber(outfields=(['T2ws', 'masks', 'labels'] if self.m_do_reconstruct_labels else ['T2ws', 'masks'])),
+                interface=DataGrabber(
+                    outfields=(['T2ws', 'masks', 'labels'] if self.m_do_reconstruct_labels else ['T2ws', 'masks'])),
                 name='data_grabber'
             )
             dg.inputs.base_directory = self.bids_dir
@@ -332,8 +337,8 @@ class AnatomicalPipeline:
 
             if self.m_do_reconstruct_labels:
                 dg.inputs.field_template = dict(T2ws=t2ws_template,
-                                            masks=masks_template,
-                                            labels=labels_template)
+                                                masks=masks_template,
+                                                labels=labels_template)
             else:
                 dg.inputs.field_template = dict(T2ws=t2ws_template,
                                                 masks=masks_template)
@@ -390,16 +395,13 @@ class AnatomicalPipeline:
             brainMask.inputs.threshold_seg = 0.5
 
         t2ws_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
-                             name='t2ws_filtered')
+                                name='t2ws_filtered')
         masks_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
-                              name='masks_filtered')
+                                 name='masks_filtered')
 
         if self.m_do_reconstruct_labels:
             labels_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
-                              name='labels_filtered')
-
-            # reconstruct_labels_stage = recon_labels_stage.create_recon_labels_stage(sub_ses=sub_ses)
-            # reconstruct_labels_stage.inputs.inputnode.label_ids = [0,1,2,3,4,5,6,7]
+                                      name='labels_filtered')
 
         if not self.m_skip_stacks_ordering:
             stacksOrdering = pe.Node(interface=preprocess.StacksOrdering(),
@@ -519,10 +521,12 @@ class AnatomicalPipeline:
                         srtkN4BiasFieldCorrection, "input_mask")
 
         if self.m_do_reconstruct_labels:
-            self.wf.connect(stacksOrdering, "stacks_order", labels_filtered, "stacks_id")
-            self.wf.connect(dg, "labels", labels_filtered, "input_files")
+            self.wf.connect(stacksOrdering, "stacks_order",
+                            labels_filtered, "stacks_id")
+            self.wf.connect(dg, "labels",
+                            labels_filtered, "input_files")
             self.wf.connect(labels_filtered, "output_files",
-                        preprocessing_stage, "inputnode.input_labels")
+                            preprocessing_stage, "inputnode.input_labels")
 
             self.wf.connect(preprocessing_stage, "outputnode.output_labels",
                             reconstruction_stage, "inputnode.input_labels")

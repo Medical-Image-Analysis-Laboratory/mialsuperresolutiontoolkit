@@ -80,7 +80,7 @@ def create_preproc_stage(p_do_nlm_denoising=False,
     iterfields = ['input_image', 'input_mask']
     if p_do_reconstruct_labels:
         iterfields += ['input_label']
-        
+
     reduceFOV = pe.MapNode(interface=preprocess.ReduceFieldOfView(),
                            name='reduceFOV',
                            iterfield=iterfields)
@@ -140,8 +140,10 @@ def create_preproc_stage(p_do_nlm_denoising=False,
     preproc_stage.connect(inputnode, 'input_masks', reduceFOV, 'input_mask')
 
     if p_do_reconstruct_labels:
-        preproc_stage.connect(inputnode, 'input_labels', reduceFOV, "input_label")
-        preproc_stage.connect(reduceFOV, "output_label", outputnode, 'output_labels')
+        preproc_stage.connect(inputnode, 'input_labels',
+                              reduceFOV, "input_label")
+        preproc_stage.connect(reduceFOV, "output_label",
+                              outputnode, 'output_labels')
 
     preproc_stage.connect(reduceFOV, 'output_image', nlmDenoise, 'in_file')
 

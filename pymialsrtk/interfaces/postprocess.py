@@ -417,12 +417,16 @@ class BinarizeImage(BaseInterface):
 
 class MergeMajorityVoteInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MergeMajorityVote interface."""
-    input_images = InputMultiPath(File(), desc='Inputs label-wise labelmaps to be merged', mandatory=True)
+    input_images = InputMultiPath(File(),
+                                  desc='Inputs label-wise labelmaps to be merged',
+                                  mandatory=True)
+
 
 class MergeMajorityVoteOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MergeMajorityVote interface."""
 
     output_image = File(desc='Output label map')
+
 
 class MergeMajorityVote(BaseInterface):
     """Perform majority voting to merge a list of label-wise labelmaps.
@@ -451,7 +455,6 @@ class MergeMajorityVote(BaseInterface):
         maps = np.stack(arrays)
         maps = np.argmax(maps, axis=0)
 
-
         maps_sitk = sitk.GetImageFromArray(maps.astype(int))
         maps_sitk.CopyInformation(mask_c)
 
@@ -459,8 +462,6 @@ class MergeMajorityVote(BaseInterface):
         writer.SetFileName(self._gen_filename())
 
         writer.Execute(maps_sitk)
-
-
 
     def _run_interface(self, runtime):
         try:
@@ -474,5 +475,3 @@ class MergeMajorityVote(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_image'] = self._gen_filename()
         return outputs
-
-

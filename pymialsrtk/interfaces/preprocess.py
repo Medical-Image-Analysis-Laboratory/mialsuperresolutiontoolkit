@@ -1567,7 +1567,9 @@ class ReduceFieldOfView(BaseInterface):
     def _run_interface(self, runtime):
 
         try:
-            self._crop_image_and_mask(self.inputs.input_image, self.inputs.input_mask, self.inputs.input_label)
+            self._crop_image_and_mask(self.inputs.input_image,
+                                      self.inputs.input_mask,
+                                      self.inputs.input_label)
         except Exception as e:
             print('Failed')
             print(e)
@@ -1585,7 +1587,7 @@ class ReduceFieldOfView(BaseInterface):
 class SplitLabelMapsInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the SplitLabelMaps interface."""
 
-    in_labelmap = File(desc='Input label map',mandatory=True)
+    in_labelmap = File(desc='Input label map', mandatory=True)
     all_labels = traits.List(mandatory=True)
 
 
@@ -1629,7 +1631,6 @@ class SplitLabelMaps(BaseInterface):
             writer.SetFileName(self._gen_filename('out_label', label_id))
             writer.Execute(label)
 
-
     def _run_interface(self, runtime):
 
         try:
@@ -1641,9 +1642,9 @@ class SplitLabelMaps(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['out_labels'] = [self._gen_filename('out_label', i) for i in self.inputs.all_labels]
+        outputs['out_labels'] = \
+            [self._gen_filename('out_label', i) for i in self.inputs.all_labels]
         return outputs
-
 
 
 class PathListsMergerInputSpec(BaseInterfaceInputSpec):
@@ -1673,11 +1674,11 @@ class PathListsMerger(BaseInterface):
             return self.m_list_of_files
         return None
 
-
     def _run_interface(self, runtime):
         try:
             for list_of_one_stack in self.inputs.inputs:
-                if isinstance(list_of_one_stack, list) or isinstance(list_of_one_stack, InputMultiPath):
+                if isinstance(list_of_one_stack, list) or \
+                        isinstance(list_of_one_stack, InputMultiPath):
                     print('list_of_one_stack.isinstance(list)')
                     for file in list_of_one_stack:
                         self.m_list_of_files.append(file)
@@ -1696,4 +1697,3 @@ class PathListsMerger(BaseInterface):
         outputs = self._outputs().get()
         outputs['outputs'] = self._gen_filename('outputs')
         return outputs
-
