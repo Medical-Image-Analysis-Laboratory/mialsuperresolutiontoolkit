@@ -39,7 +39,7 @@ def create_preproc_stage(p_do_nlm_denoising = False, name="preproc_stage"):
         outputnode.output_images_nlm : Processed images with NLM denoising, if p_do_nlm_denoising was set (list of filenames)
     Example
     -------
-    >>> preproc_stage = create_preproc_stage(bids_dir='/path/to/bids_dir', p_do_nlm_denoising=False)
+    >>> preproc_stage = create_preproc_stage(p_do_nlm_denoising=False)
     >>> preproc_stage.inputs.inputnode.input_images = ['sub-01_run-1_T2w.nii.gz', 'sub-01_run-2_T2w.nii.gz']
     >>> preproc_stage.inputs.inputnode.input_masks = ['sub-01_run-1_T2w_mask.nii.gz', 'sub-01_run-2_T2w_mask.nii.gz']
     >>> preproc_stage.inputs.inputnode.p_do_nlm_denoising = 'mask.nii'

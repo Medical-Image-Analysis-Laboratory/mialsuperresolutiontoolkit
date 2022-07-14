@@ -386,29 +386,25 @@ class AnatomicalPipeline:
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
-            p_sub_ses=sub_ses,
-            p_bids_dir=self.bids_dir)
+            p_sub_ses=sub_ses)
 
         srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
                                   name='srtkMaskImage01',
                                   iterfield=['in_file', 'in_mask'])
-        srtkMaskImage01.inputs.bids_dir = self.bids_dir
+
         if self.m_do_nlm_denoising:
             srtkMaskImage01_nlm = MapNode(
                 interface=preprocess.MialsrtkMaskImage(),
                 name='srtkMaskImage01_nlm',
                 iterfield=['in_file', 'in_mask'])
-            srtkMaskImage01_nlm.inputs.bids_dir = self.bids_dir
 
 
         srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
                                          name='srtkN4BiasFieldCorrection')
-        srtkN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
 
 
         srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(),
                                name='srtkMaskImage02')
-        srtkMaskImage02.inputs.bids_dir = self.bids_dir
 
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
