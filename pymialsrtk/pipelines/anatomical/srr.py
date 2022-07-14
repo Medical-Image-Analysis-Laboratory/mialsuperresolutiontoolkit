@@ -280,7 +280,7 @@ class AnatomicalPipeline:
         # config.enable_provenance()
 
         if self.use_manual_masks:
-            dg = Node(
+            dg = pe.Node(
                 interface=DataGrabber(outfields=(['T2ws', 'masks', 'labels'] if self.m_do_reconstruct_labels else ['T2ws', 'masks'])),
                 name='data_grabber'
             )
