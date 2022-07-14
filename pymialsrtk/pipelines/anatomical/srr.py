@@ -28,9 +28,13 @@ from nipype.interfaces.utility import IdentityInterface
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
+
+# Import the implemented workflows from pymialsrtk
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.recon_labels_stage as recon_labels_stage
+import pymialsrtk.workflows.srr_output_stage as srr_output_stage
+
 import pymialsrtk.interfaces.utils as utils
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
@@ -437,6 +441,16 @@ class AnatomicalPipeline:
                                name='srtkMaskImage02')
         srtkMaskImage02.inputs.bids_dir = self.bids_dir
 
+
+        output_mgmt_stage = srr_output_stage.create_srr_output_stage(
+            p_do_nlm_denoising=self.m_do_nlm_denoising,
+            name='output_mgmt_stage')
+
+        output_mgmt_stage.inputs.inputnode.sub_ses = sub_ses
+        output_mgmt_stage.inputs.inputnode.sr_id = self.sr_id
+        output_mgmt_stage.inputs.inputnode.use_manual_masks = self.use_manual_masks
+        output_mgmt_stage.inputs.inputnode.final_res_dir = final_res_dir
+
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
         if self.use_manual_masks:
@@ -520,48 +534,39 @@ class AnatomicalPipeline:
             self.wf.connect(stacksOrdering, "stacks_order",
                             reconstruct_labels_stage, "inputnode.stacks_order")
 
-        # Datasinker
-        finalFilenamesGeneration = Node(interface=postprocess.FilenamesGeneration(),
-                                        name='filenames_gen')
-        finalFilenamesGeneration.inputs.sub_ses = sub_ses
-        finalFilenamesGeneration.inputs.sr_id = self.sr_id
-        finalFilenamesGeneration.inputs.use_manual_masks = self.use_manual_masks
+        self.wf.connect(stacksOrdering, "stacks_order", output_mgmt_stage, "inputnode.stacks_order")
 
-        self.wf.connect(stacksOrdering, "stacks_order", finalFilenamesGeneration, "stacks_order")
+        self.wf.connect(preprocessing_stage, "outputnode.output_masks",
+                        output_mgmt_stage, "inputnode.input_masks")
+        self.wf.connect(preprocessing_stage, "outputnode.output_images",
+                        output_mgmt_stage, "inputnode.input_images")
+        self.wf.connect(reconstruction_stage, "outputnode.output_transforms",
+                        output_mgmt_stage, "inputnode.input_transforms")
 
-        datasink = Node(interface=DataSink(), name='data_sinker')
-        datasink.inputs.base_directory = final_res_dir
-#
+        self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                        output_mgmt_stage, "inputnode.input_sdi")
+        self.wf.connect(srtkN4BiasFieldCorrection, "output_image",
+                        output_mgmt_stage, "inputnode.input_sr")
+        self.wf.connect(reconstruction_stage, "outputnode.output_json_path",
+                        output_mgmt_stage, "inputnode.input_json_path")
+        self.wf.connect(reconstruction_stage, "outputnode.output_sr_png",
+                        output_mgmt_stage, "inputnode.input_sr_png")
+        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
+                        output_mgmt_stage, "inputnode.input_hr_mask")
+
+        # if self.m_do_reconstruct_labels:
+        #     self.wf.connect(reconstruct_labels_stage, "outputnode.output_labelmap",
+        #                     datasink, 'anat.@HRlabel')
+
+        if self.m_do_nlm_denoising:
+            self.wf.connect(srtkMaskImage01_nlm, "out_im_file",
+                            output_mgmt_stage, "inputnode.input_images_nlm")
+
         if not self.m_skip_stacks_ordering:
             self.wf.connect(stacksOrdering, "report_image",
-                            datasink, 'figures.@stackOrderingQC')
+                            output_mgmt_stage, "inputnode.report_image")
             self.wf.connect(stacksOrdering, "motion_tsv",
-                            datasink, 'anat.@motionTSV')
-        self.wf.connect(preprocessing_stage, "outputnode.output_masks",
-                        datasink, 'anat.@LRmasks')
-        self.wf.connect(preprocessing_stage, "outputnode.output_images",
-                        datasink, 'anat.@LRsPreproc')
-        self.wf.connect(reconstruction_stage, "outputnode.output_transforms",
-                        datasink, 'xfm.@transforms')
-        self.wf.connect(finalFilenamesGeneration, "substitutions",
-                        datasink, "substitutions")
-        self.wf.connect(srtkMaskImage01, "out_im_file",
-                        datasink, 'anat.@LRsDenoised')
-        self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
-                        datasink, 'anat.@SDI')
-        self.wf.connect(srtkN4BiasFieldCorrection, "output_image",
-                        datasink, 'anat.@SR')
-        self.wf.connect(reconstruction_stage, "outputnode.output_json_path",
-                        datasink, 'anat.@SRjson')
-        self.wf.connect(reconstruction_stage, "outputnode.output_sr_png",
-                        datasink, 'figures.@SRpng')
-        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
-                        datasink, 'anat.@SRmask')
-#
-        if self.m_do_reconstruct_labels:
-            self.wf.connect(reconstruct_labels_stage, "outputnode.output_labelmap",
-                            datasink, 'anat.@HRlabel')
-
+                            output_mgmt_stage, "inputnode.motion_tsv")
 
     def run(self, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.
