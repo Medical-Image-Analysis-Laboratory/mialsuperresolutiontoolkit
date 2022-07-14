@@ -347,7 +347,6 @@ class AnatomicalPipeline:
                                 name='brainExtraction',
                                 iterfield=['in_file'])
 
-            brainMask.inputs.bids_dir = self.bids_dir
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename(
                 "pymialsrtk",
                 os.path.join("data",
@@ -379,8 +378,7 @@ class AnatomicalPipeline:
             stacksOrdering.inputs.stacks_order = self.m_stacks
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
-            p_do_nlm_denoising=self.m_do_nlm_denoising,
-            bids_dir=self.bids_dir)
+            p_do_nlm_denoising=self.m_do_nlm_denoising)
 
         reconstruction_stage = recon_stage.create_recon_stage(
             p_paramTV=self.paramTV,

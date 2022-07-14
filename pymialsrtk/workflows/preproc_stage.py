@@ -24,7 +24,7 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
 
 
-def create_preproc_stage(p_do_nlm_denoising = False, bids_dir='', name="preproc_stage"):
+def create_preproc_stage(p_do_nlm_denoising = False, name="preproc_stage"):
     """Create a SR preprocessing workflow
     Parameters
     ----------
@@ -76,67 +76,53 @@ def create_preproc_stage(p_do_nlm_denoising = False, bids_dir='', name="preproc_
     nlmDenoise = pe.MapNode(interface=preprocess.BtkNLMDenoising(),
                          name='nlmDenoise',
                          iterfield=['in_file', 'in_mask'])
-    nlmDenoise.inputs.bids_dir = bids_dir
 
     # Sans le mask le premier correct slice intensity...
     srtkCorrectSliceIntensity01_nlm = pe.MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                               name='srtkCorrectSliceIntensity01_nlm',
                                               iterfield=['in_file', 'in_mask'])
-    srtkCorrectSliceIntensity01_nlm.inputs.bids_dir = bids_dir
     srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
 
     srtkCorrectSliceIntensity01 = pe.MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                           name='srtkCorrectSliceIntensity01',
                                           iterfield=['in_file', 'in_mask'])
-    srtkCorrectSliceIntensity01.inputs.bids_dir = bids_dir
     srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
 
     srtkSliceBySliceN4BiasFieldCorrection = pe.MapNode(interface=preprocess.MialsrtkSliceBySliceN4BiasFieldCorrection(),
                                                     name='srtkSliceBySliceN4BiasFieldCorrection',
                                                     iterfield=['in_file', 'in_mask'])
-    srtkSliceBySliceN4BiasFieldCorrection.inputs.bids_dir = bids_dir
 
     srtkSliceBySliceCorrectBiasField = pe.MapNode(interface=preprocess.MialsrtkSliceBySliceCorrectBiasField(),
                                                name='srtkSliceBySliceCorrectBiasField',
                                                iterfield=['in_file', 'in_mask', 'in_field'])
-    srtkSliceBySliceCorrectBiasField.inputs.bids_dir = bids_dir
-
 
     if p_do_nlm_denoising:
         srtkCorrectSliceIntensity02_nlm = pe.MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                                   name='srtkCorrectSliceIntensity02_nlm',
                                                   iterfield=['in_file', 'in_mask'])
-        srtkCorrectSliceIntensity02_nlm.inputs.bids_dir = bids_dir
 
         srtkIntensityStandardization01_nlm = pe.Node(interface=preprocess.MialsrtkIntensityStandardization(),
                                                   name='srtkIntensityStandardization01_nlm')
-        srtkIntensityStandardization01_nlm.inputs.bids_dir = bids_dir
 
         srtkHistogramNormalization_nlm = pe.Node(interface=preprocess.MialsrtkHistogramNormalization(),
                                               name='srtkHistogramNormalization_nlm')
-        srtkHistogramNormalization_nlm.inputs.bids_dir = bids_dir
 
         srtkIntensityStandardization02_nlm = pe.Node(interface=preprocess.MialsrtkIntensityStandardization(),
                                                   name='srtkIntensityStandardization02_nlm')
-        srtkIntensityStandardization02_nlm.inputs.bids_dir = bids_dir
 
     # 4-modules sequence to be defined as a stage.
     srtkCorrectSliceIntensity02 = pe.MapNode(interface=preprocess.MialsrtkCorrectSliceIntensity(),
                                           name='srtkCorrectSliceIntensity02',
                                           iterfield=['in_file', 'in_mask'])
-    srtkCorrectSliceIntensity02.inputs.bids_dir = bids_dir
 
     srtkIntensityStandardization01 = pe.Node(interface=preprocess.MialsrtkIntensityStandardization(),
                                           name='srtkIntensityStandardization01')
-    srtkIntensityStandardization01.inputs.bids_dir = bids_dir
 
     srtkHistogramNormalization = pe.Node(interface=preprocess.MialsrtkHistogramNormalization(),
                                       name='srtkHistogramNormalization')
-    srtkHistogramNormalization.inputs.bids_dir = bids_dir
 
     srtkIntensityStandardization02 = pe.Node(interface=preprocess.MialsrtkIntensityStandardization(),
                                           name='srtkIntensityStandardization02')
-    srtkIntensityStandardization02.inputs.bids_dir = bids_dir
 
     preproc_stage.connect(inputnode, 'input_images', reduceFOV, 'input_image')
     preproc_stage.connect(inputnode, 'input_masks', reduceFOV, 'input_mask')
@@ -159,7 +145,6 @@ def create_preproc_stage(p_do_nlm_denoising = False, bids_dir='', name="preproc_
                           srtkSliceBySliceN4BiasFieldCorrection, "in_file")
 
     preproc_stage.connect(reduceFOV, 'output_image', srtkCorrectSliceIntensity01, 'in_file')
-
 
     preproc_stage.connect(srtkCorrectSliceIntensity01, ("out_file",
                                                         utils.sort_ascending),
