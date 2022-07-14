@@ -103,7 +103,7 @@ class BtkNLMDenoising(BaseInterface):
 
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd , env={})
+            run(cmd, env={})
         except Exception as e:
             print('Failed')
             print(e)
@@ -996,8 +996,11 @@ class BrainExtraction(BaseInterface):
     def _run_interface(self, runtime):
 
         try:
-            self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
-                               self.inputs.in_ckpt_seg, self.inputs.threshold_seg)
+            self._extractBrain(self.inputs.in_file,
+                               self.inputs.in_ckpt_loc,
+                               self.inputs.threshold_loc,
+                               self.inputs.in_ckpt_seg,
+                               self.inputs.threshold_seg)
         except Exception:
             print('Failed')
             print(traceback.format_exc())

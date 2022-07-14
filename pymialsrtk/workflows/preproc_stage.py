@@ -24,7 +24,7 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
 
 
-def create_preproc_stage(p_do_nlm_denoising = False, name="preproc_stage"):
+def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
     """Create a SR preprocessing workflow
     Parameters
     ----------
