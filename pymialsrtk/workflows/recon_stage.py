@@ -17,6 +17,8 @@ from nipype.interfaces import utility as util
 
 from nipype.pipeline import engine as pe
 
+import pymialsrtk.workflows.recon_labels_stage as recon_labels_stage
+
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.utils as utils
@@ -29,6 +31,7 @@ from nipype import logging as nipype_logging
 def create_recon_stage(p_paramTV,
                        p_use_manual_masks,
                        p_do_nlm_denoising = False,
+                       p_do_reconstruct_labels=False,
                        p_do_refine_hr_mask=False,
                        p_skip_svr=False,
                        p_sub_ses='',
@@ -67,17 +70,25 @@ def create_recon_stage(p_paramTV,
     if p_do_nlm_denoising:
         input_fields += ['input_images_nlm']
 
+    if p_do_reconstruct_labels:
+        input_fields += ['input_labels']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=input_fields),
         name='inputnode')
 
+    output_fields = ['output_sr', 'output_sdi',
+                     'output_hr_mask', 'output_transforms',
+                     'output_json_path',
+                     'output_sr_png']
+
+    if p_do_reconstruct_labels:
+        output_fields += ['output_labelmap']
+
     outputnode = pe.Node(
-        interface=util.IdentityInterface(fields=
-                                         ['output_sr', 'output_sdi',
-                                          'output_hr_mask', 'output_transforms',
-                                          'output_json_path',
-                                          'output_sr_png']),
+        interface=util.IdentityInterface(
+            fields=output_fields),
         name='outputnode')
 
     """
@@ -99,11 +110,6 @@ def create_recon_stage(p_paramTV,
     srtkImageReconstruction.inputs.no_reg = p_skip_svr
 
     if p_do_nlm_denoising:
-        # srtkMaskImage01_nlm = pe.MapNode(
-        #     interface=preprocess.MialsrtkMaskImage(),
-        #     name='srtkMaskImage01_nlm',
-        #     iterfield=['in_file', 'in_mask'])
-
         sdiComputation = pe.Node(
             interface=reconstruction.MialsrtkSDIComputation(),
             name='sdiComputation')
@@ -130,6 +136,12 @@ def create_recon_stage(p_paramTV,
     else:
         srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(),
                              name='srtkHRMask')
+
+
+    if p_do_reconstruct_labels:
+        reconstruct_labels_stage = recon_labels_stage.create_recon_labels_stage(sub_ses=p_sub_ses)
+        reconstruct_labels_stage.inputs.inputnode.label_ids = [0,1,2,3,4,5,6,7]
+
 
     recon_stage.connect(inputnode, "input_masks",
                         srtkImageReconstruction, "input_masks")
@@ -168,6 +180,22 @@ def create_recon_stage(p_paramTV,
                         srtkTVSuperResolution, "input_masks")
     recon_stage.connect(inputnode, "stacks_order",
                         srtkTVSuperResolution, "stacks_order")
+
+    if p_do_reconstruct_labels:
+        recon_stage.connect(inputnode, "input_labels",
+                        reconstruct_labels_stage, "inputnode.input_labels")
+        recon_stage.connect(inputnode, "input_masks",
+                        reconstruct_labels_stage, "inputnode.input_masks")
+        recon_stage.connect(srtkImageReconstruction, "output_transforms",
+                        reconstruct_labels_stage, "inputnode.input_transforms")
+
+        recon_stage.connect(srtkImageReconstruction, "output_sdi",
+                        reconstruct_labels_stage, "inputnode.input_reference")
+        recon_stage.connect(inputnode, "stacks_order",
+                        reconstruct_labels_stage, "inputnode.stacks_order")
+
+        recon_stage.connect(reconstruct_labels_stage, "outputnode.output_labelmap",
+                        outputnode, "output_labelmap")
 
     if p_do_refine_hr_mask:
         recon_stage.connect(inputnode, "input_images",
