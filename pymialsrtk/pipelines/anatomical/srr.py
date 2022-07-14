@@ -30,6 +30,7 @@ import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
+import pymialsrtk.workflows.postproc_stage as postproc_stage
 import pymialsrtk.workflows.srr_output_stage as srr_output_stage
 import pymialsrtk.interfaces.utils as utils
 from pymialsrtk.bids.utils import write_bids_derivative_description
@@ -402,16 +403,9 @@ class AnatomicalPipeline:
                 iterfield=['in_file', 'in_mask'])
             srtkMaskImage01_nlm.inputs.bids_dir = self.bids_dir
 
-
-        srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
-                                         name='srtkN4BiasFieldCorrection')
-        srtkN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
-
-
-        srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(),
-                               name='srtkMaskImage02')
-        srtkMaskImage02.inputs.bids_dir = self.bids_dir
-
+        postprocessing_stage = postproc_stage.create_postproc_stage(
+            bids_dir=self.bids_dir,
+            name='postprocessing_stage')
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
@@ -477,17 +471,14 @@ class AnatomicalPipeline:
         self.wf.connect(stacksOrdering, "stacks_order",
                         reconstruction_stage, "inputnode.stacks_order")
 
-        self.wf.connect(reconstruction_stage, "outputnode.output_sr",
-                        srtkMaskImage02, "in_file")
         self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
-                        srtkMaskImage02, "in_mask")
+                        postprocessing_stage, "inputnode.input_mask")
 
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
-                        srtkN4BiasFieldCorrection, "input_image")
-        self.wf.connect(srtkMaskImage02, "out_im_file",
-                        srtkN4BiasFieldCorrection, "input_mask")
+                        postprocessing_stage, "inputnode.input_image")
 
-        self.wf.connect(stacksOrdering, "stacks_order", output_mgmt_stage, "inputnode.stacks_order")
+        self.wf.connect(stacksOrdering, "stacks_order",
+                        output_mgmt_stage, "inputnode.stacks_order")
 
         self.wf.connect(preprocessing_stage, "outputnode.output_masks",
                         output_mgmt_stage, "inputnode.input_masks")
@@ -498,7 +489,7 @@ class AnatomicalPipeline:
 
         self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
                         output_mgmt_stage, "inputnode.input_sdi")
-        self.wf.connect(srtkN4BiasFieldCorrection, "output_image",
+        self.wf.connect(postprocessing_stage, "outputnode.output_image",
                         output_mgmt_stage, "inputnode.input_sr")
         self.wf.connect(reconstruction_stage, "outputnode.output_json_path",
                         output_mgmt_stage, "inputnode.input_json_path")
