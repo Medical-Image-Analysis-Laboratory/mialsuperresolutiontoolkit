@@ -348,7 +348,6 @@ class AnatomicalPipeline:
                                 name='brainExtraction',
                                 iterfield=['in_file'])
 
-            brainMask.inputs.bids_dir = self.bids_dir
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename(
                 "pymialsrtk",
                 os.path.join("data",
@@ -380,8 +379,7 @@ class AnatomicalPipeline:
             stacksOrdering.inputs.stacks_order = self.m_stacks
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
-            p_do_nlm_denoising=self.m_do_nlm_denoising,
-            bids_dir=self.bids_dir)
+            p_do_nlm_denoising=self.m_do_nlm_denoising)
 
         reconstruction_stage = recon_stage.create_recon_stage(
             p_paramTV=self.paramTV,
@@ -389,23 +387,21 @@ class AnatomicalPipeline:
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
-            p_sub_ses=sub_ses,
-            p_bids_dir=self.bids_dir)
+            p_sub_ses=sub_ses)
 
         srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
                                   name='srtkMaskImage01',
                                   iterfield=['in_file', 'in_mask'])
-        srtkMaskImage01.inputs.bids_dir = self.bids_dir
+
         if self.m_do_nlm_denoising:
             srtkMaskImage01_nlm = MapNode(
                 interface=preprocess.MialsrtkMaskImage(),
                 name='srtkMaskImage01_nlm',
                 iterfield=['in_file', 'in_mask'])
-            srtkMaskImage01_nlm.inputs.bids_dir = self.bids_dir
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
-            bids_dir=self.bids_dir,
             name='postprocessing_stage')
+
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
