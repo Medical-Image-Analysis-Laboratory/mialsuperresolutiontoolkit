@@ -13,15 +13,15 @@ from traits.api import *
 
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
+from nipype.interfaces import utility as util
+
+from nipype.pipeline import engine as pe
 
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.utils as utils
 
 from nipype import config
 from nipype import logging as nipype_logging
-
-from nipype.pipeline import engine as pe
-from nipype.interfaces import utility as util
 
 from nipype.interfaces.io import DataSink
 

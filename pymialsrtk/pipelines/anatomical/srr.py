@@ -21,7 +21,10 @@ from nipype.info import __version__ as __nipype_version__
 from nipype import config
 from nipype import logging as nipype_logging
 from nipype.interfaces.io import DataGrabber, DataSink
-from nipype.pipeline import Node, MapNode, Workflow
+
+from nipype.pipeline import engine as pe
+
+import pymialsrtk.interfaces.utils as utils
 from nipype.interfaces.utility import IdentityInterface
 
 # Import the implemented interface from pymialsrtk
@@ -35,7 +38,6 @@ import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.recon_labels_stage as recon_labels_stage
 import pymialsrtk.workflows.srr_output_stage as srr_output_stage
 
-import pymialsrtk.interfaces.utils as utils
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
 # Get pymialsrtk version
@@ -254,7 +256,7 @@ class AnatomicalPipeline:
         if os.path.isfile(os.path.join(wf_base_dir, "pypeline.log")):
             os.unlink(os.path.join(wf_base_dir, "pypeline.log"))
 
-        self.wf = Workflow(name=self.pipeline_name,base_dir=wf_base_dir)
+        self.wf = pe.Workflow(name=self.pipeline_name,base_dir=wf_base_dir)
 
         config.update_config(
             {
@@ -278,7 +280,6 @@ class AnatomicalPipeline:
         # config.enable_provenance()
 
         if self.use_manual_masks:
-
             dg = Node(
                 interface=DataGrabber(outfields=(['T2ws', 'masks', 'labels'] if self.m_do_reconstruct_labels else ['T2ws', 'masks'])),
                 name='data_grabber'
@@ -337,17 +338,17 @@ class AnatomicalPipeline:
                 dg.inputs.field_template = dict(T2ws=t2ws_template,
                                                 masks=masks_template)
 
-            brainMask = MapNode(interface=IdentityInterface(fields=['out_file']),
+            brainMask = pe.MapNode(interface=IdentityInterface(fields=['out_file']),
                                 name='brain_masks_bypass',
                                 iterfield=['out_file'])
 
             if self.m_stacks is not None:
-                custom_masks_filter = Node(interface=preprocess.FilteringByRunid(),
+                custom_masks_filter = pe.Node(interface=preprocess.FilteringByRunid(),
                                            name='custom_masks_filter')
                 custom_masks_filter.inputs.stacks_id = self.m_stacks
 
         else:
-            dg = Node(interface=DataGrabber(outfields=['T2ws']),
+            dg = pe.Node(interface=DataGrabber(outfields=['T2ws']),
                       name='data_grabber')
 
             dg.inputs.base_directory = self.bids_dir
@@ -363,15 +364,14 @@ class AnatomicalPipeline:
                                                                   self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
 
             if self.m_stacks is not None:
-                t2ws_filter_prior_masks = Node(interface=preprocess.FilteringByRunid(),
+                t2ws_filter_prior_masks = pe.Node(interface=preprocess.FilteringByRunid(),
                                                name='t2ws_filter_prior_masks')
                 t2ws_filter_prior_masks.inputs.stacks_id = self.m_stacks
 
-            brainMask = MapNode(interface = preprocess.BrainExtraction(),
+            brainMask = pe.MapNode(interface = preprocess.BrainExtraction(),
                                 name='brainExtraction',
                                 iterfield=['in_file'])
 
-            brainMask.inputs.bids_dir = self.bids_dir
             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename(
                 "pymialsrtk",
                 os.path.join("data",
@@ -389,9 +389,9 @@ class AnatomicalPipeline:
             ).split('.index')[0]
             brainMask.inputs.threshold_seg = 0.5
 
-        t2ws_filtered = Node(interface=preprocess.FilteringByRunid(),
+        t2ws_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
                              name='t2ws_filtered')
-        masks_filtered = Node(interface=preprocess.FilteringByRunid(),
+        masks_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
                               name='masks_filtered')
 
         if self.m_do_reconstruct_labels:
@@ -402,16 +402,17 @@ class AnatomicalPipeline:
             reconstruct_labels_stage.inputs.inputnode.label_ids = [0,1,2,3,4,5,6,7]
 
         if not self.m_skip_stacks_ordering:
-            stacksOrdering = Node(interface=preprocess.StacksOrdering(),
+            stacksOrdering = pe.Node(interface=preprocess.StacksOrdering(),
                                   name='stackOrdering')
         else:
-            stacksOrdering = Node(interface=IdentityInterface(fields=['stacks_order']),
+            stacksOrdering = pe.Node(interface=IdentityInterface(fields=['stacks_order']),
                                   name='stackOrdering')
             stacksOrdering.inputs.stacks_order = self.m_stacks
 
-        preprocessing_stage = preproc_stage.create_preproc_stage(p_do_nlm_denoising=self.m_do_nlm_denoising,
-                                                                 p_do_reconstruct_labels=self.m_do_reconstruct_labels,
-                                                                 bids_dir=self.bids_dir)
+        preprocessing_stage = preproc_stage.create_preproc_stage(
+            p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels)
+
 
         reconstruction_stage = recon_stage.create_recon_stage(
             p_paramTV=self.paramTV,
@@ -419,27 +420,23 @@ class AnatomicalPipeline:
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
-            p_sub_ses=sub_ses,
-            p_bids_dir=self.bids_dir)
+            p_sub_ses=sub_ses)
 
-        srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
+        srtkMaskImage01 = pe.MapNode(interface=preprocess.MialsrtkMaskImage(),
                                   name='srtkMaskImage01',
                                   iterfield=['in_file', 'in_mask'])
-        srtkMaskImage01.inputs.bids_dir = self.bids_dir
+
         if self.m_do_nlm_denoising:
-            srtkMaskImage01_nlm = MapNode(
+            srtkMaskImage01_nlm = pe.MapNode(
                 interface=preprocess.MialsrtkMaskImage(),
                 name='srtkMaskImage01_nlm',
                 iterfield=['in_file', 'in_mask'])
-            srtkMaskImage01_nlm.inputs.bids_dir = self.bids_dir
 
-        srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
+        srtkN4BiasFieldCorrection = pe.Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
                                          name='srtkN4BiasFieldCorrection')
-        srtkN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
 
-        srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(),
+        srtkMaskImage02 = pe.Node(interface=preprocess.MialsrtkMaskImage(),
                                name='srtkMaskImage02')
-        srtkMaskImage02.inputs.bids_dir = self.bids_dir
 
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(

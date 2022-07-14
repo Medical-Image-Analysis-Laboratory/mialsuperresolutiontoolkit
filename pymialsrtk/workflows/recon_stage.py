@@ -13,6 +13,9 @@ from traits.api import *
 
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
+from nipype.interfaces import utility as util
+
+from nipype.pipeline import engine as pe
 
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
@@ -21,8 +24,6 @@ import pymialsrtk.interfaces.utils as utils
 from nipype import config
 from nipype import logging as nipype_logging
 
-from nipype.pipeline import engine as pe
-from nipype.interfaces import utility as util
 
 
 def create_recon_stage(p_paramTV,
@@ -30,7 +31,6 @@ def create_recon_stage(p_paramTV,
                        p_do_nlm_denoising = False,
                        p_do_refine_hr_mask=False,
                        p_skip_svr=False,
-                       p_bids_dir='',
                        p_sub_ses='',
                        name="recon_stage"):
     """Create a super-resolution reconstruction workflow
@@ -51,7 +51,7 @@ def create_recon_stage(p_paramTV,
         outputnode.output_tranforms : Transfmation estimated parameters (list of filenames)
     Example
     -------
-    >>> recon_stage = create_preproc_stage(bids_dir='/path/to/bids_dir', p_do_nlm_denoising=False)
+    >>> recon_stage = create_preproc_stage(p_do_nlm_denoising=False)
     >>> recon_stage.inputs.inputnode.input_images = ['sub-01_run-1_T2w.nii.gz', 'sub-01_run-2_T2w.nii.gz']
     >>> recon_stage.inputs.inputnode.input_masks = ['sub-01_run-1_T2w_mask.nii.gz', 'sub-01_run-2_T2w_mask.nii.gz']
     >>> recon_stage.inputs.inputnode.p_do_nlm_denoising = 'mask.nii'
@@ -95,7 +95,6 @@ def create_recon_stage(p_paramTV,
     srtkImageReconstruction = pe.Node(
         interface=reconstruction.MialsrtkImageReconstruction(),
         name='srtkImageReconstruction')
-    srtkImageReconstruction.inputs.bids_dir = p_bids_dir
     srtkImageReconstruction.inputs.sub_ses = p_sub_ses
     srtkImageReconstruction.inputs.no_reg = p_skip_svr
 
@@ -104,7 +103,6 @@ def create_recon_stage(p_paramTV,
         #     interface=preprocess.MialsrtkMaskImage(),
         #     name='srtkMaskImage01_nlm',
         #     iterfield=['in_file', 'in_mask'])
-        # srtkMaskImage01_nlm.inputs.bids_dir = p_bids_dir
 
         sdiComputation = pe.Node(
             interface=reconstruction.MialsrtkSDIComputation(),
@@ -114,7 +112,6 @@ def create_recon_stage(p_paramTV,
     srtkTVSuperResolution = pe.Node(
         interface=reconstruction.MialsrtkTVSuperResolution(),
         name='srtkTVSuperResolution')
-    srtkTVSuperResolution.inputs.bids_dir = p_bids_dir
     srtkTVSuperResolution.inputs.sub_ses = p_sub_ses
     srtkTVSuperResolution.inputs.use_manual_masks = p_use_manual_masks
 
@@ -130,7 +127,6 @@ def create_recon_stage(p_paramTV,
         srtkHRMask = pe.Node(
             interface=postprocess.MialsrtkRefineHRMaskByIntersection(),
             name='srtkHRMask')
-        srtkHRMask.inputs.bids_dir = p_bids_dir
     else:
         srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(),
                              name='srtkHRMask')

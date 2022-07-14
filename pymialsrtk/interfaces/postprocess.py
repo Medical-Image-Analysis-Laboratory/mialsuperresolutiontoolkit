@@ -29,7 +29,6 @@ import SimpleITK as sitk
 class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MialsrtkRefineHRMaskByIntersection interface."""
 
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(mandatory=True), desc='Image filenames used in SR reconstruction')
     input_masks = InputMultiPath(File(mandatory=True), desc='Mask filenames')
     input_transforms = InputMultiPath(File(mandatory=True), desc='Transformation filenames')
@@ -65,7 +64,6 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
     ----------
     >>> from pymialsrtk.interfaces.postprocess import MialsrtkRefineHRMaskByIntersection
     >>> refMask = MialsrtkRefineHRMaskByIntersection()
-    >>> refMask.inputs.bids_dir = '/my_directory'
     >>> refMask.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz','sub-01_acq-haste_run-2_T2w.nii.gz']
     >>> refMask.inputs.input_masks = ['sub-01_acq-haste_run-1_mask.nii.gz','sub-01_acq-haste_run-2_mask.nii.gz']
     >>> refMask.inputs.input_transforms = ['sub-01_acq-haste_run-1_transform.txt','sub-01_acq-haste_run-2_transform.nii.gz']
@@ -117,7 +115,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={})
         except Exception as e:
             print('Failed')
             print(e)
@@ -138,7 +136,6 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 class MialsrtkN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MialsrtkN4BiasFieldCorrection interface."""
 
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_image = File(desc='Input image filename to be normalized', mandatory=True)
     input_mask = File(desc='Input mask filename', mandatory=False)
 
@@ -167,7 +164,6 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
     ----------
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
     >>> N4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
-    >>> N4biasFieldCorr.inputs.bids_dir = '/my_directory'
     >>> N4biasFieldCorr.inputs.input_image = 'sub-01_acq-haste_run-1_SR.nii.gz'
     >>> N4biasFieldCorr.inputs.input_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> N4biasFieldCorr.run() # doctest: +SKIP
@@ -198,7 +194,7 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={})
         except Exception as e:
             print('Failed')
             print(e)
@@ -208,10 +204,10 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         _, name, ext = split_filename(os.path.abspath(self.inputs.input_image))
-        outputs['output_image'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                               ''.join((name, self.inputs.out_im_postfix, ext)))
-        outputs['output_field'] = os.path.join(os.getcwd().replace(self.inputs.bids_dir, '/fetaldata'),
-                                               ''.join((name, self.inputs.out_fld_postfix, ext)))
+        outputs['output_image'] = os.path.join(
+            ''.join((name, self.inputs.out_im_postfix, ext)))
+        outputs['output_field'] = os.path.join(
+            ''.join((name, self.inputs.out_fld_postfix, ext)))
 
         return outputs
 
