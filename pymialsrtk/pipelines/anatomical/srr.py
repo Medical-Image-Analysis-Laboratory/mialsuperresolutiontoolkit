@@ -187,14 +187,15 @@ class AnatomicalPipeline:
         # (default) sr tv parameters
         if paramTV is None:
             paramTV = dict()
-        self.deltatTV = paramTV["deltatTV"] if "deltatTV" in paramTV.keys() else 0.01
-        self.lambdaTV = paramTV["lambdaTV"] if "lambdaTV" in paramTV.keys() else 0.75
-
-        self.num_iterations = paramTV["num_iterations"] if "num_iterations" in paramTV.keys() else 50
-        self.num_primal_dual_loops = paramTV["num_primal_dual_loops"] if "num_primal_dual_loops" in paramTV.keys() else 10
-        self.num_bregman_loops = paramTV["num_bregman_loops"] if "num_bregman_loops" in paramTV.keys() else 3
-        self.step_scale = paramTV["step_scale"] if "step_scale" in paramTV.keys() else 1
-        self.gamma = paramTV["gamma"] if "gamma" in paramTV.keys() else 1
+        self.paramTV = paramTV
+        # self.deltatTV = paramTV["deltatTV"] if "deltatTV" in paramTV.keys() else 0.01
+        # self.lambdaTV = paramTV["lambdaTV"] if "lambdaTV" in paramTV.keys() else 0.75
+        #
+        # self.num_iterations = paramTV["num_iterations"] if "num_iterations" in paramTV.keys() else 50
+        # self.num_primal_dual_loops = paramTV["num_primal_dual_loops"] if "num_primal_dual_loops" in paramTV.keys() else 10
+        # self.num_bregman_loops = paramTV["num_bregman_loops"] if "num_bregman_loops" in paramTV.keys() else 3
+        # self.step_scale = paramTV["step_scale"] if "step_scale" in paramTV.keys() else 1
+        # self.gamma = paramTV["gamma"] if "gamma" in paramTV.keys() else 1
 
 
         # Use manual/custom brain masks
@@ -388,54 +389,25 @@ class AnatomicalPipeline:
         preprocessing_stage = preproc_stage.create_preproc_stage(p_do_nlm_denoising=self.m_do_nlm_denoising,
                                                                  bids_dir=self.bids_dir)
 
+        reconstruction_stage = recon_stage.create_recon_stage(p_paramTV=self.paramTV,
+                                                              p_use_manual_masks = self.use_manual_masks,
+                                                              p_do_nlm_denoising=self.m_do_nlm_denoising,
+                                                              p_do_refine_hr_mask=self.m_do_refine_hr_mask,
+                                                              p_skip_svr=self.m_skip_svr,
+                                                              p_sub_ses=sub_ses,
+                                                              p_bids_dir=self.bids_dir)
+
         srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
                                   name='srtkMaskImage01',
                                   iterfield=['in_file', 'in_mask'])
         srtkMaskImage01.inputs.bids_dir = self.bids_dir
 
-        srtkImageReconstruction = Node(interface=reconstruction.MialsrtkImageReconstruction(),
-                                       name='srtkImageReconstruction')
-        srtkImageReconstruction.inputs.bids_dir = self.bids_dir
-        srtkImageReconstruction.inputs.sub_ses = sub_ses
-        srtkImageReconstruction.inputs.no_reg = self.m_skip_svr
 
-        if self.m_do_nlm_denoising:
-            srtkMaskImage01_nlm = MapNode(
-                interface=preprocess.MialsrtkMaskImage(),
-                name='srtkMaskImage01_nlm',
-                iterfield=['in_file', 'in_mask'])
-            srtkMaskImage01_nlm.inputs.bids_dir = self.bids_dir
-
-            sdiComputation = Node(
-                interface=reconstruction.MialsrtkSDIComputation(),
-                name='sdiComputation')
-            sdiComputation.inputs.sub_ses = sub_ses
-            sdiComputation.inputs.stacks_order = self.m_stacks
-
-        srtkTVSuperResolution = Node(interface=reconstruction.MialsrtkTVSuperResolution(),
-                                     name='srtkTVSuperResolution')
-        srtkTVSuperResolution.inputs.bids_dir = self.bids_dir
-        srtkTVSuperResolution.inputs.sub_ses = sub_ses
-        srtkTVSuperResolution.inputs.use_manual_masks = self.use_manual_masks
-
-        srtkTVSuperResolution.inputs.in_iter = self.num_iterations
-        srtkTVSuperResolution.inputs.in_loop = self.num_primal_dual_loops
-        srtkTVSuperResolution.inputs.in_bregman_loop = self.num_bregman_loops
-        srtkTVSuperResolution.inputs.in_step_scale = self.step_scale
-        srtkTVSuperResolution.inputs.in_gamma = self.gamma
-        srtkTVSuperResolution.inputs.in_deltat = self.deltatTV
-        srtkTVSuperResolution.inputs.in_lambda = self.lambdaTV
 
         srtkN4BiasFieldCorrection = Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
                                          name='srtkN4BiasFieldCorrection')
         srtkN4BiasFieldCorrection.inputs.bids_dir = self.bids_dir
 
-        if self.m_do_refine_hr_mask:
-            srtkHRMask = Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(),
-                              name='srtkHRMask')
-            srtkHRMask.inputs.bids_dir = self.bids_dir
-        else:
-            srtkHRMask = Node(interface=postprocess.BinarizeImage(), name='srtkHRMask')
 
         srtkMaskImage02 = Node(interface=preprocess.MialsrtkMaskImage(),
                                name='srtkMaskImage02')
@@ -483,64 +455,27 @@ class AnatomicalPipeline:
             self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
                             srtkMaskImage01_nlm, "in_mask")
 
-            self.wf.connect(srtkMaskImage01_nlm, "out_im_file",
-                            srtkImageReconstruction, "input_images")
-        else:
-            self.wf.connect(srtkMaskImage01, "out_im_file",
-                            srtkImageReconstruction, "input_images")
+            self.wf.connect(srtkMaskImage01_nlm, ("out_im_file", utils.sort_ascending),
+                            reconstruction_stage, "inputnode.input_images_nlm")
+
+        self.wf.connect(srtkMaskImage01, ("out_im_file", utils.sort_ascending),
+                        reconstruction_stage, "inputnode.input_images")
 
         self.wf.connect(preprocessing_stage, "outputnode.output_masks",
-                        srtkImageReconstruction, "input_masks")
-        self.wf.connect(stacksOrdering, "stacks_order",
-                        srtkImageReconstruction, "stacks_order")
-
-        self.wf.connect(preprocessing_stage, ("outputnode.output_images",
-                                              utils.sort_ascending),
-                        srtkTVSuperResolution, "input_images")
-
-        self.wf.connect(srtkImageReconstruction, ("output_transforms",
-                                                  utils.sort_ascending),
-                        srtkTVSuperResolution, "input_transforms")
-        self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
-                        srtkTVSuperResolution, "input_masks")
-        self.wf.connect(stacksOrdering, "stacks_order", srtkTVSuperResolution, "stacks_order")
-
-
+                        reconstruction_stage, "inputnode.input_masks")
         if self.m_do_nlm_denoising:
-            self.wf.connect(srtkMaskImage01, "out_im_file",
-                            sdiComputation, "input_images")
-            self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
-                            sdiComputation, "input_masks")
-            self.wf.connect(srtkImageReconstruction, "output_transforms",
-                            sdiComputation, "input_transforms")
-            self.wf.connect(srtkImageReconstruction, "output_sdi",
-                            sdiComputation, "input_reference")
+            self.wf.connect(preprocessing_stage, "outputnode.output_images_nlm",
+                            reconstruction_stage, "inputnode.input_images_nlm")
 
-            self.wf.connect(sdiComputation, "output_sdi",
-                            srtkTVSuperResolution, "input_sdi")
-        else:
-            self.wf.connect(srtkImageReconstruction, "output_sdi",
-                            srtkTVSuperResolution, "input_sdi")
+        self.wf.connect(stacksOrdering, "stacks_order",
+                        reconstruction_stage, "inputnode.stacks_order")
 
-        if self.m_do_refine_hr_mask:
-            # self.wf.connect(srtkIntensityStandardization02, ("output_images", utils.sort_ascending), srtkHRMask, "input_images")
-            self.wf.connect(preprocessing_stage, ("outputnode.output_images",
-                                                  utils.sort_ascending),
-                            srtkHRMask, "input_images")
+        self.wf.connect(reconstruction_stage, "outputnode.output_sr",
+                        srtkMaskImage02, "in_file")
+        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
+                        srtkMaskImage02, "in_mask")
 
-            self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
-                            srtkHRMask, "input_masks")
-            self.wf.connect(srtkImageReconstruction, ("output_transforms",
-                                                      utils.sort_ascending),
-                            srtkHRMask, "input_transforms")
-            self.wf.connect(srtkTVSuperResolution, "output_sr", srtkHRMask, "input_sr")
-        else:
-            self.wf.connect(srtkTVSuperResolution, "output_sr", srtkHRMask, "input_image")
-
-        self.wf.connect(srtkTVSuperResolution, "output_sr", srtkMaskImage02, "in_file")
-        self.wf.connect(srtkHRMask, "output_srmask", srtkMaskImage02, "in_mask")
-
-        self.wf.connect(srtkTVSuperResolution, "output_sr",
+        self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         srtkN4BiasFieldCorrection, "input_image")
         self.wf.connect(srtkMaskImage02, "out_im_file",
                         srtkN4BiasFieldCorrection, "input_mask")
@@ -560,16 +495,16 @@ class AnatomicalPipeline:
         if not self.m_skip_stacks_ordering:
             self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
             self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
-        self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending), datasink, 'anat.@LRmasks')
-        self.wf.connect(preprocessing_stage, ("outputnode.output_images", utils.sort_ascending), datasink, 'anat.@LRsPreproc')
-        self.wf.connect(srtkImageReconstruction, ("output_transforms", utils.sort_ascending), datasink, 'xfm.@transforms')
+        self.wf.connect(preprocessing_stage, "outputnode.output_masks", datasink, 'anat.@LRmasks')
+        self.wf.connect(preprocessing_stage, "outputnode.output_images", datasink, 'anat.@LRsPreproc')
+        self.wf.connect(reconstruction_stage, "outputnode.output_transforms", datasink, 'xfm.@transforms')
         self.wf.connect(finalFilenamesGeneration, "substitutions", datasink, "substitutions")
-        self.wf.connect(srtkMaskImage01, ("out_im_file", utils.sort_ascending), datasink, 'anat.@LRsDenoised')
-        self.wf.connect(srtkImageReconstruction, "output_sdi", datasink, 'anat.@SDI')
+        self.wf.connect(srtkMaskImage01, "out_im_file", datasink, 'anat.@LRsDenoised')
+        self.wf.connect(reconstruction_stage, "outputnode.output_sdi", datasink, 'anat.@SDI')
         self.wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
-        self.wf.connect(srtkTVSuperResolution, "output_json_path", datasink, 'anat.@SRjson')
-        self.wf.connect(srtkTVSuperResolution, "output_sr_png", datasink, 'figures.@SRpng')
-        self.wf.connect(srtkHRMask, "output_srmask", datasink, 'anat.@SRmask')
+        self.wf.connect(reconstruction_stage, "outputnode.output_json_path", datasink, 'anat.@SRjson')
+        self.wf.connect(reconstruction_stage, "outputnode.output_sr_png", datasink, 'figures.@SRpng')
+        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask", datasink, 'anat.@SRmask')
 
     def run(self, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.
