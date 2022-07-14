@@ -75,6 +75,8 @@ where:
 
         * ``"do_nlm_denoising"`` (optional) indicates weither the NLM denoising preprocessing should be performed prior to motion estimation. (default is False)
 
+        * ``"do_reconstruct_labels"`` (optional) indicates weither the reconstruction of LR label maps should be performed together with T2w images. (default is False)
+
         * ``"skip_stacks_ordering"`` (optional) indicates weither the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
 
 .. important:: 
