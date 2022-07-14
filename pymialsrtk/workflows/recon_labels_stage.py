@@ -100,7 +100,6 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
     labels_majorityvoting = Node(interface=postprocess.MergeMajorityVote(),
               name='labels_majorityvoting')
 
-
     recon_labels_stage.connect(inputnode, "label_ids",
                                labelmap_splitter, "all_labels")
     recon_labels_stage.connect(inputnode, "input_labels",
@@ -115,11 +114,11 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
                                labels_reconstruct_hr_maps, "stacks_order")
     recon_labels_stage.connect(inputnode, "input_reference",
                                labels_reconstruct_hr_maps, "input_reference")
-    recon_labels_stage.connect(inputnode, ("input_transforms", utils.sort_ascending),
+    recon_labels_stage.connect(inputnode, "input_transforms",
                                labels_reconstruct_hr_maps,"input_transforms")
-    recon_labels_stage.connect(inputnode, ("input_masks", utils.sort_ascending),
+    recon_labels_stage.connect(inputnode, "input_masks",
                                labels_reconstruct_hr_maps, "input_masks")
-    recon_labels_stage.connect(labels_merge_lr_maps, ("outputs", utils.sort_ascending),
+    recon_labels_stage.connect(labels_merge_lr_maps, "outputs",
                                labels_reconstruct_hr_maps, "input_images")
 
     recon_labels_stage.connect(labels_reconstruct_hr_maps, "output_hr",
