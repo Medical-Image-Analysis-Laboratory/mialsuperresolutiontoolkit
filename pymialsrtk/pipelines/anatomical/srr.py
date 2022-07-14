@@ -442,6 +442,7 @@ class AnatomicalPipeline:
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             name='output_mgmt_stage')
 
         output_mgmt_stage.inputs.inputnode.sub_ses = sub_ses
@@ -478,17 +479,20 @@ class AnatomicalPipeline:
         self.wf.connect(masks_filtered, "output_files",
                         preprocessing_stage, "inputnode.input_masks")
 
-        self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
+        self.wf.connect(preprocessing_stage, ("outputnode.output_masks",
+                                              utils.sort_ascending),
                         srtkMaskImage01, "in_mask")
 
-        self.wf.connect(preprocessing_stage, ("outputnode.output_images", utils.sort_ascending),
+        self.wf.connect(preprocessing_stage, ("outputnode.output_images",
+                                              utils.sort_ascending),
                         srtkMaskImage01, "in_file")
 
         if self.m_do_nlm_denoising:
             self.wf.connect(preprocessing_stage, ("outputnode.output_images_nlm",
                                                   utils.sort_ascending),
                             srtkMaskImage01_nlm, "in_file")
-            self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
+            self.wf.connect(preprocessing_stage, ("outputnode.output_masks",
+                                                  utils.sort_ascending),
                             srtkMaskImage01_nlm, "in_mask")
 
             self.wf.connect(srtkMaskImage01_nlm, ("out_im_file",
@@ -522,18 +526,6 @@ class AnatomicalPipeline:
 
             self.wf.connect(preprocessing_stage, "outputnode.output_labels",
                             reconstruction_stage, "inputnode.input_labels")
-            #
-            # self.wf.connect(preprocessing_stage, "outputnode.output_labels",
-            #                 reconstruct_labels_stage, "inputnode.input_labels")
-            # self.wf.connect(preprocessing_stage, "outputnode.output_masks",
-            #                 reconstruct_labels_stage, "inputnode.input_masks")
-            # self.wf.connect(reconstruction_stage, "outputnode.output_transforms",
-            #                 reconstruct_labels_stage, "inputnode.input_transforms")
-            #
-            # self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
-            #                 reconstruct_labels_stage, "inputnode.input_reference")
-            # self.wf.connect(stacksOrdering, "stacks_order",
-            #                 reconstruct_labels_stage, "inputnode.stacks_order")
 
         self.wf.connect(stacksOrdering, "stacks_order", output_mgmt_stage, "inputnode.stacks_order")
 
@@ -555,9 +547,9 @@ class AnatomicalPipeline:
         self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
                         output_mgmt_stage, "inputnode.input_hr_mask")
 
-        # if self.m_do_reconstruct_labels:
-        #     self.wf.connect(reconstruction_stage, "outputnode.output_labelmap",
-        #                     output_mgmt_stage, "outputnode.input_labelmap")
+        if self.m_do_reconstruct_labels:
+            self.wf.connect(reconstruction_stage, "outputnode.output_labelmap",
+                            output_mgmt_stage, "inputnode.input_labelmap")
 
         if self.m_do_nlm_denoising:
             self.wf.connect(srtkMaskImage01_nlm, "out_im_file",
