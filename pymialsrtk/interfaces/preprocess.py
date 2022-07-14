@@ -1947,7 +1947,7 @@ class ReduceFieldOfView(BaseInterface):
         writer.SetFileName(self._gen_filename('output_mask'))
         writer.Execute(mask_cropped)
 
-        if in_label is not None:
+        if in_label:
             reader.SetFileName(in_label)
             label = reader.Execute()
             label_np = sitk.GetArrayFromImage(label)
@@ -1976,7 +1976,8 @@ class ReduceFieldOfView(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_image'] = self._gen_filename('output_image')
         outputs['output_mask'] = self._gen_filename('output_mask')
-        outputs['output_label'] = self._gen_filename('output_label')
+        if self.inputs.input_label:
+            outputs['output_label'] = self._gen_filename('output_label')
         return outputs
 
 
