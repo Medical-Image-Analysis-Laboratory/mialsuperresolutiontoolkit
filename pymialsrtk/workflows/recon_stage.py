@@ -92,8 +92,9 @@ def create_recon_stage(p_paramTV,
     step_scale = p_paramTV["step_scale"] if "step_scale" in p_paramTV.keys() else 1
     gamma = p_paramTV["gamma"] if "gamma" in p_paramTV.keys() else 1
 
-    srtkImageReconstruction = pe.Node(interface=reconstruction.MialsrtkImageReconstruction(),
-                                   name='srtkImageReconstruction')
+    srtkImageReconstruction = pe.Node(
+        interface=reconstruction.MialsrtkImageReconstruction(),
+        name='srtkImageReconstruction')
     srtkImageReconstruction.inputs.bids_dir = p_bids_dir
     srtkImageReconstruction.inputs.sub_ses = p_sub_ses
     srtkImageReconstruction.inputs.no_reg = p_skip_svr
@@ -110,8 +111,9 @@ def create_recon_stage(p_paramTV,
             name='sdiComputation')
         sdiComputation.inputs.sub_ses = p_sub_ses
 
-    srtkTVSuperResolution = pe.Node(interface=reconstruction.MialsrtkTVSuperResolution(),
-                                 name='srtkTVSuperResolution')
+    srtkTVSuperResolution = pe.Node(
+        interface=reconstruction.MialsrtkTVSuperResolution(),
+        name='srtkTVSuperResolution')
     srtkTVSuperResolution.inputs.bids_dir = p_bids_dir
     srtkTVSuperResolution.inputs.sub_ses = p_sub_ses
     srtkTVSuperResolution.inputs.use_manual_masks = p_use_manual_masks
@@ -125,8 +127,9 @@ def create_recon_stage(p_paramTV,
     srtkTVSuperResolution.inputs.in_lambda = lambdaTV
 
     if p_do_refine_hr_mask:
-        srtkHRMask = pe.Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(),
-                             name='srtkHRMask')
+        srtkHRMask = pe.Node(
+            interface=postprocess.MialsrtkRefineHRMaskByIntersection(),
+            name='srtkHRMask')
         srtkHRMask.inputs.bids_dir = p_bids_dir
     else:
         srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(),
@@ -139,7 +142,7 @@ def create_recon_stage(p_paramTV,
 
     if p_do_nlm_denoising:
         recon_stage.connect(inputnode, "input_images_nlm",
-                        srtkImageReconstruction, "input_images")
+                            srtkImageReconstruction, "input_images")
 
         recon_stage.connect(inputnode, "stacks_order",
                             sdiComputation, "stacks_order")
@@ -161,21 +164,21 @@ def create_recon_stage(p_paramTV,
                             srtkTVSuperResolution, "input_sdi")
 
     recon_stage.connect(inputnode, "input_images",
-                    srtkTVSuperResolution, "input_images")
+                        srtkTVSuperResolution, "input_images")
 
     recon_stage.connect(srtkImageReconstruction, "output_transforms",
-                    srtkTVSuperResolution, "input_transforms")
+                        srtkTVSuperResolution, "input_transforms")
     recon_stage.connect(inputnode, "input_masks",
-                    srtkTVSuperResolution, "input_masks")
+                        srtkTVSuperResolution, "input_masks")
     recon_stage.connect(inputnode, "stacks_order", srtkTVSuperResolution, "stacks_order")
 
     if p_do_refine_hr_mask:
-        recon_stage.connect(inputnode, "input_images",srtkHRMask, "input_images")
+        recon_stage.connect(inputnode, "input_images", srtkHRMask, "input_images")
 
         recon_stage.connect(inputnode, "input_masks", srtkHRMask, "input_masks")
         recon_stage.connect(srtkImageReconstruction, ("output_transforms",
-                                                  utils.sort_ascending),
-                        srtkHRMask, "input_transforms")
+                                                      utils.sort_ascending),
+                            srtkHRMask, "input_transforms")
         recon_stage.connect(srtkTVSuperResolution, "output_sr",
                             srtkHRMask, "input_sr")
     else:
