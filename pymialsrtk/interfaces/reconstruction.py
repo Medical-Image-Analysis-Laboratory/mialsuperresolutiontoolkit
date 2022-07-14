@@ -28,9 +28,6 @@ from pymialsrtk.interfaces.utils import run, reorder_by_run_ids
 class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MialsrtkImageReconstruction interface."""
 
-    bids_dir = Directory(desc='BIDS root directory',
-                         mandatory=True,
-                         exists=True)
     in_roi = traits.Enum('mask', "all", "box", "mask",
                          desc="""Define region of interest (required):
                                    - `box`: Use intersections for roi calculation
@@ -85,7 +82,6 @@ class MialsrtkImageReconstruction(BaseInterface):
     ----------
     >>> from pymialsrtk.interfaces.reconstruction import MialsrtkImageReconstruction
     >>> srtkImageReconstruction = MialsrtkImageReconstruction()
-    >>> srtkImageReconstruction.inputs.bids_dir = '/my_directory'
     >>> srtkImageReconstruction.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz',
     >>>                                         'sub-01_ses-01_run-2_T2w.nii.gz',
     >>>                                         'sub-01_ses-01_run-3_T2w.nii.gz',
@@ -152,7 +148,7 @@ class MialsrtkImageReconstruction(BaseInterface):
         try:
             print('... cmd: {}'.format(cmd))
             cmd = ' '.join(cmd)
-            run(cmd, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd)
         except Exception as e:
             print('Failed')
             print(e)
@@ -174,7 +170,6 @@ class MialsrtkImageReconstruction(BaseInterface):
 class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MialsrtkTVSuperResolution interface."""
 
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(mandatory=True),
                                   desc='Input image filenames for super-resolution')
     input_masks = InputMultiPath(File(mandatory=True),
@@ -259,7 +254,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
     ----------
     >>> from pymialsrtk.interfaces.reconstruction import MialsrtkTVSuperResolution
     >>> srtkTVSuperResolution = MialsrtkTVSuperResolution()
-    >>> srtkTVSuperResolution.inputs.bids_dir = '/my_directory'
     >>> srtkTVSuperResolution.input_images = ['sub-01_ses-01_run-1_T2w.nii.gz', 'sub-01_ses-01_run-2_T2w.nii.gz', \
     'sub-01_ses-01_run-3_T2w.nii.gz', 'sub-01_ses-01_run-4_T2w.nii.gz']
     >>> srtkTVSuperResolution.input_masks = ['sub-01_ses-01_run-1_mask.nii.gz', 'sub-01_ses-01_run-2_mask.nii.gz', \
@@ -342,7 +336,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         try:
             cmd = ' '.join(cmd)
-            run(cmd, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd)
 
         except Exception as e:
             print('Failed')

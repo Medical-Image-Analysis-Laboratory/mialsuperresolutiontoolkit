@@ -45,8 +45,6 @@ from pymialsrtk.interfaces.utils import run
 
 class BtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the BtkNLMDenoising interface."""
-
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image filename', mandatory=True)
     in_mask = File(desc='Input mask filename', mandatory=False)
     out_postfix = traits.Str("_nlm",
@@ -77,7 +75,6 @@ class BtkNLMDenoising(BaseInterface):
     ---------
     >>> from pymialsrtk.interfaces.preprocess import BtkNLMDenoising
     >>> nlmDenoise = BtkNLMDenoising()
-    >>> nlmDenoise.inputs.bids_dir = '/my_directory'
     >>> nlmDenoise.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
     >>> nlmDenoise.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> nlmDenoise.inputs.weight = 0.2
@@ -106,7 +103,7 @@ class BtkNLMDenoising(BaseInterface):
 
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd , env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={})
         except Exception as e:
             print('Failed')
             print(e)
@@ -125,7 +122,6 @@ class BtkNLMDenoising(BaseInterface):
 class MialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MialsrtkCorrectSliceIntensity interface."""
 
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image filename', mandatory=True)
     in_mask = File(desc='Input mask filename', mandatory=False)
     out_postfix = traits.Str("",
@@ -146,7 +142,6 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
     =======
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkCorrectSliceIntensity
     >>> sliceIntensityCorr = MialsrtkCorrectSliceIntensity()
-    >>> sliceIntensityCorr.inputs.bids_dir = '/my_directory'
     >>> sliceIntensityCorr.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
     >>> sliceIntensityCorr.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> sliceIntensityCorr.run() # doctest: +SKIP
@@ -173,7 +168,7 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
             print('... cmd: {}'.format(cmd))
             env_cpp = os.environ.copy()
             env_cpp['LD_PRELOAD'] = ""
-            run(cmd, env=env_cpp, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env=env_cpp)
         except Exception as e:
             print('Failed')
             print(e)
@@ -191,7 +186,6 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
 class MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MialsrtkSliceBySliceN4BiasFieldCorrection interface."""
 
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image', mandatory=True)
     in_mask = File(desc='Input mask', mandatory=True)
     out_im_postfix = traits.Str("_bcorr",
@@ -222,7 +216,6 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
     ----------
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
     >>> N4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
-    >>> N4biasFieldCorr.inputs.bids_dir = '/my_directory'
     >>> N4biasFieldCorr.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
     >>> N4biasFieldCorr.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> N4biasFieldCorr.run() # doctest: +SKIP
@@ -255,7 +248,7 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
                                                                                      out_im_file, out_fld_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={})
         except Exception as e:
             print('Failed')
             print(e)
@@ -274,7 +267,6 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
 class MialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
     """Class used to represent outputs of the MialsrtkSliceBySliceCorrectBiasField interface."""
 
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image file', mandatory=True)
     in_mask = File(desc='Input mask file', mandatory=True)
     in_field = File(desc='Input bias field file', mandatory=True)
@@ -296,7 +288,6 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
     =======
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceCorrectBiasField
     >>> biasFieldCorr = MialsrtkSliceBySliceCorrectBiasField()
-    >>> biasFieldCorr.inputs.bids_dir = '/my_directory'
     >>> biasFieldCorr.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
     >>> biasFieldCorr.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> biasFieldCorr.inputs.in_field = 'sub-01_acq-haste_run-1_field.nii.gz'
@@ -321,7 +312,7 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
         cmd = 'mialsrtkSliceBySliceCorrectBiasField "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, self.inputs.in_field, out_im_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={})
         except Exception as e:
             print('Failed')
             print(e)
@@ -339,7 +330,6 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MialsrtkIntensityStandardization interface."""
 
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(mandatory=True), desc='Files to be corrected for intensity')
     out_postfix = traits.Str("", desc='Suffix to be added to intensity corrected input_images', usedefault=True)
     in_max = traits.Float(desc='Maximal intensity', usedefault=False)
@@ -362,7 +352,6 @@ class MialsrtkIntensityStandardization(BaseInterface):
     =======
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkIntensityStandardization
     >>> intensityStandardization= MialsrtkIntensityStandardization()
-    >>> intensityStandardization.inputs.bids_dir = '/my_directory'
     >>> intensityStandardization.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz','sub-01_acq-haste_run-2_T2w.nii.gz']
     >>> intensityStandardization.run() # doctest: +SKIP
 
@@ -391,7 +380,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
 
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={})
         except Exception as e:
             print('Failed')
             print(e)
@@ -409,7 +398,6 @@ class MialsrtkIntensityStandardization(BaseInterface):
 class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
     """Class used to represent outputs of the MialsrtkHistogramNormalization interface."""
 
-    bids_dir = Directory(desc='BIDS root directory', mandatory=True, exists=True)
     input_images = InputMultiPath(File(mandatory=True), desc='Input image filenames to be normalized')
     input_masks = InputMultiPath(File(mandatory=False), desc='Input mask filenames')
     out_postfix = traits.Str("_histnorm",
@@ -436,7 +424,6 @@ class MialsrtkHistogramNormalization(BaseInterface):
     ----------
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkHistogramNormalization
     >>> histNorm = MialsrtkHistogramNormalization()
-    >>> histNorm.inputs.bids_dir = '/my_directory'
     >>> histNorm.inputs.input_images = ['sub-01_acq-haste_run-1_T2w.nii.gz','sub-01_acq-haste_run-2_T2w.nii.gz']
     >>> histNorm.inputs.input_masks = ['sub-01_acq-haste_run-1_mask.nii.gz','sub-01_acq-haste_run-2_mask.nii.gz']
     >>> histNorm.run()  # doctest: +SKIP
@@ -467,7 +454,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
                 cmd = cmd + ' -i "{}" -o "{}"" '.format(in_file, out_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={})
         except Exception as e:
             print('Failed')
             print(e)
@@ -487,7 +474,6 @@ class MialsrtkHistogramNormalization(BaseInterface):
 class MialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MialsrtkMaskImage interface."""
 
-    bids_dir = Directory(desc='BIDS root directory',mandatory=True,exists=True)
     in_file = File(desc='Input image filename to be masked',mandatory=True)
     in_mask = File(desc='Input mask filename',mandatory=True)
     out_im_postfix = traits.Str("", desc='Suffix to be added to masked in_file', usedefault=True)
@@ -506,7 +492,6 @@ class MialsrtkMaskImage(BaseInterface):
     =======
     >>> from pymialsrtk.interfaces.preprocess import MialsrtkMaskImage
     >>> maskImg = MialsrtkMaskImage()
-    >>> maskImg.inputs.bids_dir = '/my_directory'
     >>> maskImg.inputs.in_file = 'sub-01_acq-haste_run-1_T2w.nii.gz'
     >>> maskImg.inputs.in_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
     >>> maskImg.inputs.out_im_postfix = '_masked'
@@ -530,7 +515,7 @@ class MialsrtkMaskImage(BaseInterface):
         cmd = 'mialsrtkMaskImage -i "{}" -m "{}" -o "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file)
         try:
             print('... cmd: {}'.format(cmd))
-            run(cmd, env={}, cwd=os.path.abspath(self.inputs.bids_dir))
+            run(cmd, env={})
         except Exception as e:
             print('Failed')
             print(e)
@@ -959,7 +944,6 @@ class StacksOrdering(BaseInterface):
 class BrainExtractionInputSpec(BaseInterfaceInputSpec):
     """Class used to represent outputs of the BrainExtraction interface."""
 
-    bids_dir = Directory(desc='Root directory', mandatory=True, exists=True)
     in_file = File(desc='Input image', mandatory=True)
     in_ckpt_loc = File(desc='Network_checkpoint for localization', mandatory=True)
     threshold_loc = traits.Float(0.49, desc='Threshold determining cutoff probability (0.49 by default)')
@@ -1012,8 +996,11 @@ class BrainExtraction(BaseInterface):
     def _run_interface(self, runtime):
 
         try:
-            self._extractBrain(self.inputs.in_file, self.inputs.in_ckpt_loc, self.inputs.threshold_loc,
-                               self.inputs.in_ckpt_seg, self.inputs.threshold_seg) #, self.inputs.bids_dir, self.inputs.out_postfix)
+            self._extractBrain(self.inputs.in_file,
+                               self.inputs.in_ckpt_loc,
+                               self.inputs.threshold_loc,
+                               self.inputs.in_ckpt_seg,
+                               self.inputs.threshold_seg)
         except Exception:
             print('Failed')
             print(traceback.format_exc())
