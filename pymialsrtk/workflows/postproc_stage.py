@@ -25,7 +25,7 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
 
 
-def create_postproc_stage(bids_dir='', name="postproc_stage"):
+def create_postproc_stage(name="postproc_stage"):
     """Create a SR preprocessing workflow
     Parameters
     ----------
@@ -38,7 +38,7 @@ def create_postproc_stage(bids_dir='', name="postproc_stage"):
         outputnode.output_image : Postprocessed image (filename)
     Example
     -------
-    >>> postproc_stage = create_preproc_stage(bids_dir='/path/to/bids_dir', p_do_nlm_denoising=False)
+    >>> postproc_stage = create_preproc_stage(p_do_nlm_denoising=False)
     >>> postproc_stage.inputs.inputnode.input_image = 'sub-01_run-1_T2w.nii.gz'
     >>> postproc_stage.inputs.inputnode.input_mask = 'sub-01_run-1_T2w_mask.nii.gz'
     >>> postproc_stage.run() # doctest: +SKIP
@@ -63,12 +63,9 @@ def create_postproc_stage(bids_dir='', name="postproc_stage"):
 
     srtkN4BiasFieldCorrection = pe.Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
                                      name='srtkN4BiasFieldCorrection')
-    srtkN4BiasFieldCorrection.inputs.bids_dir = bids_dir
 
     srtkMaskImage02 = pe.Node(interface=preprocess.MialsrtkMaskImage(),
                            name='srtkMaskImage02')
-    srtkMaskImage02.inputs.bids_dir = bids_dir
-
 
     postproc_stage.connect(inputnode, "input_image",
                            srtkMaskImage02, "in_file")
