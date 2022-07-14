@@ -188,15 +188,6 @@ class AnatomicalPipeline:
         if paramTV is None:
             paramTV = dict()
         self.paramTV = paramTV
-        # self.deltatTV = paramTV["deltatTV"] if "deltatTV" in paramTV.keys() else 0.01
-        # self.lambdaTV = paramTV["lambdaTV"] if "lambdaTV" in paramTV.keys() else 0.75
-        #
-        # self.num_iterations = paramTV["num_iterations"] if "num_iterations" in paramTV.keys() else 50
-        # self.num_primal_dual_loops = paramTV["num_primal_dual_loops"] if "num_primal_dual_loops" in paramTV.keys() else 10
-        # self.num_bregman_loops = paramTV["num_bregman_loops"] if "num_bregman_loops" in paramTV.keys() else 3
-        # self.step_scale = paramTV["step_scale"] if "step_scale" in paramTV.keys() else 1
-        # self.gamma = paramTV["gamma"] if "gamma" in paramTV.keys() else 1
-
 
         # Use manual/custom brain masks
         # If masks directory is not specified use the automated brain extraction method.
@@ -386,16 +377,18 @@ class AnatomicalPipeline:
                                   name='stackOrdering')
             stacksOrdering.inputs.stacks_order = self.m_stacks
 
-        preprocessing_stage = preproc_stage.create_preproc_stage(p_do_nlm_denoising=self.m_do_nlm_denoising,
-                                                                 bids_dir=self.bids_dir)
+        preprocessing_stage = preproc_stage.create_preproc_stage(
+            p_do_nlm_denoising=self.m_do_nlm_denoising,
+            bids_dir=self.bids_dir)
 
-        reconstruction_stage = recon_stage.create_recon_stage(p_paramTV=self.paramTV,
-                                                              p_use_manual_masks = self.use_manual_masks,
-                                                              p_do_nlm_denoising=self.m_do_nlm_denoising,
-                                                              p_do_refine_hr_mask=self.m_do_refine_hr_mask,
-                                                              p_skip_svr=self.m_skip_svr,
-                                                              p_sub_ses=sub_ses,
-                                                              p_bids_dir=self.bids_dir)
+        reconstruction_stage = recon_stage.create_recon_stage(
+            p_paramTV=self.paramTV,
+            p_use_manual_masks=self.use_manual_masks,
+            p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_do_refine_hr_mask=self.m_do_refine_hr_mask,
+            p_skip_svr=self.m_skip_svr,
+            p_sub_ses=sub_ses,
+            p_bids_dir=self.bids_dir)
 
         srtkMaskImage01 = MapNode(interface=preprocess.MialsrtkMaskImage(),
                                   name='srtkMaskImage01',
@@ -460,7 +453,8 @@ class AnatomicalPipeline:
             self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
                             srtkMaskImage01_nlm, "in_mask")
 
-            self.wf.connect(srtkMaskImage01_nlm, ("out_im_file", utils.sort_ascending),
+            self.wf.connect(srtkMaskImage01_nlm, ("out_im_file",
+                                                  utils.sort_ascending),
                             reconstruction_stage, "inputnode.input_images_nlm")
 
         self.wf.connect(srtkMaskImage01, ("out_im_file", utils.sort_ascending),
@@ -495,18 +489,30 @@ class AnatomicalPipeline:
         datasink.inputs.base_directory = final_res_dir
 
         if not self.m_skip_stacks_ordering:
-            self.wf.connect(stacksOrdering, "report_image", datasink, 'figures.@stackOrderingQC')
-            self.wf.connect(stacksOrdering, "motion_tsv", datasink, 'anat.@motionTSV')
-        self.wf.connect(preprocessing_stage, "outputnode.output_masks", datasink, 'anat.@LRmasks')
-        self.wf.connect(preprocessing_stage, "outputnode.output_images", datasink, 'anat.@LRsPreproc')
-        self.wf.connect(reconstruction_stage, "outputnode.output_transforms", datasink, 'xfm.@transforms')
-        self.wf.connect(finalFilenamesGeneration, "substitutions", datasink, "substitutions")
-        self.wf.connect(srtkMaskImage01, "out_im_file", datasink, 'anat.@LRsDenoised')
-        self.wf.connect(reconstruction_stage, "outputnode.output_sdi", datasink, 'anat.@SDI')
-        self.wf.connect(srtkN4BiasFieldCorrection, "output_image", datasink, 'anat.@SR')
-        self.wf.connect(reconstruction_stage, "outputnode.output_json_path", datasink, 'anat.@SRjson')
-        self.wf.connect(reconstruction_stage, "outputnode.output_sr_png", datasink, 'figures.@SRpng')
-        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask", datasink, 'anat.@SRmask')
+            self.wf.connect(stacksOrdering, "report_image",
+                            datasink, 'figures.@stackOrderingQC')
+            self.wf.connect(stacksOrdering, "motion_tsv",
+                            datasink, 'anat.@motionTSV')
+        self.wf.connect(preprocessing_stage, "outputnode.output_masks",
+                        datasink, 'anat.@LRmasks')
+        self.wf.connect(preprocessing_stage, "outputnode.output_images",
+                        datasink, 'anat.@LRsPreproc')
+        self.wf.connect(reconstruction_stage, "outputnode.output_transforms",
+                        datasink, 'xfm.@transforms')
+        self.wf.connect(finalFilenamesGeneration, "substitutions",
+                        datasink, "substitutions")
+        self.wf.connect(srtkMaskImage01, "out_im_file",
+                        datasink, 'anat.@LRsDenoised')
+        self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                        datasink, 'anat.@SDI')
+        self.wf.connect(srtkN4BiasFieldCorrection, "output_image",
+                        datasink, 'anat.@SR')
+        self.wf.connect(reconstruction_stage, "outputnode.output_json_path",
+                        datasink, 'anat.@SRjson')
+        self.wf.connect(reconstruction_stage, "outputnode.output_sr_png",
+                        datasink, 'figures.@SRpng')
+        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
+                        datasink, 'anat.@SRmask')
 
     def run(self, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.

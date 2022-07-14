@@ -126,38 +126,39 @@ def create_recon_stage(p_paramTV,
 
     if p_do_refine_hr_mask:
         srtkHRMask = pe.Node(interface=postprocess.MialsrtkRefineHRMaskByIntersection(),
-                          name='srtkHRMask')
+                             name='srtkHRMask')
         srtkHRMask.inputs.bids_dir = p_bids_dir
     else:
-        srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(), name='srtkHRMask')
+        srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(),
+                             name='srtkHRMask')
 
     recon_stage.connect(inputnode, "input_masks",
-                    srtkImageReconstruction, "input_masks")
+                        srtkImageReconstruction, "input_masks")
     recon_stage.connect(inputnode, "stacks_order",
-                    srtkImageReconstruction, "stacks_order")
+                        srtkImageReconstruction, "stacks_order")
 
     if p_do_nlm_denoising:
         recon_stage.connect(inputnode, "input_images_nlm",
                         srtkImageReconstruction, "input_images")
 
         recon_stage.connect(inputnode, "stacks_order",
-                        sdiComputation, "stacks_order")
+                            sdiComputation, "stacks_order")
         recon_stage.connect(inputnode, "input_images_nlm",
-                        sdiComputation, "input_images")
+                            sdiComputation, "input_images")
         recon_stage.connect(inputnode, "input_masks",
-                        sdiComputation, "input_masks")
+                            sdiComputation, "input_masks")
         recon_stage.connect(srtkImageReconstruction, "output_transforms",
-                        sdiComputation, "input_transforms")
+                            sdiComputation, "input_transforms")
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
-                        sdiComputation, "input_reference")
+                            sdiComputation, "input_reference")
 
         recon_stage.connect(sdiComputation, "output_sdi",
-                        srtkTVSuperResolution, "input_sdi")
+                            srtkTVSuperResolution, "input_sdi")
     else:
         recon_stage.connect(inputnode, "input_images",
-                        srtkImageReconstruction, "input_images")
+                            srtkImageReconstruction, "input_images")
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
-                        srtkTVSuperResolution, "input_sdi")
+                            srtkTVSuperResolution, "input_sdi")
 
     recon_stage.connect(inputnode, "input_images",
                     srtkTVSuperResolution, "input_images")
@@ -175,18 +176,25 @@ def create_recon_stage(p_paramTV,
         recon_stage.connect(srtkImageReconstruction, ("output_transforms",
                                                   utils.sort_ascending),
                         srtkHRMask, "input_transforms")
-        recon_stage.connect(srtkTVSuperResolution, "output_sr", srtkHRMask, "input_sr")
+        recon_stage.connect(srtkTVSuperResolution, "output_sr",
+                            srtkHRMask, "input_sr")
     else:
-        recon_stage.connect(srtkTVSuperResolution, "output_sr", srtkHRMask, "input_image")
-
+        recon_stage.connect(srtkTVSuperResolution, "output_sr",
+                            srtkHRMask, "input_image")
 
     if p_do_nlm_denoising:
-        recon_stage.connect(sdiComputation, "output_sdi", outputnode, "output_sdi")
+        recon_stage.connect(sdiComputation, "output_sdi",
+                            outputnode, "output_sdi")
     else:
-        recon_stage.connect(srtkImageReconstruction, "output_sdi", outputnode, "output_sdi")
-    recon_stage.connect(srtkTVSuperResolution, "output_sr", outputnode, "output_sr")
-    recon_stage.connect(srtkHRMask, "output_srmask", outputnode, "output_hr_mask")
-    recon_stage.connect(srtkTVSuperResolution, "output_json_path", outputnode, "output_json_path")
-    recon_stage.connect(srtkTVSuperResolution, "output_sr_png", outputnode, "output_sr_png")
+        recon_stage.connect(srtkImageReconstruction, "output_sdi",
+                            outputnode, "output_sdi")
+    recon_stage.connect(srtkTVSuperResolution, "output_sr",
+                        outputnode, "output_sr")
+    recon_stage.connect(srtkHRMask, "output_srmask",
+                        outputnode, "output_hr_mask")
+    recon_stage.connect(srtkTVSuperResolution, "output_json_path",
+                        outputnode, "output_json_path")
+    recon_stage.connect(srtkTVSuperResolution, "output_sr_png",
+                        outputnode, "output_sr_png")
 
     return recon_stage
