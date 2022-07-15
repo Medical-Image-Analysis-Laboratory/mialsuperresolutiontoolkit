@@ -517,7 +517,7 @@ class AnatomicalPipeline:
 
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         srtkN4BiasFieldCorrection, "input_image")
-        self.wf.connect(srtkMaskImage02, "out_im_file",
+        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
                         srtkN4BiasFieldCorrection, "input_mask")
 
         if self.m_do_reconstruct_labels:

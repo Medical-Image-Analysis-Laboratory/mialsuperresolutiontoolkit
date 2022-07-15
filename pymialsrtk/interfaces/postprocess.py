@@ -185,7 +185,7 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_image))
+        # _, name, ext = split_filename(os.path.abspath(self.inputs.input_image))
         out_corr = self._gen_filename('output_image')
         out_fld = self._gen_filename('output_field')
 
@@ -203,11 +203,9 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        _, name, ext = split_filename(os.path.abspath(self.inputs.input_image))
-        outputs['output_image'] = os.path.join(
-            ''.join((name, self.inputs.out_im_postfix, ext)))
-        outputs['output_field'] = os.path.join(
-            ''.join((name, self.inputs.out_fld_postfix, ext)))
+        # _, name, ext = split_filename(self.inputs.input_image)
+        outputs['output_image'] = self._gen_filename('output_image')
+        outputs['output_field'] = self._gen_filename('output_field')
 
         return outputs
 
