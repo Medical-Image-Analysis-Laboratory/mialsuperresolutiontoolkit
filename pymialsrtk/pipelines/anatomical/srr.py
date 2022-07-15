@@ -441,6 +441,11 @@ class AnatomicalPipeline:
         srtkMaskImage02 = pe.Node(interface=preprocess.MialsrtkMaskImage(),
                                name='srtkMaskImage02')
 
+        if self.m_do_reconstruct_labels:
+            mask_hr_label = pe.Node(interface=preprocess.MialsrtkMaskImage(),
+                               name='mask_hr_label')
+
+
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
@@ -521,6 +526,12 @@ class AnatomicalPipeline:
                         srtkN4BiasFieldCorrection, "input_mask")
 
         if self.m_do_reconstruct_labels:
+            self.wf.connect(reconstruction_stage, "outputnode.output_labelmap",
+                            mask_hr_label, "in_file")
+            self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
+                            mask_hr_label, "in_mask")
+
+        if self.m_do_reconstruct_labels:
             self.wf.connect(stacksOrdering, "stacks_order",
                             labels_filtered, "stacks_id")
             self.wf.connect(dg, "labels",
@@ -552,7 +563,7 @@ class AnatomicalPipeline:
                         output_mgmt_stage, "inputnode.input_hr_mask")
 
         if self.m_do_reconstruct_labels:
-            self.wf.connect(reconstruction_stage, "outputnode.output_labelmap",
+            self.wf.connect(mask_hr_label, "out_im_file",
                             output_mgmt_stage, "inputnode.input_labelmap")
 
         if self.m_do_nlm_denoising:
