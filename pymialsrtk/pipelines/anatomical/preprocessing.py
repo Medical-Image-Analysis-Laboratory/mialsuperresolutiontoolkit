@@ -427,7 +427,7 @@ class PreprocessingPipeline:
             wf_base_dir = os.path.join(self.output_dir,
                                        '-'.join(["nipype", __nipype_version__]),
                                        self.subject,
-                                       "rec-{}".format(self.sr_id))
+                                       "pre-{}".format(self.sr_id))
             final_res_dir = os.path.join(self.output_dir,
                                          '-'.join(["pymialsrtk", __version__]),
                                          self.subject)
@@ -436,7 +436,7 @@ class PreprocessingPipeline:
                                        '-'.join(["nipype", __nipype_version__]),
                                        self.subject,
                                        self.session,
-                                       "rec-{}".format(self.sr_id))
+                                       "pre-{}".format(self.sr_id))
             final_res_dir = os.path.join(self.output_dir,
                                          '-'.join(["pymialsrtk", __version__]),
                                          self.subject,
@@ -740,11 +740,11 @@ class PreprocessingPipeline:
                 self.subject,
                 self.session,
                 'figures',
-                f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
+                f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_desc-processing_graph.png'
             )
             dst2 = os.path.join(dst_base, 
                     'figures',
-                    f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
+                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_desc-processing_graph.png'
                     )
             print(dst == dst2, dst2)
         else:
@@ -753,11 +753,11 @@ class PreprocessingPipeline:
                     '-'.join(["pymialsrtk", __version__]),
                     self.subject,
                     'figures',
-                    f'{self.subject}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
+                    f'{self.subject}_prepro_id-{self.sr_id}_desc-processing_graph.png'
             )
             dst2 = os.path.join(dst_base, 
                     'figures',
-                    f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
+                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_desc-processing_graph.png'
                     )
             print(dst == dst2, dst2)
         # Create the figures/ and parent directories if they do not exist
@@ -783,10 +783,10 @@ class PreprocessingPipeline:
         print(f" Start date / time : {self.run_start_time}")
 
         # Execute the workflow
-        #if self.nipype_number_of_cores > 1:
-        #    res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
-        #else:
-        #    res = self.wf.run()
+        if self.nipype_number_of_cores > 1:
+            res = self.wf.run(plugin='MultiProc', plugin_args=args_dict)
+        else:
+            res = self.wf.run()
 
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
@@ -797,11 +797,11 @@ class PreprocessingPipeline:
                     self.subject,
                     self.session,
                     'logs',
-                    f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_log.txt'
+                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_log.txt'
             )           
             dst2 = os.path.join(dst_base, 
                     'logs',
-                    f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_log.txt'
+                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_log.txt'
                     )
             print(dst == dst2, dst2)
         else:
@@ -810,11 +810,11 @@ class PreprocessingPipeline:
                     '-'.join(["pymialsrtk", __version__]),
                     self.subject,
                     'logs',
-                    f'{self.subject}_rec-SR_id-{self.sr_id}_log.txt'
+                    f'{self.subject}_prepro_id-{self.sr_id}_log.txt'
             )
             dst2 = os.path.join(dst_base, 
                     'logs',
-                    f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_log.txt'
+                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_log.txt'
                     )
             print(dst == dst2, dst2)
         # Create the logs/ and parent directories if they do not exist
