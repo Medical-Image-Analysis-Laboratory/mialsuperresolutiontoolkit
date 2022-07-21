@@ -420,27 +420,20 @@ class PreprocessingPipeline:
 
         """
         sub_ses = self.subject
+        sub_path = self.subject
         if self.session is not None:
             sub_ses = ''.join([sub_ses, '_', self.session])
+            sub_path = os.path.join(self.subject, self.session)
 
-        if self.session is None:
-            wf_base_dir = os.path.join(self.output_dir,
-                                       '-'.join(["nipype", __nipype_version__]),
-                                       self.subject,
-                                       "pre-{}".format(self.sr_id))
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject)
-        else:
-            wf_base_dir = os.path.join(self.output_dir,
-                                       '-'.join(["nipype", __nipype_version__]),
-                                       self.subject,
-                                       self.session,
-                                       "pre-{}".format(self.sr_id))
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject,
-                                         self.session)
+        wf_base_dir = os.path.join(self.output_dir,
+                        '-'.join(["nipype", __nipype_version__]),
+                        sub_path,
+                        "pre-{}".format(self.sr_id)
+                        )
+
+        final_res_dir = os.path.join(self.output_dir,
+                                        '-'.join(["pymialsrtk", __version__]),
+                                        sub_path)
 
         if not os.path.exists(wf_base_dir):
             os.makedirs(wf_base_dir)
@@ -486,36 +479,17 @@ class PreprocessingPipeline:
             dg.inputs.raise_on_empty = False
             dg.inputs.sort_filelist = True
 
-            if self.session is not None:
-                t2ws_template = os.path.join(
-                    self.subject, self.session, 'anat',
-                    '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])
+            t2ws_template=os.path.join(sub_path, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
+            if self.m_masks_desc is not None:
+                masks_template = os.path.join(
+                    'derivatives', self.m_masks_derivatives_dir, sub_path, 'anat',
+                    '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
                 )
-                if self.m_masks_desc is not None:
-                    masks_template = os.path.join(
-                        'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-                        '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
-                    )
-                else:
-                    masks_template = os.path.join(
-                        'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-                        '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
-                    )
             else:
-                t2ws_template=os.path.join(self.subject, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
-                # Q. It seems that this is never used: it's in the branch
-                # self.session = None and it passes it as argument to
-                # os.path.join()
-                if self.m_masks_desc is not None:
-                    masks_template = os.path.join(
-                        'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-                        '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
-                    )
-                else:
-                    masks_template = os.path.join(
-                        'derivatives', self.m_masks_derivatives_dir, self.subject, 'anat',
-                        sub_ses + '*_run-*_*mask.nii.gz'
-                    )
+                masks_template = os.path.join(
+                    'derivatives', self.m_masks_derivatives_dir, sub_path, 'anat',
+                    '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
+                )
 
             dg.inputs.field_template = dict(T2ws=t2ws_template,
                                             masks=masks_template)
@@ -539,12 +513,9 @@ class PreprocessingPipeline:
             dg.inputs.raise_on_empty = False
             dg.inputs.sort_filelist = True
 
-            dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
+            dg.inputs.field_template = dict(T2ws=os.path.join(sub_path,
                                                               'anat',
                                                               sub_ses+'*_run-*_T2w.nii.gz'))
-            if self.session is not None:
-                dg.inputs.field_template = dict(T2ws=os.path.join(self.subject,
-                                                                  self.session, 'anat', '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])))
 
             if self.m_stacks is not None:
                 t2ws_filter_prior_masks = pe.Node(interface=preprocess.FilteringByRunid(),
@@ -726,40 +697,21 @@ class PreprocessingPipeline:
 
         # Copy and rename the generated "graph.png" image
         src = os.path.join(self.wf.base_dir, self.wf.name, 'graph.png')
-        dst_base = os.path.join(self.output_dir,
-        '-'.join(["pymialsrtk", __version__]),
-        self.subject,
-        )
-        print("session: ",self.session)
+        
+        # String formatting for saving
+        subject_str = f"{self.subject}"
+        dst_base = os.path.join(self.output_dir, 
+                        '-'.join(["pymialsrtk", __version__]), 
+                        self.subject
+                        )
+
         if self.session is not None:
+            subject_str += f"_{self.session}"
             dst_base = os.path.join(dst_base, self.session)
-        if self.session is not None:
-            dst = os.path.join(
-                self.output_dir,
-                '-'.join(["pymialsrtk", __version__]),
-                self.subject,
-                self.session,
-                'figures',
-                f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_desc-processing_graph.png'
-            )
-            dst2 = os.path.join(dst_base, 
-                    'figures',
-                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_desc-processing_graph.png'
-                    )
-            print(dst == dst2, dst2)
-        else:
-            dst = os.path.join(
-                    self.output_dir,
-                    '-'.join(["pymialsrtk", __version__]),
-                    self.subject,
-                    'figures',
-                    f'{self.subject}_prepro_id-{self.sr_id}_desc-processing_graph.png'
-            )
-            dst2 = os.path.join(dst_base, 
-                    'figures',
-                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_desc-processing_graph.png'
-                    )
-            print(dst == dst2, dst2)
+            
+        dst = os.path.join(dst_base, 'figures',
+                f'{subject_str}_prepro_id-{self.sr_id}_desc-processing_graph.png'
+                )
         # Create the figures/ and parent directories if they do not exist
         figures_dir = os.path.dirname(dst)
         os.makedirs(figures_dir, exist_ok=True)
@@ -790,33 +742,11 @@ class PreprocessingPipeline:
 
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
-        if self.session is not None:
-            dst = os.path.join(
-                    self.output_dir,
-                    '-'.join(["pymialsrtk", __version__]),
-                    self.subject,
-                    self.session,
-                    'logs',
-                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_log.txt'
-            )           
-            dst2 = os.path.join(dst_base, 
-                    'logs',
-                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_log.txt'
-                    )
-            print(dst == dst2, dst2)
-        else:
-            dst = os.path.join(
-                    self.output_dir,
-                    '-'.join(["pymialsrtk", __version__]),
-                    self.subject,
-                    'logs',
-                    f'{self.subject}_prepro_id-{self.sr_id}_log.txt'
-            )
-            dst2 = os.path.join(dst_base, 
-                    'logs',
-                    f'{self.subject}_{self.session}_prepro_id-{self.sr_id}_log.txt'
-                    )
-            print(dst == dst2, dst2)
+
+        dst = os.path.join(dst_base, 'logs',
+                f'{subject_str}_prepro_id-{self.sr_id}_log.txt'
+                )
+
         # Create the logs/ and parent directories if they do not exist
         logs_dir = os.path.dirname(dst)
         os.makedirs(logs_dir, exist_ok=True)
