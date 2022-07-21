@@ -226,14 +226,15 @@ class AnatomicalPipeline:
             sub_path = os.path.join(self.subject, self.session)
 
         wf_base_dir = os.path.join(self.output_dir,
-                        '-'.join(["nipype", __nipype_version__]),
-                        sub_path,
-                        "pre-{}".format(self.sr_id)
-                        )
+                                   '-'.join(["nipype", __nipype_version__]),
+                                   sub_path,
+                                   "pre-{}".format(self.sr_id)
+                                   )
 
         final_res_dir = os.path.join(self.output_dir,
-                                        '-'.join(["pymialsrtk", __version__]),
-                                        sub_path)
+                                     '-'.join(["pymialsrtk", __version__]),
+                                     sub_path
+                                     )
 
         if not os.path.exists(wf_base_dir):
             os.makedirs(wf_base_dir)
@@ -276,15 +277,20 @@ class AnatomicalPipeline:
             dg.inputs.raise_on_empty = False
             dg.inputs.sort_filelist = True
 
-            t2ws_template=os.path.join(sub_path, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
+            t2ws_template = os.path.join(sub_path, 'anat',
+                                         sub_ses + '*_run-*_T2w.nii.gz'
+                                         )
             if self.m_masks_desc is not None:
                 masks_template = os.path.join(
-                    'derivatives', self.m_masks_derivatives_dir, sub_path, 'anat',
-                    '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
+                    'derivatives', self.m_masks_derivatives_dir,
+                    sub_path, 'anat',
+                    '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc,
+                              '*mask.nii.gz'])
                 )
             else:
                 masks_template = os.path.join(
-                    'derivatives', self.m_masks_derivatives_dir, sub_path, 'anat',
+                    'derivatives', self.m_masks_derivatives_dir,
+                    sub_path, 'anat',
                     '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
                 )
 
@@ -510,18 +516,17 @@ class AnatomicalPipeline:
 
         # String formatting for saving
         subject_str = f"{self.subject}"
-        dst_base = os.path.join(self.output_dir, 
-                        '-'.join(["pymialsrtk", __version__]), 
-                        self.subject
-                        )
+        dst_base = os.path.join(self.output_dir,
+                                '-'.join(["pymialsrtk", __version__]),
+                                self.subject)
 
         if self.session is not None:
             subject_str += f"_{self.session}"
             dst_base = os.path.join(dst_base, self.session)
 
         dst = os.path.join(dst_base, 'figures',
-                f'{subject_str}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
-                )
+                           f'{subject_str}_rec-SR_id-{self.sr_id}_' +
+                           'desc-processing_graph.png')
 
         # Create the figures/ and parent directories if they do not exist
         figures_dir = os.path.dirname(dst)
@@ -554,8 +559,7 @@ class AnatomicalPipeline:
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
         dst = os.path.join(dst_base, 'logs',
-                f'{subject_str}_rec-SR_id-{self.sr_id}_log.txt'
-                )
+                           f'{subject_str}_rec-SR_id-{self.sr_id}_log.txt')
         # Create the logs/ and parent directories if they do not exist
         logs_dir = os.path.dirname(dst)
         os.makedirs(logs_dir, exist_ok=True)
@@ -593,13 +597,13 @@ class AnatomicalPipeline:
         sub_ses = self.subject
         sub_path = self.subject
         if self.session is not None:
-            sub_ses+= f'_{self.session}'
+            sub_ses += f'_{self.session}'
             sub_path = os.path.join(self.subject, self.session)
-            
+
         final_res_dir = os.path.join(self.output_dir,
-                                    '-'.join(["pymialsrtk", __version__]),
-                                    sub_path)
-        
+                                     '-'.join(["pymialsrtk", __version__]),
+                                     sub_path)
+
         # Get the HTML report template
         path = pkg_resources.resource_filename(
             'pymialsrtk',
