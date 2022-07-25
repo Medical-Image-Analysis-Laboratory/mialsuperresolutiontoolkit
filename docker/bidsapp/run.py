@@ -15,6 +15,7 @@ import multiprocessing
 # Import the super-resolution pipeline
 from pymialsrtk.parser import get_parser
 from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
+from pymialsrtk.pipelines.anatomical.preprocessing import PreprocessingPipeline
 
 
 def return_default_nb_of_cores(nb_of_cores, openmp_proportion=2):
@@ -135,7 +136,7 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
     return openmp_nb_of_cores, nipype_nb_of_cores
 
 
-def main(bids_dir, output_dir,
+def main(run_type, bids_dir, output_dir,
          subject,
          session,
          p_stacks,
@@ -146,7 +147,8 @@ def main(bids_dir, output_dir,
          dict_custom_interfaces=None,
          nipype_number_of_cores=1,
          openmp_number_of_cores=1,
-         memory=0):
+         memory=0,
+         prepro_do_registration=None):
     """Main function that creates and executes the workflow of the BIDS App on one subject.
 
     It creates an instance of the class :class:`pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline`,
@@ -207,21 +209,37 @@ def main(bids_dir, output_dir,
     if srID is None:
         srID = 1
 
-    # Initialize an instance of AnatomicalPipeline
-    pipeline = AnatomicalPipeline(bids_dir,
-                                  output_dir,
-                                  subject,
-                                  p_stacks,
-                                  srID,
-                                  session,
-                                  paramTV,
-                                  masks_derivatives_dir,
-                                  masks_desc,
-                                  p_dict_custom_interfaces=dict_custom_interfaces,
-                                  openmp_number_of_cores=openmp_number_of_cores,
-                                  nipype_number_of_cores=nipype_number_of_cores
-                                  )
-
+    if run_type == "sr":
+        # Initialize an instance of AnatomicalPipeline
+        pipeline = AnatomicalPipeline(bids_dir,
+                                      output_dir,
+                                      subject,
+                                      p_stacks,
+                                      srID,
+                                      session,
+                                      paramTV,
+                                      masks_derivatives_dir,
+                                      masks_desc,
+                                      p_dict_custom_interfaces=dict_custom_interfaces,
+                                      openmp_number_of_cores=openmp_number_of_cores,
+                                      nipype_number_of_cores=nipype_number_of_cores
+                                      )
+    elif run_type == "preprocessing":
+        # Initialize an instance of AnatomicalPipeline
+        pipeline = PreprocessingPipeline(bids_dir,
+                                         output_dir,
+                                         subject,
+                                         p_stacks,
+                                         srID,
+                                         session,
+                                         paramTV,
+                                         masks_derivatives_dir,
+                                         masks_desc,
+                                         p_dict_custom_interfaces=dict_custom_interfaces,
+                                         openmp_number_of_cores=openmp_number_of_cores,
+                                         nipype_number_of_cores=nipype_number_of_cores,
+                                         p_do_registration=prepro_do_registration
+                                         )
     # Create the super resolution Nipype workflow
     pipeline.create_workflow()
 
@@ -285,7 +303,8 @@ if __name__ == '__main__':
                     print('WARNING: Do not process subjects %s because of missing parameters.' % sub)
                     continue
 
-                res = main(bids_dir=args.bids_dir,
+                res = main(run_type=args.run_type,
+                           bids_dir=args.bids_dir,
                            output_dir=args.output_dir,
                            subject=sub,
                            session=ses,
@@ -297,7 +316,9 @@ if __name__ == '__main__':
                            dict_custom_interfaces=dict_custom_interfaces,
                            nipype_number_of_cores=nipype_nb_of_cores,
                            openmp_number_of_cores=openmp_nb_of_cores,
-                           memory=args.memory)
+                           memory=args.memory,
+                           prepro_do_registration=args.prepro_do_registration,
+                           )
         else:
             print('WARNING: Do not process subjects %s because of missing configuration.' % sub)
 

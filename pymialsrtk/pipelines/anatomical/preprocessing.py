@@ -164,8 +164,8 @@ def create_registration_stage(p_do_nlm_denoising = False,
 
 
 def create_prepro_output_stage(p_do_nlm_denoising=False,
-                            p_skip_stacks_ordering=False,
-                            name="prepro_output_stage"):
+                               p_skip_stacks_ordering=False,
+                               name="prepro_output_stage"):
     """Create an output management workflow
     for the preprocessing only.
     Parameters
@@ -354,7 +354,7 @@ class PreprocessingPipeline:
     gamma = None
 
     m_stacks = None
-
+    do_registration = None
     # Custom interfaces options
     m_skip_svr = None
     m_do_nlm_denoising = None
@@ -372,7 +372,8 @@ class PreprocessingPipeline:
         self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
         session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
         p_dict_custom_interfaces=None,
-        openmp_number_of_cores=None, nipype_number_of_cores=None
+        openmp_number_of_cores=None, nipype_number_of_cores=None,
+        p_do_registration=False
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -383,6 +384,7 @@ class PreprocessingPipeline:
         self.sr_id = sr_id
         self.session = session
         self.m_stacks = p_stacks
+        self.do_registration = p_do_registration
 
         self.openmp_number_of_cores = openmp_number_of_cores
         self.nipype_number_of_cores = nipype_number_of_cores
@@ -479,7 +481,7 @@ class PreprocessingPipeline:
             dg.inputs.raise_on_empty = False
             dg.inputs.sort_filelist = True
 
-            t2ws_template=os.path.join(sub_path, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
+            t2ws_template = os.path.join(sub_path, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
             if self.m_masks_desc is not None:
                 masks_template = os.path.join(
                     'derivatives', self.m_masks_derivatives_dir, sub_path, 'anat',
@@ -563,10 +565,11 @@ class PreprocessingPipeline:
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising)
 
-        registration_stage = create_registration_stage(
-            p_do_nlm_denoising=self.m_do_nlm_denoising,
-            p_skip_svr=self.m_skip_svr,
-            p_sub_ses=sub_ses)
+        if self.do_registration:
+            registration_stage = create_registration_stage(
+                p_do_nlm_denoising=self.m_do_nlm_denoising,
+                p_skip_svr=self.m_skip_svr,
+                p_sub_ses=sub_ses)
 
         srtkMaskImage01 = pe.MapNode(interface=preprocess.MialsrtkMaskImage(),
                                   name='srtkMaskImage01',
@@ -641,30 +644,40 @@ class PreprocessingPipeline:
                             srtkMaskImage01_nlm, "in_file")
             self.wf.connect(preprocessing_stage, ("outputnode.output_masks", utils.sort_ascending),
                             srtkMaskImage01_nlm, "in_mask")
-            self.wf.connect(srtkMaskImage01_nlm, ("out_im_file",
-                                                  utils.sort_ascending),
-                            registration_stage, "inputnode.input_images_nlm")
 
-        self.wf.connect(srtkMaskImage01, ("out_im_file", utils.sort_ascending),
-                        registration_stage, "inputnode.input_images")
+        if self.do_registration:
+            if self.m_do_nlm_denoising:
+                self.wf.connect(srtkMaskImage01_nlm, ("out_im_file",
+                                                    utils.sort_ascending),
+                                registration_stage, "inputnode.input_images_nlm")
 
-        self.wf.connect(preprocessing_stage, "outputnode.output_masks",
-                        registration_stage, "inputnode.input_masks")
+            self.wf.connect(srtkMaskImage01, ("out_im_file", utils.sort_ascending),
+                            registration_stage, "inputnode.input_images")
 
-        self.wf.connect(stacksOrdering, "stacks_order",
-                        registration_stage, "inputnode.stacks_order")
+            self.wf.connect(preprocessing_stage, "outputnode.output_masks",
+                            registration_stage, "inputnode.input_masks")
 
-        self.wf.connect(stacksOrdering, "stacks_order", prepro_mgmt_stage, "inputnode.stacks_order")
+            self.wf.connect(stacksOrdering, "stacks_order",
+                            registration_stage, "inputnode.stacks_order")
+
+            self.wf.connect(registration_stage, "outputnode.output_sdi",
+                prepro_mgmt_stage, "inputnode.input_sdi")
+
+            self.wf.connect(registration_stage, "outputnode.output_transforms",
+                            prepro_mgmt_stage, "inputnode.input_transforms")
+        else:
+            self.wf.connect(srtkMaskImage01, "out_im_file",
+                            prepro_mgmt_stage, "inputnode.input_images")
+                            
+        self.wf.connect(stacksOrdering, "stacks_order", 
+                        prepro_mgmt_stage, "inputnode.stacks_order")
 
         self.wf.connect(preprocessing_stage, "outputnode.output_masks",
                         prepro_mgmt_stage, "inputnode.input_masks")
         #self.wf.connect(preprocessing_stage, "outputnode.output_images",
         #                prepro_mgmt_stage, "inputnode.input_images")
 
-        self.wf.connect(registration_stage, "outputnode.output_sdi",
-                        prepro_mgmt_stage, "inputnode.input_sdi")
-        self.wf.connect(registration_stage, "outputnode.output_transforms",
-                        prepro_mgmt_stage, "inputnode.input_transforms")
+
 
         if self.m_do_nlm_denoising:
             self.wf.connect(srtkMaskImage01_nlm, "out_im_file",

@@ -14,6 +14,14 @@ def get_parser():
     """Create and return the parser object of the BIDS App."""
     p = argparse.ArgumentParser(description="Argument parser of the MIALSRTK BIDS App")
 
+    p.add_argument(
+        "run_type",
+        help="Type of pipeline that is run. Can choose between "
+             "running the super-resolution pipeline (`sr`) "
+             "or only preprocesing (`preprocessing`).",
+        choices=["sr", "preprocessing"],
+    )
+
     p.add_argument("bids_dir",
                    help="The directory with the input dataset "
                         "formatted according to the BIDS standard.")
@@ -90,6 +98,14 @@ def get_parser():
         action="version",
         version=f"BIDS-App MIALSRTK version {__version__} (Released: {__release_date__})",
     )
+
+    p.add_argument(
+            "--prepro_do_registration",
+            help="Run registration in the preprocessing pipeline (default: False)",
+            default=False,
+            action='store_true'
+    )
+
     return p
 
 
@@ -120,3 +136,4 @@ def get_singularity_wrapper_parser():
              f"If not specified, library://tourbier/mialsuperresolutiontoolkit-bidsapp:v{__version__} is used.",
     )
     return p
+
