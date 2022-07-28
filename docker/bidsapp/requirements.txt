@@ -1,0 +1,13 @@
+coverage==5.1
+duecredit==0.8.0
+graphviz
+tflearn==0.3.2
+MedPy==0.4.0
+opencv-python==4.1.0.25
+sphinx==1.8.5
+sphinx_rtd_theme==0.4.3
+sphinx-argparse==0.2.5
+nbsphinx==0.7.1
+sphinxcontrib-apidoc==0.3.0
+sphinxcontrib-napoleon==0.7
+recommonmark==0.5.0
