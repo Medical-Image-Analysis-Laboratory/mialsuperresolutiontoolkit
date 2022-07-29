@@ -1,0 +1,14 @@
+channels:
+- conda-forge
+- defaults
+- anaconda
+
+dependencies:
+- pydotplus=2.0.2
+- pandoc=2.14.2
+- seaborn=0.11.2
+- matplotlib=3.4
+- tensorflow==1.13.1
+- scikit-learn=1.0.1
+- scikit-image=0.16.2
+

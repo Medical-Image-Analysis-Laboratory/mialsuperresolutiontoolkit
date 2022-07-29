@@ -98,9 +98,11 @@ ENV MY_CONDA_PY3ENV "pymialsrtk-env"
 ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
 
 # Create the conda environment
-COPY docker/bidsapp/environment.yml /app/environment.yml
+COPY docker/bidsapp/environment_test.yml /app/environment.yml
+COPY docker/bidsapp/environment_update.yml /app/environment_update.yml
 COPY docker/bidsapp/requirements.txt /app/requirements.txt
 RUN conda env create -f /app/environment.yml
+RUN /bin/bash -c "$CONDA_ACTIVATE && conda env update --file /app/environment_update.yml --prune" 
 RUN /bin/bash -c "$CONDA_ACTIVATE && pip install -r /app/requirements.txt" 
 ##############################################################
 # Setup for scikit-image
