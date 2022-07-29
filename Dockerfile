@@ -100,8 +100,8 @@ ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
 # Create the conda environment
 COPY docker/bidsapp/environment.yml /app/environment.yml
 COPY docker/bidsapp/requirements.txt /app/requirements.txt
-RUN conda env create -f /app/environment.yml  
-RUN $CONDA_ACTIVATE && pip install -r /app/requirements.txt
+RUN conda env create -f /app/environment.yml
+RUN /bin/bash -c "$CONDA_ACTIVATE && pip install -r /app/requirements.txt" 
 ##############################################################
 # Setup for scikit-image
 #
