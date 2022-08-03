@@ -43,7 +43,7 @@ RUN apt-get update && \
 ##############################################################
 # Setup and update micromamba 
 ##############################################################
-RUN mkdir -p $(dirname $MAMBA_ROOT_PREFIX) && \
+RUN mkdir -p "$(dirname $MAMBA_ROOT_PREFIX)" && \
     /bin/micromamba shell init -s bash -p ~/micromamba 
 ENV PATH="$MAMBA_ROOT_PREFIX/bin:${PATH}"
 
