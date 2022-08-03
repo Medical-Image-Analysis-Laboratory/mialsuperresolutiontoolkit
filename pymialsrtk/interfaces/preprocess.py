@@ -1498,8 +1498,12 @@ class ReduceFieldOfView(BaseInterface):
         # Compute ROI bounding box
         minimums = [0, 0, 0]
         maximums = list(mask_np.shape)
-        ri = skimage.measure.regionprops((mask_np > 0).astype(np.uint8), image_np)
-        minimums[0], minimums[1], minimums[2], maximums[0], maximums[1], maximums[2] = ri[0].bbox
+        ri = skimage.measure.regionprops(
+            (mask_np > 0).astype(np.uint8), 
+            image_np
+            )
+        (minimums[0], minimums[1], minimums[2],
+         maximums[0], maximums[1], maximums[2]) = ri[0].bbox
 
         # Convert padding from mm to voxels
         paddings = [0, 0, 0]
@@ -1514,12 +1518,20 @@ class ReduceFieldOfView(BaseInterface):
             maximums[i] = int(min(im_shape[i], maximums[i] + paddings[i]))
 
         # Crop ROI FOV
-        image_np = image_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
-        mask_np = mask_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
+        image_np = image_np[minimums[0]:maximums[0],
+                            minimums[1]:maximums[1],
+                            minimums[2]:maximums[2]
+                            ]
+        mask_np = mask_np[minimums[0]:maximums[0],
+                          minimums[1]:maximums[1],
+                          minimums[2]:maximums[2]
+                          ]
 
         minimums.reverse()
 
-        new_origin = list(image.TransformContinuousIndexToPhysicalPoint(minimums))
+        new_origin = list(
+            image.TransformContinuousIndexToPhysicalPoint(minimums)
+            )
         new_direction = list(image.GetDirection())
         new_spacing = list(image.GetSpacing())
 
@@ -1531,7 +1543,6 @@ class ReduceFieldOfView(BaseInterface):
         writer = sitk.ImageFileWriter()
         writer.SetFileName(self._gen_filename('output_image'))
         writer.Execute(image_cropped)
-
 
         mask_cropped = sitk.GetImageFromArray(mask_np)
         mask_cropped.SetOrigin(new_origin)
@@ -1547,7 +1558,9 @@ class ReduceFieldOfView(BaseInterface):
     def _run_interface(self, runtime):
 
         try:
-            self._crop_image_and_mask(self.inputs.input_image, self.inputs.input_mask)
+            self._crop_image_and_mask(self.inputs.input_image,
+                                      self.inputs.input_mask
+                                      )
         except Exception as e:
             print('Failed')
             print(e)
