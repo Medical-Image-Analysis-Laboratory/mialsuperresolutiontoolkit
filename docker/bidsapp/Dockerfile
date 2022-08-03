@@ -25,7 +25,7 @@ RUN mkdir /output_dir && \
 ##############################################################
 # Set the working directory to /opt/mialsuperresolutiontoolkit and install pymialsrtk
 WORKDIR /opt/mialsuperresolutiontoolkit
-RUN /bin/bash -c 'ls -al && $CONDA_ACTIVATE && pip install .'
+RUN pip install .
 
 # Set the working directory back to /app
 WORKDIR /app
