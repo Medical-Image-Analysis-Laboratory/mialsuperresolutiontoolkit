@@ -212,12 +212,12 @@ class AnatomicalPipeline:
             self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising']\
                 if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() else False
 
-            self.m_skip_stacks_ordering =
-            p_dict_custom_interfaces['skip_stacks_ordering']\
-                        if ((self.m_stacks is not None) and
-                            ('skip_stacks_ordering' in
-                            p_dict_custom_interfaces.keys())) \
-                        else False
+            self.m_skip_stacks_ordering =\
+                p_dict_custom_interfaces['skip_stacks_ordering']\
+                    if ((self.m_stacks is not None) and
+                        ('skip_stacks_ordering' in
+                         p_dict_custom_interfaces.keys())) \
+                    else False
         else:
             self.m_skip_svr = False
             self.m_do_refine_hr_mask = False
@@ -351,7 +351,7 @@ class AnatomicalPipeline:
             dg.inputs.sort_filelist = True
 
             dg.inputs.field_template = dict(
-                T2ws=os.path.join(self.subject,'anat',
+                T2ws=os.path.join(self.subject, 'anat',
                                   sub_ses+'*_run-*_T2w.nii.gz'))
             if self.session is not None:
                 dg.inputs.field_template = dict(

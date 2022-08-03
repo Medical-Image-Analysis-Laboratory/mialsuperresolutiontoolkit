@@ -469,7 +469,8 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
                                       mandatory=True)
     input_reference = File(desc='Input reference image', mandatory=True)
     sub_ses = traits.Str("x",
-                         desc='Subject and session BIDS identifier to construct output filename',
+                         desc=('Subject and session BIDS identifier to',
+                               'construct output filename'),
                          usedefault=True)
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that '

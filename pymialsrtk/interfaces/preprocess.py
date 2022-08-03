@@ -1499,7 +1499,7 @@ class ReduceFieldOfView(BaseInterface):
         minimums = [0, 0, 0]
         maximums = list(mask_np.shape)
         ri = skimage.measure.regionprops(
-            (mask_np > 0).astype(np.uint8), 
+            (mask_np > 0).astype(np.uint8),
             image_np
             )
         (minimums[0], minimums[1], minimums[2],
