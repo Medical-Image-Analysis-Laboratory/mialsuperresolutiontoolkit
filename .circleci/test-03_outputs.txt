@@ -216,7 +216,6 @@ nipype-1.7.0/sub-01/rec-1/srr_pipeline/recon_stage/srtkTVSuperResolution/result_
 nipype-1.7.0/sub-01/rec-1/srr_pipeline/recon_stage/srtkTVSuperResolution/SRTV_sub-01_3V_rad1.json
 nipype-1.7.0/sub-01/rec-1/srr_pipeline/recon_stage/srtkTVSuperResolution/SRTV_sub-01_3V_rad1.nii.gz
 nipype-1.7.0/sub-01/rec-1/srr_pipeline/recon_stage/srtkTVSuperResolution/SRTV_sub-01_3V_rad1.png
-nipype-1.7.0/sub-01/rec-1/srr_pipeline/srtkIntensityStandardization02/sub-01_run-6_T2w_uni_bcorr_histnorm.nii.gz
 nipype-1.7.0/sub-01/rec-1/srr_pipeline/srtkMaskImage01/_inputs.pklz
 nipype-1.7.0/sub-01/rec-1/srr_pipeline/srtkMaskImage01/mapflow/_srtkMaskImage010/_inputs.pklz
 nipype-1.7.0/sub-01/rec-1/srr_pipeline/srtkMaskImage01/mapflow/_srtkMaskImage010/_node.pklz
