@@ -459,7 +459,7 @@ class MergeMajorityVote(BaseInterface):
         writer = sitk.ImageFileWriter()
         writer.SetFileName(self._gen_filename())
 
-        writer.Execute(maps_sitk)
+        writer.Execute(sitk.Cast(maps_sitk, sitk.sitkUInt8))
 
     def _run_interface(self, runtime):
         try:
