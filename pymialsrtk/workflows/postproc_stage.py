@@ -1,18 +1,17 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the postprocessing stage of the super-resolution reconstruction pipeline."""
+"""Module for the postprocessing stage of the super-resolution
+reconstruction pipeline."""
 
-import os
-import traceback
-from glob import glob
-import pathlib
 
 from traits.api import *
 
-from nipype.interfaces.base import traits, \
-    TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
+from nipype.interfaces.base import (traits, TraitedSpec, File, InputMultiPath,
+                                    OutputMultiPath, BaseInterface,
+                                    BaseInterfaceInputSpec)
 
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.postprocess as postprocess
@@ -45,9 +44,8 @@ def create_postproc_stage(name="postproc_stage"):
     """
 
     postproc_stage = pe.Workflow(name=name)
-    """
-    Set up a node to define all inputs required for the preprocessing workflow
-    """
+
+    # Set up a node to define all inputs for the postprocessing workflow
 
     inputnode = pe.Node(
         interface=util.IdentityInterface(
@@ -58,14 +56,13 @@ def create_postproc_stage(name="postproc_stage"):
         interface=util.IdentityInterface(fields=['output_image']),
         name='outputnode')
 
-    """
-    """
+    srtkN4BiasFieldCorrection = pe.Node(
+        interface=postprocess.MialsrtkN4BiasFieldCorrection(),
+        name='srtkN4BiasFieldCorrection')
 
-    srtkN4BiasFieldCorrection = pe.Node(interface=postprocess.MialsrtkN4BiasFieldCorrection(),
-                                     name='srtkN4BiasFieldCorrection')
-
-    srtkMaskImage02 = pe.Node(interface=preprocess.MialsrtkMaskImage(),
-                           name='srtkMaskImage02')
+    srtkMaskImage02 = pe.Node(
+        interface=preprocess.MialsrtkMaskImage(),
+        name='srtkMaskImage02')
 
     postproc_stage.connect(inputnode, "input_image",
                            srtkMaskImage02, "in_file")
@@ -80,6 +77,4 @@ def create_postproc_stage(name="postproc_stage"):
     postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
                            outputnode, "output_image")
 
-    # postproc_stage.connect(srtkN4BiasFieldCorrection, "output_field",
-    #                        outputnode, "outputnode.output_field")
     return postproc_stage
