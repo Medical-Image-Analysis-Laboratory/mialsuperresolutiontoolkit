@@ -167,6 +167,7 @@ class AnatomicalPipeline:
     m_do_nlm_denoising = None
     m_skip_stacks_ordering = None
     m_do_refine_hr_mask = None
+    m_do_anat_orientation = None
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
@@ -218,11 +219,13 @@ class AnatomicalPipeline:
                         ('skip_stacks_ordering' in
                          p_dict_custom_interfaces.keys())) \
                     else False
+            self.m_do_anat_orientation = p_dict_custom_interfaces['do_anat_orientation'] if 'do_anat_orientation' in p_dict_custom_interfaces.keys() else False
         else:
             self.m_skip_svr = False
             self.m_do_refine_hr_mask = False
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
+            self.m_do_anat_orientation = False
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.

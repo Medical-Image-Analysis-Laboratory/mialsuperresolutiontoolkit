@@ -77,6 +77,8 @@ where:
 
         * ``"skip_stacks_ordering"`` (optional) indicates weither the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
 
+        * ``"do_anat_orientation"`` (optional) indicates weither the alignement into anatomical planes should be performed. (default is False)
+
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
 
