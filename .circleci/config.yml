@@ -87,8 +87,8 @@ jobs:
 
   build-singularity:
     machine:
-      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - checkout:
@@ -138,8 +138,8 @@ jobs:
 
   test-docker:
     machine:
-      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
       - checkout:
@@ -310,8 +310,8 @@ jobs:
 
   test-singularity:
     machine:
-      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
       - checkout:
@@ -497,8 +497,8 @@ jobs:
 
   # build_docs:
   #   machine:
-  #     # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-  #     image: ubuntu-1604:201903-01 
+  #     # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+  #     image: ubuntu-2004:202201-02 
   #   working_directory: /home/circleci/out/docs
   #   steps:
   #     - checkout:
@@ -543,7 +543,7 @@ jobs:
   deploy-docker-release:
     machine:
       # Ubuntu 14.04 with Docker 17.10.0-ce
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - checkout:
@@ -582,7 +582,7 @@ jobs:
   deploy-docker-latest:
     machine:
       # Ubuntu 14.04 with Docker 17.10.0-ce
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - checkout:
@@ -619,7 +619,7 @@ jobs:
   deploy-singularity-latest:
     machine:
       # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
       - checkout:
@@ -656,8 +656,8 @@ jobs:
 
   deploy-singularity-release:
     machine:
-      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
       - checkout:

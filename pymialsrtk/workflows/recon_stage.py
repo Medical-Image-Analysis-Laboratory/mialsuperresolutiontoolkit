@@ -1,20 +1,15 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
-#
-#  This software is distributed under the open-source license Modified BSD.
+# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Center and University of Lausanne (UNIL-CHUV), Switzerland
+# This software is distributed under the open-source license Modified BSD.
 
-"""Module for the reconstruction stage of the super-resolution reconstruction pipeline."""
-
-import os
-import traceback
-from glob import glob
-import pathlib
+"""Module for the reconstruction stage of the super-resolution
+reconstruction pipeline."""
 
 from traits.api import *
-
-from nipype.interfaces.base import traits, \
-    TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
+from nipype.interfaces.base import (TraitedSpec, File,
+                                    InputMultiPath, OutputMultiPath,
+                                    BaseInterface, BaseInterfaceInputSpec)
 from nipype.interfaces import utility as util
-
 from nipype.pipeline import engine as pe
 
 import pymialsrtk.workflows.recon_labels_stage as recon_labels_stage
@@ -22,10 +17,6 @@ import pymialsrtk.workflows.recon_labels_stage as recon_labels_stage
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.utils as utils
-
-from nipype import config
-from nipype import logging as nipype_logging
-
 
 
 def create_recon_stage(p_paramTV,
@@ -44,27 +35,32 @@ def create_recon_stage(p_paramTV,
         p_do_nlm_denoising : weither to proceed to non-local mean denoising
     Inputs::
         inputnode.input_images : Input T2w images (list of filenames)
-        inputnode.input_images_nlm : Input T2w images (list of filenames), if p_do_nlm_denoising was set (list of filenames)
+        inputnode.input_images_nlm : Input T2w images (list of filenames),
+            if p_do_nlm_denoising was set (list of filenames)
         inputnode.input_masks : Input mask images (list of filenames)
-        inputnode.stacks_order : Order of stacks in the reconstruction (list of integer)
+        inputnode.stacks_order : Order of stacks in the reconstruction
+            (list of integer)
     Outputs::
         outputnode.output_sr : SR reconstructed image (filename)
         outputnode.output_sdi : SDI image (filename)
         outputnode.output_hr_mask : SRR mask (filename)
-        outputnode.output_tranforms : Transfmation estimated parameters (list of filenames)
+        outputnode.output_tranforms : Transfmation estimated parameters
+            (list of filenames)
     Example
     -------
     >>> recon_stage = create_preproc_stage(p_do_nlm_denoising=False)
-    >>> recon_stage.inputs.inputnode.input_images = ['sub-01_run-1_T2w.nii.gz', 'sub-01_run-2_T2w.nii.gz']
-    >>> recon_stage.inputs.inputnode.input_masks = ['sub-01_run-1_T2w_mask.nii.gz', 'sub-01_run-2_T2w_mask.nii.gz']
+    >>> recon_stage.inputs.inputnode.input_images =
+            ['sub-01_run-1_T2w.nii.gz', 'sub-01_run-2_T2w.nii.gz']
+    >>> recon_stage.inputs.inputnode.input_masks =
+            ['sub-01_run-1_T2w_mask.nii.gz', 'sub-01_run-2_T2w_mask.nii.gz']
     >>> recon_stage.inputs.inputnode.p_do_nlm_denoising = 'mask.nii'
     >>> recon_stage.run() # doctest: +SKIP
     """
 
     recon_stage = pe.Workflow(name=name)
-    """
-    Set up a node to define all inputs required for the preprocessing workflow
-    """
+
+    # Set up a node to define all inputs required for the
+    # preprocessing workflow
     input_fields = ['input_images', 'input_masks', 'stacks_order']
 
     if p_do_nlm_denoising:
@@ -91,16 +87,19 @@ def create_recon_stage(p_paramTV,
             fields=output_fields),
         name='outputnode')
 
-    """
-    """
+    deltatTV = p_paramTV["deltatTV"] \
+        if "deltatTV" in p_paramTV.keys() else 0.01
+    lambdaTV = p_paramTV["lambdaTV"] \
+        if "lambdaTV" in p_paramTV.keys() else 0.75
 
-    deltatTV = p_paramTV["deltatTV"] if "deltatTV" in p_paramTV.keys() else 0.01
-    lambdaTV = p_paramTV["lambdaTV"] if "lambdaTV" in p_paramTV.keys() else 0.75
-
-    num_iterations = p_paramTV["num_iterations"] if "num_iterations" in p_paramTV.keys() else 50
-    num_primal_dual_loops = p_paramTV["num_primal_dual_loops"] if "num_primal_dual_loops" in p_paramTV.keys() else 10
-    num_bregman_loops = p_paramTV["num_bregman_loops"] if "num_bregman_loops" in p_paramTV.keys() else 3
-    step_scale = p_paramTV["step_scale"] if "step_scale" in p_paramTV.keys() else 1
+    num_iterations = p_paramTV["num_iterations"] \
+        if "num_iterations" in p_paramTV.keys() else 50
+    num_primal_dual_loops = p_paramTV["num_primal_dual_loops"] \
+        if "num_primal_dual_loops" in p_paramTV.keys() else 10
+    num_bregman_loops = p_paramTV["num_bregman_loops"] \
+        if "num_bregman_loops" in p_paramTV.keys() else 3
+    step_scale = p_paramTV["step_scale"] \
+        if "step_scale" in p_paramTV.keys() else 1
     gamma = p_paramTV["gamma"] if "gamma" in p_paramTV.keys() else 1
 
     srtkImageReconstruction = pe.Node(

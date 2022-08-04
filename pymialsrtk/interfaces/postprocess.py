@@ -185,7 +185,8 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-        # _, name, ext = split_filename(os.path.abspath(self.inputs.input_image))
+        # _, name, ext = split_filename(os.path.abspath(
+        # self.inputs.input_image))
         out_corr = self._gen_filename('output_image')
         out_fld = self._gen_filename('output_field')
 

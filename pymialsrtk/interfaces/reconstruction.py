@@ -40,20 +40,28 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     input_images = InputMultiPath(File(),
                                   desc='Input images')
     input_rad_dilatation = traits.Float(1.0,
-                                        desc='Radius dilatation used in prior step to construct output filename',
+                                        desc=('Radius dilatation used in '
+                                              'prior step to construct '
+                                              'output filename'),
                                         usedefault=True)
     sub_ses = traits.Str("x",
-                         desc='Subject and session BIDS identifier to construct output filename',
+                         desc=('Subject and session BIDS identifier to '
+                               'construct output filename'),
                          usedefault=True)
     out_sdi_prefix = traits.Str("SDI_",
-                                desc='Suffix added to construct output scattered data interpolation filename',
+                                desc=('Suffix added to construct output'
+                                      'scattered data interpolation filename'),
                                 usedefault=True)
     out_transf_postfix = traits.Str("_transform",
-                                    desc='Suffix added to construct output transformation filenames',
+                                    desc=('Suffix added to construct output '
+                                          'transformation filenames'),
                                     usedefault=True)
     stacks_order = traits.List(mandatory=True,
-                               desc='List of stack run-id that specify the order of the stacks')
-    no_reg = traits.Bool(default=False, desc="Skip slice-to-volume registration.")
+                               desc=('List of stack run-id that specify the '
+                                     'order of the stacks'))
+    no_reg = traits.Bool(default=False,
+                         desc=("Skip slice-to-volume registration.")
+                         )
 
 
 class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
@@ -461,7 +469,8 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
                                       mandatory=True)
     input_reference = File(desc='Input reference image', mandatory=True)
     sub_ses = traits.Str("x",
-                         desc='Subject and session BIDS identifier to construct output filename',
+                         desc=('Subject and session BIDS identifier to',
+                               'construct output filename'),
                          usedefault=True)
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that '
@@ -494,8 +503,10 @@ class MialsrtkSDIComputation(BaseInterface):
         return None
 
     def get_empty_ref_image(self, input_ref):
+        """Generate an empty reference image for
+        _run_interface
+        """
         import SimpleITK as sitk
-        import numpy as np
         reader = sitk.ImageFileReader()
         writer = sitk.ImageFileWriter()
 
