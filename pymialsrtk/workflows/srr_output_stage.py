@@ -1,28 +1,17 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
-#
+# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Center and University of Lausanne (UNIL-CHUV), Switzerland
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Workflow for the management of the output of super-resolution reconstruction pipeline."""
-
-import os
-import traceback
-from glob import glob
-import pathlib
+"""Workflow for the management of the output of super-resolution
+reconstruction pipeline."""
 
 from traits.api import *
-
-from nipype.interfaces.base import traits, \
-    TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
+from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
+                                    OutputMultiPath, BaseInterface,
+                                    BaseInterfaceInputSpec)
 from nipype.interfaces import utility as util
-
 from nipype.pipeline import engine as pe
-
 import pymialsrtk.interfaces.postprocess as postprocess
-import pymialsrtk.interfaces.utils as utils
-
-from nipype import config
-from nipype import logging as nipype_logging
-
 from nipype.interfaces.io import DataSink
 
 
@@ -44,12 +33,10 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     >>>
     """
 
-
     srr_output_stage = pe.Workflow(name=name)
-    """
-    Set up a node to define all inputs required for the srr output workflow
-    """
-    input_fields = ["sub_ses", "sr_id", "stacks_order", "use_manual_masks", "final_res_dir"]
+    # Set up a node to define all inputs required for the srr output workflow
+    input_fields = ["sub_ses", "sr_id", "stacks_order", "use_manual_masks",
+                    "final_res_dir"]
 
     input_fields += ["input_masks", "input_images", "input_transforms"]
 
@@ -68,10 +55,6 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
             fields=input_fields),
         name='inputnode')
 
-
-    """
-    """
-
     # Datasinker
     finalFilenamesGeneration = pe.Node(
         interface=postprocess.FilenamesGeneration(),
@@ -79,15 +62,20 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
 
     datasink = pe.Node(interface=DataSink(), name='data_sinker')
 
-    srr_output_stage.connect(inputnode, "sub_ses", finalFilenamesGeneration, "sub_ses")
-    srr_output_stage.connect(inputnode, "sr_id", finalFilenamesGeneration, "sr_id")
-    srr_output_stage.connect(inputnode, "stacks_order", finalFilenamesGeneration, "stacks_order")
-    srr_output_stage.connect(inputnode, "use_manual_masks", finalFilenamesGeneration, "use_manual_masks")
+    srr_output_stage.connect(inputnode, "sub_ses", finalFilenamesGeneration,
+                             "sub_ses")
+    srr_output_stage.connect(inputnode, "sr_id", finalFilenamesGeneration,
+                             "sr_id")
+    srr_output_stage.connect(inputnode, "stacks_order",
+                             finalFilenamesGeneration, "stacks_order")
+    srr_output_stage.connect(inputnode, "use_manual_masks",
+                             finalFilenamesGeneration, "use_manual_masks")
 
     srr_output_stage.connect(finalFilenamesGeneration, "substitutions",
-                    datasink, "substitutions")
+                             datasink, "substitutions")
 
-    srr_output_stage.connect(inputnode, "final_res_dir", datasink, 'base_directory')
+    srr_output_stage.connect(inputnode, "final_res_dir", datasink,
+                             'base_directory')
 
     if not p_skip_stacks_ordering:
         srr_output_stage.connect(inputnode, "report_image",

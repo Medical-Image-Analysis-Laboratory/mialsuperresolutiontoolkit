@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 
 import argparse, getopt, sys
-
 #import scipy.interpolate
-
 import numpy as np
 #from matplotlib import pyplot
 import glob
 import nibabel as nib
 import scipy.ndimage
-
 #from scipy.ndimage.filters import percentile_nonzero_filter
 
 import sys
@@ -197,123 +194,155 @@ def sort_ascending(p_files):
     return [f[1] for f in path_basename]
 
 
-def main(images,masks,outputs):
-    
+def main(images, masks, outputs):
     # image_paths= sorted(images)
     # mask_paths=sorted(masks)
     # output_paths = sorted(outputs)
-    image_paths= sort_ascending(images)
-    mask_paths=sort_ascending(masks)
+    image_paths = sort_ascending(images)
+    mask_paths = sort_ascending(masks)
     output_paths = sort_ascending(outputs)
 
-    if(len(image_paths)!=len(mask_paths)):
-        print('Loading failed: Number of images and masks are different (# images = ', str(len(image_paths)), '\\ # masks =', str(len(mask_paths)), ')')
+    if(len(image_paths) != len(mask_paths)):
+        print('Loading failed: Number of images and masks ',
+              'are different (# images = ', str(len(image_paths)),
+              '\\ # masks =', str(len(mask_paths)), ')')
         return
     else:
-        print('Loading passed: Number of images and masks are equal (# images =', str(len(image_paths)), '\\ # masks =', str(len(mask_paths)), ')')
-    
+        print('Loading passed: Number of images and masks '
+              'are equal (# images =', str(len(image_paths)),
+              '\\ # masks =', str(len(mask_paths)), ')')
+
     list_landmarks=[]
-   
-    s1=1
+
+    s1 = 1
     #pyplot.figure(1)
     #pyplot.subplot(211)
-    index=0
-    while index<len(image_paths):
+    index = 0
+    while index < len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
         print('Process image', image_name)
         image = nib.load(image_paths[index]).get_fdata()
-        #image = scipy.ndimage.filters.gaussian_filter(image,1.0)
+        # image = scipy.ndimage.filters.gaussian_filter(image,1.0)
         mask = nib.load(mask_paths[index]).get_fdata()
-        maskedImage = np.reshape(image*mask,image.shape[0]*image.shape[1]*image.shape[2])
-        displayHistogram(maskedImage,image_name,1,0)
+        maskedImage = np.reshape(image*mask, 
+                                 image.shape[0]*image.shape[1]*image.shape[2])
+        displayHistogram(maskedImage, image_name, 1, 0)
         list_landmarks.append(extractImageLandmarks(maskedImage))
-        index+=1
+        index += 1
 
     #pyplot.legend()
     #pyplot.xlabel('Intensity')
     #pyplot.ylabel('# of voxels')
     #pyplot.title('Histograms: Overview before normalization')
-    list_landmarks,dS = trainImageLandmarks(list_landmarks)
+    list_landmarks, dS = trainImageLandmarks(list_landmarks)
 
     s2 = np.ceil(dS - s1)
     print('Standard scale estimated: [', str(s1), ',', str(s2), ']')
 
-    list_landmarks_mapped = mapImageLandmarks(list_landmarks,s1,s2)
+    list_landmarks_mapped = mapImageLandmarks(list_landmarks, s1, s2)
 
     mean_landmarks = computeMeanMapImageLandmarks(list_landmarks_mapped)
 
     index = 0
     #pyplot.figure(1)
     #pyplot.subplot(212)
-    while index<len(image_paths):
+    while index < len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
-        print ('Map image', image_name)
+        print('Map image', image_name)
         image = nib.load(image_paths[index])
         image_data = image.get_fdata()
         mask_data = nib.load(mask_paths[index]).get_fdata()
-        dimY=image.shape[0]
-        dimX=image.shape[1]
-        dimZ=image.shape[2]
-        #maskedImage = np.reshape(image_data*mask_data,dimX*dimY*dimZ)
-        maskedImage = np.reshape(image_data,dimX*dimY*dimZ)
-        #pdb.set_trace()
-        maskedImageMapped = mapImage(maskedImage,mean_landmarks,list_landmarks[index]['quartiles'],s1,s2,list_landmarks[index]['p1'],list_landmarks[index]['p2'])
-        displayHistogram(maskedImageMapped,image_name,1,0)
-        o2o=verifyOne2OneMapping(s1,s2,list_landmarks[index],mean_landmarks)
-        new_image = nib.Nifti1Image(np.reshape(maskedImageMapped,np.array([dimY,dimX,dimZ])),image.affine,header=image.header)
-        print('Save normalized image', str(image_name), 'as', str(output_paths[index]), '(one 2 one mapping :', str(o2o), ')')
-        nib.save(new_image,output_paths[index])
-        index+=1
-    #pyplot.legend()
-    #pyplot.xlabel('Intensity')
-    #pyplot.ylabel('# of voxels')
-    #pyplot.title('Histograms: Overview after normalization')
-    ## To be uncommented to display plot before/after histogram normalizatiopn
-    ##pyplot.show()
+        dimY = image.shape[0]
+        dimX = image.shape[1]
+        dimZ = image.shape[2]
+        # maskedImage = np.reshape(image_data*mask_data,dimX*dimY*dimZ)
+        maskedImage = np.reshape(image_data, dimX*dimY*dimZ)
+        # pdb.set_trace()
+        maskedImageMapped = mapImage(maskedImage,
+                                     mean_landmarks,
+                                     list_landmarks[index]['quartiles'],
+                                     s1,
+                                     s2,
+                                     list_landmarks[index]['p1'],
+                                     list_landmarks[index]['p2'])
+        displayHistogram(maskedImageMapped, image_name, 1, 0)
+        o2o = verifyOne2OneMapping(s1, s2, list_landmarks[index],
+                                   mean_landmarks)
+        new_image = nib.Nifti1Image(np.reshape(maskedImageMapped,
+                                               np.array([dimY, dimX, dimZ])),
+                                    image.affine,
+                                    header=image.header)
+        print('Save normalized image', str(image_name),
+              'as', str(output_paths[index]),
+              '(one 2 one mapping :', str(o2o), ')')
+        nib.save(new_image, output_paths[index])
+        index += 1
+    # pyplot.legend()
+    # pyplot.xlabel('Intensity')
+    # pyplot.ylabel('# of voxels')
+    # pyplot.title('Histograms: Overview after normalization')
+    # # To be uncommented to display plot before/after histogram normalizatiopn
+    # # pyplot.show()
 
 # Parse command line args
 
-parser = argparse.ArgumentParser(description='Intensity histogram normalization based on percentiles')
-parser.add_argument('-i','--input', required=True, action='append', help='Input image(s)')
-parser.add_argument('-m','--mask', required=True, action='append', help='Input mask(s)')
-parser.add_argument('-o','--output', required=True, action='append', help='Output normalized image(s)')
+
+parser = argparse.ArgumentParser(description=('Intensity histogram'
+                                              'normalization based on'
+                                              'percentiles'))
+parser.add_argument('-i', '--input', required=True,
+                    action='append', help='Input image(s)')
+parser.add_argument('-m', '--mask', required=True,
+                    action='append', help='Input mask(s)')
+parser.add_argument('-o', '--output', required=True,
+                    action='append', help='Output normalized image(s)')
 
 args = parser.parse_args()
 
-print(len(args.input)>0)
-print(len(args.mask)>0)
-print(len(args.output)>0)
+print(len(args.input) > 0)
+print(len(args.mask) > 0)
+print(len(args.output) > 0)
 print('Inputs: {}'.format(args.input))
 print('Masks: {}'.format(args.mask))
 print('Outputs: {}'.format(args.output))
 
-if len(args.input)==0:
+if len(args.input) == 0:
     print("Error: No input images provided")
-    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    print("Usage: %s -i input_image1 -m input_image1_mask " % sys.argv[0],
+          "-o output_image1 -i input_image2 -m input_image2_mask ",
+          "-o output_image2 ")
     sys.exit(2)
 
-if len(args.mask)==0:
+if len(args.mask) == 0:
     print("Error: No masks provided")
-    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    print("Usage: %s -i input_image1 -m input_image1_mask " % sys.argv[0],
+          "-o output_image1 -i input_image2 -m input_image2_mask ",
+          "-o output_image2 ")
     sys.exit(2)
 
-if len(args.output)==0:
+if len(args.output) == 0:
     print("Error: No output provided")
-    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    print("Usage: %s -i input_image1 -m input_image1_mask " % sys.argv[0],
+          "-o output_image1 -i input_image2 -m input_image2_mask ",
+          "-o output_image2 ")
     sys.exit(2)
 
-if (len(args.input)!=len(args.mask)):
+if len(args.input) != len(args.mask):
     print("Error: Number of inputs and masks are not equal")
-    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    print("Usage: %s -i input_image1 -m input_image1_mask " % sys.argv[0],
+          "-o output_image1 -i input_image2 -m input_image2_mask ",
+          "-o output_image2 ")
     sys.exit(2)
 
-if (len(args.input)!=len(args.output)):
+if len(args.input) != len(args.output):
     print("Error: Number of inputs and outputs are not equal")
-    print("Usage: %s -i input_image1 -m input_image1_mask -o output_image1 -i input_image2 -m input_image2_mask -o output_image2 " % sys.argv[0])
+    print("Usage: %s -i input_image1 -m input_image1_mask " % sys.argv[0],
+          "-o output_image1 -i input_image2 -m input_image2_mask ",
+          "-o output_image2 ")
     sys.exit(2)
 
 
 print('Inputs: {}'.format(args.input))
 print('Masks: {}'.format(args.mask))
 print('Outputs: {}'.format(args.output))
-main(args.input,args.mask,args.output)
+main(args.input, args.mask, args.output)
