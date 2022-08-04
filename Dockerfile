@@ -3,7 +3,7 @@ FROM ubuntu:14.04
 ##############################################################
 # Ubuntu system setup
 ##############################################################
-ENV CONDA_ENV_PATH /opt/conda
+ENV MAMBA_ROOT_PREFIX /opt/conda
 RUN apt-get update && \
     apt-get install software-properties-common -y && \
     apt-add-repository ppa:saiarcot895/myppa -y && \
@@ -36,17 +36,16 @@ RUN apt-get update && \
         libncurses5  \
         libncurses5-dev \
     libann-dev && \
-    curl -sSL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh && \
-    bash /tmp/miniconda.sh -bfp "$CONDA_ENV_PATH" && \
-    rm -rf /tmp/miniconda.sh && \
-    rm -rf /var/lib/apt/lists/*
+    curl -L http://micro.mamba.pm/api/micromamba/linux-64/latest | \
+    tar -xj -C /tmp bin/micromamba && \
+	cp /tmp/bin/micromamba /bin/micromamba 
 
 ##############################################################
-# Setup and update miniconda
+# Setup and update micromamba 
 ##############################################################
-ENV PATH "$CONDA_ENV_PATH/bin:$PATH"
-RUN conda update conda && \
-    conda clean --all --yes
+RUN mkdir -p "$(dirname $MAMBA_ROOT_PREFIX)" && \
+    /bin/micromamba shell init -s bash -p ~/micromamba 
+ENV PATH="$MAMBA_ROOT_PREFIX/bin:${PATH}"
 
 ##############################################################
 # User/group creation
@@ -99,7 +98,10 @@ ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
 
 # Create the conda environment
 COPY docker/bidsapp/environment.yml /app/environment.yml
-RUN conda env create -f /app/environment.yml
+RUN micromamba install -v -y -n base -f /app/environment.yml
+# Note that it seems that using an environment name other
+# than "base" is not recommended:
+# https://github.com/mamba-org/micromamba-docker
 
 ##############################################################
 # Setup for scikit-image
