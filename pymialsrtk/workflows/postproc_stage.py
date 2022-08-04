@@ -78,7 +78,7 @@ def create_postproc_stage(name="postproc_stage"):
                            srtkN4BiasFieldCorrection, "input_mask")
 
     postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
-                           outputnode, "outputnode.output_image")
+                           outputnode, "output_image")
 
     # postproc_stage.connect(srtkN4BiasFieldCorrection, "output_field",
     #                        outputnode, "outputnode.output_field")
