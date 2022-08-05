@@ -8,26 +8,14 @@ reconstruction pipeline.
 """
 
 import os
-import traceback
-from glob import glob
-import pathlib
 import pkg_resources
 
 from traits.api import *
-
-from nipype.interfaces.base import (traits, TraitedSpec, File, InputMultiPath,
+from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
                                     OutputMultiPath, BaseInterface,
                                     BaseInterfaceInputSpec)
 from nipype.interfaces import utility as util
-
 from nipype.pipeline import engine as pe
-
-import pymialsrtk.interfaces.postprocess as postprocess
-import pymialsrtk.interfaces.utils as utils
-
-from nipype import config
-from nipype import logging as nipype_logging
-
 from nipype.interfaces.io import DataGrabber
 from nipype.interfaces.utility import IdentityInterface
 from pymialsrtk.interfaces import preprocess
@@ -104,8 +92,9 @@ def create_input_stage(bids_dir,
 
             if m_masks_desc is not None:
                 masks_template = os.path.join(
-                    'derivatives', m_masks_derivatives_dir, subject, session, 'anat',
-                    '_'.join([sub_ses, '*_run-*', '_desc-'+m_masks_desc, '*mask.nii.gz'])
+                    'derivatives', m_masks_derivatives_dir, subject, session,
+                    'anat', '_'.join([sub_ses, '*_run-*',
+                                      '_desc-'+m_masks_desc, '*mask.nii.gz'])
                 )
             else:
                 masks_template = os.path.join(
@@ -116,21 +105,21 @@ def create_input_stage(bids_dir,
         dg.inputs.field_template = dict(T2ws=t2ws_template,
                                         masks=masks_template)
 
-        brainMask = pe.MapNode(interface=IdentityInterface(
-                                    fields=['out_file']
-                                ),
-                                name='brain_masks_bypass',
-                                iterfield=['out_file'])
+        brainMask = pe.MapNode(
+            interface=IdentityInterface(fields=['out_file']),
+            name='brain_masks_bypass',
+            iterfield=['out_file'])
 
         if m_stacks is not None:
-            custom_masks_filter = pe.Node(interface=
-                                            preprocess.FilteringByRunid(),
-                                            name='custom_masks_filter')
+            custom_masks_filter = pe.Node(
+                interface=preprocess.FilteringByRunid(),
+                name='custom_masks_filter')
+
             custom_masks_filter.inputs.stacks_id = m_stacks
 
     else:
         dg = pe.Node(interface=DataGrabber(outfields=['T2ws']),
-                        name='data_grabber')
+                     name='data_grabber')
 
         dg.inputs.base_directory = bids_dir
         dg.inputs.template = '*'
@@ -139,11 +128,11 @@ def create_input_stage(bids_dir,
 
         dg.inputs.field_template = dict(
             T2ws=os.path.join(subject, 'anat',
-                                sub_ses+'*_run-*_T2w.nii.gz'))
+                              sub_ses+'*_run-*_T2w.nii.gz'))
         if session is not None:
             dg.inputs.field_template = dict(
                 T2ws=os.path.join(subject, session, 'anat',
-                                    '_'.join([sub_ses, '*run-*',
+                                  '_'.join([sub_ses, '*run-*',
                                             '*T2w.nii.gz'])))
 
         if m_stacks is not None:
@@ -153,34 +142,34 @@ def create_input_stage(bids_dir,
             t2ws_filter_prior_masks.inputs.stacks_id = m_stacks
 
         brainMask = pe.MapNode(interface=preprocess.BrainExtraction(),
-                                name='brainExtraction',
-                                iterfield=['in_file'])
+                               name='brainExtraction',
+                               iterfield=['in_file'])
 
         brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename(
             "pymialsrtk",
             os.path.join("data",
-                            "Network_checkpoints",
-                            "Network_checkpoints_localization",
-                            "Unet.ckpt-88000.index")
+                         "Network_checkpoints",
+                         "Network_checkpoints_localization",
+                         "Unet.ckpt-88000.index")
         ).split('.index')[0]
         brainMask.inputs.threshold_loc = 0.49
         brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename(
             "pymialsrtk",
             os.path.join("data",
-                            "Network_checkpoints",
-                            "Network_checkpoints_segmentation",
-                            "Unet.ckpt-20000.index")
+                         "Network_checkpoints",
+                         "Network_checkpoints_segmentation",
+                         "Unet.ckpt-20000.index")
         ).split('.index')[0]
         brainMask.inputs.threshold_seg = 0.5
 
     t2ws_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
                             name='t2ws_filtered')
     masks_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
-                                name='masks_filtered')
+                             name='masks_filtered')
 
     if not m_skip_stacks_ordering:
         stacksOrdering = pe.Node(interface=preprocess.StacksOrdering(),
-                                    name='stackOrdering')
+                                 name='stackOrdering')
     else:
         stacksOrdering = pe.Node(
             interface=IdentityInterface(fields=['stacks_order']),
@@ -190,17 +179,17 @@ def create_input_stage(bids_dir,
     if use_manual_masks:
         if m_stacks is not None:
             input_stage.connect(dg, "masks", custom_masks_filter,
-                                   "input_files")
+                                "input_files")
             input_stage.connect(custom_masks_filter, "output_files",
-                                   brainMask, "out_file")
+                                brainMask, "out_file")
         else:
             input_stage.connect(dg, "masks", brainMask, "out_file")
     else:
         if m_stacks is not None:
             input_stage.connect(dg, "T2ws", t2ws_filter_prior_masks,
-                                   "input_files")
+                                "input_files")
             input_stage.connect(t2ws_filter_prior_masks, "output_files",
-                                   brainMask, "in_file")
+                                brainMask, "in_file")
         else:
             input_stage.connect(dg, "T2ws", brainMask, "in_file")
 

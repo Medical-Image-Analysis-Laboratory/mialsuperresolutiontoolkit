@@ -130,8 +130,8 @@ def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
         name='srtkIntensityStandardization02')
 
     srtkMaskImage01 = pe.MapNode(interface=preprocess.MialsrtkMaskImage(),
-                                    name='srtkMaskImage01',
-                                    iterfield=['in_file', 'in_mask'])
+                                 name='srtkMaskImage01',
+                                 iterfield=['in_file', 'in_mask'])
 
     if p_do_nlm_denoising:
         srtkMaskImage01_nlm = pe.MapNode(

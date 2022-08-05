@@ -9,17 +9,11 @@ reconstruction pipeline."""
 
 from traits.api import *
 
-from nipype.interfaces.base import (traits, TraitedSpec, File, InputMultiPath,
+from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
                                     OutputMultiPath, BaseInterface,
                                     BaseInterfaceInputSpec)
-
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.postprocess as postprocess
-import pymialsrtk.interfaces.utils as utils
-
-from nipype import config
-from nipype import logging as nipype_logging
-
 from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
 
