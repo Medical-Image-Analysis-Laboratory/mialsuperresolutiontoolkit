@@ -1,4 +1,4 @@
-pype-1.7.0/dataset_description.json
+nipype-1.7.0/dataset_description.json
 nipype-1.7.0/sub-01/rec-1/pypeline.log
 nipype-1.7.0/sub-01/rec-1/srr_pipeline/brainExtraction/_inputs.pklz
 nipype-1.7.0/sub-01/rec-1/srr_pipeline/brainExtraction/mapflow/_brainExtraction0/_inputs.pklz
