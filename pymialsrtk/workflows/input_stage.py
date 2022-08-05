@@ -58,12 +58,19 @@ def create_input_stage(bids_dir,
     >>>
     """
 
-
     input_stage = pe.Workflow(name=name)
 
     sub_ses = subject
     if session is not None:
         sub_ses = ''.join([sub_ses, '_', session])
+
+    outputnode = pe.Node(
+        interface=util.IdentityInterface(fields=['t2ws_filtered',
+                                                 'masks_filtered',
+                                                 'stacks_order',
+                                                 'report_image',
+                                                 'motion_tsv']),
+        name='outputnode')
 
     if use_manual_masks:
         dg = pe.Node(
@@ -180,14 +187,6 @@ def create_input_stage(bids_dir,
             name='stackOrdering')
         stacksOrdering.inputs.stacks_order = m_stacks
 
-    outputnode = pe.Node(
-        interface=util.IdentityInterface(fields=['t2ws_filtered',
-                                                 'masks_filtered',
-                                                 'stacks_order',
-                                                 'motion_tsv']),
-        name='outputnode')
-
-
     if use_manual_masks:
         if m_stacks is not None:
             input_stage.connect(dg, "masks", custom_masks_filter,
@@ -224,6 +223,9 @@ def create_input_stage(bids_dir,
                         outputnode, "t2ws_filtered")
     input_stage.connect(stacksOrdering, "stacks_order",
                         outputnode, "stacks_order")
+    input_stage.connect(stacksOrdering, "report_image",
+                        outputnode, "report_image")
     input_stage.connect(stacksOrdering, "motion_tsv",
                         outputnode, "motion_tsv")
+
     return input_stage
