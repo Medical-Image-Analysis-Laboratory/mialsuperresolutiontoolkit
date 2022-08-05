@@ -412,6 +412,7 @@ class AnatomicalPipeline:
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
+            p_do_anat_orientation = self.m_do_anat_orientation,
             p_sub_ses=sub_ses)
 
         srtkMaskImage01 = pe.MapNode(interface=preprocess.MialsrtkMaskImage(),
