@@ -211,7 +211,7 @@ def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
                                                        utils.sort_ascending),
                           srtkIntensityStandardization02, "input_images")
 
-    preproc_stage.connect(reduceFOV, ("output_masks", utils.sort_ascending),
+    preproc_stage.connect(reduceFOV, ("output_mask", utils.sort_ascending),
                           srtkMaskImage01, "in_mask")
 
     preproc_stage.connect(srtkIntensityStandardization02,
@@ -224,14 +224,14 @@ def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
                               srtkMaskImage01_nlm, "in_file")
 
         preproc_stage.connect(reduceFOV,
-                              ("output_masks", utils.sort_ascending),
+                              ("output_mask", utils.sort_ascending),
                               srtkMaskImage01_nlm, "in_mask")
 
         preproc_stage.connect(srtkMaskImage01_nlm,
                               "out_im_file",
                               outputnode, 'output_images_nlm')
 
-    preproc_stage.connect(srtkMaskImage01, "output_images",
+    preproc_stage.connect(srtkMaskImage01, "out_im_file",
                           outputnode, 'output_images')
     preproc_stage.connect(reduceFOV, "output_mask", outputnode, 'output_masks')
 
