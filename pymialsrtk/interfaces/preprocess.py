@@ -1904,7 +1904,7 @@ class ComposeTransforms(BaseInterface):
         with open(self.inputs.input_svr_from_mial, 'w') as file:
             file.write(filedata)
 
-        slices_motion = sitk.ReadTransform(tfm_file_versor)
+        slices_motion = sitk.ReadTransform(self.inputs.input_svr_from_mial)
 
         # Load transformation parameters
         num_parameters_per_slice = 6
