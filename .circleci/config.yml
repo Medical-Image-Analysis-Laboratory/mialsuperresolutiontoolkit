@@ -31,12 +31,6 @@ jobs:
             - /tmp/cache/docker.tar.gz
       - checkout
       - run:
-          name: Install checkout requirements
-          command: |
-            apt-get install -y sudo
-            sudo apt-get update
-            sudo apt-get install git-lfs
-      - run:
           name: Checkout binaries
           command: git lfs pull
       - run: ls -la .
