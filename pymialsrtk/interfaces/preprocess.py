@@ -92,7 +92,7 @@ class BtkNLMDenoising(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_file = self._gen_filename('out_file')
 
@@ -100,8 +100,8 @@ class BtkNLMDenoising(BaseInterface):
             cmd = 'btkNLMDenoising -i "{}" -m "{}" -o "{}" -b {}'.format(self.inputs.in_file, self.inputs.in_mask, out_file, self.inputs.weight)
         else:
             cmd = 'btkNLMDenoising -i "{}" -o "{}" -b {}'.format(self.inputs.in_file, out_file, self.inputs.weight)
-
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         run(cmd, env={})
         return runtime
 
@@ -155,12 +155,13 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_file = self._gen_filename('out_file')
 
         cmd = 'mialsrtkCorrectSliceIntensity "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_file)
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         env_cpp = os.environ.copy()
         env_cpp['LD_PRELOAD'] = ""
         run(cmd, env=env_cpp)
@@ -231,7 +232,7 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_im_file = self._gen_filename('out_im_file')
         out_fld_file = self._gen_filename('out_fld_file')
@@ -239,7 +240,8 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
         cmd = 'mialsrtkSliceBySliceN4BiasFieldCorrection "{}" "{}" "{}" "{}"'.format(self.inputs.in_file,
                                                                                      self.inputs.in_mask,
                                                                                      out_im_file, out_fld_file)
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         run(cmd, env={})
 
         return runtime
@@ -295,12 +297,13 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_im_file = self._gen_filename('out_im_file')
 
         cmd = 'mialsrtkSliceBySliceCorrectBiasField "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, self.inputs.in_field, out_im_file)
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         run(cmd, env={})
         return runtime
 
@@ -354,7 +357,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
 
         cmd = 'mialsrtkIntensityStandardization'
         for input_image in self.inputs.input_images:
@@ -364,7 +367,8 @@ class MialsrtkIntensityStandardization(BaseInterface):
         if self.inputs.in_max:
             cmd = cmd + ' --max "{}"'.format(self.inputs.in_max)
 
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         run(cmd, env={})
         return runtime
 
@@ -422,7 +426,7 @@ class MialsrtkHistogramNormalization(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
 
         cmd = 'python /usr/local/bin/mialsrtkHistogramNormalization.py '
 
@@ -434,7 +438,8 @@ class MialsrtkHistogramNormalization(BaseInterface):
             for in_file in self.inputs.input_images:
                 out_file = self._gen_filename(in_file, 'output_images')
                 cmd = cmd + ' -i "{}" -o "{}"" '.format(in_file, out_file)
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         run(cmd, env={})
 
         return runtime
@@ -487,11 +492,12 @@ class MialsrtkMaskImage(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
         out_im_file = self._gen_filename('out_im_file')
 
         cmd = 'mialsrtkMaskImage -i "{}" -m "{}" -o "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file)
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         run(cmd, env={})
 
         return runtime
@@ -619,7 +625,7 @@ class StacksOrdering(BaseInterface):
         outputs['motion_tsv'] = os.path.abspath('motion_index_QC.tsv')
         return outputs
 
-    def _compute_motion_index(self, in_file):
+    def _compute_motion_index(self, in_file, verbose=False):
         """Function to compute the motion index.
 
         The motion index is computed from the inter-slice displacement of
@@ -680,11 +686,11 @@ class StacksOrdering(BaseInterface):
 
         return score, prop_of_nans, centroid_coord[:, 0], centroid_coord[:, 1]
 
-    def _create_report_image(self, score, prop_of_nans, centroid_coordx, centroid_coordy):
+    def _create_report_image(self, score, prop_of_nans, centroid_coordx, centroid_coordy, verbose=False):
         # Output report image basename
         image_basename = 'motion_index_QC'
-
-        print("\t>> Create report image...")
+        if verbose:
+            print("\t>> Create report image...")
         # Visualization setup
         matplotlib.use('agg')
         sns.set_style("whitegrid")
@@ -698,7 +704,8 @@ class StacksOrdering(BaseInterface):
             mean_centroid_coordy[f] = np.nanmean(centroid_coordy[f])
 
         # Format data and create a Pandas DataFrame
-        print("\t\t\t - Format data...")
+        if verbose:
+            print("\t\t\t - Format data...")
         df_files = []
         df_slices = []
         df_motion_ind = []
@@ -728,7 +735,8 @@ class StacksOrdering(BaseInterface):
                     df_centroid_displ.append(np.nan)
 
         # Create a dataframe to facilitate handling with the results
-        print("\t\t\t - Create DataFrame...")
+        if verbose:
+            print("\t\t\t - Create DataFrame...")
         df = pd.DataFrame(
             {
                 "Scan": df_files,
@@ -744,13 +752,15 @@ class StacksOrdering(BaseInterface):
 
         # Save the results in a TSV file
         tsv_file = os.path.abspath('motion_index_QC.tsv')
-        print(f"\t\t\t - Save motion results to {tsv_file}...")
+        if verbose:
+            print(f"\t\t\t - Save motion results to {tsv_file}...")
         df.to_csv(tsv_file, sep='\t')
 
         # Make multiple figures with seaborn,
         # Saved in temporary png image and
         # combined in a final report image
-        print("\t\t\t - Create figures...")
+        if verbose:
+            print("\t\t\t - Create figures...")
 
         # Show the zero-centered positions of the centroids
         sf0 = sns.jointplot(
@@ -760,7 +770,8 @@ class StacksOrdering(BaseInterface):
         )
         # Save the temporary report image
         image_filename = os.path.abspath(image_basename + '_0.png')
-        print(f'\t\t\t - Save report image 0 as {image_filename}...')
+        if verbose:
+            print(f'\t\t\t - Save report image 0 as {image_filename}...')
         sf0.savefig(image_filename, dpi=150)
         plt.close(sf0.fig)
 
@@ -776,7 +787,8 @@ class StacksOrdering(BaseInterface):
         sf1.fig.set_size_inches(6, 2)
         # Save the temporary report image
         image_filename = os.path.abspath(image_basename + '_1.png')
-        print(f'\t\t\t - Save report image 1 as {image_filename}...')
+        if verbose:
+            print(f'\t\t\t - Save report image 1 as {image_filename}...')
         sf1.savefig(image_filename, dpi=150)
         plt.close(sf1.fig)
 
@@ -793,7 +805,8 @@ class StacksOrdering(BaseInterface):
         sf2.fig.set_size_inches(6, 2)
         # Save the temporary report image
         image_filename = os.path.abspath(image_basename + '_2.png')
-        print(f'\t\t\t - Save report image 2 as {image_filename}...')
+        if verbose:
+            print(f'\t\t\t - Save report image 2 as {image_filename}...')
         sf2.savefig(image_filename, dpi=150)
         plt.close(sf2.fig)
 
@@ -810,7 +823,8 @@ class StacksOrdering(BaseInterface):
         sf3.fig.set_size_inches(6, 2)
         # Save the temporary report image
         image_filename = os.path.abspath(image_basename + '_3.png')
-        print(f'\t\t\t - Save report image 3 as {image_filename}...')
+        if verbose:
+            print(f'\t\t\t - Save report image 3 as {image_filename}...')
         sf3.savefig(image_filename, dpi=150)
         plt.close(sf3.fig)
 
@@ -844,10 +858,11 @@ class StacksOrdering(BaseInterface):
 
         # Save the final report image
         image_filename = os.path.abspath('motion_index_QC.png')
-        print(f'\t\t\t - Save final report image as {image_filename}...')
+        if verbose:
+            print(f'\t\t\t - Save final report image as {image_filename}...')
         plt.savefig(image_filename, dpi=150)
 
-    def _compute_stack_order(self):
+    def _compute_stack_order(self, verbose=False):
         """Function to compute the stacks order.
 
         The motion index is computed for each mask.
@@ -864,10 +879,10 @@ class StacksOrdering(BaseInterface):
         centroid_coordy = {}
 
         for f in self.inputs.input_masks:
-            score[f], prop_of_nans[f], centroid_coordx[f], centroid_coordy[f] = self._compute_motion_index(f)
+            score[f], prop_of_nans[f], centroid_coordx[f], centroid_coordy[f] = self._compute_motion_index(f, verbose)
             motion_ind.append(score[f])
 
-        self._create_report_image(score, prop_of_nans, centroid_coordx, centroid_coordy)
+        self._create_report_image(score, prop_of_nans, centroid_coordx, centroid_coordy, verbose)
 
         vp_defined = -1 not in [f.find('vp') for f in self.inputs.input_masks]
         if vp_defined:

@@ -124,7 +124,7 @@ class MialsrtkImageReconstruction(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
         params = [''.join(["--", self.inputs.in_roi])]
 
         input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
@@ -153,7 +153,8 @@ class MialsrtkImageReconstruction(BaseInterface):
         cmd = ["mialsrtkImageReconstruction"]
         cmd += params
 
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         cmd = ' '.join(cmd)
         run(cmd)
         return runtime
@@ -307,7 +308,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
 
         cmd = ['mialsrtkTVSuperResolution']
 
@@ -356,7 +357,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
-            print('  > Write JSON side-car...')
+            if verbose:
+                print('  > Write JSON side-car...')
             json.dump(self.m_output_dict, outfile, indent=4)
 
         #########################################################
@@ -365,7 +367,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
         out_sr_png = self._gen_filename('output_sr_png')
 
         # Load the super-resolution image
-        print(f'  > Load SR image {out_sr}...')
+        if verbose:
+            print(f'  > Load SR image {out_sr}...')
         img = nib.load(out_sr)
         # Get image properties
         zooms = img.header.get_zooms()  # zooms are the size of the voxels
@@ -373,10 +376,11 @@ class MialsrtkTVSuperResolution(BaseInterface):
         fovs = np.array(zooms) * np.array(shapes)
         # Get middle cut
         cuts = [s // 2 for s in shapes]
-        print(f'    Image properties: Zooms={zooms}/ Shape={shapes}/ FOV={fovs}/ middle cut={cuts}')
+        if verbose:
+            print(f'    Image properties: Zooms={zooms}/ Shape={shapes}/ FOV={fovs}/ middle cut={cuts}')
 
         # Crop the image if the FOV exceeds a certain value
-        def compute_axis_crop_indices(cut, fov, max_fov=120):
+        def compute_axis_crop_indices(cut, fov, max_fov=120, verbose=False):
             """Compute the cropping index in a dimension if the Field-Of-View exceeds a maximum value of 120mm by default.
 
             Parameters
@@ -404,11 +408,11 @@ class MialsrtkTVSuperResolution(BaseInterface):
         crop_start_x, crop_end_x = compute_axis_crop_indices(cuts[0], fovs[0], max_fov=120)
         crop_start_y, crop_end_y = compute_axis_crop_indices(cuts[1], fovs[1], max_fov=120)
         crop_start_z, crop_end_z = compute_axis_crop_indices(cuts[2], fovs[2], max_fov=120)
-
-        print(f'  > Crop SR image at '
-              f'({crop_start_x}:{crop_end_x}, '
-              f'{crop_start_y}:{crop_end_y}, '
-              f'{crop_start_z}:{crop_end_z})...')
+        if verbose:
+            print(f'  > Crop SR image at '
+                f'({crop_start_x}:{crop_end_x}, '
+                f'{crop_start_y}:{crop_end_y}, '
+                f'{crop_start_z}:{crop_end_z})...')
         cropped_img = img.slicer[
             crop_start_x:crop_end_x,
             crop_start_y:crop_end_y,
@@ -425,7 +429,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
             dim='auto',
             display_mode='ortho',
         )
-        print(f'Save the PNG image cuts as {out_sr_png}')
+        if verbose:
+            print(f'Save the PNG image cuts as {out_sr_png}')
         plt.savefig(
             out_sr_png,
             dpi=100,
@@ -513,7 +518,7 @@ class MialsrtkSDIComputation(BaseInterface):
 
         return out_path
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
 
         # Reference image must be empty
         empty_ref_image = self.get_empty_ref_image(self.inputs.input_reference)
@@ -548,8 +553,8 @@ class MialsrtkSDIComputation(BaseInterface):
 
         cmd = ["mialsrtkSDIComputation"]
         cmd += params
-
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         cmd = ' '.join(cmd)
         run(cmd)
         return runtime

@@ -87,7 +87,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
 
         cmd = ['mialsrtkRefineHRMaskByIntersection']
 
@@ -110,8 +110,8 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 
         cmd += ['-r', self.inputs.input_sr]
         cmd += ['-o', out_file]
-
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         cmd = ' '.join(cmd)
         run(cmd, env={})
 
@@ -179,15 +179,15 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime):
+    def _run_interface(self, runtime, verbose=False):
         # _, name, ext = split_filename(os.path.abspath(
         # self.inputs.input_image))
         out_corr = self._gen_filename('output_image')
         out_fld = self._gen_filename('output_field')
 
         cmd = ['mialsrtkN4BiasFieldCorrection', self.inputs.input_image, self.inputs.input_mask, out_corr, out_fld]
-
-        print('... cmd: {}'.format(cmd))
+        if verbose:
+            print('... cmd: {}'.format(cmd))
         cmd = ' '.join(cmd)
         run(cmd, env={})
         return runtime
