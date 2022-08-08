@@ -203,7 +203,6 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        # _, name, ext = split_filename(self.inputs.input_image)
         outputs['output_image'] = self._gen_filename('output_image')
         outputs['output_field'] = self._gen_filename('output_field')
 
