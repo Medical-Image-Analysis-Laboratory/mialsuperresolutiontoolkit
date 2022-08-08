@@ -101,12 +101,8 @@ class BtkNLMDenoising(BaseInterface):
         else:
             cmd = 'btkNLMDenoising -i "{}" -o "{}" -b {}'.format(self.inputs.in_file, out_file, self.inputs.weight)
 
-        try:
-            print('... cmd: {}'.format(cmd))
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        run(cmd, env={})
         return runtime
 
     def _list_outputs(self):
@@ -164,14 +160,11 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
         out_file = self._gen_filename('out_file')
 
         cmd = 'mialsrtkCorrectSliceIntensity "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_file)
-        try:
-            print('... cmd: {}'.format(cmd))
-            env_cpp = os.environ.copy()
-            env_cpp['LD_PRELOAD'] = ""
-            run(cmd, env=env_cpp)
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        env_cpp = os.environ.copy()
+        env_cpp['LD_PRELOAD'] = ""
+        run(cmd, env=env_cpp)
+
         return runtime
 
     def _list_outputs(self):
@@ -246,12 +239,9 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
         cmd = 'mialsrtkSliceBySliceN4BiasFieldCorrection "{}" "{}" "{}" "{}"'.format(self.inputs.in_file,
                                                                                      self.inputs.in_mask,
                                                                                      out_im_file, out_fld_file)
-        try:
-            print('... cmd: {}'.format(cmd))
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        run(cmd, env={})
+
         return runtime
 
     def _list_outputs(self):
@@ -310,12 +300,8 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
         out_im_file = self._gen_filename('out_im_file')
 
         cmd = 'mialsrtkSliceBySliceCorrectBiasField "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, self.inputs.in_field, out_im_file)
-        try:
-            print('... cmd: {}'.format(cmd))
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        run(cmd, env={})
         return runtime
 
     def _list_outputs(self):
@@ -378,12 +364,8 @@ class MialsrtkIntensityStandardization(BaseInterface):
         if self.inputs.in_max:
             cmd = cmd + ' --max "{}"'.format(self.inputs.in_max)
 
-        try:
-            print('... cmd: {}'.format(cmd))
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        run(cmd, env={})
         return runtime
 
     def _list_outputs(self):
@@ -452,12 +434,8 @@ class MialsrtkHistogramNormalization(BaseInterface):
             for in_file in self.inputs.input_images:
                 out_file = self._gen_filename(in_file, 'output_images')
                 cmd = cmd + ' -i "{}" -o "{}"" '.format(in_file, out_file)
-        try:
-            print('... cmd: {}'.format(cmd))
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        run(cmd, env={})
 
         return runtime
 
@@ -513,12 +491,9 @@ class MialsrtkMaskImage(BaseInterface):
         out_im_file = self._gen_filename('out_im_file')
 
         cmd = 'mialsrtkMaskImage -i "{}" -m "{}" -o "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file)
-        try:
-            print('... cmd: {}'.format(cmd))
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        run(cmd, env={})
+
         return runtime
 
     def _list_outputs(self):
@@ -569,11 +544,8 @@ class FilteringByRunid(BaseInterface):
     m_output_files = []
 
     def _run_interface(self, runtime):
-        try:
-            self.m_output_files = self._filter_by_runid(self.inputs.input_files, self.inputs.stacks_id)
-        except Exception as e:
-            print('Failed')
-            print(e)
+        self.m_output_files = self._filter_by_runid(self.inputs.input_files, self.inputs.stacks_id)
+
         return runtime
 
     def _filter_by_runid(self, input_files, p_stacks_id):
@@ -636,11 +608,8 @@ class StacksOrdering(BaseInterface):
     m_stack_order = []
 
     def _run_interface(self, runtime):
-        try:
-            self.m_stack_order = self._compute_stack_order()
-        except Exception as e:
-            print('Failed')
-            print(e)
+        self.m_stack_order = self._compute_stack_order()
+
         return runtime
 
     def _list_outputs(self):
@@ -995,15 +964,12 @@ class BrainExtraction(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        try:
-            self._extractBrain(self.inputs.in_file,
-                               self.inputs.in_ckpt_loc,
-                               self.inputs.threshold_loc,
-                               self.inputs.in_ckpt_seg,
-                               self.inputs.threshold_seg)
-        except Exception:
-            print('Failed')
-            print(traceback.format_exc())
+        self._extractBrain(self.inputs.in_file,
+                            self.inputs.in_ckpt_loc,
+                            self.inputs.threshold_loc,
+                            self.inputs.in_ckpt_seg,
+                            self.inputs.threshold_seg)
+
         return runtime
 
     def _extractBrain(self, dataPath, modelCkptLoc, thresholdLoc, modelCkptSeg, thresholdSeg): #, bidsDir, out_postfix):
@@ -1557,13 +1523,9 @@ class ReduceFieldOfView(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        try:
-            self._crop_image_and_mask(self.inputs.input_image,
-                                      self.inputs.input_mask
-                                      )
-        except Exception as e:
-            print('Failed')
-            print(e)
+        self._crop_image_and_mask(self.inputs.input_image,
+                                    self.inputs.input_mask
+                                    )
         return runtime
 
     def _list_outputs(self):

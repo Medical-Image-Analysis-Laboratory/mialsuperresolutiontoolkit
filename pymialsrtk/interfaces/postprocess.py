@@ -111,13 +111,9 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
         cmd += ['-r', self.inputs.input_sr]
         cmd += ['-o', out_file]
 
-        try:
-            print('... cmd: {}'.format(cmd))
-            cmd = ' '.join(cmd)
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        cmd = ' '.join(cmd)
+        run(cmd, env={})
 
         return runtime
 
@@ -191,14 +187,9 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
 
         cmd = ['mialsrtkN4BiasFieldCorrection', self.inputs.input_image, self.inputs.input_mask, out_corr, out_fld]
 
-        try:
-            print('... cmd: {}'.format(cmd))
-            cmd = ' '.join(cmd)
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
-
+        print('... cmd: {}'.format(cmd))
+        cmd = ' '.join(cmd)
+        run(cmd, env={})
         return runtime
 
     def _list_outputs(self):
@@ -400,11 +391,7 @@ class BinarizeImage(BaseInterface):
         return
 
     def _run_interface(self, runtime):
-        try:
-            self._binarize_image(self.inputs.input_image)
-        except Exception as e:
-            print('Failed')
-            print(e)
+        self._binarize_image(self.inputs.input_image)
         return runtime
 
     def _list_outputs(self):

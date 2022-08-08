@@ -153,13 +153,9 @@ class MialsrtkImageReconstruction(BaseInterface):
         cmd = ["mialsrtkImageReconstruction"]
         cmd += params
 
-        try:
-            print('... cmd: {}'.format(cmd))
-            cmd = ' '.join(cmd)
-            run(cmd)
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        cmd = ' '.join(cmd)
+        run(cmd)
         return runtime
 
     def _list_outputs(self):
@@ -342,13 +338,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
         cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
 
-        try:
-            cmd = ' '.join(cmd)
-            run(cmd)
-
-        except Exception as e:
-            print('Failed')
-            print(e)
+        cmd = ' '.join(cmd)
+        run(cmd)
 
         ################################################
         # Creation of JSON sidecar file of the SR image
@@ -558,13 +549,9 @@ class MialsrtkSDIComputation(BaseInterface):
         cmd = ["mialsrtkSDIComputation"]
         cmd += params
 
-        try:
-            print('... cmd: {}'.format(cmd))
-            cmd = ' '.join(cmd)
-            run(cmd)
-        except Exception as e:
-            print('Failed')
-            print(e)
+        print('... cmd: {}'.format(cmd))
+        cmd = ' '.join(cmd)
+        run(cmd)
         return runtime
 
     def _list_outputs(self):
