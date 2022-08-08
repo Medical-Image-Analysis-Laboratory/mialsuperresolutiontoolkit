@@ -152,6 +152,14 @@ def create_input_stage(bids_dir,
                          "Network_checkpoints_localization",
                          "Unet.ckpt-88000.index")
         ).split('.index')[0]
+        test_path = pkg_resources.resource_filename(
+            "pymialsrtk",
+            os.path.join("data",
+                         "Network_checkpoints",
+                         "Network_checkpoints_localization")
+        )
+        print("Checking", test_path)
+        os.system(f'ls -l {test_path}')
         brainMask.inputs.threshold_loc = 0.49
         brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename(
             "pymialsrtk",
@@ -160,6 +168,14 @@ def create_input_stage(bids_dir,
                          "Network_checkpoints_segmentation",
                          "Unet.ckpt-20000.index")
         ).split('.index')[0]
+        test_path = pkg_resources.resource_filename(
+            "pymialsrtk",
+            os.path.join("data",
+                         "Network_checkpoints",
+                         "Network_checkpoints_segmentation")
+        )
+        print("Checking", test_path)
+        os.system(f'ls -l {test_path}')
         brainMask.inputs.threshold_seg = 0.5
 
     t2ws_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
