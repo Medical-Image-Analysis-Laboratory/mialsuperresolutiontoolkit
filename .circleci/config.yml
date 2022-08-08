@@ -31,6 +31,8 @@ jobs:
           paths:
             - /tmp/cache/docker.tar.gz
       - checkout
+      - run: git lfs pull
+      - run: ls -la .
       - setup_remote_docker:
           docker_layer_caching: false
       - run:
