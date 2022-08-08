@@ -1137,7 +1137,6 @@ class BrainExtraction(BaseInterface):
         with tf.Session(graph=g) as sess_test_loc:
             # Restore the model
             tf_saver = tf.train.Saver()
-            print("Restoring",modelCkptLoc, modelCkptSeg)
             tf_saver.restore(sess_test_loc, modelCkptLoc)
 
             for idx in range(images.shape[0]):
