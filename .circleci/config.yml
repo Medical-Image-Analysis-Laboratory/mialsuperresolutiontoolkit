@@ -30,9 +30,6 @@ jobs:
           paths:
             - /tmp/cache/docker.tar.gz
       - checkout
-      - run:
-          name: Checkout binaries
-          command: git lfs pull
       - run: ls -la pymialsrtk/data/Network_checkpoints/Network_checkpoints_localization
       - run: ls -la pymialsrtk/data/Network_checkpoints/Network_checkpoints_segmentation
       - setup_remote_docker:
