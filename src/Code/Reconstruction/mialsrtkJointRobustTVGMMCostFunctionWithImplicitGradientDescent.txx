@@ -1036,7 +1036,8 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     bool ratioXisEven = true;
     bool ratioYisEven = true;
     bool ratioZisEven = true;
-
+    const bool verbose = true;
+    
     if((((int)round(ratioLRHRX)) % 2)) ratioXisEven = false;
     if((int)round(ratioLRHRY) % 2) ratioYisEven = false;
     if((int)round(ratioLRHRZ) % 2) ratioZisEven = false;
@@ -1122,9 +1123,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
                 delta[2] = initpointZ + (float)k * ratioHRLRZ;
 
                 deltaIndexes.push_back(delta);
-                std::cout << " delta : " << delta[0] << " , " << delta[1] << " , " << delta[2] << std::endl;
-
-
+                if (verbose){
+                    std::cout << " delta : " << delta[0] << " , " << delta[1] << " , " << delta[2] << std::endl;
+                }
             }
         }
     }

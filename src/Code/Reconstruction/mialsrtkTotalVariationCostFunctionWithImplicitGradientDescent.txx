@@ -447,7 +447,8 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     bool ratioXisEven = true;
     bool ratioYisEven = true;
     bool ratioZisEven = true;
-
+    const bool verbose = false;
+    
     if((((int)round(ratioLRHRX)) % 2)) ratioXisEven = false;
     if((int)round(ratioLRHRY) % 2) ratioYisEven = false;
     if((int)round(ratioLRHRZ) % 2) ratioZisEven = false;
@@ -556,8 +557,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
                  gaussPSF.push_back(weight);
                 deltaIndexes.push_back(delta);
+                if (verbose){
                 std::cout << " delta : " << delta[0] << " , " << delta[1] << " , " << delta[2] << " ;  w = "<< weight << std::endl;
-
+                }
 
             }
         }
