@@ -20,7 +20,7 @@ jobs:
       - run:
           name: "Install parallel gzip and python2"
           command: |
-            apk add --no-cache pigz python2 git-lfs
+            apk add --no-cache pigz python2
       - restore_cache:
           keys:
             - docker-{{ .Branch }}-{{ epoch }}
