@@ -162,6 +162,7 @@ void
 SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputImage   ,TInterpolatorPrecisionType>
 ::Optimize()
 {
+  const bool verbose = false;
   //std::cout << "Begin OptimizeLeastSquare()" << std::endl << std::endl;
   // Fill x
   m_OutputImageRegion = this -> GetReferenceImage() -> GetLargestPossibleRegion();
@@ -336,8 +337,9 @@ SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputIm
     
     //Computes the convergence criterion
     normXinner = (m_x - m_xoldinner).two_norm() / m_xoldinner.two_norm();
-    std::cout<<"Inner loop criterion (iter = "<< iteration <<") : "<<normXinner<<std::endl;
-
+    if (verbose){
+      std::cout<<"Inner loop criterion (iter = "<< iteration <<") : "<<normXinner<<std::endl;
+    }
     //double mse = (((m_x-m_xoldinner).squared_magnitude())) / m_x.size();
     //std::cout<<"Inner loop MSE : "<< mse <<std::endl;
 

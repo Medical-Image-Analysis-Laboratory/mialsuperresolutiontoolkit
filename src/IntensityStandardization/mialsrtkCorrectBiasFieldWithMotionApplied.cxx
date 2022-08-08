@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 
     const char *outImageFileName = NULL;
     const char *outBiasFieldFileName = NULL;
-
+    const bool verbose = false; 
     // Parse arguments
 
     TCLAP::CmdLine cmd("Register slice of a LR images to a template HR image", ' ', "Unversioned");
@@ -338,9 +338,9 @@ int main(int argc, char *argv[])
                 delta[2] = initpointZ + (float)k * ratioHRLRZ;
 
                 deltaIndexes.push_back(delta);
-                std::cout << " delta : " << delta[0] << " , " << delta[1] << " , " << delta[2] << std::endl;
-
-
+                if (verbose){
+                    std::cout << " delta : " << delta[0] << " , " << delta[1] << " , " << delta[2] << std::endl;
+                }
             }
         }
     }

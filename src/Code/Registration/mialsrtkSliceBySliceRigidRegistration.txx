@@ -112,6 +112,7 @@ SliceBySliceRigidRegistration<ImageType>
     typename ImageType::SizeType sizeEvenImage = m_ROI.GetSize();
     typename ImageType::SizeType sizeOddImage = m_ROI.GetSize();
 
+    const bool verbose = false;
     /*
     if(numberOfslices % 2 == 0)
     {
@@ -135,9 +136,10 @@ SliceBySliceRigidRegistration<ImageType>
     }
 
     for ( unsigned int i = k1; i <= k2; i++ )
-    {
-      std::cout << "Registering slice " << i << std::endl;
-
+    { 
+      if (verbose){
+          std::cout << "Registering slice " << i << std::endl;
+      }
       //TODO: outlier rejection scheme
       // We could store MSE between the registered slice and the slice in the HR volume 
 

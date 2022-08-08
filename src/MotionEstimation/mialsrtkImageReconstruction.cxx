@@ -162,7 +162,7 @@ int main( int argc, char *argv[] )
   //bool useatlas = atlasInitSwitchArg.getValue();
 
   // typedefs
-
+  const bool verbose = false;
   const    unsigned int    Dimension = 3;
   typedef  float           PixelType;
 
@@ -460,8 +460,9 @@ int main( int argc, char *argv[] )
 
     for (im=0; im<numberOfImages; im++)
     {
-      std::cout << "Registering image " << im << " ... "; std::cout.flush();
-
+      if (verbose){
+        std::cout << "Registering image " << im << " ... "; std::cout.flush();
+      }
       if (rigid3D)
       {
         rigid3DRegistration[im] = Rigid3DRegistrationType::New();
