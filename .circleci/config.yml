@@ -34,6 +34,7 @@ jobs:
       - run:
           name: Install checkout requirements
           command: |
+            apt-get install -y sudo
             sudo apt-get update
             sudo apt-get install git-lfs
       - run:
