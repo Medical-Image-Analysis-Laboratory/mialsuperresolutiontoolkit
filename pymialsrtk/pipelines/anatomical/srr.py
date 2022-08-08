@@ -20,7 +20,7 @@ import nibabel as nib
 from nipype.info import __version__ as __nipype_version__
 from nipype import config
 from nipype import logging as nipype_logging
-from nipype.interfaces.io import DataGrabber, DataSink
+from nipype.interfaces.io import DataSink
 
 from nipype.pipeline import engine as pe
 
@@ -31,6 +31,7 @@ from nipype.interfaces.utility import IdentityInterface
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
+from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
@@ -288,118 +289,15 @@ class AnatomicalPipeline:
         nipype_logging.update_logging(config)
         # config.enable_provenance()
 
-        if self.use_manual_masks:
-            dg = pe.Node(
-                interface=DataGrabber(outfields=['T2ws', 'masks']),
-                name='data_grabber'
-            )
-            dg.inputs.base_directory = self.bids_dir
-            dg.inputs.template = '*'
-            dg.inputs.raise_on_empty = False
-            dg.inputs.sort_filelist = True
-
-            if self.session is not None:
-                t2ws_template = os.path.join(
-                    self.subject, self.session, 'anat',
-                    '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])
-                )
-                if self.m_masks_desc is not None:
-                    masks_template = os.path.join(
-                        'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-                        '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
-                    )
-                else:
-                    masks_template = os.path.join(
-                        'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-                        '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
-                    )
-            else:
-                t2ws_template=os.path.join(self.subject, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
-
-                if self.m_masks_desc is not None:
-                    masks_template = os.path.join(
-                        'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-                        '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
-                    )
-                else:
-                    masks_template = os.path.join(
-                        'derivatives', self.m_masks_derivatives_dir, self.subject, 'anat',
-                        sub_ses + '*_run-*_*mask.nii.gz'
-                    )
-
-            dg.inputs.field_template = dict(T2ws=t2ws_template,
-                                            masks=masks_template)
-
-            brainMask = pe.MapNode(interface=IdentityInterface(
-                                        fields=['out_file']
-                                    ),
-                                   name='brain_masks_bypass',
-                                   iterfield=['out_file'])
-
-            if self.m_stacks is not None:
-                custom_masks_filter = pe.Node(interface=
-                                              preprocess.FilteringByRunid(),
-                                              name='custom_masks_filter')
-                custom_masks_filter.inputs.stacks_id = self.m_stacks
-
-        else:
-            dg = pe.Node(interface=DataGrabber(outfields=['T2ws']),
-                         name='data_grabber')
-
-            dg.inputs.base_directory = self.bids_dir
-            dg.inputs.template = '*'
-            dg.inputs.raise_on_empty = False
-            dg.inputs.sort_filelist = True
-
-            dg.inputs.field_template = dict(
-                T2ws=os.path.join(self.subject, 'anat',
-                                  sub_ses+'*_run-*_T2w.nii.gz'))
-            if self.session is not None:
-                dg.inputs.field_template = dict(
-                    T2ws=os.path.join(self.subject, self.session, 'anat',
-                                      '_'.join([sub_ses, '*run-*',
-                                                '*T2w.nii.gz'])))
-
-            if self.m_stacks is not None:
-                t2ws_filter_prior_masks = pe.Node(
-                    interface=preprocess.FilteringByRunid(),
-                    name='t2ws_filter_prior_masks')
-                t2ws_filter_prior_masks.inputs.stacks_id = self.m_stacks
-
-            brainMask = pe.MapNode(interface=preprocess.BrainExtraction(),
-                                   name='brainExtraction',
-                                   iterfield=['in_file'])
-
-            brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename(
-                "pymialsrtk",
-                os.path.join("data",
-                             "Network_checkpoints",
-                             "Network_checkpoints_localization",
-                             "Unet.ckpt-88000.index")
-            ).split('.index')[0]
-            brainMask.inputs.threshold_loc = 0.49
-            brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename(
-                "pymialsrtk",
-                os.path.join("data",
-                             "Network_checkpoints",
-                             "Network_checkpoints_segmentation",
-                             "Unet.ckpt-20000.index")
-            ).split('.index')[0]
-            brainMask.inputs.threshold_seg = 0.5
-
-        t2ws_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
-                                name='t2ws_filtered')
-        masks_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
-                                 name='masks_filtered')
-
-        if not self.m_skip_stacks_ordering:
-            stacksOrdering = pe.Node(interface=preprocess.StacksOrdering(),
-                                     name='stackOrdering')
-        else:
-            stacksOrdering = pe.Node(
-                interface=IdentityInterface(fields=['stacks_order']),
-                name='stackOrdering')
-            stacksOrdering.inputs.stacks_order = self.m_stacks
+        input_stage = create_input_stage(
+                        self.bids_dir,
+                        self.subject,
+                        self.session,
+                        self.use_manual_masks,
+                        self.m_masks_desc,
+                        self.m_masks_derivatives_dir,
+                        self.m_skip_stacks_ordering,
+                        self.m_stacks)
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising)
@@ -411,16 +309,6 @@ class AnatomicalPipeline:
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
             p_sub_ses=sub_ses)
-
-        srtkMaskImage01 = pe.MapNode(interface=preprocess.MialsrtkMaskImage(),
-                                     name='srtkMaskImage01',
-                                     iterfield=['in_file', 'in_mask'])
-
-        if self.m_do_nlm_denoising:
-            srtkMaskImage01_nlm = pe.MapNode(
-                interface=preprocess.MialsrtkMaskImage(),
-                name='srtkMaskImage01_nlm',
-                iterfield=['in_file', 'in_mask'])
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
             name='postprocessing_stage')
@@ -435,70 +323,30 @@ class AnatomicalPipeline:
             self.use_manual_masks
         output_mgmt_stage.inputs.inputnode.final_res_dir = final_res_dir
 
+
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
-        if self.use_manual_masks:
-            if self.m_stacks is not None:
-                self.wf.connect(dg, "masks", custom_masks_filter,
-                                "input_files")
-                self.wf.connect(custom_masks_filter, "output_files", brainMask,
-                                "out_file")
-            else:
-                self.wf.connect(dg, "masks", brainMask, "out_file")
-        else:
-            if self.m_stacks is not None:
-                self.wf.connect(dg, "T2ws", t2ws_filter_prior_masks,
-                                "input_files")
-                self.wf.connect(t2ws_filter_prior_masks, "output_files",
-                                brainMask, "in_file")
-            else:
-                self.wf.connect(dg, "T2ws", brainMask, "in_file")
 
-        if not self.m_skip_stacks_ordering:
-            self.wf.connect(brainMask, "out_file", stacksOrdering,
-                            "input_masks")
-
-        self.wf.connect(stacksOrdering, "stacks_order", t2ws_filtered,
-                        "stacks_id")
-        self.wf.connect(dg, "T2ws", t2ws_filtered, "input_files")
-
-        self.wf.connect(stacksOrdering, "stacks_order", masks_filtered,
-                        "stacks_id")
-        self.wf.connect(brainMask, "out_file", masks_filtered, "input_files")
-
-        self.wf.connect(t2ws_filtered, "output_files",
+        self.wf.connect(input_stage, "outputnode.t2ws_filtered",
                         preprocessing_stage, "inputnode.input_images")
-        self.wf.connect(masks_filtered, "output_files",
+
+        self.wf.connect(input_stage, "outputnode.masks_filtered",
                         preprocessing_stage, "inputnode.input_masks")
-
-        self.wf.connect(preprocessing_stage, ("outputnode.output_masks",
-                                              utils.sort_ascending),
-                        srtkMaskImage01, "in_mask")
-
-        self.wf.connect(preprocessing_stage, ("outputnode.output_images",
-                                              utils.sort_ascending),
-                        srtkMaskImage01, "in_file")
 
         if self.m_do_nlm_denoising:
             self.wf.connect(preprocessing_stage,
                             ("outputnode.output_images_nlm",
                              utils.sort_ascending),
-                            srtkMaskImage01_nlm, "in_file")
-            self.wf.connect(preprocessing_stage, ("outputnode.output_masks",
-                                                  utils.sort_ascending),
-                            srtkMaskImage01_nlm, "in_mask")
-
-            self.wf.connect(srtkMaskImage01_nlm, ("out_im_file",
-                                                  utils.sort_ascending),
                             reconstruction_stage, "inputnode.input_images_nlm")
 
-        self.wf.connect(srtkMaskImage01, ("out_im_file", utils.sort_ascending),
+        self.wf.connect(preprocessing_stage,
+                        ("outputnode.output_images", utils.sort_ascending),
                         reconstruction_stage, "inputnode.input_images")
 
         self.wf.connect(preprocessing_stage, "outputnode.output_masks",
                         reconstruction_stage, "inputnode.input_masks")
 
-        self.wf.connect(stacksOrdering, "stacks_order",
+        self.wf.connect(input_stage, "outputnode.stacks_order",
                         reconstruction_stage, "inputnode.stacks_order")
 
         self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
@@ -507,7 +355,7 @@ class AnatomicalPipeline:
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         postprocessing_stage, "inputnode.input_image")
 
-        self.wf.connect(stacksOrdering, "stacks_order",
+        self.wf.connect(input_stage, "outputnode.stacks_order",
                         output_mgmt_stage, "inputnode.stacks_order")
 
         self.wf.connect(preprocessing_stage, "outputnode.output_masks",
@@ -529,13 +377,14 @@ class AnatomicalPipeline:
                         output_mgmt_stage, "inputnode.input_hr_mask")
 
         if self.m_do_nlm_denoising:
-            self.wf.connect(srtkMaskImage01_nlm, "out_im_file",
+            self.wf.connect(preprocessing_stage,
+                            "outputnode.output_images_nlm",
                             output_mgmt_stage, "inputnode.input_images_nlm")
 
         if not self.m_skip_stacks_ordering:
-            self.wf.connect(stacksOrdering, "report_image",
+            self.wf.connect(input_stage, "outputnode.report_image",
                             output_mgmt_stage, "inputnode.report_image")
-            self.wf.connect(stacksOrdering, "motion_tsv",
+            self.wf.connect(input_stage, "outputnode.motion_tsv",
                             output_mgmt_stage, "inputnode.motion_tsv")
 
     def run(self, memory=None):

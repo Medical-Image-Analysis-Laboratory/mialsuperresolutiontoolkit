@@ -9,7 +9,6 @@ commands:
 
 
 jobs:
-
   build-docker:
     environment:
       TZ: "/usr/share/zoneinfo/Europe/Zurich"
