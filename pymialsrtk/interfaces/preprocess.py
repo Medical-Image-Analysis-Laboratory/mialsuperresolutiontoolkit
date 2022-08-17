@@ -1488,7 +1488,7 @@ class ReduceFieldOfView(BaseInterface):
             return os.path.abspath(os.path.basename(self.inputs.input_mask))
         return None
 
-    def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[15, 15, 15]):
+    def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[15,15,15]):
         import SimpleITK as sitk
         reader = sitk.ImageFileReader()
 
@@ -1584,7 +1584,10 @@ class ReduceFieldOfView(BaseInterface):
 class ResampleImageInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the ResampleImage interface."""
     input_image = File(mandatory=True, desc='Input image to resample')
-    input_reference = File(mandatory=True, desc='Input image with reference resolution')
+    input_reference = File(
+        mandatory=True,
+        desc='Input image with reference resolution'
+    )
 
 
 class ResampleImageOutputSpec(TraitedSpec):
@@ -1594,7 +1597,8 @@ class ResampleImageOutputSpec(TraitedSpec):
 
 
 class ResampleImage(BaseInterface):
-    """Retrieve atlas of the same age and resample it to subject's in-plane resolution
+    """Retrieve atlas of the same age and
+    resample it to subject's in-plane resolution
     """
 
     input_spec = ResampleImageInputSpec
@@ -1606,7 +1610,9 @@ class ResampleImage(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        target_resolution = self._get_target_resolution(reference_image=self.inputs.input_reference)
+        target_resolution = self._get_target_resolution(
+            reference_image=self.inputs.input_reference
+        )
         self._resample_image(p_image_path=self.inputs.input_image,
                              p_resolution=target_resolution)
 
@@ -1670,7 +1676,8 @@ class ResampleImage(BaseInterface):
 
 
 class AlignImageToReferenceInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the AlignImageToReference interface."""
+    """Class used to represent inputs of the
+    AlignImageToReference interface."""
 
     input_image = File(mandatory=True, desc='Input image to realign')
     input_template = File(mandatory=True, desc='Input reference image')
@@ -1681,9 +1688,18 @@ class AlignImageToReferenceInputSpec(BaseInterfaceInputSpec):
 class AlignImageToReferenceOutputSpec(TraitedSpec):
     """Class used to represent outputs of the AlignImageToReference interface."""
 
-    output_transform = File(mandatory=True, desc='Output 3D rigid tranformation file')
-    output_image = File(mandatory=True, desc='Output reoriented image')
-    output_mask = File(mandatory=True, desc='Output reoriented mask')
+    output_transform = File(
+        mandatory=True,
+        desc='Output 3D rigid tranformation file'
+    )
+    output_image = File(
+        mandatory=True,
+        desc='Output reoriented image'
+    )
+    output_mask = File(
+        mandatory=True,
+        desc='Output reoriented mask'
+    )
 
 
 class AlignImageToReference(BaseInterface):
@@ -1694,7 +1710,9 @@ class AlignImageToReference(BaseInterface):
     References
     ------------
     .. [1] `(link to github) <https://github.com/gift-surg/NiftyMIC>`_
-    .. [2] Ebner, M., Wang, G., Li, W., Aertsen, M., Patel, P. A., Aughwane, R., Melbourne, A., Doel, T., Dymarkowski, S., De Coppi, P., David, A. L., Deprest, J., Ourselin, S., Vercauteren, T. (2020). An automated framework for localization, segmentation and super-resolution reconstruction of fetal brain MRI. NeuroImage, 206, 116324. `(link to paper) <https://www.sciencedirect.com/science/article/pii/S1053811919309152>`_
+    .. [2] Ebner et al. (2020). An automated framework for localization, segmentation and super-resolution reconstruction of fetal brain MRI.
+     NeuroImage, 206, 116324. `(link to paper)
+     <https://www.sciencedirect.com/science/article/pii/S1053811919309152>`_
 
     Examples
     --------
@@ -1742,7 +1760,8 @@ class AlignImageToReference(BaseInterface):
     def _compute_pca(self, mask):
 
         def get_largest_connected_region_mask(mask_nda):
-            """ This function is from: https://github.com/gift-surg/NiftyMIC/blob/e62c5389dfa2bb367fb217b7060472978d3e7654/niftymic/utilities/template_stack_estimator.py#L123
+            """ This function is from:
+            https://github.com/gift-surg/NiftyMIC/blob/e62c5389dfa2bb367fb217b7060472978d3e7654/niftymic/utilities/template_stack_estimator.py#L123
             """
             # get label for each connected component
             labels_nda = skimage.measure.label(mask_nda)
@@ -1762,7 +1781,8 @@ class AlignImageToReference(BaseInterface):
         mask_nda = sitk.GetArrayFromImage(mask)
         mask_nda = mask_nda > 0
 
-        # # We do a closing (dilation+erosion), in case slices are discarded from stacks
+        # # We do a closing (dilation+erosion),
+        # in case slices are discarded from stacks
         # closing = sitk.BinaryMorphologicalClosingImageFilter()
         # mask_nda = closing.Execute(mask_nda)
 
@@ -1868,7 +1888,10 @@ class AlignImageToReference(BaseInterface):
         i_best_transform = similarities_abs.index(max(similarities_abs))
         best_transform = transformations[i_best_transform]
 
-        sitk.WriteTransform(best_transform.GetInverse(), self._gen_filename('output_transform'))
+        sitk.WriteTransform(
+            best_transform.GetInverse(),
+            self._gen_filename('output_transform')
+        )
 
         warped_moving_sitk_sta = sitk.Resample(
             sub,
@@ -1895,4 +1918,3 @@ class AlignImageToReference(BaseInterface):
         # print('Best transform saved: {}-th'.format(i_best_transform))
 
         return i_best_transform
-

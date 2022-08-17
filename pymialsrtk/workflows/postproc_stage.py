@@ -19,6 +19,7 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
 from nipype.interfaces.io import DataGrabber
 
+
 def create_postproc_stage(
         p_ga,
         p_do_anat_orientation=False,
@@ -52,7 +53,9 @@ def create_postproc_stage(
         name='inputnode')
 
     outputnode = pe.Node(
-        interface=util.IdentityInterface(fields=['output_image', 'output_mask']),
+        interface=util.IdentityInterface(
+            fields=['output_image', 'output_mask']
+        ),
         name='outputnode')
 
     srtkN4BiasFieldCorrection = pe.Node(
@@ -81,13 +84,18 @@ def create_postproc_stage(
         atlas_grabber.inputs.raise_on_empty = False
         atlas_grabber.inputs.sort_filelist = True
 
-        atlas_grabber.inputs.field_template = dict(atlas='STA'+ga_str+'.nii.gz')
+        atlas_grabber.inputs.field_template = \
+            dict(atlas='STA'+ga_str+'.nii.gz')
 
-        resample_t2w_template = pe.Node(interface=preprocess.ResampleImage(),
-                             name='resample_t2w_template')
+        resample_t2w_template = pe.Node(
+            interface=preprocess.ResampleImage(),
+            name='resample_t2w_template'
+        )
 
-        align_volume = pe.Node(interface=preprocess.AlignImageToReference(),
-                             name='align_volume')
+        align_volume = pe.Node(
+            interface=preprocess.AlignImageToReference(),
+            name='align_volume'
+        )
 
     postproc_stage.connect(inputnode, "input_image",
                            srtkMaskImage02, "in_file")
@@ -108,16 +116,16 @@ def create_postproc_stage(
 
     else:
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
-                            resample_t2w_template, "input_reference")
+                               resample_t2w_template, "input_reference")
         postproc_stage.connect(atlas_grabber, "atlas",
-                            resample_t2w_template, "input_image")
+                               resample_t2w_template, "input_image")
 
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
-                            align_volume, "input_image")
+                               align_volume, "input_image")
         postproc_stage.connect(resample_t2w_template, "output_image",
-                            align_volume, "input_template")
+                               align_volume, "input_template")
         postproc_stage.connect(inputnode, "input_mask",
-                            align_volume, "input_mask")
+                               align_volume, "input_mask")
 
         postproc_stage.connect(align_volume, "output_image",
                                outputnode, "output_image")
