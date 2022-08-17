@@ -1488,7 +1488,7 @@ class ReduceFieldOfView(BaseInterface):
             return os.path.abspath(os.path.basename(self.inputs.input_mask))
         return None
 
-    def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[10, 10, 0]):
+    def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[15, 15, 15]):
         import SimpleITK as sitk
         reader = sitk.ImageFileReader()
 
@@ -1565,9 +1565,10 @@ class ReduceFieldOfView(BaseInterface):
     def _run_interface(self, runtime):
 
         try:
-            self._crop_image_and_mask(self.inputs.input_image,
-                                      self.inputs.input_mask
-                                      )
+            self._crop_image_and_mask(
+                self.inputs.input_image,
+                self.inputs.input_mask
+            )
         except Exception as e:
             print('Failed')
             print(e)
@@ -1594,10 +1595,6 @@ class ResampleImageOutputSpec(TraitedSpec):
 
 class ResampleImage(BaseInterface):
     """Retrieve atlas of the same age and resample it to subject's in-plane resolution
-
-    Examples
-    --------
-    >>>
     """
 
     input_spec = ResampleImageInputSpec
@@ -1678,12 +1675,15 @@ class AlignImageToReferenceInputSpec(BaseInterfaceInputSpec):
     input_image = File(mandatory=True, desc='Input image to realign')
     input_template = File(mandatory=True, desc='Input reference image')
 
+    input_mask = File(mandatory=False, desc='Input mask to realign')
+
 
 class AlignImageToReferenceOutputSpec(TraitedSpec):
     """Class used to represent outputs of the AlignImageToReference interface."""
 
     output_transform = File(mandatory=True, desc='Output 3D rigid tranformation file')
     output_image = File(mandatory=True, desc='Output reoriented image')
+    output_mask = File(mandatory=True, desc='Output reoriented mask')
 
 
 class AlignImageToReference(BaseInterface):
@@ -1713,7 +1713,16 @@ class AlignImageToReference(BaseInterface):
             output = basename + '_rigid' + '.tfm'
             return os.path.abspath(output)
         elif name == 'output_image':
-            output = basename + '_reoriented' + '_' + str(i_o) + '.nii.gz'
+            if i_o == -1:
+                output = os.path.basename(self.inputs.input_image)
+            else:
+                output = basename + '_reoriented' + '_' + str(i_o) + '.nii.gz'
+            return os.path.abspath(output)
+        elif name == 'output_mask':
+            if i_o == -1:
+                output = os.path.basename(self.inputs.input_mask)
+            else:
+                output = basename + '_reoriented' + '_' + str(i_o) + '.nii.gz'
             return os.path.abspath(output)
         return None
 
@@ -1726,7 +1735,8 @@ class AlignImageToReference(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_transform'] = self._gen_filename('output_transform')
-        outputs['output_image'] = self._gen_filename('output_image', self.m_best_transform)
+        outputs['output_image'] = self._gen_filename('output_image')
+        outputs['output_mask'] = self._gen_filename('output_mask')
         return outputs
 
     def _compute_pca(self, mask):
@@ -1778,11 +1788,15 @@ class AlignImageToReference(BaseInterface):
         reader.SetFileName(self.inputs.input_image)
         sub = reader.Execute()
 
+        if self.inputs.input_mask:
+            reader.SetFileName(self.inputs.input_mask)
+            mask = reader.Execute()
+
         reader.SetFileName(self.inputs.input_template)
         template = reader.Execute()
 
-        ######## - PBA computation
-        pca_fixed = self._compute_pca(template)  # _mask)
+        # - PBA computation
+        pca_fixed = self._compute_pca(template)
         pca_moving = self._compute_pca(sub)
 
         # perform PCAs for fixed and moving images
@@ -1791,7 +1805,6 @@ class AlignImageToReference(BaseInterface):
 
         eigvec_fixed = pca_fixed.get_eigvec()
         mean_fixed = pca_fixed.get_mean()
-        ######## - End PBA computation
 
         # test different initializations based on eigenvector orientations
         orientations = [
@@ -1833,6 +1846,17 @@ class AlignImageToReference(BaseInterface):
             writer.SetFileName(im_tfm)
             writer.Execute(warped_moving_sitk_sta)
 
+            if self.inputs.input_mask:
+                warped_moving_sitk_mask = sitk.Resample(
+                    mask,
+                    template,  # Reference
+                    rigid_transform_sitk,
+                    sitk.sitkLinear)
+
+                mask_tfm = self._gen_filename('output_mask', i_o)
+                writer.SetFileName(mask_tfm)
+                writer.Execute(warped_moving_sitk_mask)
+
             similarity = Similarity()
             similarity.inputs.volume1 = self.inputs.input_template
             similarity.inputs.volume2 = im_tfm
@@ -1846,128 +1870,29 @@ class AlignImageToReference(BaseInterface):
 
         sitk.WriteTransform(best_transform.GetInverse(), self._gen_filename('output_transform'))
 
+        warped_moving_sitk_sta = sitk.Resample(
+            sub,
+            template,  # Reference
+            best_transform,
+            sitk.sitkLinear)
+
+        im_tfm = self._gen_filename('output_image')
+        writer.SetFileName(im_tfm)
+        writer.Execute(warped_moving_sitk_sta)
+
+        if self.inputs.input_mask:
+            warped_moving_sitk_mask = sitk.Resample(
+                mask,
+                template,  # Reference
+                best_transform,
+                sitk.sitkLinear)
+
+            mask_tfm = self._gen_filename('output_mask')
+            writer.SetFileName(mask_tfm)
+            writer.Execute(warped_moving_sitk_mask)
+
         print(similarities_abs)
-        print('Best transform saved: {}-th'.format(i_best_transform))
+        # print('Best transform saved: {}-th'.format(i_best_transform))
 
         return i_best_transform
-
-
-class ComposeTransformsInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the ComposeTransforms interface."""
-    input_rigid = File(mandatory=True, desc='')
-    input_LR = File(mandatory=True, desc='')
-    input_svr_from_mial = File(mandatory=True, desc='')
-
-
-class ComposeTransformsOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the ComposeTransforms interface."""
-
-    output_transform = File(desc='Masked image')
-
-
-class ComposeTransforms(BaseInterface):
-    """
-
-    Examples
-    --------
-    >>>
-    """
-
-    input_spec = ComposeTransformsInputSpec
-    output_spec = ComposeTransformsOutputSpec
-    def _gen_filename(self, name):
-        if name == 'output_transform':
-            return os.path.abspath(os.path.basename(self.inputs.input_svr_from_mial))
-        return None
-
-    def _run_interface(self, runtime):
-
-        ## Load alignement transform and convert to sitk.VersorRigid3DTransform()
-        alignment_transform = sitk.ReadTransform(self.inputs.input_rigid)
-        alignment_transform_params = alignment_transform.GetParameters()
-
-        alignment_transform = sitk.VersorRigid3DTransform()
-        alignment_transform.SetParameters(alignment_transform_params)
-
-        ## Rigid transformation decomposition
-        volume_alignment_RZS = np.asarray(alignment_transform.GetMatrix()).reshape((3, 3))  # A1
-        volume_alignment_T = np.asarray(alignment_transform.GetTranslation())  # t1
-
-
-        ## Load SVR transformation parameters
-        # Hard change Transform type to be able to read it afterwards
-        with open(self.inputs.input_svr_from_mial, 'r') as file:
-            filedata = file.read()
-
-        filedata = filedata.replace('SliceBySliceTransform_double_3_3', 'VersorRigid3DTransform_double_3_3')
-
-        with open(self.inputs.input_svr_from_mial, 'w') as file:
-            file.write(filedata)
-
-        slices_motion = sitk.ReadTransform(self.inputs.input_svr_from_mial)
-
-        # Load transformation parameters
-        num_parameters_per_slice = 6
-        num_parameters = slices_motion.GetNumberOfParameters()
-        num_slices = int(slices_motion.GetNumberOfParameters() / num_parameters_per_slice)
-
-        print("We have", num_parameters, "parameters for", num_slices, "slices.")
-
-        parameters = list(slices_motion.GetParameters())
-        fixed_parameters = slices_motion.GetFixedParameters()
-
-        all_stack_parameters = []
-
-        ## For each slice
-        #  - Get slice motion estimation parameters
-        #  - Decompose slice motion estimation transform
-        #  - Compose rigid alignement + rigid motion estimations transforms
-        for i_slice, i_param in enumerate(range(0, num_parameters, num_parameters_per_slice)):
-
-            composite_list = parameters[i_param:i_param + num_parameters_per_slice]
-
-            current_slice_versor_transform_sitk = sitk.VersorRigid3DTransform()
-            current_slice_versor_transform_sitk.SetParameters(composite_list)
-
-            ## Compositing les transformations !!
-            slice_affine_transform_aff = current_slice_versor_transform_sitk
-
-            slice_rigid_RZS = np.asarray(slice_affine_transform_aff.GetMatrix()).reshape((3, 3))  # A2
-            slice_rigid_T = np.asarray(slice_affine_transform_aff.GetTranslation())  # t2
-
-            A = np.dot(slice_rigid_RZS, volume_alignment_RZS)
-            t = np.dot(slice_rigid_RZS, volume_alignment_T) + slice_rigid_T
-
-            At_comp_4_4 = np.zeros((4, 4))
-            At_comp_4_4[:3, :3] = A
-            At_comp_4_4[:, -1] = np.append(t, 1)
-            T_A, R_A, Z_A, S_A = transforms3d.affines.decompose(At_comp_4_4)
-
-            composite_transform = sitk.VersorRigid3DTransform()
-            composite_transform.SetMatrix(R_A.reshape(-1))
-            composite_transform.SetTranslation(T_A)
-
-            all_stack_parameters += list(composite_transform.GetParameters())
-
-        params = ' '.join([str(p) for p in all_stack_parameters])
-
-
-        ## Write transformation into a mialsrtk compatible way
-        f = open(self._gen_filename('output_transform'), "w")
-        Lines = []
-        Lines.append("#Insight Transform File V1.0\n")
-        Lines.append("#Transform 0\n")
-        Lines.append("Transform: SliceBySliceTransform_double_3_3\n")
-        Lines.append(''.join(["Parameters: ", params, '\n']))
-        Lines.append(''.join(["FixedParameters: ", ' '.join([str(int(g)) for g in fixed_parameters]), '\n']))
-
-        f.writelines(Lines)
-        f.close()
-
-        return runtime
-
-    def _list_outputs(self):
-        outputs = self._outputs().get()
-        outputs['output_transform'] = self._gen_filename('output_transform')
-        return outputs
 

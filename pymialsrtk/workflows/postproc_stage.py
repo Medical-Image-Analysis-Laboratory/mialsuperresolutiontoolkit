@@ -6,6 +6,7 @@
 """Module for the postprocessing stage of the super-resolution
 reconstruction pipeline."""
 
+import numpy as np
 
 from traits.api import *
 
@@ -16,9 +17,13 @@ import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.postprocess as postprocess
 from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
+from nipype.interfaces.io import DataGrabber
 
-
-def create_postproc_stage(name="postproc_stage"):
+def create_postproc_stage(
+        p_ga,
+        p_do_anat_orientation=False,
+        name="postproc_stage"
+):
     """Create a SR preprocessing workflow
     Parameters
     ----------
@@ -47,7 +52,7 @@ def create_postproc_stage(name="postproc_stage"):
         name='inputnode')
 
     outputnode = pe.Node(
-        interface=util.IdentityInterface(fields=['output_image']),
+        interface=util.IdentityInterface(fields=['output_image', 'output_mask']),
         name='outputnode')
 
     srtkN4BiasFieldCorrection = pe.Node(
@@ -57,6 +62,32 @@ def create_postproc_stage(name="postproc_stage"):
     srtkMaskImage02 = pe.Node(
         interface=preprocess.MialsrtkMaskImage(),
         name='srtkMaskImage02')
+
+    if p_do_anat_orientation and p_ga is not None:
+
+        ga = int(np.round(p_ga))
+        if ga > 38:
+            ga = 38
+        elif ga < 21:
+            ga = 21
+        ga_str = str(ga) + 'exp' if ga > 35 else str(ga)
+
+        atlas_grabber = pe.Node(
+            interface=DataGrabber(outfields=['atlas', 'tissue']),
+            name='atlas_grabber'
+        )
+        atlas_grabber.inputs.base_directory = '/sta'
+        atlas_grabber.inputs.template = '*'
+        atlas_grabber.inputs.raise_on_empty = False
+        atlas_grabber.inputs.sort_filelist = True
+
+        atlas_grabber.inputs.field_template = dict(atlas='STA'+ga_str+'.nii.gz')
+
+        resample_t2w_template = pe.Node(interface=preprocess.ResampleImage(),
+                             name='resample_t2w_template')
+
+        align_volume = pe.Node(interface=preprocess.AlignImageToReference(),
+                             name='align_volume')
 
     postproc_stage.connect(inputnode, "input_image",
                            srtkMaskImage02, "in_file")
@@ -68,7 +99,29 @@ def create_postproc_stage(name="postproc_stage"):
     postproc_stage.connect(inputnode, "input_mask",
                            srtkN4BiasFieldCorrection, "input_mask")
 
-    postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
-                           outputnode, "output_image")
+    if not p_do_anat_orientation:
+        postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
+                               outputnode, "output_image")
+
+        postproc_stage.connect(inputnode, "input_mask",
+                               outputnode, "output_mask")
+
+    else:
+        postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
+                            resample_t2w_template, "input_reference")
+        postproc_stage.connect(atlas_grabber, "atlas",
+                            resample_t2w_template, "input_image")
+
+        postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
+                            align_volume, "input_image")
+        postproc_stage.connect(resample_t2w_template, "output_image",
+                            align_volume, "input_template")
+        postproc_stage.connect(inputnode, "input_mask",
+                            align_volume, "input_mask")
+
+        postproc_stage.connect(align_volume, "output_image",
+                               outputnode, "output_image")
+        postproc_stage.connect(align_volume, "output_mask",
+                               outputnode, "output_mask")
 
     return postproc_stage

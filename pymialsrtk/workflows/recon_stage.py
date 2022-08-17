@@ -24,7 +24,6 @@ def create_recon_stage(p_paramTV,
                        p_do_nlm_denoising=False,
                        p_do_refine_hr_mask=False,
                        p_skip_svr=False,
-                       p_do_anat_orientation=False,
                        p_sub_ses='',
                        name="recon_stage"):
     """Create a super-resolution reconstruction workflow
@@ -136,56 +135,6 @@ def create_recon_stage(p_paramTV,
         srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(),
                              name='srtkHRMask')
 
-    if p_do_anat_orientation and not p_do_nlm_denoising:
-        if 'chuv012' in p_sub_ses:
-            ga = 22 # chuv012
-        else:
-            ga = 30 # chuv026
-        ga_str = str(ga) + 'exp' if ga > 35 else str(ga)
-
-        atlas_grabber = pe.Node(
-            interface=DataGrabber(outfields=['atlas', 'tissue']),
-            name='atlas_grabber'
-        )
-        atlas_grabber.inputs.base_directory = '/sta'
-        atlas_grabber.inputs.template = '*'
-        atlas_grabber.inputs.raise_on_empty = False
-        atlas_grabber.inputs.sort_filelist = True
-
-        atlas_grabber.inputs.field_template = dict(atlas='STA'+ga_str+'.nii.gz')
-
-        resample_t2w_template = pe.Node(interface=preprocess.ResampleImage(),
-                             name='resample_t2w_template')
-
-        align_volume = pe.Node(interface=preprocess.AlignImageToReference(),
-                             name='align_volume')
-        align_volume.config = {'execution': {'keep_unnecessary_outputs': 'true'}}
-
-        compose_transforms = pe.MapNode(interface=preprocess.ComposeTransforms(),
-                             name='compose_transforms',
-                             iterfield=['input_svr_from_mial', 'input_LR'])
-        compose_transforms.config = {'execution': {'keep_unnecessary_outputs': 'true'}}
-
-        sdiComputation_anat = pe.Node(
-            interface=reconstruction.MialsrtkSDIComputation(),
-            name='sdiComputation_anat')
-        sdiComputation_anat.inputs.sub_ses = p_sub_ses
-
-        srtkTVSuperResolution_anat = pe.Node(
-            interface=reconstruction.MialsrtkTVSuperResolution(),
-            name='srtkTVSuperResolution_anat')
-        srtkTVSuperResolution_anat.inputs.sub_ses = p_sub_ses
-        srtkTVSuperResolution_anat.inputs.use_manual_masks = p_use_manual_masks
-
-        srtkTVSuperResolution_anat.inputs.in_iter = num_iterations
-        srtkTVSuperResolution_anat.inputs.in_loop = num_primal_dual_loops
-        srtkTVSuperResolution_anat.inputs.in_bregman_loop = num_bregman_loops
-        srtkTVSuperResolution_anat.inputs.in_step_scale = step_scale
-        srtkTVSuperResolution_anat.inputs.in_gamma = gamma
-        srtkTVSuperResolution_anat.inputs.in_deltat = deltatTV
-        srtkTVSuperResolution_anat.inputs.in_lambda = lambdaTV
-
-
     recon_stage.connect(inputnode, "input_masks",
                         srtkImageReconstruction, "input_masks")
     recon_stage.connect(inputnode, "stacks_order",
@@ -256,60 +205,5 @@ def create_recon_stage(p_paramTV,
                         outputnode, "output_json_path")
     recon_stage.connect(srtkTVSuperResolution, "output_sr_png",
                         outputnode, "output_sr_png")
-
-
-
-    if p_do_anat_orientation and not p_do_nlm_denoising:
-        recon_stage.connect(srtkImageReconstruction, "output_sdi",
-                            resample_t2w_template, "input_reference")
-        recon_stage.connect(atlas_grabber, "atlas",
-                            resample_t2w_template, "input_image")
-
-
-        recon_stage.connect(srtkImageReconstruction, "output_sdi",
-                            align_volume, "input_image")
-        recon_stage.connect(resample_t2w_template, "output_image",
-                            align_volume, "input_template")
-
-        recon_stage.connect(align_volume, "output_transform",
-                            compose_transforms, "input_rigid")
-
-        recon_stage.connect(inputnode, "input_images",
-                            compose_transforms, "input_LR")
-
-        recon_stage.connect(srtkImageReconstruction, ("output_transforms",
-                                                      utils.sort_ascending),
-                            compose_transforms, "input_svr_from_mial")
-
-
-
-        recon_stage.connect(inputnode, "stacks_order",
-                            sdiComputation_anat, "stacks_order")
-        recon_stage.connect(inputnode, "input_images",
-                            sdiComputation_anat, "input_images")
-        recon_stage.connect(inputnode, "input_masks",
-                            sdiComputation_anat, "input_masks")
-        recon_stage.connect(compose_transforms, "output_transform",
-                            sdiComputation_anat, "input_transforms")
-        recon_stage.connect(align_volume, "output_image",
-                            sdiComputation_anat, "input_reference")
-
-
-        recon_stage.connect(sdiComputation_anat, "output_sdi",
-                            srtkTVSuperResolution_anat, "input_sdi")
-
-        recon_stage.connect(inputnode, "input_images",
-                            srtkTVSuperResolution_anat, "input_images")
-
-        recon_stage.connect(compose_transforms, "output_transform",
-                            srtkTVSuperResolution_anat, "input_transforms")
-        recon_stage.connect(inputnode, "input_masks",
-                            srtkTVSuperResolution_anat, "input_masks")
-        recon_stage.connect(inputnode, "stacks_order",
-                            srtkTVSuperResolution_anat, "stacks_order")
-
-        recon_stage.connect(srtkTVSuperResolution_anat, "output_sr",
-                            outputnode, "output_sr_aligned") # Temporary
-        ##
 
     return recon_stage
