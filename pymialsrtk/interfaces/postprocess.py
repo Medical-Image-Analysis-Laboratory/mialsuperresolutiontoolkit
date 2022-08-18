@@ -429,7 +429,7 @@ class QualityMetrics(BaseInterface):
     output_spec = QualityMetricsOutputSpec
 
     def _gen_filename(self, name):
-        if name == 'output_csv':
+        if name == 'output_metrics':
             _, name, ext = split_filename(self.inputs.input_image)
             output = name + '_csv' + '.csv'
             return os.path.abspath(output)
@@ -512,5 +512,5 @@ class QualityMetrics(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_csv'] = self._gen_filename('output_csv')
+        outputs['output_metrics'] = self._gen_filename('output_metrics')
         return outputs

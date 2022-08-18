@@ -29,7 +29,7 @@ def create_input_stage(bids_dir,
                        m_masks_derivatives_dir,
                        m_skip_stacks_ordering,
                        m_stacks,
-                       p_do_multi_parameters,
+                       p_do_srr_assessment,
                        name="input_stage"
                        ):
     """Create a input management workflow
@@ -60,7 +60,7 @@ def create_input_stage(bids_dir,
         'report_image',
         'motion_tsv'
     ]
-    if p_do_multi_parameters: output_fields += ['ground_truth']
+    if p_do_srr_assessment: output_fields += ['ground_truth']
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(fields=output_fields),
@@ -182,7 +182,7 @@ def create_input_stage(bids_dir,
             name='stackOrdering')
         stacksOrdering.inputs.stacks_order = m_stacks
 
-    if p_do_multi_parameters:
+    if p_do_srr_assessment:
 
         gt = pe.Node(
             interface=DataGrabber(outfields=['gt']),
@@ -250,7 +250,8 @@ def create_input_stage(bids_dir,
     input_stage.connect(stacksOrdering, "motion_tsv",
                         outputnode, "motion_tsv")
 
-    input_stage.connect(gt, "gt",
-                        outputnode, "ground_truth")
+    if p_do_srr_assessment:
+        input_stage.connect(gt, "gt",
+                            outputnode, "ground_truth")
 
     return input_stage

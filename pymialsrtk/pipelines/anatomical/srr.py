@@ -313,7 +313,7 @@ class AnatomicalPipeline:
                         self.m_masks_derivatives_dir,
                         self.m_skip_stacks_ordering,
                         self.m_stacks,
-                        p_do_multi_parameters=self.m_do_multi_parameters)
+                        p_do_srr_assessment=self.m_do_srr_assessment)
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising)
