@@ -395,3 +395,122 @@ class BinarizeImage(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_srmask'] = self._gen_filename('output_srmask')
         return outputs
+
+
+from nipype.interfaces.ants import RegistrationSynQuick
+
+import SimpleITK as sitk
+import skimage.metrics
+import pandas as pd
+
+
+class QualityMetricsInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the QualityMetrics interface."""
+
+    input_image = File(desc='Input image filename', mandatory=True)
+    input_ground_truth = File(desc='Input GT filename', mandatory=True)
+    # in_param_dict = traits.Dict(mandatory=True)
+    in_num_threads = traits.Int(1, usedefault=True, mandatory = False)
+
+    # in_sr_node = traits.Str(mandatory=False)
+
+
+class QualityMetricsOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the QualityMetrics interface."""
+
+    output_csv = File(desc='Output CSV')
+
+
+class QualityMetrics(BaseInterface):
+    """
+    """
+
+    input_spec = QualityMetricsInputSpec
+    output_spec = QualityMetricsOutputSpec
+
+    def _gen_filename(self, name):
+        if name == 'output_csv':
+            _, name, ext = split_filename(self.inputs.input_image)
+            output = name + '_csv' + '.csv'
+            return os.path.abspath(output)
+        return None
+
+    def _compute(self, in_image, in_gt):
+
+        # ants_path = '/opt/conda/envs/pymialsrtk-env/bin'
+        ants_path = '/opt/conda/bin'
+
+        reg = RegistrationSynQuick()
+        reg.inputs.fixed_image = in_gt
+        reg.inputs.moving_image = in_image
+        reg.inputs.transform_type = 'r'
+        reg.inputs.num_threads = self.inputs.in_num_threads
+        reg.environ = {'PATH': ants_path}
+
+        print('Running RegistrationSynQuick()')
+        res = reg.run()
+        #
+
+        print('Running PSNR computation')
+
+        reader = sitk.ImageFileReader()
+
+        reader.SetFileName(in_gt)
+        gt = reader.Execute()
+        gt = sitk.GetArrayFromImage(gt)
+
+        reader.SetFileName(res.outputs.warped_image)
+        sr = reader.Execute()
+        sr = sitk.GetArrayFromImage(sr)
+
+        print('Running PSNR computation')
+
+        psnr = skimage.metrics.peak_signal_noise_ratio(gt, sr, data_range = int(np.amax(gt) - min(np.amin(sr), np.amin(gt))))
+
+        print('Running SSIM computation')
+
+        ssim = skimage.metrics.structural_similarity(gt, sr, data_range = int(np.amax(gt) - min(np.amin(sr), np.amin(gt))))
+
+        # in_param_dict = self.inputs.in_param_dict
+
+        print()
+        print('PSNR', psnr)
+        print('SSIM', ssim)
+        print()
+        # names = ['in_sr_node'] if self.inputs.in_sr_node else []
+        # row = [self.inputs.in_sr_node] if self.inputs.in_sr_node else []
+        #
+        # names = names + ['in_loop', 'in_bregman_loop', 'in_iter', 'in_lambda',
+        #                  'in_deltat', 'in_step_scale', 'in_gamma', 'in_debug',
+        #                  'PSNR', 'SSIM', 'MI', 'CC']
+        # row = row + [in_param_dict['in_loop'], in_param_dict['in_bregman_loop'], in_param_dict['in_iter'], in_param_dict['in_lambda'],
+        #              in_param_dict['in_deltat'], in_param_dict['in_step_scale'], in_param_dict['in_gamma'], in_param_dict['in_debug'],
+        #              psnr, ssim]
+        #
+        #
+        # metrics = []
+        # metrics.append(dict(zip(names, row)))
+        #
+        # df_metrics = pd.DataFrame(metrics)
+        # print()
+        # print(df_metrics.head())
+        # print()
+        # print(self._gen_filename('output_csv'))
+        # df_metrics.to_csv(self._gen_filename('output_csv'), index=False, header=True, sep=',')
+        # print('saved!')
+
+        return
+
+
+    def _run_interface(self, runtime):
+        try:
+            self._compute(self.inputs.input_image, self.inputs.input_ground_truth)
+        except Exception as e:
+            print('Failed')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_csv'] = self._gen_filename('output_csv')
+        return outputs

@@ -103,6 +103,11 @@ RUN micromamba install -v -y -n base -f /app/environment.yml
 # than "base" is not recommended:
 # https://github.com/mamba-org/micromamba-docker
 
+# Make ANTs happy
+ENV ANTSPATH="/opt/conda/bin" \
+PATH="$ANTSPATH:$PATH"
+
+
 ##############################################################
 # Setup for scikit-image
 #

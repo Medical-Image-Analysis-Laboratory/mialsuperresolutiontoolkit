@@ -29,6 +29,7 @@ def create_input_stage(bids_dir,
                        m_masks_derivatives_dir,
                        m_skip_stacks_ordering,
                        m_stacks,
+                       p_do_multi_parameters,
                        name="input_stage"
                        ):
     """Create a input management workflow
@@ -52,12 +53,17 @@ def create_input_stage(bids_dir,
     if session is not None:
         sub_ses = ''.join([sub_ses, '_', session])
 
+    output_fields = [
+        't2ws_filtered',
+        'masks_filtered',
+        'stacks_order',
+        'report_image',
+        'motion_tsv'
+    ]
+    if p_do_multi_parameters: output_fields += ['ground_truth']
+
     outputnode = pe.Node(
-        interface=util.IdentityInterface(fields=['t2ws_filtered',
-                                                 'masks_filtered',
-                                                 'stacks_order',
-                                                 'report_image',
-                                                 'motion_tsv']),
+        interface=util.IdentityInterface(fields=output_fields),
         name='outputnode')
 
     if use_manual_masks:
@@ -176,6 +182,33 @@ def create_input_stage(bids_dir,
             name='stackOrdering')
         stacksOrdering.inputs.stacks_order = m_stacks
 
+    if p_do_multi_parameters:
+
+        gt = pe.Node(
+            interface=DataGrabber(outfields=['gt']),
+            name='gt_grabber')
+
+        gt.inputs.base_directory = bids_dir
+        gt.inputs.template = '*'
+        gt.inputs.raise_on_empty = False
+        gt.inputs.sort_filelist = True
+
+        gt_template = os.path.join(
+            subject,
+            'anat',
+            sub_ses + '_desc-iso_T2w.nii.gz'
+        )
+        if session is not None:
+            gt_template = os.path.join(
+                subject,
+                session,
+                'anat',
+                sub_ses + '_desc-iso_T2w.nii.gz'
+            )
+        gt.inputs.field_template = dict(gt=gt_template)
+
+
+
     if use_manual_masks:
         if m_stacks is not None:
             input_stage.connect(dg, "masks", custom_masks_filter,
@@ -216,5 +249,8 @@ def create_input_stage(bids_dir,
                         outputnode, "report_image")
     input_stage.connect(stacksOrdering, "motion_tsv",
                         outputnode, "motion_tsv")
+
+    input_stage.connect(gt, "gt",
+                        outputnode, "ground_truth")
 
     return input_stage

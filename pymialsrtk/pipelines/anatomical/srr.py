@@ -169,6 +169,7 @@ class AnatomicalPipeline:
     m_do_nlm_denoising = None
     m_skip_stacks_ordering = None
     m_do_refine_hr_mask = None
+    m_do_multi_parameters = None
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
@@ -209,10 +210,18 @@ class AnatomicalPipeline:
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
-            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] if 'skip_svr' in p_dict_custom_interfaces.keys() else False
-            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() else False
+            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
+                if 'skip_svr' in p_dict_custom_interfaces.keys() \
+                else False
+            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] \
+                if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() \
+                else False
             self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising']\
-                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() else False
+                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
+                else False
+            self.m_do_multi_parameters = p_dict_custom_interfaces['do_multi_parameters'] \
+                if 'do_multi_parameters' in p_dict_custom_interfaces.keys() \
+                else False
 
             self.m_skip_stacks_ordering =\
                 p_dict_custom_interfaces['skip_stacks_ordering']\
@@ -225,6 +234,7 @@ class AnatomicalPipeline:
             self.m_do_refine_hr_mask = False
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
+            self.m_do_multi_parameters = False
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -297,7 +307,8 @@ class AnatomicalPipeline:
                         self.m_masks_desc,
                         self.m_masks_derivatives_dir,
                         self.m_skip_stacks_ordering,
-                        self.m_stacks)
+                        self.m_stacks,
+                        p_do_multi_parameters=self.m_do_multi_parameters)
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising)
@@ -305,6 +316,7 @@ class AnatomicalPipeline:
         reconstruction_stage = recon_stage.create_recon_stage(
             p_paramTV=self.paramTV,
             p_use_manual_masks=self.use_manual_masks,
+            p_do_multi_parameters=self.m_do_multi_parameters,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
@@ -338,6 +350,10 @@ class AnatomicalPipeline:
                             ("outputnode.output_images_nlm",
                              utils.sort_ascending),
                             reconstruction_stage, "inputnode.input_images_nlm")
+
+        if self.m_do_multi_parameters:
+            self.wf.connect(input_stage, "outputnode.ground_truth",
+                            reconstruction_stage, 'inputnode.input_ground_truth')
 
         self.wf.connect(preprocessing_stage,
                         ("outputnode.output_images", utils.sort_ascending),

@@ -18,6 +18,7 @@ import pymialsrtk.interfaces.utils as utils
 
 def create_recon_stage(p_paramTV,
                        p_use_manual_masks,
+                       p_do_multi_parameters=False,
                        p_do_nlm_denoising=False,
                        p_do_refine_hr_mask=False,
                        p_skip_svr=False,
@@ -29,6 +30,8 @@ def create_recon_stage(p_paramTV,
     ::
         name : name of workflow (default: recon_stage)
         p_do_nlm_denoising : weither to proceed to non-local mean denoising
+        p_do_multi_parameters :
+        p_do_refine_hr_mask :
     Inputs::
         inputnode.input_images : Input T2w images (list of filenames)
         inputnode.input_images_nlm : Input T2w images (list of filenames),
@@ -59,8 +62,8 @@ def create_recon_stage(p_paramTV,
     # preprocessing workflow
     input_fields = ['input_images', 'input_masks', 'stacks_order']
 
-    if p_do_nlm_denoising:
-        input_fields += ['input_images_nlm']
+    if p_do_nlm_denoising: input_fields += ['input_images_nlm']
+    if p_do_multi_parameters: input_fields += ['input_ground_truth']
 
     inputnode = pe.Node(
         interface=util.IdentityInterface(
@@ -91,6 +94,7 @@ def create_recon_stage(p_paramTV,
         if "step_scale" in p_paramTV.keys() else 1
     gamma = p_paramTV["gamma"] if "gamma" in p_paramTV.keys() else 1
 
+
     srtkImageReconstruction = pe.Node(
         interface=reconstruction.MialsrtkImageReconstruction(),
         name='srtkImageReconstruction')
@@ -98,11 +102,6 @@ def create_recon_stage(p_paramTV,
     srtkImageReconstruction.inputs.no_reg = p_skip_svr
 
     if p_do_nlm_denoising:
-        # srtkMaskImage01_nlm = pe.MapNode(
-        #     interface=preprocess.MialsrtkMaskImage(),
-        #     name='srtkMaskImage01_nlm',
-        #     iterfield=['in_file', 'in_mask'])
-
         sdiComputation = pe.Node(
             interface=reconstruction.MialsrtkSDIComputation(),
             name='sdiComputation')
@@ -119,8 +118,23 @@ def create_recon_stage(p_paramTV,
     srtkTVSuperResolution.inputs.in_bregman_loop = num_bregman_loops
     srtkTVSuperResolution.inputs.in_step_scale = step_scale
     srtkTVSuperResolution.inputs.in_gamma = gamma
-    srtkTVSuperResolution.inputs.in_deltat = deltatTV
-    srtkTVSuperResolution.inputs.in_lambda = lambdaTV
+
+    if p_do_multi_parameters:
+        deltatTV = [deltatTV] if not isinstance(deltatTV , list) else deltatTV
+        lambdaTV = [lambdaTV] if not isinstance(lambdaTV , list) else lambdaTV
+        srtkTVSuperResolution.iterables = [
+            ("in_lambda",lambdaTV),
+            ("in_deltat",deltatTV)
+        ]
+
+        quality_metrics = pe.Node(
+            postprocess.QualityMetrics(),
+            name='quality_metrics'
+        )
+        quality_metrics.inputs.in_num_threads = 3 # TODO
+    else:
+        srtkTVSuperResolution.inputs.in_lambda = lambdaTV
+        srtkTVSuperResolution.inputs.in_deltat = deltatTV
 
     if p_do_refine_hr_mask:
         srtkHRMask = pe.Node(
@@ -200,5 +214,12 @@ def create_recon_stage(p_paramTV,
                         outputnode, "output_json_path")
     recon_stage.connect(srtkTVSuperResolution, "output_sr_png",
                         outputnode, "output_sr_png")
+
+
+    if p_do_multi_parameters:
+        recon_stage.connect(srtkTVSuperResolution, 'output_sr',
+                            quality_metrics, 'input_image')
+        recon_stage.connect(inputnode, "input_ground_truth",
+                            quality_metrics, 'input_ground_truth')
 
     return recon_stage
