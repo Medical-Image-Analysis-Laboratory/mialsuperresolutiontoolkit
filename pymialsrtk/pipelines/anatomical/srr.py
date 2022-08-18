@@ -362,6 +362,9 @@ class AnatomicalPipeline:
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         postprocessing_stage, "inputnode.input_image")
 
+        self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                        postprocessing_stage, "inputnode.input_sdi")
+
         self.wf.connect(input_stage, "outputnode.stacks_order",
                         output_mgmt_stage, "inputnode.stacks_order")
 

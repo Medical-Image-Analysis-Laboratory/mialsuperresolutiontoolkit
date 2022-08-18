@@ -1675,34 +1675,25 @@ class ResampleImage(BaseInterface):
         return outputs
 
 
-class AlignImageToReferenceInputSpec(BaseInterfaceInputSpec):
+class ComputeAlignmentToReferenceInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the
-    AlignImageToReference interface."""
+    ComputeAlignmentToReference interface."""
 
     input_image = File(mandatory=True, desc='Input image to realign')
     input_template = File(mandatory=True, desc='Input reference image')
 
-    input_mask = File(mandatory=False, desc='Input mask to realign')
 
-
-class AlignImageToReferenceOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the AlignImageToReference interface."""
+class ComputeAlignmentToReferenceOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the
+    ComputeAlignmentToReference interface."""
 
     output_transform = File(
         mandatory=True,
         desc='Output 3D rigid tranformation file'
     )
-    output_image = File(
-        mandatory=True,
-        desc='Output reoriented image'
-    )
-    output_mask = File(
-        mandatory=True,
-        desc='Output reoriented mask'
-    )
 
 
-class AlignImageToReference(BaseInterface):
+class ComputeAlignmentToReference(BaseInterface):
     """Reorient image along reference, based on principal brain axis.
 
     This module relies on the implementation [1]_ from EbnerWang2020 [2]_.
@@ -1720,8 +1711,8 @@ class AlignImageToReference(BaseInterface):
 
     """
 
-    input_spec = AlignImageToReferenceInputSpec
-    output_spec = AlignImageToReferenceOutputSpec
+    input_spec = ComputeAlignmentToReferenceInputSpec
+    output_spec = ComputeAlignmentToReferenceOutputSpec
 
     m_best_transform = None
 
@@ -1731,16 +1722,7 @@ class AlignImageToReference(BaseInterface):
             output = basename + '_rigid' + '.tfm'
             return os.path.abspath(output)
         elif name == 'output_image':
-            if i_o == -1:
-                output = os.path.basename(self.inputs.input_image)
-            else:
-                output = basename + '_reoriented' + '_' + str(i_o) + '.nii.gz'
-            return os.path.abspath(output)
-        elif name == 'output_mask':
-            if i_o == -1:
-                output = os.path.basename(self.inputs.input_mask)
-            else:
-                output = basename + '_reoriented' + '_' + str(i_o) + '.nii.gz'
+            output = basename + '_reoriented' + '_' + str(i_o) + '.nii.gz'
             return os.path.abspath(output)
         return None
 
@@ -1753,8 +1735,6 @@ class AlignImageToReference(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_transform'] = self._gen_filename('output_transform')
-        outputs['output_image'] = self._gen_filename('output_image')
-        outputs['output_mask'] = self._gen_filename('output_mask')
         return outputs
 
     def _compute_pca(self, mask):
@@ -1807,10 +1787,6 @@ class AlignImageToReference(BaseInterface):
 
         reader.SetFileName(self.inputs.input_image)
         sub = reader.Execute()
-
-        if self.inputs.input_mask:
-            reader.SetFileName(self.inputs.input_mask)
-            mask = reader.Execute()
 
         reader.SetFileName(self.inputs.input_template)
         template = reader.Execute()
@@ -1866,17 +1842,6 @@ class AlignImageToReference(BaseInterface):
             writer.SetFileName(im_tfm)
             writer.Execute(warped_moving_sitk_sta)
 
-            if self.inputs.input_mask:
-                warped_moving_sitk_mask = sitk.Resample(
-                    mask,
-                    template,  # Reference
-                    rigid_transform_sitk,
-                    sitk.sitkLinear)
-
-                mask_tfm = self._gen_filename('output_mask', i_o)
-                writer.SetFileName(mask_tfm)
-                writer.Execute(warped_moving_sitk_mask)
-
             similarity = Similarity()
             similarity.inputs.volume1 = self.inputs.input_template
             similarity.inputs.volume2 = im_tfm
@@ -1893,10 +1858,93 @@ class AlignImageToReference(BaseInterface):
             self._gen_filename('output_transform')
         )
 
+        return i_best_transform
+
+
+
+
+
+class ApplyAlignmentTransformInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the
+    AlignImageToReference interface."""
+
+    input_image = File(mandatory=True, desc='Input image to realign')
+    input_template = File(mandatory=True, desc='Input reference image')
+
+    input_mask = File(mandatory=False, desc='Input mask to realign')
+
+    input_transform = File(mandatory=True, desc='Input alignment transform to apply')
+
+
+class ApplyAlignmentTransformOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the AlignImageToReference interface."""
+
+    output_image = File(
+        mandatory=True,
+        desc='Output reoriented image'
+    )
+    output_mask = File(
+        mandatory=False,
+        desc='Output reoriented mask'
+    )
+
+
+class ApplyAlignmentTransform(BaseInterface):
+    """Apply a rigid 3D transform.
+
+    Examples
+    --------
+    >>>
+
+    """
+    input_spec = ApplyAlignmentTransformInputSpec
+    output_spec = ApplyAlignmentTransformOutputSpec
+
+
+    def _gen_filename(self, name):
+        if name == 'output_image':
+            output = os.path.basename(self.inputs.input_image)
+            return os.path.abspath(output)
+        elif name == 'output_mask':
+            output = os.path.basename(self.inputs.input_mask)
+            return os.path.abspath(output)
+        return None
+
+    def _run_interface(self, runtime):
+        self._reorient_image()
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_image'] = self._gen_filename('output_image')
+        outputs['output_mask'] = self._gen_filename('output_mask')
+        return outputs
+
+    def _reorient_image(self):
+        reader = sitk.ImageFileReader()
+        writer = sitk.ImageFileWriter()
+
+        reader.SetFileName(self.inputs.input_image)
+        sub = reader.Execute()
+
+        if self.inputs.input_mask:
+            reader.SetFileName(self.inputs.input_mask)
+            mask = reader.Execute()
+
+        reader.SetFileName(self.inputs.input_template)
+        template = reader.Execute()
+
+        # build rigid transformation as sitk VersorRigid3DTransform object
+        transform = sitk.ReadTransform(self.inputs.input_transform)
+        transform_params = transform.GetParameters()
+
+        rigid_transform_sitk = sitk.VersorRigid3DTransform()
+        rigid_transform_sitk.SetParameters(transform_params)
+
         warped_moving_sitk_sta = sitk.Resample(
             sub,
             template,  # Reference
-            best_transform,
+            rigid_transform_sitk,
             sitk.sitkLinear)
 
         im_tfm = self._gen_filename('output_image')
@@ -1907,14 +1955,12 @@ class AlignImageToReference(BaseInterface):
             warped_moving_sitk_mask = sitk.Resample(
                 mask,
                 template,  # Reference
-                best_transform,
+                rigid_transform_sitk,
                 sitk.sitkLinear)
 
             mask_tfm = self._gen_filename('output_mask')
             writer.SetFileName(mask_tfm)
             writer.Execute(warped_moving_sitk_mask)
 
-        print(similarities_abs)
-        # print('Best transform saved: {}-th'.format(i_best_transform))
 
-        return i_best_transform
+        return
