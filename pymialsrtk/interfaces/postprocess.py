@@ -418,7 +418,7 @@ class QualityMetricsInputSpec(BaseInterfaceInputSpec):
 class QualityMetricsOutputSpec(TraitedSpec):
     """Class used to represent outputs of the QualityMetrics interface."""
 
-    output_csv = File(desc='Output CSV')
+    output_metrics = File(desc='Output CSV')
 
 
 class QualityMetrics(BaseInterface):

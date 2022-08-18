@@ -35,6 +35,7 @@ from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
+import pymialsrtk.workflows.sr_assessment_stage as sr_assessment_stage
 import pymialsrtk.workflows.srr_output_stage as srr_output_stage
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
@@ -170,6 +171,7 @@ class AnatomicalPipeline:
     m_skip_stacks_ordering = None
     m_do_refine_hr_mask = None
     m_do_multi_parameters = None
+    m_do_srr_assessment = None
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
@@ -221,6 +223,9 @@ class AnatomicalPipeline:
                 else False
             self.m_do_multi_parameters = p_dict_custom_interfaces['do_multi_parameters'] \
                 if 'do_multi_parameters' in p_dict_custom_interfaces.keys() \
+                else False
+            self.m_do_srr_assessment = p_dict_custom_interfaces['do_srr_assessment'] \
+                if 'do_srr_assessment' in p_dict_custom_interfaces.keys() \
                 else False
 
             self.m_skip_stacks_ordering =\
@@ -325,6 +330,12 @@ class AnatomicalPipeline:
         postprocessing_stage = postproc_stage.create_postproc_stage(
             name='postprocessing_stage')
 
+        if self.m_do_srr_assessment:
+            srr_assessment_stage = \
+                sr_assessment_stage.create_sr_assessment_stage(
+                    name='srr_assessment_stage'
+                )
+
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             name='output_mgmt_stage')
@@ -370,6 +381,16 @@ class AnatomicalPipeline:
 
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         postprocessing_stage, "inputnode.input_image")
+
+
+        if self.m_do_srr_assessment:
+            self.wf.connect(postprocessing_stage, "outputnode.output_image",
+                            srr_assessment_stage, "inputnode.input_image")
+
+            self.wf.connect(input_stage, "outputnode.ground_truth",
+                            srr_assessment_stage, "inputnode.input_ground_truth")
+
+
 
         self.wf.connect(input_stage, "outputnode.stacks_order",
                         output_mgmt_stage, "inputnode.stacks_order")

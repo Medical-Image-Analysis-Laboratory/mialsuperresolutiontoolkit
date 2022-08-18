@@ -126,12 +126,6 @@ def create_recon_stage(p_paramTV,
             ("in_lambda",lambdaTV),
             ("in_deltat",deltatTV)
         ]
-
-        quality_metrics = pe.Node(
-            postprocess.QualityMetrics(),
-            name='quality_metrics'
-        )
-        quality_metrics.inputs.in_num_threads = 3 # TODO
     else:
         srtkTVSuperResolution.inputs.in_lambda = lambdaTV
         srtkTVSuperResolution.inputs.in_deltat = deltatTV
@@ -214,12 +208,5 @@ def create_recon_stage(p_paramTV,
                         outputnode, "output_json_path")
     recon_stage.connect(srtkTVSuperResolution, "output_sr_png",
                         outputnode, "output_sr_png")
-
-
-    if p_do_multi_parameters:
-        recon_stage.connect(srtkTVSuperResolution, 'output_sr',
-                            quality_metrics, 'input_image')
-        recon_stage.connect(inputnode, "input_ground_truth",
-                            quality_metrics, 'input_ground_truth')
 
     return recon_stage
