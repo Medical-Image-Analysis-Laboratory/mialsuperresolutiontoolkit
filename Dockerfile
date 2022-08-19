@@ -103,6 +103,17 @@ RUN micromamba install -v -y -n base -f /app/environment.yml
 # than "base" is not recommended:
 # https://github.com/mamba-org/micromamba-docker
 
+RUN echo ""
+RUN micromamba repoquery -n base depends nipype
+RUN echo ""
+RUN micromamba repoquery -n base whoneeds scipy
+RUN echo ""
+RUN pip install networkx==2.6.3
+RUN echo ""
+RUN micromamba repoquery -n base whoneeds networkx
+RUN echo ""
+RUN micromamba list -n base
+
 # Make ANTs happy
 ENV ANTSPATH="/opt/conda/bin" \
 PATH="$ANTSPATH:$PATH"

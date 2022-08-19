@@ -409,7 +409,7 @@ class QualityMetricsInputSpec(BaseInterfaceInputSpec):
 
     input_image = File(desc='Input image filename', mandatory=True)
     input_ground_truth = File(desc='Input GT filename', mandatory=True)
-    # in_param_dict = traits.Dict(mandatory=True)
+    input_TV_parameters = traits.Dict(mandatory=True)
     in_num_threads = traits.Int(1, usedefault=True, mandatory = False)
 
     # in_sr_node = traits.Str(mandatory=False)
@@ -446,6 +446,7 @@ class QualityMetrics(BaseInterface):
         reg.inputs.transform_type = 'r'
         reg.inputs.num_threads = self.inputs.in_num_threads
         reg.environ = {'PATH': ants_path}
+        reg.terminal_output = 'file_stderr'
 
         print('Running RegistrationSynQuick()')
         res = reg.run()
@@ -456,48 +457,41 @@ class QualityMetrics(BaseInterface):
         reader = sitk.ImageFileReader()
 
         reader.SetFileName(in_gt)
-        gt = reader.Execute()
-        gt = sitk.GetArrayFromImage(gt)
+        gt = sitk.GetArrayFromImage(reader.Execute())
 
         reader.SetFileName(res.outputs.warped_image)
-        sr = reader.Execute()
-        sr = sitk.GetArrayFromImage(sr)
+        sr = sitk.GetArrayFromImage(reader.Execute())
 
         print('Running PSNR computation')
-
         psnr = skimage.metrics.peak_signal_noise_ratio(gt, sr, data_range = int(np.amax(gt) - min(np.amin(sr), np.amin(gt))))
 
         print('Running SSIM computation')
-
         ssim = skimage.metrics.structural_similarity(gt, sr, data_range = int(np.amax(gt) - min(np.amin(sr), np.amin(gt))))
 
-        # in_param_dict = self.inputs.in_param_dict
+        TV_params = self.inputs.input_TV_parameters
 
         print()
         print('PSNR', psnr)
         print('SSIM', ssim)
         print()
+
         # names = ['in_sr_node'] if self.inputs.in_sr_node else []
         # row = [self.inputs.in_sr_node] if self.inputs.in_sr_node else []
-        #
-        # names = names + ['in_loop', 'in_bregman_loop', 'in_iter', 'in_lambda',
-        #                  'in_deltat', 'in_step_scale', 'in_gamma', 'in_debug',
-        #                  'PSNR', 'SSIM', 'MI', 'CC']
-        # row = row + [in_param_dict['in_loop'], in_param_dict['in_bregman_loop'], in_param_dict['in_iter'], in_param_dict['in_lambda'],
-        #              in_param_dict['in_deltat'], in_param_dict['in_step_scale'], in_param_dict['in_gamma'], in_param_dict['in_debug'],
-        #              psnr, ssim]
-        #
-        #
-        # metrics = []
-        # metrics.append(dict(zip(names, row)))
-        #
-        # df_metrics = pd.DataFrame(metrics)
-        # print()
-        # print(df_metrics.head())
-        # print()
-        # print(self._gen_filename('output_csv'))
-        # df_metrics.to_csv(self._gen_filename('output_csv'), index=False, header=True, sep=',')
-        # print('saved!')
+
+        names = ['in_lambda', 'in_deltat', 'PSNR', 'SSIM']
+        row = [TV_params['in_lambda'], TV_params['in_deltat'], psnr, ssim]
+
+
+        metrics = []
+        metrics.append(dict(zip(names, row)))
+
+        df_metrics = pd.DataFrame(metrics)
+        print()
+        print(df_metrics.head())
+        print()
+        print(self._gen_filename('output_metrics'))
+        df_metrics.to_csv(self._gen_filename('output_metrics'), index=False, header=True, sep=',')
+        print('saved!')
 
         return
 
@@ -514,3 +508,69 @@ class QualityMetrics(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_metrics'] = self._gen_filename('output_metrics')
         return outputs
+
+
+
+class ConcatenateQualityMetricsInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the ConcatenateQualityMetrics interface."""
+
+    input_metrics = InputMultiPath(File(mandatory=True), desc='')
+
+
+class ConcatenateQualityMetricsOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the ConcatenateQualityMetrics interface."""
+
+    output_csv = File(desc='')
+
+
+class ConcatenateQualityMetrics(BaseInterface):
+    """ConcatenateQualityMetrics
+
+    """
+
+    input_spec = ConcatenateQualityMetricsInputSpec
+    output_spec = ConcatenateQualityMetricsOutputSpec
+
+    def _run_interface(self, runtime):
+        try:
+            frames = [pd.read_csv(s, index_col=False) for s in self.inputs.input_metrics]
+
+            # if len(frames):
+            res = pd.concat(frames)
+
+            # str_stacks = '['
+            # for i, s in enumerate(self.inputs.input_stacks_order):
+            #     if i > 0:
+            #         str_stacks += ','
+            #     str_stacks += str(s)
+            # str_stacks += ']'
+            #
+            # num_configs = len(self.inputs.input_metrics)
+
+            # res.insert(loc=0, column='stacks', value= [ str_stacks for i in range(num_configs) ])
+            # res.insert(loc=0, column='num_stacks', value= [ len(self.inputs.input_stacks_order) for i in range(num_configs) ])
+            # res.insert(loc=0, column='sr_id', value=[ self.inputs.sr_id for i in range(num_configs)])
+
+            res.to_csv(self._gen_filename('output_csv'), index=False, header=True, sep=',')
+
+            print()
+            print()
+            print(res)
+            print()
+            print()
+            print()
+
+        except Exception as e:
+            print('Fail in ConcatenateQualityMetrics()')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_csv'] = self._gen_filename('output_csv')
+        return outputs
+
+    def _gen_filename(self, name):
+        if name == 'output_csv':
+            return os.path.abspath(os.path.basename(self.inputs.input_metrics[0]   ))
+        return None

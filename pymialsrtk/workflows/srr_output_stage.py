@@ -16,6 +16,7 @@ from nipype.interfaces.io import DataSink
 
 
 def create_srr_output_stage(p_do_nlm_denoising=False,
+                            p_do_srr_assessment=False,
                             p_skip_stacks_ordering=False,
                             name="srr_output_stage"):
     """Create a output management workflow
@@ -24,13 +25,29 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     ----------
     ::
         name : name of workflow (default: preproc_stage)
+        p_do_nlm_denoising :
+        p_do_srr_assessment :
+        p_skip_stacks_ordering :
     Inputs::
-
+        inputnode.sub_ses
+        inputnode.sr_id
+        inputnode.stacks_order
+        inputnode.use_manual_masks
+        inputnode.final_res_dir
+        inputnode.input_masks
+        inputnode.input_images
+        inputnode.input_transforms
+        inputnode.input_sdi
+        inputnode.input_sr
+        inputnode.input_hr_mask
+        inputnode.input_json_path
+        inputnode.input_sr_png
+        inputnode.report_image (optional)
+        inputnode.motion_tsv (optional)
+        inputnode.input_images_nlm (optional)
+        inputnode.input_metrics (optional)
     Outputs::
 
-    Example
-    -------
-    >>>
     """
 
     srr_output_stage = pe.Workflow(name=name)
@@ -49,6 +66,9 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
 
     if p_do_nlm_denoising:
         input_fields += ['input_images_nlm']
+
+    if p_do_srr_assessment:
+        input_fields += ["input_metrics"]
 
     inputnode = pe.Node(
         interface=util.IdentityInterface(
@@ -102,5 +122,9 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
                              datasink, 'figures.@SRpng')
     srr_output_stage.connect(inputnode, "input_hr_mask",
                              datasink, 'anat.@SRmask')
+
+    if p_do_srr_assessment:
+        srr_output_stage.connect(inputnode, "input_metrics",
+                                 datasink, 'anat.@SRmetrics')
 
     return srr_output_stage

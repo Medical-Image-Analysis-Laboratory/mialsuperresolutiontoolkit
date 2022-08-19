@@ -313,19 +313,22 @@ class AnatomicalPipeline:
                         self.m_masks_derivatives_dir,
                         self.m_skip_stacks_ordering,
                         self.m_stacks,
-                        p_do_srr_assessment=self.m_do_srr_assessment)
+                        p_do_srr_assessment=self.m_do_srr_assessment
+        )
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
-            p_do_nlm_denoising=self.m_do_nlm_denoising)
+            p_do_nlm_denoising=self.m_do_nlm_denoising
+        )
 
-        reconstruction_stage = recon_stage.create_recon_stage(
+        reconstruction_stage, srtv_node_name = recon_stage.create_recon_stage(
             p_paramTV=self.paramTV,
             p_use_manual_masks=self.use_manual_masks,
             p_do_multi_parameters=self.m_do_multi_parameters,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
-            p_sub_ses=sub_ses)
+            p_sub_ses=sub_ses
+        )
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
             name='postprocessing_stage')
@@ -333,11 +336,15 @@ class AnatomicalPipeline:
         if self.m_do_srr_assessment:
             srr_assessment_stage = \
                 sr_assessment_stage.create_sr_assessment_stage(
+                    p_do_multi_parameters=self.m_do_multi_parameters,
+                    p_input_srtv_node = srtv_node_name,
                     name='srr_assessment_stage'
                 )
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_skip_stacks_ordering=self.m_skip_stacks_ordering,
+            p_do_srr_assessment=self.m_do_srr_assessment,
             name='output_mgmt_stage')
 
         output_mgmt_stage.inputs.inputnode.sub_ses = sub_ses
@@ -362,10 +369,6 @@ class AnatomicalPipeline:
                              utils.sort_ascending),
                             reconstruction_stage, "inputnode.input_images_nlm")
 
-        if self.m_do_multi_parameters:
-            self.wf.connect(input_stage, "outputnode.ground_truth",
-                            reconstruction_stage, 'inputnode.input_ground_truth')
-
         self.wf.connect(preprocessing_stage,
                         ("outputnode.output_images", utils.sort_ascending),
                         reconstruction_stage, "inputnode.input_images")
@@ -382,15 +385,19 @@ class AnatomicalPipeline:
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         postprocessing_stage, "inputnode.input_image")
 
-
         if self.m_do_srr_assessment:
+
+            self.wf.connect(reconstruction_stage, "outputnode.output_TV_parameters",
+                            srr_assessment_stage, "inputnode.input_TV_parameters")
+
             self.wf.connect(postprocessing_stage, "outputnode.output_image",
                             srr_assessment_stage, "inputnode.input_image")
 
             self.wf.connect(input_stage, "outputnode.ground_truth",
                             srr_assessment_stage, "inputnode.input_ground_truth")
 
-
+            self.wf.connect(srr_assessment_stage, "outputnode.output_metrics",
+                            output_mgmt_stage, "inputnode.input_metrics")
 
         self.wf.connect(input_stage, "outputnode.stacks_order",
                         output_mgmt_stage, "inputnode.stacks_order")
@@ -423,6 +430,7 @@ class AnatomicalPipeline:
                             output_mgmt_stage, "inputnode.report_image")
             self.wf.connect(input_stage, "outputnode.motion_tsv",
                             output_mgmt_stage, "inputnode.motion_tsv")
+
 
     def run(self, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.

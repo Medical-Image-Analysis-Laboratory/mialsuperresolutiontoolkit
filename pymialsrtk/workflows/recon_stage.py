@@ -45,6 +45,9 @@ def create_recon_stage(p_paramTV,
         outputnode.output_hr_mask : SRR mask (filename)
         outputnode.output_tranforms : Transfmation estimated parameters
             (list of filenames)
+        outputnode.output_json_path
+        outputnode.output_sr_png
+        outputnode.output_TV_parameters
     Example
     -------
     >>> recon_stage = create_preproc_stage(p_do_nlm_denoising=False)
@@ -63,7 +66,6 @@ def create_recon_stage(p_paramTV,
     input_fields = ['input_images', 'input_masks', 'stacks_order']
 
     if p_do_nlm_denoising: input_fields += ['input_images_nlm']
-    if p_do_multi_parameters: input_fields += ['input_ground_truth']
 
     inputnode = pe.Node(
         interface=util.IdentityInterface(
@@ -72,13 +74,18 @@ def create_recon_stage(p_paramTV,
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(fields=
-                                         ['output_sr', 'output_sdi',
+                                         ['output_sr',
+                                          'output_sdi',
                                           'output_hr_mask',
                                           'output_transforms',
                                           'output_json_path',
-                                          'output_sr_png']),
-        name='outputnode')
+                                          'output_sr_png',
+                                          'output_TV_parameters'
+                                          ]),
+        name='outputnode'
+    )
 
+    # Setting default TV parameters if not defined
     deltatTV = p_paramTV["deltatTV"] \
         if "deltatTV" in p_paramTV.keys() else 0.01
     lambdaTV = p_paramTV["lambdaTV"] \
@@ -208,5 +215,7 @@ def create_recon_stage(p_paramTV,
                         outputnode, "output_json_path")
     recon_stage.connect(srtkTVSuperResolution, "output_sr_png",
                         outputnode, "output_sr_png")
+    recon_stage.connect(srtkTVSuperResolution, "output_TV_parameters",
+                        outputnode, "output_TV_parameters")
 
-    return recon_stage
+    return recon_stage, srtkTVSuperResolution.name

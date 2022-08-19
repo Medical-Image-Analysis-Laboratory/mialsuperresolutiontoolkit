@@ -38,10 +38,25 @@ def create_input_stage(bids_dir,
     ----------
     ::
         name : name of workflow (default: input_stage)
+        bids_dir
+        subject
+        session
+        use_manual_masks
+        m_masks_desc
+        m_masks_derivatives_dir
+        m_skip_stacks_ordering
+        m_stacks
+        p_do_srr_assessment
+
     Inputs::
 
     Outputs::
-
+        outputnode.t2ws_filtered
+        outputnode.masks_filtered
+        outputnode.stacks_order
+        outputnode.report_image
+        outputnode.motion_tsv
+        outputnode.ground_truth (optional, if p_do_srr_assessment=True)
     Example
     -------
     >>>
