@@ -34,4 +34,4 @@ dependencies:
     - sphinxcontrib-napoleon==0.7
     - recommonmark==0.5.0
     - etelemetry==0.3.0
-
+    - networkx==2.6.3
