@@ -1940,6 +1940,7 @@ class ApplyAlignmentTransform(BaseInterface):
 
         rigid_transform_sitk = sitk.VersorRigid3DTransform()
         rigid_transform_sitk.SetParameters(transform_params)
+        rigid_transform_sitk = rigid_transform_sitk.GetInverse()
 
         warped_moving_sitk_sta = sitk.Resample(
             sub,
