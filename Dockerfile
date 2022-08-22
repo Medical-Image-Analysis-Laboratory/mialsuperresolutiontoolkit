@@ -99,6 +99,7 @@ ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
 # Create the conda environment
 COPY docker/bidsapp/environment.yml /app/environment.yml
 RUN micromamba install -v -y -n base -f /app/environment.yml
+RUN pip install networkx==2.6.3
 # Note that it seems that using an environment name other
 # than "base" is not recommended:
 # https://github.com/mamba-org/micromamba-docker
