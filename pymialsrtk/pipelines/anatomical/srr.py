@@ -214,7 +214,8 @@ class AnatomicalPipeline:
             self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
                 if 'skip_svr' in p_dict_custom_interfaces.keys() \
                 else False
-            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] \
+            self.m_do_refine_hr_mask = \
+                p_dict_custom_interfaces['do_refine_hr_mask'] \
                 if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() \
                 else False
             self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising']\
@@ -227,7 +228,8 @@ class AnatomicalPipeline:
                         ('skip_stacks_ordering' in
                          p_dict_custom_interfaces.keys())) \
                     else False
-            self.m_do_anat_orientation = p_dict_custom_interfaces['do_anat_orientation'] \
+            self.m_do_anat_orientation = \
+                p_dict_custom_interfaces['do_anat_orientation'] \
                 if 'do_anat_orientation' in p_dict_custom_interfaces.keys() \
                 else False
         else:

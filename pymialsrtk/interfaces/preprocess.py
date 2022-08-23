@@ -1706,7 +1706,8 @@ class ComputeAlignmentToReference(BaseInterface):
     References
     ------------
     .. [1] `(link to github) <https://github.com/gift-surg/NiftyMIC>`_
-    .. [2] Ebner et al. (2020). An automated framework for localization, segmentation and super-resolution reconstruction of fetal brain MRI.
+    .. [2] Ebner et al. (2020). An automated framework for localization,
+    segmentation and super-resolution reconstruction of fetal brain MRI.
      NeuroImage, 206, 116324. `(link to paper)
      <https://www.sciencedirect.com/science/article/pii/S1053811919309152>`_
 
