@@ -43,6 +43,12 @@ int main( int argc, char * argv [] )
         return EXIT_FAILURE;
     }
 
+    bool verbose = false;
+    if ( argc == 4)
+    {
+        verbose = true;
+    }
+
     const unsigned int dimension3D = 3;
     const unsigned int dimension2D = 2;
 
@@ -75,8 +81,9 @@ int main( int argc, char * argv [] )
     typedef itk::DivideImageFilter<InputImageType, InputImageType, InputImageType> itkDivideFilter;
 
     //
-
-    std::cerr << "Read input image... " << std::endl;
+    if (verbose){
+        std::cerr << "Read input image... " << std::endl;
+    }
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName(argv[1]);
     try
@@ -90,10 +97,10 @@ int main( int argc, char * argv [] )
     }
 
     InputImageType::Pointer inputImage = reader->GetOutput();
-
-    std::cout << "Input image: " << inputImage << std::endl;
-
-    std::cerr << "Read input mask... " << std::endl;
+    if (verbose){
+        std::cout << "Input image: " << inputImage << std::endl;
+        std::cerr << "Read input mask... " << std::endl;
+    }
     MaskReaderType::Pointer maskReader = MaskReaderType::New();
     maskReader->SetFileName( argv[2] );
     maskReader->Update();
@@ -109,7 +116,9 @@ int main( int argc, char * argv [] )
     InputRegionType roi = mask -> GetAxisAlignedBoundingBoxRegion();
 
 
-    std::cerr << "Read bias estimated... " << std::endl;
+    if (verbose){
+        std::cerr << "Read bias estimated... " << std::endl;
+    }
     ReaderType::Pointer biasReader = ReaderType::New();
     biasReader->SetFileName( argv[3] );
 
@@ -131,7 +140,9 @@ int main( int argc, char * argv [] )
     biasImage->SetDirection(inputImage->GetDirection());
     biasImage->Update();
 
-    std::cerr << "Compute the slice corrected... " << std::endl;
+    if (verbose){
+        std::cerr << "Compute the slice corrected... " << std::endl;
+    }
     typedef itk::ExpImageFilter<OutputImageType, OutputImageType> ExpFilterType;
     ExpFilterType::Pointer expFilter = ExpFilterType::New();
     expFilter->SetInput( biasImage );
@@ -153,8 +164,10 @@ int main( int argc, char * argv [] )
     //Loop over slices in the brain mask
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
     {
-        std::cout << "Process slice #" << i << "..." << std::endl;
-
+        std::cout << "Process slice #" << i << "...";
+        if (verbose){
+            std::cout << std::endl;
+        }
         InputImageType::RegionType wholeSliceRegion;
         wholeSliceRegion = roi;
 
@@ -199,9 +212,9 @@ int main( int argc, char * argv [] )
                 if(ItS.Get() <= minValue) minValue = ItS.Get();
             }
         }
-
-        std::cout << "min : " << minValue << std::endl;
-
+        if (verbose){
+            std::cout << "min : " << minValue << std::endl;
+        }
         //REMOVE THE MIN VALUE and set the new value in the output image (if contained in the brain mask, otherwise value set to zero)
 
         OutputImageType::RegionType wholeSliceRegion3D;
@@ -258,14 +271,16 @@ int main( int argc, char * argv [] )
 
     //
 
-    std::cerr << "Write the bias-corrected volume... " << std::endl;
-
+    if (verbose){
+        std::cerr << "Write the bias-corrected volume... " << std::endl;
+    }
     WriterType::Pointer writer = WriterType::New();
     writer->SetFileName(argv[4]);
     writer->SetInput(outputImage);
     writer->Update();
 
-    std::cerr << "Done! " << std::endl;
-
+    if (verbose){
+        std::cerr << "Done! " << std::endl;
+    }
     return EXIT_SUCCESS;
 }

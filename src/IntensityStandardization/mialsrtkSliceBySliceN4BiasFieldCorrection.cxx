@@ -45,6 +45,12 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    // TODO: check if content of last argument is indeed verbose
+    bool verbose = false;
+    if (argc == 6){
+        verbose = true;
+    }
+ 
     const unsigned int dimension3D = 3;
     const unsigned int dimension2D = 2;
 
@@ -75,16 +81,19 @@ int main(int argc, char *argv[])
 
 
     //
-
-    std::cerr << "Read input image... " << std::endl;
+    if (verbose){
+      std::cerr << "Read input image... " << std::endl;
+    }
+    
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName(argv[1]);
     reader->Update();
 
     InputImageType::Pointer inputImage = reader->GetOutput();
 
-
-    std::cerr << "Read input mask... " << std::endl;
+    if (verbose){
+      std::cerr << "Read input mask... " << std::endl;
+    }
     MaskReaderType::Pointer maskReader = MaskReaderType::New();
     maskReader->SetFileName( argv[2] );
     maskReader->Update();
@@ -129,8 +138,11 @@ int main(int argc, char *argv[])
 
     //Loop over slices of the current stack
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
-    {
-        std::cout << "Process slice #" << i << "..." << std::endl;
+    {   
+        std::cout << "Process slice #" << i << "...";
+        if (verbose){
+          std::cout << std::endl;
+        }
 
         InputImageType::RegionType wholeSliceRegion;
         wholeSliceRegion = roi;
@@ -162,8 +174,9 @@ int main(int argc, char *argv[])
 #endif
         sliceExtractor->Update();
 
-
-        std::cerr << "Shrink input image... " << std::endl;
+        if (verbose){
+          std::cerr << "Shrink input image... " << std::endl;
+        }
         typedef itk::ShrinkImageFilter<SliceImageType, SliceImageType> ShrinkerType;
         ShrinkerType::Pointer shrinker = ShrinkerType::New();
 
@@ -172,8 +185,9 @@ int main(int argc, char *argv[])
         shrinker->Update();
         shrinker->UpdateLargestPossibleRegion();
 
-
-        std::cerr << "Shrink input mask... " << std::endl;
+        if (verbose){
+          std::cerr << "Shrink input mask... " << std::endl;
+        }
         typedef itk::ShrinkImageFilter<SliceImageMaskType, SliceImageMaskType> MaskShrinkerType;
         MaskShrinkerType::Pointer maskShrinker = MaskShrinkerType::New();
 
@@ -183,8 +197,9 @@ int main(int argc, char *argv[])
         maskShrinker->UpdateLargestPossibleRegion();
 
         //
-
-        std::cerr << "Run N4 Bias Field Correction... " << std::endl;
+        if (verbose){
+          std::cerr << "Run N4 Bias Field Correction... " << std::endl;
+        }
         typedef itk::N4BiasFieldCorrectionImageFilter<SliceImageType,SliceImageMaskType,SliceImageType> CorrecterType;
         CorrecterType::Pointer correcter = CorrecterType::New();
 
@@ -221,8 +236,9 @@ int main(int argc, char *argv[])
         correcter->Update();
 
         //
-
-        std::cerr << "Extract log field estimated... " << std::endl;
+        if (verbose){
+          std::cerr << "Extract log field estimated... " << std::endl;
+        }
         typedef CorrecterType::BiasFieldControlPointLatticeType PointType;
         typedef CorrecterType::ScalarImageType ScalarImageType;
 
@@ -272,8 +288,9 @@ int main(int argc, char *argv[])
         //
 
     }
-
-    std::cerr << "Compute the slice corrected... " << std::endl;
+    if (verbose){
+      std::cerr << "Compute the slice corrected... " << std::endl;
+    }
     typedef itk::ExpImageFilter<OutputImageType, OutputImageType> ExpFilterType;
     ExpFilterType::Pointer expFilter = ExpFilterType::New();
     expFilter->SetInput( logField );
@@ -290,7 +307,11 @@ int main(int argc, char *argv[])
     //Loop over slices in the brain mask
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
     {
-        std::cout << "Process slice #" << i << "..." << std::endl;
+        std::cout << "Process slice #" << i << "...";
+        if (verbose){
+          std::cout << std::endl;
+        }
+        
 
         InputImageType::RegionType wholeSliceRegion;
         wholeSliceRegion = roi;
@@ -336,9 +357,9 @@ int main(int argc, char *argv[])
                 if(ItS.Get() <= minValue) minValue = ItS.Get();
             }
         }
-
-        std::cout << "min : " << minValue << std::endl;
-
+        if (verbose){
+          std::cout << "min : " << minValue << std::endl;
+        }
         //REMOVE THE MIN VALUE and set the new value in the output image (if contained in the brain mask, otherwise value set to zero)
 
         OutputImageType::RegionType wholeSliceRegion3D;
@@ -408,8 +429,9 @@ int main(int argc, char *argv[])
     fieldWriter->Update();
 
     */
-
-    std::cerr << "Done! " << std::endl;
+    if (verbose){
+      std::cerr << "Done! " << std::endl;
+    }
     return 0;
 }
 

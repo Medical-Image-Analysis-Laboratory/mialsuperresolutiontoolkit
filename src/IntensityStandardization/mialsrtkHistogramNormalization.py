@@ -67,7 +67,7 @@ def extractImageLandmarks(image):
     #pdb.set_trace()
     return landmarks
 
-def trainImageLandmarks(list_landmarks):
+def trainImageLandmarks(list_landmarks, verbose=False):
     mup_l=[]
     mup_L=[]
     mup_r=[]
@@ -90,21 +90,25 @@ def trainImageLandmarks(list_landmarks):
     ymax=np.max(maxLR)
     ymax_index=maxLR.index(max(maxLR))
     dS = float(ymax*(mup_L[ymax_index]+mup_R[ymax_index]))
-    print('Ymax  =  ', str(ymax)+'  at position '+str(ymax_index)+'  ,  dS = '+str(dS)+' (=s2 when s1=0)')
+    if verbose:
+        print('Ymax  =  ', str(ymax)+'  at position '+str(ymax_index)+'  ,  dS = '+str(dS)+' (=s2 when s1=0)')
     return list_landmarks,dS
 
-def mapImageLandmarks(list_landmarks,s1,s2):
+def mapImageLandmarks(list_landmarks,s1,s2, verbose=False):
     list_landmarks_mapped = copy.deepcopy(list_landmarks)
     index=0
     while index<len(list_landmarks):
         land_index=0
         print('Image index:', str(index))
         while land_index<len(list_landmarks[index]['quartiles']):
-            print('old landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
+            if verbose:
+                print('old landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
             list_landmarks_mapped[index]['quartiles'][land_index]=s1+float((list_landmarks_mapped[index]['quartiles'][land_index]-list_landmarks_mapped[index]['p1'])/float(list_landmarks_mapped[index]['p2']-list_landmarks_mapped[index]['p1']))*float((s2-s1))
-            print('new landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
+            if verbose:
+                print('new landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
             land_index+=1
-        print('p1, p2 = ', str(list_landmarks_mapped[index]['p1']), ',', str(list_landmarks_mapped[index]['p2']))
+        if verbose:
+            print('p1, p2 = ', str(list_landmarks_mapped[index]['p1']), ',', str(list_landmarks_mapped[index]['p2']))
         index+=1
     return list_landmarks_mapped
 
@@ -194,7 +198,7 @@ def sort_ascending(p_files):
     return [f[1] for f in path_basename]
 
 
-def main(images, masks, outputs):
+def main(images, masks, outputs, verbose=False):
     # image_paths= sorted(images)
     # mask_paths=sorted(masks)
     # output_paths = sorted(outputs)
@@ -203,11 +207,10 @@ def main(images, masks, outputs):
     output_paths = sort_ascending(outputs)
 
     if(len(image_paths) != len(mask_paths)):
-        print('Loading failed: Number of images and masks ',
+        raise ValueError('Loading failed: Number of images and masks ',
               'are different (# images = ', str(len(image_paths)),
               '\\ # masks =', str(len(mask_paths)), ')')
-        return
-    else:
+    elif verbose:
         print('Loading passed: Number of images and masks '
               'are equal (# images =', str(len(image_paths)),
               '\\ # masks =', str(len(mask_paths)), ')')
@@ -220,7 +223,8 @@ def main(images, masks, outputs):
     index = 0
     while index < len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
-        print('Process image', image_name)
+        if verbose:
+            print('Process image', image_name)
         image = nib.load(image_paths[index]).get_fdata()
         # image = scipy.ndimage.filters.gaussian_filter(image,1.0)
         mask = nib.load(mask_paths[index]).get_fdata()
@@ -234,12 +238,13 @@ def main(images, masks, outputs):
     #pyplot.xlabel('Intensity')
     #pyplot.ylabel('# of voxels')
     #pyplot.title('Histograms: Overview before normalization')
-    list_landmarks, dS = trainImageLandmarks(list_landmarks)
+    list_landmarks, dS = trainImageLandmarks(list_landmarks, verbose)
 
     s2 = np.ceil(dS - s1)
-    print('Standard scale estimated: [', str(s1), ',', str(s2), ']')
+    if verbose:
+        print('Standard scale estimated: [', str(s1), ',', str(s2), ']')
 
-    list_landmarks_mapped = mapImageLandmarks(list_landmarks, s1, s2)
+    list_landmarks_mapped = mapImageLandmarks(list_landmarks, s1, s2, verbose)
 
     mean_landmarks = computeMeanMapImageLandmarks(list_landmarks_mapped)
 
@@ -248,7 +253,8 @@ def main(images, masks, outputs):
     #pyplot.subplot(212)
     while index < len(image_paths):
         image_name = image_paths[index].split("/")[-1].split(".")[0]
-        print('Map image', image_name)
+        if verbose:
+            print('Map image', image_name)
         image = nib.load(image_paths[index])
         image_data = image.get_fdata()
         mask_data = nib.load(mask_paths[index]).get_fdata()
@@ -272,9 +278,10 @@ def main(images, masks, outputs):
                                                np.array([dimY, dimX, dimZ])),
                                     image.affine,
                                     header=image.header)
-        print('Save normalized image', str(image_name),
-              'as', str(output_paths[index]),
-              '(one 2 one mapping :', str(o2o), ')')
+        if verbose:
+            print('Save normalized image', str(image_name),
+                'as', str(output_paths[index]),
+                '(one 2 one mapping :', str(o2o), ')')
         nib.save(new_image, output_paths[index])
         index += 1
     # pyplot.legend()
@@ -297,14 +304,17 @@ parser.add_argument('-m', '--mask', required=True,
 parser.add_argument('-o', '--output', required=True,
                     action='append', help='Output normalized image(s)')
 
+#TODO: add parser for verbose
 args = parser.parse_args()
 
-print(len(args.input) > 0)
-print(len(args.mask) > 0)
-print(len(args.output) > 0)
-print('Inputs: {}'.format(args.input))
-print('Masks: {}'.format(args.mask))
-print('Outputs: {}'.format(args.output))
+verbose = False
+if verbose:
+    print(len(args.input) > 0)
+    print(len(args.mask) > 0)
+    print(len(args.output) > 0)
+    print('Inputs: {}'.format(args.input))
+    print('Masks: {}'.format(args.mask))
+    print('Outputs: {}'.format(args.output))
 
 if len(args.input) == 0:
     print("Error: No input images provided")
@@ -341,8 +351,8 @@ if len(args.input) != len(args.output):
           "-o output_image2 ")
     sys.exit(2)
 
-
-print('Inputs: {}'.format(args.input))
-print('Masks: {}'.format(args.mask))
-print('Outputs: {}'.format(args.output))
-main(args.input, args.mask, args.output)
+if verbose:
+    print('Inputs: {}'.format(args.input))
+    print('Masks: {}'.format(args.mask))
+    print('Outputs: {}'.format(args.output))
+main(args.input, args.mask, args.output, verbose)

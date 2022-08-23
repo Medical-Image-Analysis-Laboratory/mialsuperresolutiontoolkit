@@ -496,14 +496,18 @@ int main( int argc, char *argv[] )
 
           if (it == 1)
           {
-            std::cout << "Iteration " << it << ":" << std::endl;
-            std::cout << "  - Use the initial reference image for slice-to-volume registration. " << std::endl;
+            if (verbose){
+              std::cout << "Iteration " << it << ":" << std::endl;
+              std::cout << "  - Use the initial reference image for slice-to-volume registration. " << std::endl;
+            }
             registration[im] -> SetMovingImage( hrRefImage );
           }
           else
           {
-            std::cout << "Iteration " << it << " > 1 :" << std::endl;
-            std::cout << "  - Update the reference image for slice-to-volume registration with reconstructed HR image of previous iteration. " << std::endl;
+            if (verbose){
+              std::cout << "Iteration " << it << " > 1 :" << std::endl;
+              std::cout << "  - Update the reference image for slice-to-volume registration with reconstructed HR image of previous iteration. " << std::endl;
+            }
             registration[im] -> SetMovingImage( hrImage );
           }
           std::cout << "  - Use constant registration step lengths: [" << min_step << ";"<< max_step << "]" << std::endl << std::cout.flush();

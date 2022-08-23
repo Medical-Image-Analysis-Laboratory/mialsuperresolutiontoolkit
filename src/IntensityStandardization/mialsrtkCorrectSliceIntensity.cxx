@@ -42,9 +42,15 @@ int main( int argc, char * argv [] )
     {
         std::cerr << "Missing Parameters " << std::endl;
         std::cerr << "Usage: " << argv[0];
-        std::cerr << " inputImageFile inputMaskFile outputImageFile  ";
+        std::cerr << " inputImageFile inputMaskFile outputImageFile (verbose)";
         return EXIT_FAILURE;
     }
+    
+    bool verbose = false;
+    if (argc == 4){
+        bool verbose = true;
+    }
+    
 
     const unsigned int dimension3D = 3;
     const unsigned int dimension2D = 2;
@@ -81,7 +87,9 @@ int main( int argc, char * argv [] )
 
     //
 
-    std::cerr << "Read input image... " << std::endl;
+    if (verbose){
+     std::cerr << "Read input image... " << std::endl;
+    }
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName(argv[1]);
     try
@@ -100,8 +108,9 @@ int main( int argc, char * argv [] )
 
     InputImageType::Pointer inputImage = reader->GetOutput();
 
-    std::cout << "Input image: " << inputImage << std::endl;
-
+    if (verbose){
+        std::cout << "Input image: " << inputImage << std::endl;
+    }
     std::cerr << "Read input mask... " << std::endl;
     MaskReaderType::Pointer maskReader = MaskReaderType::New();
     maskReader->SetFileName( argv[2] );
@@ -188,10 +197,17 @@ int main( int argc, char * argv [] )
 
     // Computes mean slice intensity in a neighborhood of each slice
     //Loop over slices in the brain mask
+    if (not verbose){
+        std::cout << "Process slice ";
+    }
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
-    {
-        std::cout << "Process slice #" << i << "..." << std::endl;
-
+    {   
+        if (verbose){
+             std::cout << "Process slice #" << i << "..." << std::endl;
+        }
+        else{
+            std::cout << "#" << i << "...";
+        }
         InputImageType::RegionType wholeSliceRegion;
         wholeSliceRegion = roi;
 
@@ -203,14 +219,14 @@ int main( int argc, char * argv [] )
 
         wholeSliceRegion.SetIndex(wholeSliceRegionIndex);
         wholeSliceRegion.SetSize(wholeSliceRegionSize);
-
-        std::cout <<"inputMask "<< std::endl;
-          std::cout << maskImage->GetLargestPossibleRegion() << std::endl;
-          std::cout << "inputImage" << std::endl;
-        std::cout << inputImage->GetLargestPossibleRegion() << std::endl;
-        std::cout << "wholeSliceRegion" << std::endl;
-        std::cout << wholeSliceRegion << std::endl;
-
+        if (verbose){
+            std::cout <<"inputMask "<< std::endl;
+            std::cout << maskImage->GetLargestPossibleRegion() << std::endl;
+            std::cout << "inputImage" << std::endl;
+            std::cout << inputImage->GetLargestPossibleRegion() << std::endl;
+            std::cout << "wholeSliceRegion" << std::endl;
+            std::cout << wholeSliceRegion << std::endl;
+        }
         //Extract slice in input mask
         ExtractImageMaskFilterType::Pointer sliceMaskExtractor = ExtractImageMaskFilterType::New();
         sliceMaskExtractor->SetExtractionRegion(wholeSliceRegion);
@@ -378,9 +394,9 @@ int main( int argc, char * argv [] )
 
         //float smeanDiff = smean - gmean;
         float smeanDiff = smean - neighbmean;
-
-        std::cout << "slice mean intensity : " << smean <<" , expected mean :  " << neighbmean << " ( diff : " << smeanDiff << " ) " << std::endl;
-
+        if (verbose){
+            std::cout << "slice mean intensity : " << smean <<" , expected mean :  " << neighbmean << " ( diff : " << smeanDiff << " ) " << std::endl;
+        }
         //Shift the mean intensity of the slice to the global mean intensity of the stack
 
         OutputImageType::RegionType wholeSliceRegion3D;
@@ -421,9 +437,17 @@ int main( int argc, char * argv [] )
 
     // Remove the min value slice by slice
     //Loop over slices in the brain mask
+    if (not verbose){
+        std::cout << "Process slice ";
+    }
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
-    {
-        std::cout << "Process slice #" << i << "..." << std::endl;
+    {   
+        if (verbose){
+             std::cout << "Process slice #" << i << "..." << std::endl;
+        }
+        else{
+            std::cout << "#" << i << "...";
+        }  
 
         InputImageType::RegionType wholeSliceRegion;
         wholeSliceRegion = roi;
@@ -475,9 +499,9 @@ int main( int argc, char * argv [] )
         if(scounter>0) smean = smean / scounter;
 
         float smeanDiff = smean - gmean;
-
-        std::cout << " mean intensity : " << smean << " ( diff : " << smeanDiff << " ) " << std::endl;
-
+        if (verbose){
+            std::cout << " mean intensity : " << smean << " ( diff : " << smeanDiff << " ) " << std::endl;
+        }
         //Shift the mean intensity of the slice to the global mean intensity of the stack
 
         OutputImageType::RegionType wholeSliceRegion3D;
@@ -509,15 +533,15 @@ int main( int argc, char * argv [] )
 
 
     }
-
+    if (verbose){
     std::cerr << "Write the bias-corrected volume... " << std::endl;
-
+    }
     WriterType::Pointer writer = WriterType::New();
     writer->SetFileName(argv[3]);
     writer->SetInput(outputImage);
     writer->Update();
-
-    std::cerr << "Done! " << std::endl;
-
+    if (verbose){
+        std::cerr << "Done! " << std::endl;
+    }
     return EXIT_SUCCESS;
 }
