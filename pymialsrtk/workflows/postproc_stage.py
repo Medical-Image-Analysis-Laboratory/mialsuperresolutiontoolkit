@@ -29,6 +29,7 @@ def convert_ga(ga):
     ga_str = str(ga) + 'exp' if ga > 35 else str(ga)
     return ga_str
 
+
 def create_postproc_stage(
         p_ga,
         p_do_anat_orientation=False,
@@ -95,12 +96,6 @@ def create_postproc_stage(
             interface=preprocess.ResampleImage(),
             name='resample_t2w_template'
         )
-        #
-        # align_volume = pe.Node(
-        #     interface=preprocess.AlignImageToReference(),
-        #     name='align_volume'
-        # )
-
 
         compute_alignment = pe.Node(
             interface=preprocess.ComputeAlignmentToReference(),
@@ -140,7 +135,6 @@ def create_postproc_stage(
         postproc_stage.connect(resample_t2w_template, "output_image",
                                compute_alignment, "input_template")
 
-
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
                                align_volume, "input_image")
         postproc_stage.connect(resample_t2w_template, "output_image",
@@ -151,7 +145,6 @@ def create_postproc_stage(
 
         postproc_stage.connect(compute_alignment, "output_transform",
                                align_volume, "input_transform")
-
 
         postproc_stage.connect(align_volume, "output_image",
                                outputnode, "output_image")

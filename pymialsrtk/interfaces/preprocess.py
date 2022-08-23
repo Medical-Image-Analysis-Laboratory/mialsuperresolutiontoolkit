@@ -1488,7 +1488,11 @@ class ReduceFieldOfView(BaseInterface):
             return os.path.abspath(os.path.basename(self.inputs.input_mask))
         return None
 
-    def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[15,15,15]):
+    def _crop_image_and_mask(self,
+                             in_image,
+                             in_mask,
+                             paddings_mm=[15, 15, 15]
+                             ):
         import SimpleITK as sitk
         reader = sitk.ImageFileReader()
 
@@ -1603,6 +1607,7 @@ class ResampleImage(BaseInterface):
 
     input_spec = ResampleImageInputSpec
     output_spec = ResampleImageOutputSpec
+
     def _gen_filename(self, name):
         if name == 'output_image':
             return os.path.abspath(os.path.basename(self.inputs.input_image))
@@ -1861,23 +1866,24 @@ class ComputeAlignmentToReference(BaseInterface):
         return i_best_transform
 
 
-
-
-
 class ApplyAlignmentTransformInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the
-    AlignImageToReference interface."""
+    ApplyAlignmentTransform interface."""
 
     input_image = File(mandatory=True, desc='Input image to realign')
     input_template = File(mandatory=True, desc='Input reference image')
 
     input_mask = File(mandatory=False, desc='Input mask to realign')
 
-    input_transform = File(mandatory=True, desc='Input alignment transform to apply')
+    input_transform = File(
+        mandatory=True,
+        desc='Input alignment transform to apply'
+    )
 
 
 class ApplyAlignmentTransformOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the AlignImageToReference interface."""
+    """Class used to represent outputs of the
+    ApplyAlignmentTransform interface."""
 
     output_image = File(
         mandatory=True,
@@ -1899,7 +1905,6 @@ class ApplyAlignmentTransform(BaseInterface):
     """
     input_spec = ApplyAlignmentTransformInputSpec
     output_spec = ApplyAlignmentTransformOutputSpec
-
 
     def _gen_filename(self, name):
         if name == 'output_image':
@@ -1962,6 +1967,5 @@ class ApplyAlignmentTransform(BaseInterface):
             mask_tfm = self._gen_filename('output_mask')
             writer.SetFileName(mask_tfm)
             writer.Execute(warped_moving_sitk_mask)
-
 
         return
