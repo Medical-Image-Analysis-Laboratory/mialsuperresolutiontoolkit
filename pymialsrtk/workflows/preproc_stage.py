@@ -156,7 +156,8 @@ def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
     preproc_stage.connect(reduceFOV, 'output_mask',
                           srtkCorrectSliceIntensity02, 'in_mask')
 
-    preproc_stage.connect(reduceFOV, 'output_mask',
+    preproc_stage.connect(reduceFOV,
+                          ('output_mask', utils.sort_ascending),
                           srtkHistogramNormalization, "input_masks")
 
     preproc_stage.connect(nlmDenoise, ("out_file", utils.sort_ascending),
@@ -179,7 +180,8 @@ def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
     if p_do_nlm_denoising:
         preproc_stage.connect(reduceFOV, 'output_mask',
                               srtkCorrectSliceIntensity02_nlm, 'in_mask')
-        preproc_stage.connect(reduceFOV, 'output_mask',
+        preproc_stage.connect(reduceFOV,
+                              ('output_mask', utils.sort_ascending),
                               srtkHistogramNormalization_nlm, "input_masks")
         preproc_stage.connect(srtkSliceBySliceN4BiasFieldCorrection,
                               ("out_im_file", utils.sort_ascending),
