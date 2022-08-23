@@ -130,6 +130,8 @@ int main( int argc, char *argv[] )
   TCLAP::SwitchArg  debluringArg("","debluring","Flag to set deblurring kernel for SDI (double the neighborhood)"
                                           " (by default it is disable.).",cmd,false);
 
+  TCLAP::SwitchArg  verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
+
   //TCLAP::SwitchArg  atlasInitSwitchArg("","atlasInit","Atlas image is used as as initial HR image for "
   //    "slice-to-volume registration , Assumed initial transform is result of global rigid stack registration", cmd, false);
 
@@ -160,9 +162,9 @@ int main( int argc, char *argv[] )
   bool rigid3D = rigid3DSwitchArg.getValue();
   bool noreg   = noregSwitchArg.getValue();
   //bool useatlas = atlasInitSwitchArg.getValue();
+  bool verbose = verboseArg.getValue();
 
   // typedefs
-  const bool verbose = false;
   const    unsigned int    Dimension = 3;
   typedef  float           PixelType;
 

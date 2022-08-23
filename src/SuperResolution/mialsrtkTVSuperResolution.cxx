@@ -179,7 +179,7 @@ int main( int argc, char *argv[] )
         TCLAP::SwitchArg  debluringArg("","debluring","Flag to set deblurring PSF during SR (double the neighborhood)"
                                                 " (by default it is disable.).",cmd,false);
 
-
+        TCLAP::SwitchArg  verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
         // Parse the argv array.
         cmd.parse( argc, argv );
 
@@ -193,7 +193,7 @@ int main( int argc, char *argv[] )
         refMask = refMaskArg.getValue().c_str();
         pre_input = preInputArg.getValue();
         outTransform = outTransArg.getValue();
-
+        
         iter = iterArg.getValue();
         lambda = lambdaArg.getValue();
         deltat = deltatArg.getValue();
@@ -203,7 +203,12 @@ int main( int argc, char *argv[] )
         numberOfLoops = loopArg.getValue();
         numberOfBregmanLoops = bregmanLoopArg.getValue();
         stepScale = stepScaleArg.getValue();
+        bool verbose = verboseArg.getValue();
 
+        if (not verbose){
+            std::cout << "Hello, this is a test" << std::endl;
+        }
+        
         tau_init =  stepScale * tau_init;
         sigma_init = ( 1 / stepScale ) * sigma_init;
 
@@ -513,7 +518,6 @@ int main( int argc, char *argv[] )
         for (int j = 0; j < numberOfBregmanLoops; j++)
         {
             criterion = 1.0;
-
             std::cout << "Bregman loop init : "<< j << std::endl<<std::endl;
             std::cout<<"Theta : "<<theta_init<<std::endl;
             std::cout<<"Sigma : "<<sigma_init<<std::endl;
