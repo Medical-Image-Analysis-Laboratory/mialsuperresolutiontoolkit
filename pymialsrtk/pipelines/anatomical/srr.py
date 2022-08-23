@@ -357,7 +357,8 @@ class AnatomicalPipeline:
                         ("outputnode.output_images", utils.sort_ascending),
                         reconstruction_stage, "inputnode.input_images")
 
-        self.wf.connect(preprocessing_stage, "outputnode.output_masks",
+        self.wf.connect(preprocessing_stage,
+                        ("outputnode.output_masks", utils.sort_ascending),
                         reconstruction_stage, "inputnode.input_masks")
 
         self.wf.connect(input_stage, "outputnode.stacks_order",
