@@ -2108,7 +2108,7 @@ class ApplyAlignmentTransform(BaseInterface):
                 mask,
                 template,  # Reference
                 rigid_transform_sitk,
-                sitk.sitkLinear)
+                sitk.sitkNearestNeighbor)
 
             mask_tfm = self._gen_filename('output_mask')
             writer.SetFileName(mask_tfm)
