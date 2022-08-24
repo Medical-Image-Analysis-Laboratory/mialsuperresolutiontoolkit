@@ -21,14 +21,14 @@ from nipype.interfaces.utility import IdentityInterface
 from pymialsrtk.interfaces import preprocess
 
 
-def create_input_stage(bids_dir,
-                       subject,
-                       session,
-                       use_manual_masks,
-                       m_masks_desc,
-                       m_masks_derivatives_dir,
-                       m_skip_stacks_ordering,
-                       m_stacks,
+def create_input_stage(p_bids_dir,
+                       p_subject,
+                       p_session,
+                       p_use_manual_masks,
+                       p_masks_desc,
+                       p_masks_derivatives_dir,
+                       p_skip_stacks_ordering,
+                       p_stacks,
                        name="input_stage"
                        ):
     """Create a input management workflow
@@ -48,57 +48,61 @@ def create_input_stage(bids_dir,
 
     input_stage = pe.Workflow(name=name)
 
-    sub_ses = subject
-    if session is not None:
-        sub_ses = ''.join([sub_ses, '_', session])
+    sub_ses = p_subject
+    if p_session is not None:
+        sub_ses = ''.join([sub_ses, '_', p_session])
+
+    output_fields = ['t2ws_filtered', 'masks_filtered', 'stacks_order']
+
+    if p_skip_stacks_ordering:
+        output_fields += ['report_image', 'motion_tsv']
 
     outputnode = pe.Node(
-        interface=util.IdentityInterface(fields=['t2ws_filtered',
-                                                 'masks_filtered',
-                                                 'stacks_order',
-                                                 'report_image',
-                                                 'motion_tsv']),
-        name='outputnode')
+        interface=util.IdentityInterface(
+            fields=output_fields
+        ),
+        name='outputnode'
+    )
 
-    if use_manual_masks:
+    if p_use_manual_masks:
         dg = pe.Node(
             interface=DataGrabber(outfields=['T2ws', 'masks']),
             name='data_grabber'
         )
-        dg.inputs.base_directory = bids_dir
+        dg.inputs.base_directory = p_bids_dir
         dg.inputs.template = '*'
         dg.inputs.raise_on_empty = False
         dg.inputs.sort_filelist = True
 
-        if session is not None:
+        if p_session is not None:
             t2ws_template = os.path.join(
-                subject, session, 'anat',
+                p_subject, p_session, 'anat',
                 '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])
             )
-            if m_masks_desc is not None:
+            if p_masks_desc is not None:
                 masks_template = os.path.join(
-                    'derivatives', m_masks_derivatives_dir, subject, session,
+                    'derivatives', p_masks_derivatives_dir, p_subject, p_session,
                     'anat', '_'.join([sub_ses, '*_run-*',
-                                      '_desc-'+m_masks_desc, '*mask.nii.gz'])
+                                      '_desc-'+p_masks_desc, '*mask.nii.gz'])
                 )
             else:
                 masks_template = os.path.join(
-                    'derivatives', m_masks_derivatives_dir, subject, session,
+                    'derivatives', p_masks_derivatives_dir, p_subject, p_session,
                     'anat', '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
                 )
         else:
-            t2ws_template = os.path.join(subject, 'anat',
+            t2ws_template = os.path.join(p_subject, 'anat',
                                          sub_ses + '*_run-*_T2w.nii.gz')
 
-            if m_masks_desc is not None:
+            if p_masks_desc is not None:
                 masks_template = os.path.join(
-                    'derivatives', m_masks_derivatives_dir, subject, session,
+                    'derivatives', p_masks_derivatives_dir, p_subject, p_session,
                     'anat', '_'.join([sub_ses, '*_run-*',
-                                      '_desc-'+m_masks_desc, '*mask.nii.gz'])
+                                      '_desc-'+p_masks_desc, '*mask.nii.gz'])
                 )
             else:
                 masks_template = os.path.join(
-                    'derivatives', m_masks_derivatives_dir, subject, 'anat',
+                    'derivatives', p_masks_derivatives_dir, p_subject, 'anat',
                     sub_ses + '*_run-*_*mask.nii.gz'
                 )
 
@@ -110,36 +114,36 @@ def create_input_stage(bids_dir,
             name='brain_masks_bypass',
             iterfield=['out_file'])
 
-        if m_stacks is not None:
+        if p_stacks is not None:
             custom_masks_filter = pe.Node(
                 interface=preprocess.FilteringByRunid(),
                 name='custom_masks_filter')
 
-            custom_masks_filter.inputs.stacks_id = m_stacks
+            custom_masks_filter.inputs.stacks_id = p_stacks
 
     else:
         dg = pe.Node(interface=DataGrabber(outfields=['T2ws']),
                      name='data_grabber')
 
-        dg.inputs.base_directory = bids_dir
+        dg.inputs.base_directory = p_bids_dir
         dg.inputs.template = '*'
         dg.inputs.raise_on_empty = False
         dg.inputs.sort_filelist = True
 
         dg.inputs.field_template = dict(
-            T2ws=os.path.join(subject, 'anat',
+            T2ws=os.path.join(p_subject, 'anat',
                               sub_ses+'*_run-*_T2w.nii.gz'))
-        if session is not None:
+        if p_session is not None:
             dg.inputs.field_template = dict(
-                T2ws=os.path.join(subject, session, 'anat',
+                T2ws=os.path.join(p_subject, p_session, 'anat',
                                   '_'.join([sub_ses, '*run-*',
                                             '*T2w.nii.gz'])))
 
-        if m_stacks is not None:
+        if p_stacks is not None:
             t2ws_filter_prior_masks = pe.Node(
                 interface=preprocess.FilteringByRunid(),
                 name='t2ws_filter_prior_masks')
-            t2ws_filter_prior_masks.inputs.stacks_id = m_stacks
+            t2ws_filter_prior_masks.inputs.stacks_id = p_stacks
 
         brainMask = pe.MapNode(interface=preprocess.BrainExtraction(),
                                name='brainExtraction',
@@ -167,17 +171,17 @@ def create_input_stage(bids_dir,
     masks_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
                              name='masks_filtered')
 
-    if not m_skip_stacks_ordering:
+    if not p_skip_stacks_ordering:
         stacksOrdering = pe.Node(interface=preprocess.StacksOrdering(),
                                  name='stackOrdering')
     else:
         stacksOrdering = pe.Node(
             interface=IdentityInterface(fields=['stacks_order']),
             name='stackOrdering')
-        stacksOrdering.inputs.stacks_order = m_stacks
+        stacksOrdering.inputs.stacks_order = p_stacks
 
-    if use_manual_masks:
-        if m_stacks is not None:
+    if p_use_manual_masks:
+        if p_stacks is not None:
             input_stage.connect(dg, "masks", custom_masks_filter,
                                 "input_files")
             input_stage.connect(custom_masks_filter, "output_files",
@@ -185,7 +189,7 @@ def create_input_stage(bids_dir,
         else:
             input_stage.connect(dg, "masks", brainMask, "out_file")
     else:
-        if m_stacks is not None:
+        if p_stacks is not None:
             input_stage.connect(dg, "T2ws", t2ws_filter_prior_masks,
                                 "input_files")
             input_stage.connect(t2ws_filter_prior_masks, "output_files",
@@ -193,7 +197,7 @@ def create_input_stage(bids_dir,
         else:
             input_stage.connect(dg, "T2ws", brainMask, "in_file")
 
-    if not m_skip_stacks_ordering:
+    if not p_skip_stacks_ordering:
         input_stage.connect(brainMask, "out_file",
                             stacksOrdering, "input_masks")
 
@@ -212,9 +216,11 @@ def create_input_stage(bids_dir,
                         outputnode, "t2ws_filtered")
     input_stage.connect(stacksOrdering, "stacks_order",
                         outputnode, "stacks_order")
-    input_stage.connect(stacksOrdering, "report_image",
-                        outputnode, "report_image")
-    input_stage.connect(stacksOrdering, "motion_tsv",
-                        outputnode, "motion_tsv")
+
+    if not p_skip_stacks_ordering:
+        input_stage.connect(stacksOrdering, "report_image",
+                            outputnode, "report_image")
+        input_stage.connect(stacksOrdering, "motion_tsv",
+                            outputnode, "motion_tsv")
 
     return input_stage
