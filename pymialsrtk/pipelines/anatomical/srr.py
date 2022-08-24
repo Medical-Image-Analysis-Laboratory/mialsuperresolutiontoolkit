@@ -331,142 +331,6 @@ class AnatomicalPipeline:
         nipype_logging.update_logging(config)
         # config.enable_provenance()
 
-# <<<<<<< HEAD
-#         if self.use_manual_masks:
-#             dg = pe.Node(
-#                 interface=DataGrabber(
-#                     outfields=(['T2ws', 'masks', 'labels'] if self.m_do_reconstruct_labels else ['T2ws', 'masks'])),
-#                 name='data_grabber'
-#             )
-#             dg.inputs.base_directory = self.bids_dir
-#             dg.inputs.template = '*'
-#             dg.inputs.raise_on_empty = False
-#             dg.inputs.sort_filelist = True
-#
-#             if self.session is not None:
-#                 t2ws_template = os.path.join(
-#                     self.subject, self.session, 'anat',
-#                     '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])
-#                 )
-#                 if self.m_masks_desc is not None:
-#                     masks_template = os.path.join(
-#                         'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-#                         '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
-#                     )
-#                 else:
-#                     masks_template = os.path.join(
-#                         'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-#                         '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
-#                     )
-#                 if self.m_do_reconstruct_labels:
-#                     labels_template = os.path.join(
-#                         'derivatives', 'labels', self.subject, self.session, 'anat',
-#                         '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
-#                     )
-#             else:
-#                 t2ws_template=os.path.join(self.subject, 'anat', sub_ses + '*_run-*_T2w.nii.gz')
-#
-#                 if self.m_masks_desc is not None:
-#                     masks_template = os.path.join(
-#                         'derivatives', self.m_masks_derivatives_dir, self.subject, self.session, 'anat',
-#                         '_'.join([sub_ses, '*_run-*', '_desc-'+self.m_masks_desc, '*mask.nii.gz'])
-#                     )
-#                 else:
-#                     masks_template = os.path.join(
-#                         'derivatives', self.m_masks_derivatives_dir, self.subject, 'anat',
-#                         sub_ses + '*_run-*_*mask.nii.gz'
-#                     )
-#
-#                 if self.m_do_reconstruct_labels:
-#                     labels_template = os.path.join(
-#                         'derivatives', 'labels', self.subject, 'anat',
-#                         '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
-#                     )
-#
-#
-#             if self.m_do_reconstruct_labels:
-#                 dg.inputs.field_template = dict(T2ws=t2ws_template,
-#                                                 masks=masks_template,
-#                                                 labels=labels_template)
-#             else:
-#                 dg.inputs.field_template = dict(T2ws=t2ws_template,
-#                                                 masks=masks_template)
-#
-#             brainMask = pe.MapNode(interface=IdentityInterface(
-#                                         fields=['out_file']
-#                                     ),
-#                                    name='brain_masks_bypass',
-#                                    iterfield=['out_file'])
-#
-#             if self.m_stacks is not None:
-#                 custom_masks_filter = pe.Node(interface=
-#                                               preprocess.FilteringByRunid(),
-#                                               name='custom_masks_filter')
-#                 custom_masks_filter.inputs.stacks_id = self.m_stacks
-#
-#         else:
-#             dg = pe.Node(interface=DataGrabber(outfields=['T2ws']),
-#                          name='data_grabber')
-#
-#             dg.inputs.base_directory = self.bids_dir
-#             dg.inputs.template = '*'
-#             dg.inputs.raise_on_empty = False
-#             dg.inputs.sort_filelist = True
-#
-#             dg.inputs.field_template = dict(
-#                 T2ws=os.path.join(self.subject, 'anat',
-#                                   sub_ses+'*_run-*_T2w.nii.gz'))
-#             if self.session is not None:
-#                 dg.inputs.field_template = dict(
-#                     T2ws=os.path.join(self.subject, self.session, 'anat',
-#                                       '_'.join([sub_ses, '*run-*',
-#                                                 '*T2w.nii.gz'])))
-#
-#             if self.m_stacks is not None:
-#                 t2ws_filter_prior_masks = pe.Node(
-#                     interface=preprocess.FilteringByRunid(),
-#                     name='t2ws_filter_prior_masks')
-#                 t2ws_filter_prior_masks.inputs.stacks_id = self.m_stacks
-#
-#             brainMask = pe.MapNode(interface=preprocess.BrainExtraction(),
-#                                    name='brainExtraction',
-#                                    iterfield=['in_file'])
-#
-#             brainMask.inputs.in_ckpt_loc = pkg_resources.resource_filename(
-#                 "pymialsrtk",
-#                 os.path.join("data",
-#                              "Network_checkpoints",
-#                              "Network_checkpoints_localization",
-#                              "Unet.ckpt-88000.index")
-#             ).split('.index')[0]
-#             brainMask.inputs.threshold_loc = 0.49
-#             brainMask.inputs.in_ckpt_seg = pkg_resources.resource_filename(
-#                 "pymialsrtk",
-#                 os.path.join("data",
-#                              "Network_checkpoints",
-#                              "Network_checkpoints_segmentation",
-#                              "Unet.ckpt-20000.index")
-#             ).split('.index')[0]
-#             brainMask.inputs.threshold_seg = 0.5
-#
-#         t2ws_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
-#                                 name='t2ws_filtered')
-#         masks_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
-#                                  name='masks_filtered')
-#
-#         if self.m_do_reconstruct_labels:
-#             labels_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
-#                                       name='labels_filtered')
-#
-#         if not self.m_skip_stacks_ordering:
-#             stacksOrdering = pe.Node(interface=preprocess.StacksOrdering(),
-#                                      name='stackOrdering')
-#         else:
-#             stacksOrdering = pe.Node(
-#                 interface=IdentityInterface(fields=['stacks_order']),
-#                 name='stackOrdering')
-#             stacksOrdering.inputs.stacks_order = self.m_stacks
-# =======
         input_stage = create_input_stage(
             self.bids_dir,
             self.subject,
@@ -478,7 +342,6 @@ class AnatomicalPipeline:
             self.m_do_reconstruct_labels,
             self.m_stacks
         )
-# >>>>>>> v2.1.0
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
@@ -499,6 +362,7 @@ class AnatomicalPipeline:
             p_do_anat_orientation=self.m_do_anat_orientation,
             name='postprocessing_stage')
 
+        # mask_hr_label: Todo - mode to postproc stage
         if self.m_do_reconstruct_labels:
             mask_hr_label = pe.Node(interface=preprocess.MialsrtkMaskImage(),
                                name='mask_hr_label')
@@ -548,35 +412,23 @@ class AnatomicalPipeline:
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         postprocessing_stage, "inputnode.input_image")
 
-# <<<<<<< HEAD
         if self.m_do_reconstruct_labels:
-            self.wf.connect(reconstruction_stage, "outputnode.output_labelmap",
-                            mask_hr_label, "in_file")
-            self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
-                            mask_hr_label, "in_mask")
-
-        # if self.m_do_reconstruct_labels:
-        #     self.wf.connect(stacksOrdering, "stacks_order",
-        #                     labels_filtered, "stacks_id")
-        #     self.wf.connect(dg, "labels",
-        #                     labels_filtered, "input_files")
-
             self.wf.connect(input_stage, "outputnode.labels_filtered",
                             preprocessing_stage, "inputnode.input_labels")
 
             self.wf.connect(preprocessing_stage, "outputnode.output_labels",
                             reconstruction_stage, "inputnode.input_labels")
-        #
-        # self.wf.connect(stacksOrdering, "stacks_order",
-        #                 output_mgmt_stage, "inputnode.stacks_order")
 
-# =======
+            self.wf.connect(reconstruction_stage, "outputnode.output_labelmap",
+                            mask_hr_label, "in_file")
+            self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
+                            mask_hr_label, "in_mask")
+
         self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
                         postprocessing_stage, "inputnode.input_sdi")
 
         self.wf.connect(input_stage, "outputnode.stacks_order",
                         output_mgmt_stage, "inputnode.stacks_order")
-# >>>>>>> v2.1.0
 
         self.wf.connect(preprocessing_stage, "outputnode.output_masks",
                         output_mgmt_stage, "inputnode.input_masks")

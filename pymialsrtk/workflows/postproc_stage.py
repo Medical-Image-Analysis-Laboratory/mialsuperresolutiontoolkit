@@ -40,6 +40,8 @@ def create_postproc_stage(
     ----------
     ::
         name : name of workflow (default: preproc_stage)
+        p_ga
+        p_do_anat_orientation
     Inputs::
         inputnode.input_image : Input T2w image (filename)
         inputnode.input_mask : Input mask image (filenames)

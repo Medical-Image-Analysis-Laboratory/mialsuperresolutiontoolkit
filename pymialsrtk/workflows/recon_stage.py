@@ -33,7 +33,12 @@ def create_recon_stage(p_paramTV,
     ----------
     ::
         name : name of workflow (default: recon_stage)
+        p_use_manual_masks :
         p_do_nlm_denoising : weither to proceed to non-local mean denoising
+        p_do_reconstruct_labels :
+        p_do_refine_hr_mask :
+        p_skip_svr :
+        p_sub_ses :
     Inputs::
         inputnode.input_images : Input T2w images (list of filenames)
         inputnode.input_images_nlm : Input T2w images (list of filenames),
