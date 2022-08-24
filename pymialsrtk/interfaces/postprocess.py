@@ -400,9 +400,11 @@ class BinarizeImage(BaseInterface):
 
 class MergeMajorityVoteInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the MergeMajorityVote interface."""
-    input_images = InputMultiPath(File(),
-                                  desc='Inputs label-wise labelmaps to be merged',
-                                  mandatory=True)
+    input_images = InputMultiPath(
+        File(),
+        desc='Inputs label-wise labelmaps to be merged',
+        mandatory=True
+    )
 
 
 class MergeMajorityVoteOutputSpec(TraitedSpec):
