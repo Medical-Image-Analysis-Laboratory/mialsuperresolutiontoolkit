@@ -54,7 +54,7 @@ def create_input_stage(p_bids_dir,
 
     output_fields = ['t2ws_filtered', 'masks_filtered', 'stacks_order']
 
-    if p_skip_stacks_ordering:
+    if not p_skip_stacks_ordering:
         output_fields += ['report_image', 'motion_tsv']
 
     outputnode = pe.Node(
