@@ -169,6 +169,7 @@ class AnatomicalPipeline:
     m_do_nlm_denoising = None
     m_skip_stacks_ordering = None
     m_do_refine_hr_mask = None
+    m_do_anat_orientation = None
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
@@ -178,7 +179,7 @@ class AnatomicalPipeline:
     nipype_number_of_cores = None
 
     def __init__(
-        self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
+        self, bids_dir, output_dir, subject, p_ga=None, p_stacks=None, sr_id=1,
         session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
         p_dict_custom_interfaces=None,
         openmp_number_of_cores=None, nipype_number_of_cores=None
@@ -189,6 +190,7 @@ class AnatomicalPipeline:
         self.bids_dir = bids_dir
         self.output_dir = output_dir
         self.subject = subject
+        self.m_ga = p_ga
         self.sr_id = sr_id
         self.session = session
         self.m_stacks = p_stacks
@@ -209,10 +211,16 @@ class AnatomicalPipeline:
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
-            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] if 'skip_svr' in p_dict_custom_interfaces.keys() else False
-            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() else False
+            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
+                if 'skip_svr' in p_dict_custom_interfaces.keys() \
+                else False
+            self.m_do_refine_hr_mask = \
+                p_dict_custom_interfaces['do_refine_hr_mask'] \
+                if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() \
+                else False
             self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising']\
-                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() else False
+                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
+                else False
 
             self.m_skip_stacks_ordering =\
                 p_dict_custom_interfaces['skip_stacks_ordering']\
@@ -220,11 +228,28 @@ class AnatomicalPipeline:
                         ('skip_stacks_ordering' in
                          p_dict_custom_interfaces.keys())) \
                     else False
+
+            self.m_do_anat_orientation = \
+                p_dict_custom_interfaces['do_anat_orientation'] \
+                if 'do_anat_orientation' in p_dict_custom_interfaces.keys() \
+                else False
+
         else:
             self.m_skip_svr = False
             self.m_do_refine_hr_mask = False
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
+            self.m_do_anat_orientation = False
+
+        if self.m_do_anat_orientation:
+            if not os.path.isdir('/sta'):
+                print('A template directory must '
+                      'be specified to perform alignement.')
+                self.m_do_anat_orientation = False
+            if self.m_ga is None:
+                print('A gestational age must '
+                      'be specified to perform alignement.')
+                self.m_do_anat_orientation = False
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -312,6 +337,8 @@ class AnatomicalPipeline:
             p_sub_ses=sub_ses)
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
+            p_ga=self.m_ga,
+            p_do_anat_orientation=self.m_do_anat_orientation,
             name='postprocessing_stage')
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
@@ -328,7 +355,6 @@ class AnatomicalPipeline:
 
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
-
         self.wf.connect(input_stage, "outputnode.t2ws_filtered",
                         preprocessing_stage, "inputnode.input_images")
 
@@ -358,6 +384,9 @@ class AnatomicalPipeline:
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         postprocessing_stage, "inputnode.input_image")
 
+        self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                        postprocessing_stage, "inputnode.input_sdi")
+
         self.wf.connect(input_stage, "outputnode.stacks_order",
                         output_mgmt_stage, "inputnode.stacks_order")
 
@@ -376,7 +405,7 @@ class AnatomicalPipeline:
                         output_mgmt_stage, "inputnode.input_json_path")
         self.wf.connect(reconstruction_stage, "outputnode.output_sr_png",
                         output_mgmt_stage, "inputnode.input_sr_png")
-        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
+        self.wf.connect(postprocessing_stage, "outputnode.output_mask",
                         output_mgmt_stage, "inputnode.input_hr_mask")
 
         if self.m_do_nlm_denoising:

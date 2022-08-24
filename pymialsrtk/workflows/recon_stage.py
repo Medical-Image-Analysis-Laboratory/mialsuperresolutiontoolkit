@@ -11,10 +11,13 @@ from nipype.interfaces.base import (TraitedSpec, File,
                                     BaseInterface, BaseInterfaceInputSpec)
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
+
+from nipype.interfaces.io import DataGrabber
+
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
+import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.utils as utils
-
 
 def create_recon_stage(p_paramTV,
                        p_use_manual_masks,
@@ -73,7 +76,8 @@ def create_recon_stage(p_paramTV,
                                           'output_hr_mask',
                                           'output_transforms',
                                           'output_json_path',
-                                          'output_sr_png']),
+                                          'output_sr_png',
+                                          'output_sr_aligned']),
         name='outputnode')
 
     deltatTV = p_paramTV["deltatTV"] \
@@ -121,6 +125,7 @@ def create_recon_stage(p_paramTV,
     srtkTVSuperResolution.inputs.in_gamma = gamma
     srtkTVSuperResolution.inputs.in_deltat = deltatTV
     srtkTVSuperResolution.inputs.in_lambda = lambdaTV
+
 
     if p_do_refine_hr_mask:
         srtkHRMask = pe.Node(
