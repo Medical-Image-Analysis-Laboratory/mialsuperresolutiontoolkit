@@ -279,9 +279,7 @@ int main( int argc, char *argv[] )
         // Super resolution filter that solves the inverse problem
         typedef mialsrtk::SuperResolutionRigidImageFilterWithImplicitGradientDescent< ImageType, ImageType >  ResamplerType;
         ResamplerType::Pointer resampler = ResamplerType::New();
-        std::cout << "Verbosity level in SRTV recon" << verbose << std::endl;
         resampler -> SetVerbose(verbose);
-        std::cout << "Verbosity level in resampler recon" << resampler -> GetVerbose() << std::endl;
         typedef itk::OrientImageFilter<ImageType,ImageType> OrientImageFilterType;
         typedef itk::OrientImageFilter<ImageMaskType,ImageMaskType> OrientImageMaskFilterType;
 
