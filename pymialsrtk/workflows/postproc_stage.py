@@ -86,7 +86,7 @@ def create_postproc_stage(
         )
         atlas_grabber.inputs.base_directory = '/sta'
         atlas_grabber.inputs.template = '*'
-        atlas_grabber.inputs.raise_on_empty = False
+        atlas_grabber.inputs.raise_on_empty = True
         atlas_grabber.inputs.sort_filelist = True
 
         atlas_grabber.inputs.field_template = \
