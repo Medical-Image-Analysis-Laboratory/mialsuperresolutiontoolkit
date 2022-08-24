@@ -1954,6 +1954,7 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatri
         }
         // PSF definition
         typename FunctionType::Pointer function = FunctionType::New();
+        function -> SetVerbose(this -> GetVerbose());
         function -> SetPSF(  FunctionType::GAUSSIAN );
         function -> SetDirection( m_Images[im] -> GetDirection() );
         function -> SetSpacing( inputSpacing2 );
