@@ -243,10 +243,12 @@ class AnatomicalPipeline:
 
         if self.m_do_anat_orientation:
             if not os.path.isdir('/sta'):
-                print('A template directory must be specified to perform alignement.')
+                print('A template directory must '
+                      'be specified to perform alignement.')
                 self.m_do_anat_orientation = False
             if self.m_ga is None:
-                print('A gestational age must be specified to perform alignement.')
+                print('A gestational age must '
+                      'be specified to perform alignement.')
                 self.m_do_anat_orientation = False
 
     def create_workflow(self):
