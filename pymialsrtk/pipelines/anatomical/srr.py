@@ -313,14 +313,15 @@ class AnatomicalPipeline:
         # config.enable_provenance()
 
         input_stage = create_input_stage(
-                        self.bids_dir,
-                        self.subject,
-                        self.session,
-                        self.use_manual_masks,
-                        self.m_masks_desc,
-                        self.m_masks_derivatives_dir,
-                        self.m_skip_stacks_ordering,
-                        self.m_stacks)
+            self.bids_dir,
+            self.subject,
+            self.session,
+            self.use_manual_masks,
+            self.m_masks_desc,
+            self.m_masks_derivatives_dir,
+            self.m_skip_stacks_ordering,
+            self.m_stacks
+        )
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising)
@@ -340,6 +341,7 @@ class AnatomicalPipeline:
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_skip_stacks_ordering=self.m_skip_stacks_ordering,
             name='output_mgmt_stage')
 
         output_mgmt_stage.inputs.inputnode.sub_ses = sub_ses
