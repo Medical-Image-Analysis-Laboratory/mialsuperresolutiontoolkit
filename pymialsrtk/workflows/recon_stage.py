@@ -10,14 +10,15 @@ from nipype.interfaces.base import (TraitedSpec, File,
                                     InputMultiPath, OutputMultiPath,
                                     BaseInterface, BaseInterfaceInputSpec)
 from nipype.interfaces import utility as util
+from nipype.interfaces.io import DataGrabber
 from nipype.pipeline import engine as pe
 
 import pymialsrtk.workflows.recon_labels_stage as recon_labels_stage
 
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
+import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.utils as utils
-
 
 def create_recon_stage(p_paramTV,
                        p_use_manual_masks,
@@ -127,6 +128,7 @@ def create_recon_stage(p_paramTV,
     srtkTVSuperResolution.inputs.in_gamma = gamma
     srtkTVSuperResolution.inputs.in_deltat = deltatTV
     srtkTVSuperResolution.inputs.in_lambda = lambdaTV
+
 
     if p_do_refine_hr_mask:
         srtkHRMask = pe.Node(

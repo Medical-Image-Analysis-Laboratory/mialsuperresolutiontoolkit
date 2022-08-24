@@ -65,16 +65,19 @@ def create_preproc_stage(p_do_nlm_denoising=False,
         input_fields += ['input_labels']
         output_fields += ['output_labels']
 
-    inputnode = pe.Node(interface=util.IdentityInterface(
-        fields=input_fields),
-        name='inputnode')
+    inputnode = pe.Node(
+        interface=util.IdentityInterface(
+            fields=input_fields
+        ),
+        name='inputnode'
+    )
 
-    outputnode = pe.Node(interface=util.IdentityInterface(
-        fields=output_fields),
-        name='outputnode')
-
-    """
-    """
+    outputnode = pe.Node(
+        interface=util.IdentityInterface(
+            fields=output_fields
+        ),
+        name='outputnode'
+    )
 
     iterfields = ['input_image', 'input_mask']
     if p_do_reconstruct_labels:
@@ -147,6 +150,16 @@ def create_preproc_stage(p_do_nlm_denoising=False,
         interface=preprocess.MialsrtkIntensityStandardization(),
         name='srtkIntensityStandardization02')
 
+    srtkMaskImage01 = pe.MapNode(interface=preprocess.MialsrtkMaskImage(),
+                                 name='srtkMaskImage01',
+                                 iterfield=['in_file', 'in_mask'])
+
+    if p_do_nlm_denoising:
+        srtkMaskImage01_nlm = pe.MapNode(
+            interface=preprocess.MialsrtkMaskImage(),
+            name='srtkMaskImage01_nlm',
+            iterfield=['in_file', 'in_mask'])
+
     preproc_stage.connect(inputnode, 'input_images', reduceFOV, 'input_image')
     preproc_stage.connect(inputnode, 'input_masks', reduceFOV, 'input_mask')
 
@@ -156,35 +169,47 @@ def create_preproc_stage(p_do_nlm_denoising=False,
         preproc_stage.connect(reduceFOV, "output_label",
                               outputnode, 'output_labels')
 
-    preproc_stage.connect(reduceFOV, 'output_image', nlmDenoise, 'in_file')
+    preproc_stage.connect(reduceFOV,
+                          ('output_image', utils.sort_ascending),
+                          nlmDenoise, 'in_file')
 
-    preproc_stage.connect(reduceFOV, 'output_mask', nlmDenoise, 'in_mask')
-    preproc_stage.connect(reduceFOV, 'output_mask',
+    preproc_stage.connect(reduceFOV,
+                          ('output_mask', utils.sort_ascending),
+                          nlmDenoise, 'in_mask')
+    preproc_stage.connect(reduceFOV,
+                          ('output_mask', utils.sort_ascending),
                           srtkCorrectSliceIntensity01_nlm, 'in_mask')
-    preproc_stage.connect(reduceFOV, 'output_mask',
+    preproc_stage.connect(reduceFOV,
+                          ('output_mask', utils.sort_ascending),
                           srtkSliceBySliceN4BiasFieldCorrection, 'in_mask')
-    preproc_stage.connect(reduceFOV, 'output_mask',
+    preproc_stage.connect(reduceFOV,
+                          ('output_mask', utils.sort_ascending),
                           srtkCorrectSliceIntensity01, 'in_mask')
-    preproc_stage.connect(reduceFOV, 'output_mask',
+    preproc_stage.connect(reduceFOV,
+                          ('output_mask', utils.sort_ascending),
                           srtkSliceBySliceCorrectBiasField, 'in_mask')
-    preproc_stage.connect(reduceFOV, 'output_mask',
+    preproc_stage.connect(reduceFOV,
+                          ('output_mask', utils.sort_ascending),
                           srtkCorrectSliceIntensity02, 'in_mask')
 
-    preproc_stage.connect(reduceFOV, 'output_mask',
+    preproc_stage.connect(reduceFOV,
+                          ('output_mask', utils.sort_ascending),
                           srtkHistogramNormalization, "input_masks")
 
-    preproc_stage.connect(nlmDenoise, ("out_file", utils.sort_ascending),
+    preproc_stage.connect(nlmDenoise,
+                          ("out_file", utils.sort_ascending),
                           srtkCorrectSliceIntensity01_nlm, "in_file")
 
     preproc_stage.connect(srtkCorrectSliceIntensity01_nlm,
                           ("out_file", utils.sort_ascending),
                           srtkSliceBySliceN4BiasFieldCorrection, "in_file")
 
-    preproc_stage.connect(reduceFOV, 'output_image',
+    preproc_stage.connect(reduceFOV,
+                          ('output_image', utils.sort_ascending),
                           srtkCorrectSliceIntensity01, 'in_file')
 
-    preproc_stage.connect(srtkCorrectSliceIntensity01, ("out_file",
-                                                        utils.sort_ascending),
+    preproc_stage.connect(srtkCorrectSliceIntensity01,
+                          ("out_file", utils.sort_ascending),
                           srtkSliceBySliceCorrectBiasField, "in_file")
     preproc_stage.connect(srtkSliceBySliceN4BiasFieldCorrection,
                           ("out_fld_file", utils.sort_ascending),
@@ -193,7 +218,8 @@ def create_preproc_stage(p_do_nlm_denoising=False,
     if p_do_nlm_denoising:
         preproc_stage.connect(reduceFOV, 'output_mask',
                               srtkCorrectSliceIntensity02_nlm, 'in_mask')
-        preproc_stage.connect(reduceFOV, 'output_mask',
+        preproc_stage.connect(reduceFOV,
+                              ('output_mask', utils.sort_ascending),
                               srtkHistogramNormalization_nlm, "input_masks")
         preproc_stage.connect(srtkSliceBySliceN4BiasFieldCorrection,
                               ("out_im_file", utils.sort_ascending),
@@ -209,9 +235,6 @@ def create_preproc_stage(p_do_nlm_denoising=False,
                               ("output_images", utils.sort_ascending),
                               srtkIntensityStandardization02_nlm,
                               "input_images")
-        preproc_stage.connect(srtkIntensityStandardization02_nlm,
-                              "output_images",
-                              outputnode, 'output_images_nlm')
 
     preproc_stage.connect(srtkSliceBySliceCorrectBiasField,
                           ("out_im_file", utils.sort_ascending),
@@ -228,7 +251,28 @@ def create_preproc_stage(p_do_nlm_denoising=False,
                                                        utils.sort_ascending),
                           srtkIntensityStandardization02, "input_images")
 
-    preproc_stage.connect(srtkIntensityStandardization02, "output_images",
+    preproc_stage.connect(reduceFOV,
+                          ("output_mask", utils.sort_ascending),
+                          srtkMaskImage01, "in_mask")
+
+    preproc_stage.connect(srtkIntensityStandardization02,
+                          ("output_images", utils.sort_ascending),
+                          srtkMaskImage01, "in_file")
+
+    if p_do_nlm_denoising:
+        preproc_stage.connect(srtkIntensityStandardization02_nlm,
+                              ("output_images", utils.sort_ascending),
+                              srtkMaskImage01_nlm, "in_file")
+
+        preproc_stage.connect(reduceFOV,
+                              ("output_mask", utils.sort_ascending),
+                              srtkMaskImage01_nlm, "in_mask")
+
+        preproc_stage.connect(srtkMaskImage01_nlm,
+                              "out_im_file",
+                              outputnode, 'output_images_nlm')
+
+    preproc_stage.connect(srtkMaskImage01, "out_im_file",
                           outputnode, 'output_images')
     preproc_stage.connect(reduceFOV, "output_mask", outputnode, 'output_masks')
 

@@ -37,6 +37,7 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
         { "sr-id": 2,
           ("session": 01,)
           "stacks": [2, 3, 5, 4],
+          "ga": 25,
           "paramTV": { 
             "lambdaTV": 0.75, 
             "deltatTV": 0.01 },
@@ -44,7 +45,9 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
             {
             "skip_svr": true,
             "do_refine_hr_mask": false,
-            "skip_stacks_ordering": false }
+            "skip_stacks_ordering": false,
+            "do_anat_orientation": true
+            }
         }]
       "02": [
         { "sr-id": 1,
@@ -67,6 +70,8 @@ where:
 
     * ``"session"`` (optional) It MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
 
+    * ``"ga"`` (optional but mandatory when ``do_anat_orientation`` is true) subject's gestational age in weeks.
+
     * ``"custom_interfaces"`` (optional): indicates weither optional interfaces of the pipeline should be performed.
 
         * ``"skip_svr"`` (optional) the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
@@ -78,6 +83,13 @@ where:
         * ``"do_reconstruct_labels"`` (optional) indicates weither the reconstruction of LR label maps should be performed together with T2w images. (default is False)
 
         * ``"skip_stacks_ordering"`` (optional) indicates weither the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
+
+        * ``"do_anat_orientation"`` (optional) indicates weither the alignement into anatomical planes should be performed. (default is False)
+        If True, path to a directory containing STA atlas (Gholipour et al., 2017 [1]_, [2]_) must be mounted to `/sta`.
+References
+----------
+.. [1] Gholipour et al.; A normative spatiotemporal MRI atlas of the fetal brain for automatic segmentation and analysis of early brain growth, Scientific Reports 7, Article number: 476 (2017). `(link to article)<http://www.nature.com/articles/s41598-017-00525-w>`_ .
+.. [2] `(link to download) <http://crl.med.harvard.edu/research/fetal_brain_atlas/>`_
 
 .. important:: 
     Before using any BIDS App, we highly recommend you to validate your BIDS structured dataset with the free, online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
@@ -145,6 +157,7 @@ For instance, the previous call to the ``mialsuperresolutiontoolkit_docker`` wra
     $ docker run -t --rm -u $(id -u):$(id -g) \\
             -v /home/localadmin/data/ds001:/bids_dir \\
             -v /media/localadmin/data/ds001/derivatives:/output_dir \\
+            (-v /path/to/CRL_Fetal_Brain_Atlas:/sta \\)
             sebastientourbier/mialsuperresolutiontoolkit:|vrelease| \\
             /bids_dir /output_dir participant --participant_label 01 \\
             --param_file /bids_dir/code/participants_params.json \\

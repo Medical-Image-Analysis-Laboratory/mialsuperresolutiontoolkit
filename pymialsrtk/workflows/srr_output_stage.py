@@ -81,12 +81,6 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     srr_output_stage.connect(inputnode, "final_res_dir", datasink,
                              'base_directory')
 
-    if not p_skip_stacks_ordering:
-        srr_output_stage.connect(inputnode, "report_image",
-                                 datasink, 'figures.@stackOrderingQC')
-        srr_output_stage.connect(inputnode, "motion_tsv",
-                                 datasink, 'anat.@motionTSV')
-
     srr_output_stage.connect(inputnode, "input_masks",
                              datasink, 'anat.@LRmasks')
     srr_output_stage.connect(inputnode, "input_images",

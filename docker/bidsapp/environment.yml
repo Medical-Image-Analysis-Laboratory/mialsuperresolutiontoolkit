@@ -4,12 +4,13 @@ channels:
 - conda-forge
 - defaults
 - anaconda
+- aramislab
 
 dependencies:
 - python=3.7.10
 - pip=21.0.1
 - pandas=1.1.5
-- nipype=1.7.0
+- nipype=1.8.3
 - nilearn=0.8.1
 - pydotplus=2.0.2
 - pandoc=2.14.2
@@ -18,6 +19,7 @@ dependencies:
 - tensorflow==1.13.1
 - scikit-learn=1.0.1
 - scikit-image=0.16.2
+- ants=2.2.0
 
 - pip:
     - coverage==5.1
@@ -33,3 +35,9 @@ dependencies:
     - sphinxcontrib-apidoc==0.3.0
     - sphinxcontrib-napoleon==0.7
     - recommonmark==0.5.0
+    - etelemetry==0.3.0
+    - networkx==2.6.3
+    - simpleITK==2.0.2
+    - nsol==0.1.14
+    - nipy==0.5.0
+    - transforms3d==0.3.1
