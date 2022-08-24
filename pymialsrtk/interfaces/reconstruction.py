@@ -335,15 +335,24 @@ class MialsrtkTVSuperResolution(BaseInterface):
         if self.inputs.deblurring:
             cmd += ['--debluring']
 
-        # self.m_TV_parameters["in_loop"] = str(self.inputs.in_loop)
-        self.m_TV_parameters["in_deltat"] = str(self.inputs.in_deltat)
-        self.m_TV_parameters["in_lambda"] = str(self.inputs.in_lambda)
-        # self.m_TV_parameters["in_bregman_loop"] = str(self.inputs.in_bregman_loop)
-        # self.m_TV_parameters["in_iter"] = str(self.inputs.in_iter)
-        # self.m_TV_parameters["in_step_scale"] = str(self.inputs.in_step_scale)
-        # self.m_TV_parameters["in_gamma"] = str(self.inputs.in_gamma)
-        # self.m_TV_parameters["in_inner_thresh"] = str(self.inputs.in_inner_thresh)
-        # self.m_TV_parameters["in_outer_thresh"] = str(self.inputs.in_outer_thresh)
+        self.m_TV_parameters["in_loop"] = \
+            str(self.inputs.in_loop)
+        self.m_TV_parameters["in_deltat"] = \
+            str(self.inputs.in_deltat)
+        self.m_TV_parameters["in_lambda"] = \
+            str(self.inputs.in_lambda)
+        self.m_TV_parameters["in_bregman_loop"] = \
+            str(self.inputs.in_bregman_loop)
+        self.m_TV_parameters["in_iter"] = \
+            str(self.inputs.in_iter)
+        self.m_TV_parameters["in_step_scale"] = \
+            str(self.inputs.in_step_scale)
+        self.m_TV_parameters["in_gamma"] = \
+            str(self.inputs.in_gamma)
+        self.m_TV_parameters["in_inner_thresh"] = \
+            str(self.inputs.in_inner_thresh)
+        self.m_TV_parameters["in_outer_thresh"] = \
+            str(self.inputs.in_outer_thresh)
 
         cmd += ['--loop', str(self.inputs.in_loop)]
         cmd += ['--deltat', str(self.inputs.in_deltat)]

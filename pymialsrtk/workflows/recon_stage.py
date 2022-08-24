@@ -65,23 +65,26 @@ def create_recon_stage(p_paramTV,
     # preprocessing workflow
     input_fields = ['input_images', 'input_masks', 'stacks_order']
 
-    if p_do_nlm_denoising: input_fields += ['input_images_nlm']
+    if p_do_nlm_denoising:
+        input_fields += ['input_images_nlm']
 
     inputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=input_fields),
         name='inputnode')
 
+    output_fields = ['output_sr',
+                     'output_sdi',
+                     'output_hr_mask',
+                     'output_transforms',
+                     'output_json_path',
+                     'output_sr_png',
+                     'output_TV_parameters'
+                     ]
     outputnode = pe.Node(
-        interface=util.IdentityInterface(fields=
-                                         ['output_sr',
-                                          'output_sdi',
-                                          'output_hr_mask',
-                                          'output_transforms',
-                                          'output_json_path',
-                                          'output_sr_png',
-                                          'output_TV_parameters'
-                                          ]),
+        interface=util.IdentityInterface(
+            fields=output_fields
+        ),
         name='outputnode'
     )
 
@@ -127,14 +130,27 @@ def create_recon_stage(p_paramTV,
     srtkTVSuperResolution.inputs.in_gamma = gamma
 
     if p_multi_parameters:
-        deltatTV = [deltatTV] if not isinstance(deltatTV , list) else deltatTV
-        lambdaTV = [lambdaTV] if not isinstance(lambdaTV , list) else lambdaTV
-
-        num_iterations = [num_iterations] if not isinstance(num_iterations , list) else num_iterations
-        num_primal_dual_loops = [num_primal_dual_loops] if not isinstance(num_primal_dual_loops , list) else num_primal_dual_loops
-        num_bregman_loops = [num_bregman_loops] if not isinstance(num_bregman_loops , list) else num_bregman_loops
-        step_scale = [step_scale] if not isinstance(step_scale , list) else step_scale
-        gamma = [gamma] if not isinstance(gamma , list) else gamma
+        deltatTV = [deltatTV] \
+            if not isinstance(deltatTV, list) \
+            else deltatTV
+        lambdaTV = [lambdaTV] \
+            if not isinstance(lambdaTV, list) \
+            else lambdaTV
+        num_iterations = [num_iterations] \
+            if not isinstance(num_iterations, list) \
+            else num_iterations
+        num_primal_dual_loops = [num_primal_dual_loops] \
+            if not isinstance(num_primal_dual_loops, list) \
+            else num_primal_dual_loops
+        num_bregman_loops = [num_bregman_loops] \
+            if not isinstance(num_bregman_loops, list) \
+            else num_bregman_loops
+        step_scale = [step_scale] \
+            if not isinstance(step_scale, list) \
+            else step_scale
+        gamma = [gamma] \
+            if not isinstance(gamma, list) \
+            else gamma
 
         srtkTVSuperResolution.iterables = [
             ("in_lambda",lambdaTV),

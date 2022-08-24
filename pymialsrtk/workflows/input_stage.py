@@ -38,14 +38,14 @@ def create_input_stage(p_bids_dir,
     ----------
     ::
         name : name of workflow (default: input_stage)
-        bids_dir
-        subject
-        session
-        use_manual_masks
-        m_masks_desc
-        m_masks_derivatives_dir
-        m_skip_stacks_ordering
-        m_stacks
+        p_bids_dir
+        p_subject
+        p_session
+        p_use_manual_masks
+        p_masks_desc
+        p_masks_derivatives_dir
+        p_skip_stacks_ordering
+        p_stacks
         p_do_srr_assessment
 
     Inputs::
@@ -222,20 +222,20 @@ def create_input_stage(p_bids_dir,
             interface=DataGrabber(outfields=['gt']),
             name='gt_grabber')
 
-        gt.inputs.base_directory = bids_dir
+        gt.inputs.base_directory = p_bids_dir
         gt.inputs.template = '*'
         gt.inputs.raise_on_empty = False
         gt.inputs.sort_filelist = True
 
         gt_template = os.path.join(
-            subject,
+            p_subject,
             'anat',
             sub_ses + '_desc-iso_T2w.nii.gz'
         )
-        if session is not None:
+        if p_session is not None:
             gt_template = os.path.join(
-                subject,
-                session,
+                p_subject,
+                p_session,
                 'anat',
                 sub_ses + '_desc-iso_T2w.nii.gz'
             )

@@ -213,16 +213,20 @@ class AnatomicalPipeline:
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
-            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
+            self.m_skip_svr = \
+                p_dict_custom_interfaces['skip_svr'] \
                 if 'skip_svr' in p_dict_custom_interfaces.keys() \
                 else False
-            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] \
+            self.m_do_refine_hr_mask = \
+                p_dict_custom_interfaces['do_refine_hr_mask'] \
                 if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() \
                 else False
-            self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising']\
+            self.m_do_nlm_denoising = \
+                p_dict_custom_interfaces['do_nlm_denoising']\
                 if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
                 else False
-            self.m_do_srr_assessment = p_dict_custom_interfaces['do_srr_assessment'] \
+            self.m_do_srr_assessment = \
+                p_dict_custom_interfaces['do_srr_assessment'] \
                 if 'do_srr_assessment' in p_dict_custom_interfaces.keys() \
                 else False
 
@@ -242,9 +246,8 @@ class AnatomicalPipeline:
         # we are in a multi_parameters running mode
         self._m_multi_parameters = len([value
                                        for value in list(self.paramTV.values())
-                                       if ( isinstance(value, list)
-                                            and len(value)>1) ] ) \
-                                  > 0
+                                       if (isinstance(value, list)
+                                            and len(value) > 1)]) > 0
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -310,14 +313,14 @@ class AnatomicalPipeline:
         # config.enable_provenance()
 
         input_stage = create_input_stage(
-            self.bids_dir,
-            self.subject,
-            self.session,
-            self.use_manual_masks,
-            self.m_masks_desc,
-            self.m_masks_derivatives_dir,
-            self.m_skip_stacks_ordering,
-            self.m_stacks,
+            p_bids_dir=self.bids_dir,
+            p_subject=self.subject,
+            p_session=self.session,
+            p_use_manual_masks=self.use_manual_masks,
+            p_masks_desc=self.m_masks_desc,
+            p_masks_derivatives_dir=self.m_masks_derivatives_dir,
+            p_skip_stacks_ordering=self.m_skip_stacks_ordering,
+            p_stacks=self.m_stacks,
             p_do_srr_assessment=self.m_do_srr_assessment
         )
 
@@ -336,13 +339,14 @@ class AnatomicalPipeline:
         )
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
-            name='postprocessing_stage')
+            name='postprocessing_stage'
+        )
 
         if self.m_do_srr_assessment:
             srr_assessment_stage = \
                 sr_assessment_stage.create_sr_assessment_stage(
                     p_multi_parameters=self._m_multi_parameters,
-                    p_input_srtv_node = srtv_node_name,
+                    p_input_srtv_node=srtv_node_name,
                     name='srr_assessment_stage'
                 )
 
@@ -358,7 +362,6 @@ class AnatomicalPipeline:
         output_mgmt_stage.inputs.inputnode.use_manual_masks = \
             self.use_manual_masks
         output_mgmt_stage.inputs.inputnode.final_res_dir = final_res_dir
-
 
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
