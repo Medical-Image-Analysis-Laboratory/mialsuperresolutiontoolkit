@@ -104,7 +104,7 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
 
     if p_do_reconstruct_labels:
         srr_output_stage.connect(inputnode, "input_labelmap",
-                        datasink, 'anat.@SRlabelmap')
+                                 datasink, 'anat.@SRlabelmap')
 
     if not p_skip_stacks_ordering:
         srr_output_stage.connect(inputnode, "report_image",

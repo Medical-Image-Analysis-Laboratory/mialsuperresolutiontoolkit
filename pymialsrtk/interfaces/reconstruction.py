@@ -534,7 +534,8 @@ class MialsrtkSDIComputation(BaseInterface):
 
         if self.inputs.label_id:
             input_images = \
-                [im for im in input_images if 'label-'+str(self.inputs.label_id) in im]
+                [im for im in input_images
+                 if 'label-'+str(self.inputs.label_id) in im]
 
         input_images = reorder_by_run_ids(input_images,
                                           self.inputs.stacks_order)

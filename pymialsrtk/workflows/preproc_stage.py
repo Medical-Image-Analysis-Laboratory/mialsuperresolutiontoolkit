@@ -29,6 +29,7 @@ def create_preproc_stage(p_do_nlm_denoising=False,
     ::
         name : name of workflow (default: preproc_stage)
         p_do_nlm_denoising : weither to proceed to non-local mean denoising
+        p_do_reconstruct_labels :
     Inputs::
         inputnode.input_images : Input T2w images (list of filenames)
         inputnode.input_masks : Input mask images (list of filenames)

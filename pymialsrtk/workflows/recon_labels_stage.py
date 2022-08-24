@@ -1,4 +1,6 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2021 Medical Image Analysis Laboratory,
+# University Hospital Center and University of Lausanne (UNIL-CHUV),
+# Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -13,7 +15,9 @@ import pathlib
 from traits.api import *
 
 from nipype.interfaces.base import traits, \
-    TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
+    TraitedSpec, File, \
+    InputMultiPath, OutputMultiPath, \
+    BaseInterface, BaseInterfaceInputSpec
 
 from nipype.pipeline import Node, MapNode, Workflow
 
@@ -42,19 +46,20 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
         inputnode.input_transforms : Input tranforms (list of filenames)
         inputnode.input_reference : Input HR reference image (filename)
         inputnode.label_ids : Label IDs to reconstruct (list of integer)
-        inputnode.stacks_order : Order of stacks in the reconstruction (list of integer)
+        inputnode.stacks_order : Order of stacks in
+                                the reconstruction (list of integer)
     Outputs::
         outputnode.output_labelmap : HR labelmap (filename)
     Example
     -------
-    >>> recon_labels_stage = create_recon_labels_stage()
-    >>> recon_labels_stage.inputs.inputnode.input_labels = ['sub-01_run-1_labels.nii.gz', 'sub-01_run-2_labels.nii.gz']
-    >>> recon_labels_stage.inputs.inputnode.input_masks = ['sub-01_run-1_T2w_mask.nii.gz', 'sub-01_run-2_T2w_mask.nii.gz']
-    >>> recon_labels_stage.inputs.inputnode.input_transforms = ['sub-01_run-1_labels.xfm', 'sub-01_run-2_labels.xfm']
-    >>> recon_labels_stage.inputs.inputnode.input_reference = 'sub-01_sdi.nii.gz'
-    >>> recon_labels_stage.inputs.inputnode.label_ids = [0,1,2,3,4,5,6,7]
-    >>> recon_labels_stage.inputs.inputnode.stacks_order = [1,2]
-    >>> recon_labels_stage.run() # doctest: +SKIP
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
     """
 
     recon_labels_stage = pe.Workflow(name=name)
@@ -71,31 +76,37 @@ def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
         name='inputnode')
 
     outputnode = pe.Node(
-        interface=util.IdentityInterface(fields=['output_labelmap']),
+        interface=util.IdentityInterface(
+            fields=['output_labelmap']
+        ),
         name='outputnode')
 
+    labelmap_splitter = MapNode(
+        interface=preprocess.SplitLabelMaps(),
+        iterfield=['in_labelmap'],
+        name='labelmap_splitter'
+    )
 
-    """
-    """
+    labels_merge_lr_maps = Node(
+        interface=preprocess.PathListsMerger(),
+        joinsource="labelmap_splitter",
+        joinfield="inputs",
+        name='labels_merge_lr_maps'
+    )
 
-    labelmap_splitter = MapNode(interface=preprocess.SplitLabelMaps(),
-                                iterfield=['in_labelmap'],
-                                name='labelmap_splitter')
-
-    labels_merge_lr_maps = Node(interface=preprocess.PathListsMerger(),
-                                joinsource="labelmap_splitter",
-                                joinfield="inputs",
-                                name='labels_merge_lr_maps')
-
-    labels_reconstruct_hr_maps = MapNode(interface=reconstruction.MialsrtkSDIComputation(),
-                                         iterfield=['label_id'],
-                                         name='labels_reconstruct_hr_maps')
+    labels_reconstruct_hr_maps = MapNode(
+        interface=reconstruction.MialsrtkSDIComputation(),
+        iterfield=['label_id'],
+        name='labels_reconstruct_hr_maps'
+    )
     labels_reconstruct_hr_maps.inputs.sub_ses = sub_ses
 
-    labels_merge_hr_maps = Node(interface=preprocess.PathListsMerger(),
-                                joinsource="labels_reconstruct_hr_maps",
-                                joinfield="inputs",
-                                name='labels_merge_hr_maps')
+    labels_merge_hr_maps = Node(
+        interface=preprocess.PathListsMerger(),
+        joinsource="labels_reconstruct_hr_maps",
+        joinfield="inputs",
+        name='labels_merge_hr_maps'
+    )
 
     labels_majorityvoting = Node(interface=postprocess.MergeMajorityVote(),
                                  name='labels_majorityvoting')

@@ -1577,7 +1577,11 @@ class ReduceFieldOfView(BaseInterface):
             label = reader.Execute()
             label_np = sitk.GetArrayFromImage(label)
 
-            label_np = label_np[minimums[0]:maximums[0], minimums[1]:maximums[1], minimums[2]:maximums[2]]
+            label_np = label_np[
+                       minimums[0]:maximums[0],
+                       minimums[1]:maximums[1],
+                       minimums[2]:maximums[2]
+                       ]
 
             label_cropped = sitk.GetImageFromArray(label_np)
             label_cropped.SetOrigin(new_origin)
@@ -1669,7 +1673,8 @@ class SplitLabelMaps(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['out_labels'] = \
-            [self._gen_filename('out_label', i) for i in self.inputs.all_labels]
+            [self._gen_filename('out_label', i)
+             for i in self.inputs.all_labels]
         return outputs
 
 

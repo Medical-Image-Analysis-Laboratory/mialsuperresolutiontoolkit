@@ -149,7 +149,6 @@ def create_input_stage(p_bids_dir,
                     '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
                 )
 
-
         if p_do_reconstruct_labels:
             dg.inputs.field_template = dict(T2ws=t2ws_template,
                                             masks=masks_template,

@@ -39,7 +39,7 @@ import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.recon_labels_stage as recon_labels_stage
 import pymialsrtk.workflows.srr_output_stage as srr_output_stage
 
-from pymialsrtk.workflows.input_stage import create_input_stage # todo
+from pymialsrtk.workflows.input_stage import create_input_stage
 
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
@@ -364,8 +364,10 @@ class AnatomicalPipeline:
 
         # mask_hr_label: Todo - mode to postproc stage
         if self.m_do_reconstruct_labels:
-            mask_hr_label = pe.Node(interface=preprocess.MialsrtkMaskImage(),
-                               name='mask_hr_label')
+            mask_hr_label = pe.Node(
+                interface=preprocess.MialsrtkMaskImage(),
+                name='mask_hr_label'
+            )
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,

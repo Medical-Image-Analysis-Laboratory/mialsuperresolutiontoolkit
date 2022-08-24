@@ -144,9 +144,10 @@ def create_recon_stage(p_paramTV,
                              name='srtkHRMask')
 
     if p_do_reconstruct_labels:
-        reconstruct_labels_stage = recon_labels_stage.create_recon_labels_stage(
+        recon_labels_stage = recon_labels_stage.create_recon_labels_stage(
             sub_ses=p_sub_ses)
-        reconstruct_labels_stage.inputs.inputnode.label_ids = [0, 1, 2, 3, 4, 5, 6, 7]
+        recon_labels_stage.inputs.inputnode.label_ids = \
+            [0, 1, 2, 3, 4, 5, 6, 7]
 
 
     recon_stage.connect(inputnode, "input_masks",
@@ -189,18 +190,19 @@ def create_recon_stage(p_paramTV,
 
     if p_do_reconstruct_labels:
         recon_stage.connect(inputnode, "input_labels",
-                            reconstruct_labels_stage, "inputnode.input_labels")
+                            recon_labels_stage, "inputnode.input_labels")
         recon_stage.connect(inputnode, "input_masks",
-                            reconstruct_labels_stage, "inputnode.input_masks")
+                            recon_labels_stage, "inputnode.input_masks")
         recon_stage.connect(srtkImageReconstruction, "output_transforms",
-                            reconstruct_labels_stage, "inputnode.input_transforms")
+                            recon_labels_stage, "inputnode.input_transforms")
 
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
-                            reconstruct_labels_stage, "inputnode.input_reference")
+                            recon_labels_stage, "inputnode.input_reference")
         recon_stage.connect(inputnode, "stacks_order",
-                            reconstruct_labels_stage, "inputnode.stacks_order")
+                            recon_labels_stage, "inputnode.stacks_order")
 
-        recon_stage.connect(reconstruct_labels_stage, "outputnode.output_labelmap",
+        recon_stage.connect(recon_labels_stage,
+                            "outputnode.output_labelmap",
                             outputnode, "output_labelmap")
 
     if p_do_refine_hr_mask:
