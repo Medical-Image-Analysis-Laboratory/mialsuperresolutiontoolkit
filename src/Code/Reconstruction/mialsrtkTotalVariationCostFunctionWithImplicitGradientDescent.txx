@@ -340,10 +340,14 @@ template <class TImage>
 void
 TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::SetXest(const vnl_vector<float>& x)
 {
-    std::cout << "Xest (resampler)= " << x.sum() << std::endl;
-    Xest = x;
-    std::cout << "Xest (costfunction) = " << Xest.sum() << std::endl << std::endl;
 
+    if (this -> GetVerbose()){
+        std::cout << "Xest (resampler)= " << x.sum() << std::endl;
+    }
+    Xest = x;
+    if (this -> GetVerbose()){
+        std::cout << "Xest (costfunction) = " << Xest.sum() << std::endl << std::endl;
+    }
     /*
   // Converts and writes output image
   typename itk::ImageDuplicator<ImageType>::Pointer duplicator = itk::ImageDuplicator<ImageType>::New();
@@ -387,9 +391,13 @@ template <class TImage>
 void
 TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::SetXold(const vnl_vector<float>& x)
 {
-    std::cout << "Xold (resampler)= " << x.sum() << std::endl;
+    if (this -> GetVerbose()){
+        std::cout << "Xold (resampler)= " << x.sum() << std::endl;
+    }
     Xold = x;
-    std::cout << "Xold (costfunction) = " << Xold.sum() << std::endl;
+    if (this -> GetVerbose()){
+        std::cout << "Xold (costfunction) = " << Xold.sum() << std::endl;
+    }
 }
 
 template <class TImage>
@@ -407,6 +415,8 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     }
     */
 
+    // Get verbosity level
+    bool verbose = this -> GetVerbose();
 
     //We use linear interpolation for the estimation of point influence in matrix H
     typedef itk::BSplineInterpolationWeightFunction<double, 3, 1> itkBSplineFunction;
@@ -447,16 +457,15 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     bool ratioXisEven = true;
     bool ratioYisEven = true;
     bool ratioZisEven = true;
-    const bool verbose = false;
     
     if((((int)round(ratioLRHRX)) % 2)) ratioXisEven = false;
     if((int)round(ratioLRHRY) % 2) ratioYisEven = false;
     if((int)round(ratioLRHRZ) % 2) ratioZisEven = false;
-
-    std::cout << "ratioXisEven : " << ratioXisEven << std::endl;
-    std::cout << "ratioYisEven : " << ratioYisEven << std::endl;
-    std::cout << "ratioZisEven : " << ratioZisEven << std::endl;
-
+    if (verbose){
+        std::cout << "ratioXisEven : " << ratioXisEven << std::endl;
+        std::cout << "ratioYisEven : " << ratioYisEven << std::endl;
+        std::cout << "ratioZisEven : " << ratioZisEven << std::endl;
+    }
     float factorPSF=1.0;
     int npointsX = 0;
     float initpointX = 0.0;
@@ -464,14 +473,18 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     {
         int k = floor(0.5* ((factorPSF-ratioHRLRX)/ratioHRLRX));
         npointsX = 2 * (k+1);
-        std::cout << "npointx 1: " << npointsX << std::endl;
+        if (verbose){
+            std::cout << "npointx 1: " << npointsX << std::endl;
+        }
         initpointX = - (float)(0.5+k) * ratioHRLRX;
     }
     else
     {
         int k = floor(factorPSF*0.5 /ratioHRLRX);
         npointsX = 2*k + 1;
-        std::cout << "npointx 2: " << npointsX << std::endl;
+        if (verbose){
+            std::cout << "npointx 2: " << npointsX << std::endl;
+        }
         initpointX = - (float)(k) * ratioHRLRX;
     }
 
@@ -481,14 +494,18 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     {
         int k = floor(0.5 * ((factorPSF-ratioHRLRY)/ratioHRLRY));
         npointsY = 2 * (k+1);
-        std::cout << "npointy 1: " << npointsY << std::endl;
+        if (verbose){
+            std::cout << "npointy 1: " << npointsY << std::endl;
+        }
         initpointY = - (float)(0.5+k) * ratioHRLRY;
     }
     else
     {
         int k = floor(factorPSF*0.5 /ratioHRLRY);
         npointsY = 2*k + 1;
-        std::cout << "npointy 2: " << npointsY << std::endl;
+        if (verbose){
+            std::cout << "npointy 2: " << npointsY << std::endl;
+        }
         initpointY = - (float)(k) * ratioHRLRY;
     }
 
@@ -498,25 +515,30 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     {
         int k = floor(0.5 * ((factorPSF-ratioHRLRZ)/ratioHRLRZ));
         npointsZ = 2 * (k+1);
-        std::cout << "npointz 1: " << npointsZ << std::endl;
+        if (verbose){
+            std::cout << "npointz 1: " << npointsZ << std::endl;
+        }
         initpointZ = - (float)(0.5+k) * ratioHRLRZ;
     }
     else
     {
         int k = floor(factorPSF*0.5/ratioHRLRZ);
         npointsZ = 2*k + 1;
-        std::cout << "npointz 2: " << npointsZ << std::endl;
+        if (verbose){
+            std::cout << "npointz 2: " << npointsZ << std::endl;
+        }
         initpointZ = - (float)(k) * ratioHRLRZ;
     }
 
-    std::cout << "Spacing LR X: " << spacing_lr[0] << " / Spacing HR X: " << spacing_hr[0]<< std::endl;
-    std::cout << "Spacing LR Y: " << spacing_lr[1] << " / Spacing HR Y: " << spacing_hr[1]<< std::endl;
-    std::cout << "Spacing LR Z: " << spacing_lr[2] << " / Spacing HR Z: " << spacing_hr[2]<< std::endl;
+    if (verbose){
+        std::cout << "Spacing LR X: " << spacing_lr[0] << " / Spacing HR X: " << spacing_hr[0]<< std::endl;
+        std::cout << "Spacing LR Y: " << spacing_lr[1] << " / Spacing HR Y: " << spacing_hr[1]<< std::endl;
+        std::cout << "Spacing LR Z: " << spacing_lr[2] << " / Spacing HR Z: " << spacing_hr[2]<< std::endl;
 
-    std::cout << " , 1/2 * LR/HR X:" << 0.5 * ratioLRHRX << " , NPointsX : " << npointsX << std::endl;
-    std::cout << " , 1/2 * LR/HR Y:" << 0.5 * ratioLRHRY << " , NPointsY : " << npointsY << std::endl;
-    std::cout << " , 1/2 * LR/HR Z:" << 0.5 * ratioLRHRZ << " , NPointsZ : " << npointsZ << std::endl;
-
+        std::cout << " , 1/2 * LR/HR X:" << 0.5 * ratioLRHRX << " , NPointsX : " << npointsX << std::endl;
+        std::cout << " , 1/2 * LR/HR Y:" << 0.5 * ratioLRHRY << " , NPointsY : " << npointsY << std::endl;
+        std::cout << " , 1/2 * LR/HR Z:" << 0.5 * ratioLRHRZ << " , NPointsZ : " << npointsZ << std::endl;
+    }
 
     ContinuousIndexType delta;
     delta[0] = 0;
@@ -623,7 +645,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
     if(m_ComputeH)
     {
-        std::cout << "Initialize H and Z ..." << std::endl;
+        if (verbose){
+            std::cout << "Initialize H and Z ..." << std::endl;
+        }
         fullH.set_size(nrows, ncols);
         Xsamp.set_size(ncols);
         Xsamp.fill(0.0);
@@ -641,9 +665,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     //e.set_size(nrows);
     //e.fill(0.0);
 
-
-    std::cout << "Size of fullH :  #rows = " << fullH.rows() << ", #cols = "<<fullH.cols() << std::endl;
-
+    if (verbose){
+        std::cout << "Size of fullH :  #rows = " << fullH.rows() << ", #cols = "<<fullH.cols() << std::endl;
+    }
     /*
   Xold.set_size(ncols);
   Xold = vnl_matops::d2f(x_init);
@@ -694,12 +718,13 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
         inputSpacing2[0] = inputSpacing2[0] ;
         inputSpacing2[1] = inputSpacing2[1] ;
         inputSpacing2[2] = inputSpacing2[2];
-
-        std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
-
+        if (verbose){
+            std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
+        }
 
         // PSF definition
         typename FunctionType::Pointer function = FunctionType::New();
+        function -> SetVerbose(this -> GetVerbose());
         function -> SetPSF(  FunctionType::GAUSSIAN );
         function -> SetRES(FunctionType::ANISOTROPIC );
         function -> SetDirection( m_Images[im] -> GetDirection() );
@@ -712,6 +737,7 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
         // PSF HR definition
         typename FunctionType::Pointer functionHR = FunctionType::New();
+        functionHR -> SetVerbose(this -> GetVerbose());
         functionHR -> SetPSF(  FunctionType::GAUSSIAN );
         functionHR -> SetRES( FunctionType::ISOTROPIC );
         functionHR -> SetDirection( m_ReferenceImage -> GetDirection() );
@@ -1125,9 +1151,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     {
         // Normalize H
         H = fullH;
-
-        std::cout << "scale : "<< scale << std::endl;
-
+        if (verbose){
+            std::cout << "scale : "<< scale << std::endl;
+        }
         for (unsigned int i = 0; i < H.rows(); i++)
         {
             double sum = H.sum_row(i);
@@ -1138,8 +1164,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
             for ( ;col_iter != r.end(); ++col_iter)
                 (*col_iter).second = (*col_iter).second / sum;
         }
-
-        std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+        if (verbose){
+            std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+        }
         // Normalize H
         /*
         unsigned int cnt_id = 0;
@@ -1171,7 +1198,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     }
     else
     {
-        std::cout << "Initialization of H with old value" << std::endl << std::endl;
+        if (verbose){
+            std::cout << "Initialization of H with old value" << std::endl << std::endl;
+        }
         //H=fullH;
     }
 
@@ -1180,10 +1209,10 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     Xest /= scale;
     Xold /= scale;
     X /= scale;
-
-    std::cout << "Size of Y:" << Y.size() << std::endl;
-    std::cout << "Sizes of H:" << H.rows() << " x " << H.columns() << std::endl;
-
+    if (verbose){
+        std::cout << "Size of Y:" << Y.size() << std::endl;
+        std::cout << "Sizes of H:" << H.rows() << " x " << H.columns() << std::endl;
+    }
     //vnl_matrix<float> tH = vnl_trace(H);
 
     //vnl_vector<float> DivP;
@@ -1201,10 +1230,11 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
     A = deltat * lambda * tau * HtH;
     */
-
-    std::cout << "Update P :" << std::endl;
-    std::cout << "Old values : ";
-    std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    if (verbose){
+        std::cout << "Update P :" << std::endl;
+        std::cout << "Old values : ";
+        std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    }
     //vsl_print_summary(vcl_cout,A);
     // Converts and writes output image
     typename itk::ImageDuplicator<ImageType>::Pointer duplicator2 = itk::ImageDuplicator<ImageType>::New();
@@ -1336,9 +1366,10 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     DbxPx.clear();
     DbyPy.clear();
     DbzPz.clear();
-
-    std::cout << "New values : ";
-    std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    if (verbose){
+        std::cout << "New values : ";
+        std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    }
     //vsl_print_summary(vcl_cout,A);
     HtY.clear();
     //DivP.clear();
@@ -1362,6 +1393,9 @@ template <class TImage>
 void
 TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatrix()
 {
+    // Get verbosity level
+    bool verbose = this -> GetVerbose();
+
     //We use linear interpolation for the estimation of point influence in matrix H
     typedef itk::BSplineInterpolationWeightFunction<double, 3, 1> itkBSplineFunction;
 
@@ -1387,9 +1421,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatrix(
     //compute the index of the PSF in the LR image resolution
     std::vector<ContinuousIndexType> deltaIndexes;
     int npoints =  ceil(spacing_lr[2] / (2.0 * spacing_hr[2])) ;
-
-    std::cout << "NPoints : " << 2*(npoints)+1 << std::endl;
-
+    if (verbose){
+        std::cout << "NPoints : " << 2*(npoints)+1 << std::endl;
+    }
     ContinuousIndexType delta;
     delta[0] = 0.0; delta[1] = 0.0;
 
@@ -1400,9 +1434,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatrix(
         delta[2] = ((double) i  * spacing_hr[2]) / spacing_lr[2];// - 0.3 /spacing_lr[2]; // Space of 1 between Index in the LR image corresponds to the slice thickness (3mm for instance).
         deltaIndexes.push_back(delta);
     }
-
-    std::cout << "DeltaIndexes : " << deltaIndexes[0] << deltaIndexes[1] << deltaIndexes[2] << std::endl;
-
+    if (verbose){
+        std::cout << "DeltaIndexes : " << deltaIndexes[0] << deltaIndexes[1] << deltaIndexes[2] << std::endl;
+    }
     // Set size of matrices
     unsigned int ncols = m_OutputImageRegion.GetNumberOfPixels();
 
@@ -1412,7 +1446,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatrix(
 
     if(m_ComputeH)
     {
-        std::cout << "Initialize H and Z ..." << std::endl;
+        if (verbose){
+            std::cout << "Initialize H and Z ..." << std::endl;
+        }
         H.set_size(nrows, ncols);
         Z.set_size(nrows);
         Z.fill(0.0);
@@ -1424,8 +1460,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatrix(
 
     Y.set_size(nrows);
     Y.fill(0.0);
-
-    std::cout << "Size of H :  #rows = " << H.rows() << ", #cols = "<<H.cols() << std::endl;
+    if (verbose){
+        std::cout << "Size of H :  #rows = " << H.rows() << ", #cols = "<<H.cols() << std::endl;
+    }
 
     int counterDebug = 0;
     unsigned int im;
@@ -1442,20 +1479,21 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatrix(
         inputSpacing2[0] = inputSpacing2[0] ;
         inputSpacing2[1] = inputSpacing2[1] ;
         inputSpacing2[2] = inputSpacing2[2] ;
-
-        std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
-
+        if (verbose){
+            std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
+        }
         // PSF definition
         typename FunctionType::Pointer function = FunctionType::New();
+        function -> SetVerbose(this -> GetVerbose());
         function -> SetPSF(  FunctionType::GAUSSIAN );
         function -> SetDirection( m_Images[im] -> GetDirection() );
         function -> SetSpacing( inputSpacing2 );
         //function -> Print(std::cout);
-
-        std::cout << "Image # "<< im << " sizes : " << m_Images[im]->GetLargestPossibleRegion().GetSize() << std::endl;
-        std::cout << "Image # "<< im << " direction : " << m_Images[im]->GetDirection() << std::endl;
-        std::cout << "Image # "<< im << " spacing : " << inputSpacing2 << std::endl;
-
+        if (verbose){
+            std::cout << "Image # "<< im << " sizes : " << m_Images[im]->GetLargestPossibleRegion().GetSize() << std::endl;
+            std::cout << "Image # "<< im << " direction : " << m_Images[im]->GetDirection() << std::endl;
+            std::cout << "Image # "<< im << " spacing : " << inputSpacing2 << std::endl;
+        }
         //Define the ROI of the current LR image
         IndexType inputIndex = m_Regions[im].GetIndex();
         SizeType  inputSize  = m_Regions[im].GetSize();
@@ -1607,8 +1645,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatrix(
 
     if(m_ComputeH)
     {
-
-        std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+        if (verbose){
+            std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+        }
         // Normalize H
         for (unsigned int i = 0; i < H.rows(); i++)
         {
@@ -1624,7 +1663,9 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatrix(
     }
     else
     {
-        std::cout << "Initialization of H with old value" << std::endl << std::endl;
+        if (verbose){
+            std::cout << "Initialization of H with old value" << std::endl << std::endl;
+        }
     }
 }
 
@@ -1632,6 +1673,9 @@ template <class TImage>
 void
 TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeTotalVariationTerms()
 {
+    // Get verbosity level
+    bool verbose = this -> GetVerbose();
+    
     int ncols = H.cols();
 
     //vnl_vector<float> DivP;
@@ -1649,10 +1693,11 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeTotalVaria
 
     A = deltat * lambda * tau * HtH;
     */
-
-    std::cout << "Update P :" << std::endl;
-    std::cout << "Old values : ";
-    std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    if (verbose){
+        std::cout << "Update P :" << std::endl;
+        std::cout << "Old values : ";
+        std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    }
     //vsl_print_summary(vcl_cout,A);
     // Converts and writes output image
     typename itk::ImageDuplicator<ImageType>::Pointer duplicator2 = itk::ImageDuplicator<ImageType>::New();
@@ -1782,9 +1827,10 @@ TotalVariationCostFunctionWithImplicitGradientDescent<TImage>::ComputeTotalVaria
     DbxPx.clear();
     DbyPy.clear();
     DbzPz.clear();
-
-    std::cout << "New values : ";
-    std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    if (verbose){
+        std::cout << "New values : ";
+        std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    }
     //vsl_print_summary(vcl_cout,A);
     HtY.clear();
     //DivP.clear();

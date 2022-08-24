@@ -139,9 +139,9 @@ int main(int argc, char *argv[])
     //Loop over slices of the current stack
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
     {   
-        std::cout << "Process slice #" << i << "...";
+        
         if (verbose){
-          std::cout << std::endl;
+          std::cout << "Process slice #" << i << "..." << std::endl;
         }
 
         InputImageType::RegionType wholeSliceRegion;
@@ -307,9 +307,9 @@ int main(int argc, char *argv[])
     //Loop over slices in the brain mask
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
     {
-        std::cout << "Process slice #" << i << "...";
+        
         if (verbose){
-          std::cout << std::endl;
+          std::cout << "Process slice #" << i << "..." << std::endl;
         }
         
 

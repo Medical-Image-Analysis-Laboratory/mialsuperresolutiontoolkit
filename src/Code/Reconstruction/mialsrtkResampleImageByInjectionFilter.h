@@ -177,6 +177,16 @@ public:
     return this -> m_Transform[i].GetPointer();
   }
 
+  void SetVerbose( bool verbose )
+  {
+    m_verbose = verbose;
+  }
+
+  bool GetVerbose ()
+  {
+    return this -> m_verbose;
+  }
+
   /** Set the size of the output image. */
   itkSetMacro( Size, SizeType );
 
@@ -313,6 +323,7 @@ private:
 
   bool                        m_UseDebluringKernel;
 
+  bool                        m_verbose;
 };
 
 

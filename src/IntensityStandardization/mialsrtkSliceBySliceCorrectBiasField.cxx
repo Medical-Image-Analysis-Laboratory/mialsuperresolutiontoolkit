@@ -31,22 +31,30 @@ Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
 #include "itkImageFileWriter.h"
 
 #include "float.h"
+#include <string>
 
 int main( int argc, char * argv [] )
 {
 
-    if ( argc < 3 )
+    if ( argc < 5 )
     {
         std::cerr << "Missing Parameters " << std::endl;
         std::cerr << "Usage: " << argv[0];
-        std::cerr << " inputImageFile inputMaskFile inputBiasFieldFile outputImageFile  ";
+        std::cerr << " inputImageFile inputMaskFile inputBiasFieldFile outputImageFile (verbose) ";
         return EXIT_FAILURE;
     }
-
     bool verbose = false;
-    if ( argc == 4)
+    if ( argc == 6 )
     {
+        if (argv[5] == std::string("verbose")){
         verbose = true;
+        }
+        else{
+            std::cerr << "ERROR: Last parameter ought to be verbose" << std::endl;
+            std::cerr << "Usage: " << argv[0];
+            std::cerr << " inputImageFile inputMaskFile inputBiasFieldFile outputImageFile *verbose* ";
+            return EXIT_FAILURE;
+        }
     }
 
     const unsigned int dimension3D = 3;
@@ -164,9 +172,8 @@ int main( int argc, char * argv [] )
     //Loop over slices in the brain mask
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
     {
-        std::cout << "Process slice #" << i << "...";
         if (verbose){
-            std::cout << std::endl;
+            std::cout << "Process slice #" << i << "..." << std::endl;
         }
         InputImageType::RegionType wholeSliceRegion;
         wholeSliceRegion = roi;

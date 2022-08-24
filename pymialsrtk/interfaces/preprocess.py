@@ -303,6 +303,7 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
 
         cmd = 'mialsrtkSliceBySliceCorrectBiasField "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, self.inputs.in_field, out_im_file)
         if verbose:
+            cmd += ' verbose'
             print('... cmd: {}'.format(cmd))
         run(cmd, env={})
         return runtime
@@ -368,6 +369,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
             cmd = cmd + ' --max "{}"'.format(self.inputs.in_max)
 
         if verbose:
+            cmd = cmd + ' --verbose'
             print('... cmd: {}'.format(cmd))
         run(cmd, env={})
         return runtime
@@ -497,6 +499,7 @@ class MialsrtkMaskImage(BaseInterface):
 
         cmd = 'mialsrtkMaskImage -i "{}" -m "{}" -o "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file)
         if verbose:
+            cmd += ' --verbose'
             print('... cmd: {}'.format(cmd))
         run(cmd, env={})
 

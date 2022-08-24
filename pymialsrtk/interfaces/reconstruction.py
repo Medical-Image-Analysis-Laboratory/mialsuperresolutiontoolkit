@@ -149,6 +149,8 @@ class MialsrtkImageReconstruction(BaseInterface):
 
         if self.inputs.no_reg:
             params.append("--noreg")
+        if verbose:
+            params.append("--verbose")
 
         cmd = ["mialsrtkImageReconstruction"]
         cmd += params
@@ -338,7 +340,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--gamma', str(self.inputs.in_gamma)]
         cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
         cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
-
+        if verbose:
+            cmd += ["--verbose"]
         cmd = ' '.join(cmd)
         run(cmd)
 
@@ -554,6 +557,7 @@ class MialsrtkSDIComputation(BaseInterface):
         cmd = ["mialsrtkSDIComputation"]
         cmd += params
         if verbose:
+            cmd += ["--verbose"]
             print('... cmd: {}'.format(cmd))
         cmd = ' '.join(cmd)
         run(cmd)

@@ -112,7 +112,7 @@ SliceBySliceRigidRegistration<ImageType>
     typename ImageType::SizeType sizeEvenImage = m_ROI.GetSize();
     typename ImageType::SizeType sizeOddImage = m_ROI.GetSize();
 
-    const bool verbose = false;
+    bool verbose = this -> GetVerbose();
     /*
     if(numberOfslices % 2 == 0)
     {

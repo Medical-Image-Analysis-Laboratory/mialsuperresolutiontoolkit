@@ -118,7 +118,6 @@ int main(int argc, char *argv[])
 
     const char *outImageFileName = NULL;
     const char *outBiasFieldFileName = NULL;
-    const bool verbose = false; 
     // Parse arguments
 
     TCLAP::CmdLine cmd("Register slice of a LR images to a template HR image", ' ', "Unversioned");
@@ -133,6 +132,7 @@ int main(int argc, char *argv[])
     TCLAP::ValueArg<std::string> outputArg("o","output","Output bias field corrected image file",true,"","string",cmd);
 
     TCLAP::ValueArg<std::string> outputBFArg("","output-bias-field","Output bias field image file",true,"","string",cmd);
+    TCLAP::SwitchArg  verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
 
     // Parse the argv array.
     cmd.parse( argc, argv );
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 
     outImageFileName = outputArg.getValue().c_str();
     outBiasFieldFileName = outputBFArg.getValue().c_str();
-
+    bool verbose = verboseArg.getValue();
     // Load input image and corresponding mask
 
     ReaderType::Pointer readerIm = ReaderType::New();
@@ -171,8 +171,9 @@ int main(int argc, char *argv[])
 
 
     // Load the transform parameter file
-
-    std::cout<<"Reading transform:"<< transformFileName <<std::endl;
+    if (verbose){
+        std::cout<<"Reading transform:"<< transformFileName <<std::endl;
+    }
     TransformReaderType::Pointer transformReader = TransformReaderType::New();
     transformReader -> SetFileName( transformFileName );
     transformReader -> Update();
@@ -257,10 +258,11 @@ int main(int argc, char *argv[])
     if((int)round(ratioLRHRY) % 2) ratioYisEven = false;
     if((int)round(ratioLRHRZ) % 2) ratioZisEven = false;
 
-    std::cout << "ratioXisEven : " << ratioXisEven << std::endl;
-    std::cout << "ratioYisEven : " << ratioYisEven << std::endl;
-    std::cout << "ratioZisEven : " << ratioZisEven << std::endl;
-
+    if (verbose){
+        std::cout << "ratioXisEven : " << ratioXisEven << std::endl;
+        std::cout << "ratioYisEven : " << ratioYisEven << std::endl;
+        std::cout << "ratioZisEven : " << ratioZisEven << std::endl;
+    }
     float factorPSF=1.5;
     int npointsX = 0;
     float initpointX = 0.0;
@@ -268,14 +270,18 @@ int main(int argc, char *argv[])
     {
         int k = floor(0.5 * ((factorPSF-ratioHRLRX)/ratioHRLRX));
         npointsX = 2 * (k+1);
-        std::cout << "npointx 1: " << npointsX << std::endl;
+        if (verbose){
+            std::cout << "npointx 1: " << npointsX << std::endl;
+        }
         initpointX = - (float)(0.5+k) * ratioHRLRX;
     }
     else
     {
         int k = floor(factorPSF*0.5 /ratioHRLRX);
         npointsX = 2*k + 1;
-        std::cout << "npointx 2: " << npointsX << std::endl;
+        if (verbose){
+            std::cout << "npointx 2: " << npointsX << std::endl;
+        }
         initpointX = - (float)(k) * ratioHRLRX;
     }
 
@@ -302,25 +308,29 @@ int main(int argc, char *argv[])
     {
         int k = floor(0.5 * ((factorPSF-ratioHRLRZ)/ratioHRLRZ));
         npointsZ = 2 * (k+1);
-        std::cout << "npointz 1: " << npointsZ << std::endl;
+        if (verbose){
+            std::cout << "npointz 1: " << npointsZ << std::endl;
+        }
         initpointZ = - (float)(0.5+k) * ratioHRLRZ;
     }
     else
     {
         int k = floor(factorPSF*0.5 /ratioHRLRZ);
         npointsZ = 2*k + 1;
-        std::cout << "npointz 2: " << npointsZ << std::endl;
+        if (verbose){
+            std::cout << "npointz 2: " << npointsZ << std::endl;
+        }
         initpointZ = - (float)(k) * ratioHRLRZ;
     }
+    if (verbose){
+        std::cout << "Spacing LR X: " << spacing_lr[0] << " / Spacing HR X: " << spacing_hr[0]<< std::endl;
+        std::cout << "Spacing LR Y: " << spacing_lr[1] << " / Spacing HR Y: " << spacing_hr[1]<< std::endl;
+        std::cout << "Spacing LR Z: " << spacing_lr[2] << " / Spacing HR Z: " << spacing_hr[2]<< std::endl;
 
-    std::cout << "Spacing LR X: " << spacing_lr[0] << " / Spacing HR X: " << spacing_hr[0]<< std::endl;
-    std::cout << "Spacing LR Y: " << spacing_lr[1] << " / Spacing HR Y: " << spacing_hr[1]<< std::endl;
-    std::cout << "Spacing LR Z: " << spacing_lr[2] << " / Spacing HR Z: " << spacing_hr[2]<< std::endl;
-
-    std::cout << " , 1/2 * LR/HR X:" << 0.5 * ratioLRHRX << " , NPointsX : " << npointsX << std::endl;
-    std::cout << " , 1/2 * LR/HR Y:" << 0.5 * ratioLRHRY << " , NPointsY : " << npointsY << std::endl;
-    std::cout << " , 1/2 * LR/HR Z:" << 0.5 * ratioLRHRZ << " , NPointsZ : " << npointsZ << std::endl;
-
+        std::cout << " , 1/2 * LR/HR X:" << 0.5 * ratioLRHRX << " , NPointsX : " << npointsX << std::endl;
+        std::cout << " , 1/2 * LR/HR Y:" << 0.5 * ratioLRHRY << " , NPointsY : " << npointsY << std::endl;
+        std::cout << " , 1/2 * LR/HR Z:" << 0.5 * ratioLRHRZ << " , NPointsZ : " << npointsZ << std::endl;
+    }
 
     ContinuousIndexType delta;
     delta[0] = 0;
@@ -350,8 +360,9 @@ int main(int argc, char *argv[])
 
     unsigned int nrows = roi.GetNumberOfPixels();
 
-
-    std::cout << "Initialize H and Z ..." << std::endl;
+    if (verbose){
+        std::cout << "Initialize H and Z ..." << std::endl;
+    }
     vnl_sparse_matrix<float> H;
     H.set_size(nrows, ncols);
 
@@ -363,8 +374,9 @@ int main(int argc, char *argv[])
     X.set_size(ncols);
     X.fill(0.0);
 
-    std::cout << "Size of H :  #rows = " << H.rows() << ", #cols = "<<H.cols() << std::endl;
-
+    if (verbose){
+        std::cout << "Size of H :  #rows = " << H.rows() << ", #cols = "<<H.cols() << std::endl;
+    }
     // Interpolator for HR image
     InterpolatorPointer interpolator = InterpolatorType::New();
     interpolator -> SetInputImage( biasFieldIm );
@@ -374,18 +386,21 @@ int main(int argc, char *argv[])
     inputSpacing2[1] = inputSpacing2[1] ;
     inputSpacing2[2] = inputSpacing2[2];
 
-    std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
-
+    if (verbose){
+        std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
+    }
 
     // PSF definition
     FunctionType::Pointer function = FunctionType::New();
+    function -> SetVerbose(verbose);
     function -> SetPSF(  FunctionType::GAUSSIAN );
     function -> SetDirection( lrIm -> GetDirection() );
 
-    std::cout << "Image sizes : " << lrIm->GetLargestPossibleRegion().GetSize() << std::endl;
-    std::cout << "Image direction : " << lrIm->GetDirection() << std::endl;
-    std::cout << "Image spacing : " << lrIm->GetSpacing() << std::endl;
-
+    if (verbose){
+        std::cout << "Image sizes : " << lrIm->GetLargestPossibleRegion().GetSize() << std::endl;
+        std::cout << "Image direction : " << lrIm->GetDirection() << std::endl;
+        std::cout << "Image spacing : " << lrIm->GetSpacing() << std::endl;
+    }
     function -> SetSpacing( inputSpacing2 );
 
     //function -> SetSpacing( lrIm -> GetSpacing() );
@@ -419,8 +434,9 @@ int main(int argc, char *argv[])
         // It would probably require to save a list of outlier slices during motion correction and
         // to load it here as input and create a global vector.
 
-        std::cout << "Process slice # " << i << std::endl;
-
+        if (verbose){
+            std::cout << "Process slice # " << i << std::endl;
+        }
         RegionType wholeSliceRegion;
         wholeSliceRegion = roi;
 
@@ -664,8 +680,9 @@ int main(int argc, char *argv[])
         }// Loop over all pixels of the slice
 
     }//Loop over all slices
-
-    std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+    if (verbose){
+        std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+    }
     // Normalize H
 
     for (unsigned int i = 0; i < H.rows(); i++)

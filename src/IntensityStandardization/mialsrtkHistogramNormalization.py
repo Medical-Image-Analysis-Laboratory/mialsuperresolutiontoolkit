@@ -99,7 +99,8 @@ def mapImageLandmarks(list_landmarks,s1,s2, verbose=False):
     index=0
     while index<len(list_landmarks):
         land_index=0
-        print('Image index:', str(index))
+        if verbose:
+            print('Image index:', str(index))
         while land_index<len(list_landmarks[index]['quartiles']):
             if verbose:
                 print('old landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
@@ -162,7 +163,7 @@ def mapImage(image,lmap_mean,list_landmarks,s1,s2,p1,p2):
     ##pyplot.show()
     return image_out
 
-def computeMeanMapImageLandmarks(list_landmarks):
+def computeMeanMapImageLandmarks(list_landmarks, verbose):
     mean_landmarks={}
     index=0
     while index < len(list_landmarks):
@@ -179,9 +180,9 @@ def computeMeanMapImageLandmarks(list_landmarks):
     while land_index < len(mean_landmarks):
         mean_landmarks[str(land_index)] = mean_landmarks[str(land_index)] / len(list_landmarks)
         land_index+=1
-
-    print('Final landmark average : ')
-    print(mean_landmarks)
+    if verbose:
+        print('Final landmark average : ')
+        print(mean_landmarks)
     return mean_landmarks
 
 def sort_ascending(p_files):
@@ -246,7 +247,7 @@ def main(images, masks, outputs, verbose=False):
 
     list_landmarks_mapped = mapImageLandmarks(list_landmarks, s1, s2, verbose)
 
-    mean_landmarks = computeMeanMapImageLandmarks(list_landmarks_mapped)
+    mean_landmarks = computeMeanMapImageLandmarks(list_landmarks_mapped, verbose)
 
     index = 0
     #pyplot.figure(1)

@@ -162,7 +162,7 @@ void
 SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputImage   ,TInterpolatorPrecisionType>
 ::Optimize()
 {
-  const bool verbose = false;
+  bool verbose = this -> GetVerbose();
   //std::cout << "Begin OptimizeLeastSquare()" << std::endl << std::endl;
   // Fill x
   m_OutputImageRegion = this -> GetReferenceImage() -> GetLargestPossibleRegion();
@@ -188,6 +188,7 @@ SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputIm
   // Setup cost function
   //std::cout << "Setup the Costfunction" << std::endl << std::endl;
   TotalVariationCostFunctionWithImplicitGradientDescent<InputImageType> f(m_x.size());
+  f.SetVerbose(verbose);
 
   for(unsigned int im = 0; im < m_ImageArray.size(); im++)
   {
@@ -211,12 +212,15 @@ SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputIm
   f.SetSliceGap( m_SliceGap );
   f.SetUseDebluringPSF( m_UseDebluringPSF );
   
-  std::cout << "Set xold and xest";
+  if (verbose){
+    std::cout << "Set xold and xest";
+  }
   //Variable Initialization
   if(m_CurrentOuterIteration == 0)
   {
-    std::cout << " -- initialization : " << std::endl;
-    
+    if (verbose){
+      std::cout << " -- initialization : " << std::endl;
+    }
     f.SetXold(m_x);
     f.SetXest(m_x); 
 
@@ -235,7 +239,9 @@ SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputIm
   }
   else //Variable update
   {
-    std::cout << " -- update : " << std::endl;
+    if (verbose){
+      std::cout << " -- update : " << std::endl;
+    }
 
     // Converts and writes output image
     typename DuplicatorType::Pointer duplicatorb = DuplicatorType::New();
@@ -259,9 +265,10 @@ SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputIm
     writerb -> Update();
     */
 
-    std::cout << "m_xold.size : " << m_xold.size()<<std::endl;
-    std::cout << "m_xest.size : " << m_xest.size()<<std::endl;
-
+    if (verbose){
+      std::cout << "m_xold.size : " << m_xold.size()<<std::endl;
+      std::cout << "m_xest.size : " << m_xest.size()<<std::endl;
+    }
     f.SetXold(m_xold);
     f.SetXest(m_xest);
     f.SetXsamp(m_xsamp);
@@ -292,7 +299,9 @@ SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputIm
 
   if(m_CurrentBregmanLoop != 0)
   {
-    std::cout << "m_Z set in SR resampler filter." << std::endl;
+    if (verbose){
+      std::cout << "m_Z set in SR resampler filter." << std::endl;
+    }
     f.SetZVector(m_Z);
   }
 
@@ -345,13 +354,16 @@ SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputIm
 
     if( normXinner < m_ConvergenceThreshold )
     {
-      std::cout<<"Inner loop has converged  ( Final value = " << normXinner << " )" << std::endl;
+      if (verbose){
+        std::cout<<"Inner loop has converged  ( Final value = " << normXinner << " )" << std::endl;
+      }
       break;
     }
   }
 
-  std::cout << "sampling sum" << m_xsamp.sum() << std::endl;
-
+  if (verbose){
+    std::cout << "sampling sum" << m_xsamp.sum() << std::endl;
+  }
   m_TVEnergy=f.energy_value();
   end_time = mialsrtk::getTime();
 
@@ -390,8 +402,9 @@ SuperResolutionRigidImageFilterWithImplicitGradientDescent<TInputImage,TOutputIm
   VnlVectorType m_xdiff = m_x - m_xold;
 
   m_xest = m_x + (float)m_Theta * m_xdiff;//+ f.GetTheta() * (m_x - m_xold);	
-  std::cout << std::endl << "Estimate x at future outer iteration : sum(m_xest) = " << m_xest.sum() << std::endl << std::endl;
-  
+  if (verbose){
+    std::cout << std::endl << "Estimate x at future outer iteration : sum(m_xest) = " << m_xest.sum() << std::endl << std::endl;
+  }
   // Converts and writes output image
   typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
   duplicator->SetInputImage(this->GetReferenceImage());

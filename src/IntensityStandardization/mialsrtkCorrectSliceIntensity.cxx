@@ -197,16 +197,10 @@ int main( int argc, char * argv [] )
 
     // Computes mean slice intensity in a neighborhood of each slice
     //Loop over slices in the brain mask
-    if (not verbose){
-        std::cout << "Process slice ";
-    }
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
     {   
         if (verbose){
              std::cout << "Process slice #" << i << "..." << std::endl;
-        }
-        else{
-            std::cout << "#" << i << "...";
         }
         InputImageType::RegionType wholeSliceRegion;
         wholeSliceRegion = roi;
@@ -428,26 +422,17 @@ int main( int argc, char * argv [] )
 
 
     }
-
-
-
-
-
-    std::cout << "Global intensity mean : " << gmean << std::endl;
+    if (verbose){
+        std::cout << "Global intensity mean : " << gmean << std::endl;
+    }
 
     // Remove the min value slice by slice
     //Loop over slices in the brain mask
-    if (not verbose){
-        std::cout << "Process slice ";
-    }
     for ( unsigned int i=inputIndex[2]; i < inputIndex[2] + inputSize[2]; i++ )
     {   
         if (verbose){
              std::cout << "Process slice #" << i << "..." << std::endl;
         }
-        else{
-            std::cout << "#" << i << "...";
-        }  
 
         InputImageType::RegionType wholeSliceRegion;
         wholeSliceRegion = roi;

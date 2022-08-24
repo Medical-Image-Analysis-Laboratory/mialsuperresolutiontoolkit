@@ -62,6 +62,7 @@ void
 LowToHighImageResolutionMethod<ImageType, TransformType >
 ::Initialize() throw (ExceptionObject)
 {
+    bool verbose = this -> GetVerbose();
     // if we don't use a reference we use a LR image as a reference (set by int TargetImage)
     if(!m_UseReference)
     {
@@ -107,8 +108,9 @@ LowToHighImageResolutionMethod<ImageType, TransformType >
   }
 
   // Combine masks to redefine the resampling region
-  std::cout << "Combines masks to refine the resampling region..." << std::endl;
-
+  if (verbose){
+    std::cout << "Combines masks to refine the resampling region..." << std::endl;
+  }
   IndexType indexMin;
   IndexType indexMax;
   IndexType index;
@@ -168,8 +170,9 @@ LowToHighImageResolutionMethod<ImageType, TransformType >
   //m_ResampleSize[2] = floor(((indexMax[2]-indexMin[2]+1)*fixedSpacing[2] + 2*m_Margin)/m_ResampleSpacing[2] + 0.5);
 
   /* Create high resolution image */
-  std::cout << "Creates the HR image... ";
-
+  if (verbose){
+    std::cout << "Creates the HR image... ";
+  }
   m_HighResolutionImage = ImageType::New();
 
   IndexType start;
@@ -210,9 +213,9 @@ LowToHighImageResolutionMethod<ImageType, TransformType >
 
   m_HighResolutionImage -> TransformIndexToPhysicalPoint(newOriginIndex, newOrigin);
   m_HighResolutionImage -> SetOrigin( newOrigin );
-
-  std::cout << "done." << std::endl;
-
+  if (verbose){
+    std::cout << "done." << std::endl;
+  }
 }
 
 /*
@@ -224,6 +227,9 @@ LowToHighImageResolutionMethod<ImageType, TransformType >
 ::StartRegistration( void )
 {
 
+  // Get verbosity level
+  bool verbose = this -> GetVerbose();
+  
   try
   {
     // initialize the interconnects between components
@@ -284,7 +290,9 @@ LowToHighImageResolutionMethod<ImageType, TransformType >
 
       if (i != m_TargetImage || m_UseReference == true )
       {
-          std::cout << "Runs registration... ";
+          if (verbose){
+            std::cout << "Runs registration... ";
+          }
           try
           {              
               registration->Update();
@@ -295,7 +303,9 @@ LowToHighImageResolutionMethod<ImageType, TransformType >
               std::cerr << err << std::endl;
               throw err;
           }
-          std::cout << "done." << std::endl;
+          if (verbose){
+            std::cout << "done." << std::endl;
+          }
 
           m_TransformArray[i] = reinterpret_cast<TransformType*>(registration->GetTransform());
 
@@ -323,8 +333,9 @@ LowToHighImageResolutionMethod<ImageType, TransformType >
 
   }
 
-  std::cout<<"Inverses the Transforms... "<<std::endl;
-
+  if (verbose){
+    std::cout<<"Inverses the Transforms... "<<std::endl;
+  }
   // Calculate inverse transform array
   for (unsigned int i=0; i < m_NumberOfImages; i++)
   {
@@ -352,8 +363,9 @@ LowToHighImageResolutionMethod<ImageType, TransformType >
   PointType transformedPoint;
   IndexType index;
 
-  std::cout<<"Creates combination of masks... "<<std::endl;
-
+  if (verbose){
+    std::cout<<"Creates combination of masks... "<<std::endl;
+  }
   if ( m_InitializeWithMask )
   {
     m_ImageMaskCombination = ImageMaskType::New();
@@ -434,8 +446,9 @@ LowToHighImageResolutionMethod<ImageType, TransformType >
 
   }
 
-  std::cout << "Average image created!!!" << std::endl;
-
+  if (verbose){
+    std::cout << "Average image created!!!" << std::endl;
+  }
 }
 
 /*

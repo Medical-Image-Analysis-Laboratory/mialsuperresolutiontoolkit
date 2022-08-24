@@ -204,10 +204,6 @@ int main( int argc, char *argv[] )
         numberOfBregmanLoops = bregmanLoopArg.getValue();
         stepScale = stepScaleArg.getValue();
         bool verbose = verboseArg.getValue();
-
-        if (not verbose){
-            std::cout << "Hello, this is a test" << std::endl;
-        }
         
         tau_init =  stepScale * tau_init;
         sigma_init = ( 1 / stepScale ) * sigma_init;
@@ -283,7 +279,9 @@ int main( int argc, char *argv[] )
         // Super resolution filter that solves the inverse problem
         typedef mialsrtk::SuperResolutionRigidImageFilterWithImplicitGradientDescent< ImageType, ImageType >  ResamplerType;
         ResamplerType::Pointer resampler = ResamplerType::New();
-
+        std::cout << "Verbosity level in SRTV recon" << verbose << std::endl;
+        resampler -> SetVerbose(verbose);
+        std::cout << "Verbosity level in resampler recon" << resampler -> GetVerbose() << std::endl;
         typedef itk::OrientImageFilter<ImageType,ImageType> OrientImageFilterType;
         typedef itk::OrientImageFilter<ImageMaskType,ImageMaskType> OrientImageMaskFilterType;
 
@@ -311,7 +309,9 @@ int main( int argc, char *argv[] )
         for (unsigned int i=0; i<numberOfImages; i++)
         {
             // add image
-            std::cout<<"Reading image : "<<input[i].c_str()<<std::endl;
+            if (verbose){
+                std::cout<<"Reading image : "<<input[i].c_str()<<std::endl;
+            }
             ImageReaderType::Pointer imageReader = ImageReaderType::New();
             imageReader -> SetFileName( input[i].c_str() );
             imageReader -> Update();
@@ -333,7 +333,9 @@ int main( int argc, char *argv[] )
             // add region
             if ( mask.size() > 0 )
             {
-                std::cout<<"Reading mask image : "<<mask[i].c_str()<<std::endl;
+                if (verbose){
+                    std::cout<<"Reading mask image : "<<mask[i].c_str()<<std::endl;
+                }
                 MaskReaderType::Pointer maskReader = MaskReaderType::New();
                 maskReader -> SetFileName( mask[i].c_str() );
                 maskReader -> Update();
@@ -365,7 +367,9 @@ int main( int argc, char *argv[] )
 
             } else
             {
-                std::cout<<"Creating a mask image (entire input image)"<<std::endl;
+                if (verbose){
+                    std::cout<<"Creating a mask image (entire input image)"<<std::endl;
+                }
                 roiSize  = imageReader -> GetOutput() -> GetLargestPossibleRegion().GetSize();
                 roiIndex = imageReader -> GetOutput() -> GetLargestPossibleRegion().GetIndex();
             }
@@ -378,7 +382,9 @@ int main( int argc, char *argv[] )
             if ( pre_input.size() > 0)
             {
                 // add image
-                std::cout<<"Reading pre-processed image : "<<pre_input[i].c_str()<<std::endl;
+                if (verbose){
+                    std::cout<<"Reading pre-processed image : "<<pre_input[i].c_str()<<std::endl;
+                }
                 ImageReaderType::Pointer preImageReader = ImageReaderType::New();
                 preImageReader -> SetFileName( pre_input[i].c_str() );
                 preImageReader -> Update();
@@ -390,7 +396,9 @@ int main( int argc, char *argv[] )
 
             if (transform.size() > 0 )
             {
-                std::cout<<"Reading transform:"<<transform[i]<<std::endl;
+                if (verbose){
+                    std::cout<<"Reading transform:"<<transform[i]<<std::endl;
+                }
                 TransformReaderType::Pointer transformReader = TransformReaderType::New();
                 transformReader -> SetFileName( transform[i] );
                 transformReader -> Update();
@@ -415,7 +423,9 @@ int main( int argc, char *argv[] )
         }
 
         // Set the reference image
-        std::cout<<"Reading the reference image : "<<refImage<<std::endl;
+        if (verbose){
+            std::cout<<"Reading the reference image : "<<refImage<<std::endl;
+        }
         ImageReaderType::Pointer refReader = ImageReaderType::New();
         refReader -> SetFileName( refImage );
         refReader -> Update();
@@ -458,6 +468,7 @@ int main( int argc, char *argv[] )
             */
         }
 
+        
         std::cout << "==========================================================================" << std::endl << std::endl;
 
         std::cout<<"Performing super resolution (TV using IGD) with the following settings: "<<std::endl<<std::endl;
@@ -491,9 +502,10 @@ int main( int argc, char *argv[] )
         unsigned int itMax=2;
         double epsilon=1e-4;
 
-
+            
         if( updateMotionSwitchArg.isSet() )
         {
+            
             std::cout << "Motion estimation enabled with the following settings: " << std::endl << std::endl;
             std::cout << "# iterations max : " << itMax << std::endl;
             std::cout << "Convergence threshold : " << epsilon << std::endl;
@@ -517,12 +529,15 @@ int main( int argc, char *argv[] )
         // Bregman loops
         for (int j = 0; j < numberOfBregmanLoops; j++)
         {
-            criterion = 1.0;
-            std::cout << "Bregman loop init : "<< j << std::endl<<std::endl;
-            std::cout<<"Theta : "<<theta_init<<std::endl;
-            std::cout<<"Sigma : "<<sigma_init<<std::endl;
-            std::cout<<"Tau : "<<tau_init<<std::endl<<std::endl;
 
+            
+            criterion = 1.0;
+            if (verbose){
+                std::cout << "Bregman loop init : "<< j << std::endl<<std::endl;
+                std::cout<<"Theta : "<<theta_init<<std::endl;
+                std::cout<<"Sigma : "<<sigma_init<<std::endl;
+                std::cout<<"Tau : "<<tau_init<<std::endl<<std::endl;
+            }
             resampler -> SetCurrentBregmanLoop(j);
             resampler -> SetCurrentOuterIteration(0);
 
@@ -530,15 +545,18 @@ int main( int argc, char *argv[] )
 
             if (j == 0)
             {
-                std::cout << "Initial HR image set to input image associated with flag -r." << std::endl<<std::endl;;
+                if (verbose){
+                    std::cout << "Initial HR image set to input image associated with flag -r." << std::endl<<std::endl;;
+                }
                 resampler -> SetReferenceImage( refReader -> GetOutput() );
             }
             else
             {
-                std::cout << "Initial HR image set from previous iteration." << std::endl<<std::endl;;
+                if (verbose){
+                    std::cout << "Initial HR image set from previous iteration." << std::endl<<std::endl;;
+                }
                 resampler -> SetReferenceImage( resampler -> GetOutput() );
             }
-
             resampler -> SetIterations(iter);
             resampler -> SetLambda( lambda );
             resampler -> SetGamma( gamma );
@@ -546,27 +564,25 @@ int main( int argc, char *argv[] )
             resampler -> SetTau( tau_init );
             resampler -> SetTheta( theta_init );
             resampler -> SetDeltat( deltat );
-
             resampler -> SetConvergenceThreshold( innerConvThreshold );
 
             resampler -> SetSliceGap( gap );
 
             resampler -> SetUseDebluringPSF( debluringArg.isSet() );
-
             /*
     std::cout << "Reference image at loop " << 0 << ": " << std::endl;
     std::cout << "Pointer : " << refReader ->GetOutput() << std::endl;
     std::cout << "Region : " << refReader ->GetOutput() ->GetLargestPossibleRegion() << std::endl;
     */
-
-            std::cout << "**************************************************************************" << std::endl << std::endl;
-
+            if (verbose){
+                std::cout << "**************************************************************************" << std::endl << std::endl;
+            }
             if ( boxcarSwitchArg.isSet() )
                 resampler -> SetPSF( ResamplerType::BOXCAR );
             resampler -> Update();
-
-            std::cout << "**************************************************************************" << std::endl << std::endl;
-
+            if (verbose){
+                std::cout << "**************************************************************************" << std::endl << std::endl;
+            }
             theta = theta_init;
             sigma = sigma_init;
             tau = tau_init;
@@ -579,9 +595,10 @@ int main( int argc, char *argv[] )
             {
                 //Motion estimation if enabled
                 if(pre_input.size()>0 && updateMotionSwitchArg.isSet() )
-                {
-                    std::cout << "Update motion parameters (Slice by Slice)" << std::endl << std::endl;
-
+                {   
+                    if (verbose){
+                        std::cout << "Update motion parameters (Slice by Slice)" << std::endl << std::endl;
+                    }
                     DuplicatorType::Pointer duplicator = DuplicatorType::New();
                     duplicator->SetInputImage(resampler->GetOutput());
                     duplicator->Update();
@@ -594,16 +611,20 @@ int main( int argc, char *argv[] )
 
                     //Iterative slice by slice registration
                     for(unsigned int it=1; it <= itMax; it++)
-                    {
-                        std::cout << "Iteration " << it << std::endl;// <<std::cout.flush();
+                    {   
 
+                        if (verbose){
+                            std::cout << "Iteration " << it << std::endl;// <<std::cout.flush();
+                        }
                         // Start registration
 #pragma omp parallel for private(im) schedule(dynamic)
                         for (im=0; im<numberOfImages; im++)
                         {
-                            std::cout << "Registering image " << im << " / "<< numberOfImages <<" ... "; //std::cout.flush();
-
+                            if (verbose){
+                                std::cout << "Registering image " << im << " / "<< numberOfImages <<" ... "; //std::cout.flush();
+                            }
                             registration[im] = RegistrationType::New();
+                            registration[im] -> SetVerbose(verbose);
                             registration[im] -> SetFixedImage( preImages[im] );
                             registration[im] -> SetMovingImage( hrImageRef );
                             registration[im] -> SetImageMask( imageMasks[im] );
@@ -625,17 +646,20 @@ int main( int argc, char *argv[] )
 
                             transforms[im] = static_cast< TransformType* >(registration[im] -> GetTransform());
 
-
-                            std::cout << "done. "; //std::cout.flush();
-
+                            if (verbose){
+                                std::cout << "done. "; //std::cout.flush();
+                            }
                         }
 
                         //std::cout << std::endl; //std::cout.flush();
 
                         // Inject images onto a regular HR grid
-                        std::cout << "Injecting images ...  "; //std::cout.flush();
+                        if (verbose){
+                            std::cout << "Injecting images ...  "; //std::cout.flush();
+                        }
                         ResamplerByInjectionType::Pointer resamplerByInj = ResamplerByInjectionType::New();
-
+                        resamplerByInj -> SetVerbose(verbose);
+                        
                         for (unsigned int p=0; p<numberOfImages; p++)
                         {
                             //std::cout << "Add input " << p << " : " << std::endl;
@@ -653,9 +677,9 @@ int main( int argc, char *argv[] )
                             hrImageOld = hrImage;
 
                         hrImage = resamplerByInj -> GetOutput();
-
-                        std::cout << "done. " << std::endl; //std::cout.flush();
-
+                        if (verbose){
+                            std::cout << "done. " << std::endl; //std::cout.flush();
+                        }
                         // compute error
                         double delta = 0.0;
                         if (it > 1)
@@ -678,8 +702,9 @@ int main( int argc, char *argv[] )
                             currentMetric = - nc -> GetValue( identity -> GetParameters() );
 
                             delta = (currentMetric - previousMetric) / previousMetric;
-
-                            std::cout<<"previousMetric: "<<previousMetric<<", currentMetric: "<<currentMetric<< ", delta : " << delta <<std::endl;
+                            if (verbose){
+                                std::cout<<"previousMetric: "<<previousMetric<<", currentMetric: "<<currentMetric<< ", delta : " << delta <<std::endl;
+                            }
                         }
                         else
                         {
@@ -689,34 +714,43 @@ int main( int argc, char *argv[] )
                         if (delta < epsilon) break;
 
                     }// End of iterative registration
-
                     // Update transforms
                     for (unsigned int lr=0; lr<numberOfImages; lr++)
                     {
                         for(unsigned int s=0; s< transforms[lr] -> GetNumberOfSlices(); s++)
                             resampler -> SetTransform(lr, s, transforms[lr] -> GetSliceTransform(s) ) ;
                     }
-
-                    std::cout << "**************************************************************************" << std::endl << std::endl;
-
+                    if (verbose){
+                        std::cout << "**************************************************************************" << std::endl << std::endl;
+                    }
                 }// End of motion estimation
 
                 resampler -> SetCurrentOuterIteration(i+1);
-                std::cout << "Bregman loop : "<< j << " / TV Loop : "<< (resampler -> GetCurrentOuterIteration()) <<std::endl<<std::endl;
 
+                if (verbose){
+                    std::cout << "Bregman loop : "<< j << " / TV Loop : "<< (resampler -> GetCurrentOuterIteration()) <<std::endl<<std::endl;
+                }
                 //Update optimization parameters
                 theta = resampler -> GetTheta();
-                std::cout<<"Theta (outer) = "<<theta<<std::endl;
+                if (verbose){
+                    std::cout<<"Theta (outer) = "<<theta<<std::endl;
+                }
                 resampler -> SetGamma( gamma );
-
-                std::cout << "Sigma old / new = " << sigma << " / ";
+                if (verbose){
+                    std::cout << "Sigma old / new = " << sigma << " / ";
+                }
                 sigma = sigma / theta;
-                std::cout<<sigma<<std::endl;
+                if (verbose){
+                    std::cout<<sigma<<std::endl;
+                }
                 resampler -> SetSigma( sigma  );
-
-                std::cout << "Tau old / new  = " << tau << " / ";
+                if (verbose){
+                    std::cout << "Tau old / new  = " << tau << " / ";
+                }
                 tau = theta * tau;
-                std::cout<<tau<<std::endl;
+                if (verbose){
+                    std::cout<<tau<<std::endl;
+                }
                 resampler -> SetTau( tau );
 
                 resampler -> SetZVector(Z);
@@ -730,18 +764,16 @@ int main( int argc, char *argv[] )
       std::cout << "Reference image at loop " << i+1 << ": " << std::endl;
       std::cout << "Pointer : " << resampler ->GetOutput() << std::endl;
       std::cout << "Region : " << resampler ->GetOutput() ->GetLargestPossibleRegion() << std::endl;
-      */
-
-                std::cout << "New reference size : " << resampler -> GetOutput()->GetLargestPossibleRegion().GetNumberOfPixels() << std::endl;
-
-
+      */    
+                if (verbose){
+                    std::cout << "New reference size : " << resampler -> GetOutput()->GetLargestPossibleRegion().GetNumberOfPixels() << std::endl;
+                }
                 resampler -> SetReferenceImage( resampler -> GetOutput() );
                 resampler -> Update();
-
                 criterion = resampler -> GetCriterionValue();
-
-                std::cout << std::endl << "Outer loop criterion = " << criterion << std::endl << std::endl;
-
+                if (verbose){
+                    std::cout << std::endl << "Outer loop criterion = " << criterion << std::endl << std::endl;
+                }
                 //resampler -> Print(std::cout);
 
                 if ( strcmp(debugDir,"") != 0 )
@@ -800,7 +832,9 @@ int main( int argc, char *argv[] )
                     }
                     else
                     {
-                        std::cout << "CSV file opening failed." << std::endl;
+                        if (verbose){
+                            std::cout << "CSV file opening failed." << std::endl;
+                        }
                     }
 
                     std::ofstream fout(csvFileName, std::ios_base::out | std::ios_base::app);
@@ -822,22 +856,23 @@ int main( int argc, char *argv[] )
                     fout << std::endl;
                     fout.close();
 
-                    std::cout << "Metrics saved in CSV" << std::endl;
+                    if (verbose){
+                        std::cout << "Metrics saved in CSV" << std::endl;
 
-
-                    std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-
+                        std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+                    }
                     //
                 }
-
                 if(criterion < outerConvThreshold)
                 {
-                    std::cout << "Outer loop has converged after "<< resampler -> GetCurrentOuterIteration() <<" iterations! ( last value = " << criterion << " )"<< std::endl;
+                    if (verbose){
+                        std::cout << "Outer loop has converged after "<< resampler -> GetCurrentOuterIteration() <<" iterations! ( last value = " << criterion << " )"<< std::endl;
+                    }
                     break;
                 }
-
-                std::cout << "**************************************************************************" << std::endl << std::endl;
-
+                if (verbose){
+                    std::cout << "**************************************************************************" << std::endl << std::endl;
+                }
             }// End of outer loops
 
             //Update bregman variable
@@ -884,7 +919,9 @@ int main( int argc, char *argv[] )
         }
         else
         {
-            std::cout << "CSV file opening failed." << std::endl;
+            if (verbose){
+                std::cout << "CSV file opening failed." << std::endl;
+            }
         }
 
         std::ofstream fout(csvFileName, std::ios_base::out | std::ios_base::app);
@@ -905,17 +942,19 @@ int main( int argc, char *argv[] )
 
         fout << std::endl;
         fout.close();
+        if (verbose){
+            std::cout << "Metrics saved in CSV" << std::endl;
 
-        std::cout << "Metrics saved in CSV" << std::endl;
-
-
-        std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-
+            std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+        }
         //
-
-        std::cout << "h1" << std::endl;
+        if (verbose){
+            std::cout << "h1" << std::endl;
+        }
         end_time_unix = mialsrtk::getTime();;
-        std::cout << "h2" << std::endl;
+        if (verbose){
+            std::cout << "h2" << std::endl;
+        }
         diff_time_unix = end_time_unix - start_time_unix;
 
         mialsrtk::printTime("TV (IGD)",diff_time_unix);
@@ -934,12 +973,15 @@ int main( int argc, char *argv[] )
         //writer -> SetInput( outputImage );
 
         if ( strcmp(outImage,"") != 0)
-        {
-            std::cout << "Writing " << outImage << " ... ";
+        {   
+            if (verbose){
+                std::cout << "Writing " << outImage << " ... ";
+            }
             writer->Update();
-            std::cout << "done." << std::endl;
+            if (verbose){
+                std::cout << "done." << std::endl;
+            }
         }
-
         // Write transforms
 
         typedef itk::TransformFileWriter TransformWriterType;
@@ -954,9 +996,13 @@ int main( int argc, char *argv[] )
 
                 try
                 {
-                    std::cout << "Writing " << outTransform[i].c_str() << " ... " ; std::cout.flush();
+                    if (verbose){
+                        std::cout << "Writing " << outTransform[i].c_str() << " ... " ; std::cout.flush();
+                    }
                     transformWriter -> Update();
-                    std::cout << " done! " << std::endl;
+                    if (verbose){
+                        std::cout << " done! " << std::endl;
+                    }
                 }
                 catch ( itk::ExceptionObject & excp )
                 {

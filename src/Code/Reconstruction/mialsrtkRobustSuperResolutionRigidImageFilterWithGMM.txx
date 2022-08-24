@@ -184,6 +184,8 @@ void
 RobustSuperResolutionRigidImageFilterWithGMM<TInputImage,TOutputImage   ,TInterpolatorPrecisionType>
 ::Optimize()
 {
+  bool verbose = this -> GetVerbose();
+
   std::cout << "Begin OptimizeLeastSquare()" << std::endl << std::endl;
   // Fill x
   m_OutputImageRegion = this -> GetReferenceImage() -> GetLargestPossibleRegion();
@@ -209,6 +211,7 @@ RobustSuperResolutionRigidImageFilterWithGMM<TInputImage,TOutputImage   ,TInterp
   // Setup cost function
   std::cout << "Setup the Costfunction" << std::endl << std::endl;
   JointRobustTVGMMCostFunctionWithImplicitGradientDescent<InputImageType> f(m_x.size());
+  f.SetVerbose(verbose);
 
   for(unsigned int im = 0; im < m_ImageArray.size(); im++)
   {
