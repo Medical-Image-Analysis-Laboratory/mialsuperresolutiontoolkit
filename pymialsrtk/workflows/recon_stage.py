@@ -129,13 +129,31 @@ def create_recon_stage(p_paramTV,
     if p_multi_parameters:
         deltatTV = [deltatTV] if not isinstance(deltatTV , list) else deltatTV
         lambdaTV = [lambdaTV] if not isinstance(lambdaTV , list) else lambdaTV
+
+        num_iterations = [num_iterations] if not isinstance(num_iterations , list) else num_iterations
+        num_primal_dual_loops = [num_primal_dual_loops] if not isinstance(num_primal_dual_loops , list) else num_primal_dual_loops
+        num_bregman_loops = [num_bregman_loops] if not isinstance(num_bregman_loops , list) else num_bregman_loops
+        step_scale = [step_scale] if not isinstance(step_scale , list) else step_scale
+        gamma = [gamma] if not isinstance(gamma , list) else gamma
+
         srtkTVSuperResolution.iterables = [
             ("in_lambda",lambdaTV),
-            ("in_deltat",deltatTV)
+            ("in_deltat",deltatTV),
+            ("in_iter",num_iterations),
+            ("in_loop",num_primal_dual_loops),
+            ("in_bregman_loop",num_bregman_loops),
+            ("in_step_scale",step_scale),
+            ("in_gamma",gamma)
         ]
     else:
         srtkTVSuperResolution.inputs.in_lambda = lambdaTV
         srtkTVSuperResolution.inputs.in_deltat = deltatTV
+
+        srtkTVSuperResolution.inputs.in_iter = num_iterations
+        srtkTVSuperResolution.inputs.in_loop = num_primal_dual_loops
+        srtkTVSuperResolution.inputs.in_bregman_loop = num_bregman_loops
+        srtkTVSuperResolution.inputs.in_step_scale = step_scale
+        srtkTVSuperResolution.inputs.in_gamma = gamma
 
     if p_do_refine_hr_mask:
         srtkHRMask = pe.Node(
