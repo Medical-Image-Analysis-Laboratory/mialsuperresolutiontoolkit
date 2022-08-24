@@ -76,19 +76,30 @@ def create_input_stage(p_bids_dir,
 
         if p_session is not None:
             t2ws_template = os.path.join(
-                p_subject, p_session, 'anat',
+                p_subject,
+                p_session,
+                'anat',
                 '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])
             )
             if p_masks_desc is not None:
                 masks_template = os.path.join(
-                    'derivatives', p_masks_derivatives_dir, p_subject, p_session,
-                    'anat', '_'.join([sub_ses, '*_run-*',
-                                      '_desc-'+p_masks_desc, '*mask.nii.gz'])
+                    'derivatives',
+                    p_masks_derivatives_dir,
+                    p_subject,
+                    p_session,
+                    'anat', '_'.join([sub_ses,
+                                      '*_run-*',
+                                      '_desc-'+p_masks_desc,
+                                      '*mask.nii.gz'])
                 )
             else:
                 masks_template = os.path.join(
-                    'derivatives', p_masks_derivatives_dir, p_subject, p_session,
-                    'anat', '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
+                    'derivatives',
+                    p_masks_derivatives_dir,
+                    p_subject,
+                    p_session,
+                    'anat',
+                    '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
                 )
         else:
             t2ws_template = os.path.join(p_subject, 'anat',
@@ -96,9 +107,15 @@ def create_input_stage(p_bids_dir,
 
             if p_masks_desc is not None:
                 masks_template = os.path.join(
-                    'derivatives', p_masks_derivatives_dir, p_subject, p_session,
-                    'anat', '_'.join([sub_ses, '*_run-*',
-                                      '_desc-'+p_masks_desc, '*mask.nii.gz'])
+                    'derivatives',
+                    p_masks_derivatives_dir,
+                    p_subject,
+                    p_session,
+                    'anat',
+                    '_'.join([sub_ses,
+                              '*_run-*',
+                              '_desc-'+p_masks_desc,
+                              '*mask.nii.gz'])
                 )
             else:
                 masks_template = os.path.join(
