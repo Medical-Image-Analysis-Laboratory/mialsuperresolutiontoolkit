@@ -38,3 +38,6 @@ dependencies:
     - etelemetry==0.3.0
     - networkx==2.6.3
     - simpleITK==2.0.2
+    - nsol==0.1.14
+    - nipy==0.5.0
+    - transforms3d==0.3.1

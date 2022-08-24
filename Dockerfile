@@ -91,11 +91,6 @@ RUN mkdir /.cache && \
 WORKDIR /app
 RUN chmod -R 777 /app
 
-# Store command related variables
-ENV MY_CONDA_PY3ENV "pymialsrtk-env"
-# This is how you will activate this conda environment
-ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
-
 # Create the conda environment
 COPY docker/bidsapp/environment.yml /app/environment.yml
 RUN micromamba install -v -y -n base -f /app/environment.yml
@@ -103,21 +98,9 @@ RUN micromamba install -v -y -n base -f /app/environment.yml
 # than "base" is not recommended:
 # https://github.com/mamba-org/micromamba-docker
 
-RUN echo ""
-RUN micromamba repoquery -n base depends nipype
-RUN echo ""
-RUN micromamba repoquery -n base whoneeds scipy
-RUN echo ""
-RUN pip install networkx==2.6.3
-RUN echo ""
-RUN micromamba repoquery -n base whoneeds networkx
-RUN echo ""
-RUN micromamba list -n base
-
 # Make ANTs happy
 ENV ANTSPATH="/opt/conda/bin" \
 PATH="$ANTSPATH:$PATH"
-
 
 ##############################################################
 # Setup for scikit-image
