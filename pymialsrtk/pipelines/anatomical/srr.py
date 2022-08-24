@@ -170,8 +170,9 @@ class AnatomicalPipeline:
     m_do_nlm_denoising = None
     m_skip_stacks_ordering = None
     m_do_refine_hr_mask = None
-    m_do_multi_parameters = None
     m_do_srr_assessment = None
+
+    _m_multi_parameters = None
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
@@ -221,9 +222,6 @@ class AnatomicalPipeline:
             self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising']\
                 if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
                 else False
-            self.m_do_multi_parameters = p_dict_custom_interfaces['do_multi_parameters'] \
-                if 'do_multi_parameters' in p_dict_custom_interfaces.keys() \
-                else False
             self.m_do_srr_assessment = p_dict_custom_interfaces['do_srr_assessment'] \
                 if 'do_srr_assessment' in p_dict_custom_interfaces.keys() \
                 else False
@@ -239,7 +237,14 @@ class AnatomicalPipeline:
             self.m_do_refine_hr_mask = False
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
-            self.m_do_multi_parameters = False
+
+        # if any of the TV parameters is a list of more than one item,
+        # we are in a multi_parameters running mode
+        self._m_multi_parameters = len([value
+                                       for value in list(self.paramTV.values())
+                                       if ( isinstance(value, list)
+                                            and len(value)>1) ] ) \
+                                  > 0
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -323,7 +328,7 @@ class AnatomicalPipeline:
         reconstruction_stage, srtv_node_name = recon_stage.create_recon_stage(
             p_paramTV=self.paramTV,
             p_use_manual_masks=self.use_manual_masks,
-            p_do_multi_parameters=self.m_do_multi_parameters,
+            p_multi_parameters=self._m_multi_parameters,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
@@ -336,7 +341,7 @@ class AnatomicalPipeline:
         if self.m_do_srr_assessment:
             srr_assessment_stage = \
                 sr_assessment_stage.create_sr_assessment_stage(
-                    p_do_multi_parameters=self.m_do_multi_parameters,
+                    p_multi_parameters=self._m_multi_parameters,
                     p_input_srtv_node = srtv_node_name,
                     name='srr_assessment_stage'
                 )
