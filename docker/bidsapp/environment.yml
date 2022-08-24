@@ -35,3 +35,6 @@ dependencies:
     - sphinxcontrib-apidoc==0.3.0
     - sphinxcontrib-napoleon==0.7
     - recommonmark==0.5.0
+    - etelemetry==0.3.0
+    - networkx==2.6.3
+    - simpleITK==2.0.2
