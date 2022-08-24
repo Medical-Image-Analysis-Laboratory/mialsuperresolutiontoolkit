@@ -1962,8 +1962,8 @@ class ApplyAlignmentTransform(BaseInterface):
             warped_moving_sitk_mask = sitk.Resample(
                 mask,
                 template,  # Reference
-                sitkNearestNeighbor,
-                sitk.sitkLinear)
+                rigid_transform_sitk,
+                sitk.sitkNearestNeighbor)
 
             mask_tfm = self._gen_filename('output_mask')
             writer.SetFileName(mask_tfm)
