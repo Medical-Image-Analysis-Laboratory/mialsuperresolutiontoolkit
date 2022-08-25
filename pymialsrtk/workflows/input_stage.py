@@ -50,8 +50,10 @@ def create_input_stage(p_bids_dir,
     input_stage = pe.Workflow(name=name)
 
     sub_ses = p_subject
+    sub_path = p_subject
     if p_session is not None:
-        sub_ses = ''.join([sub_ses, '_', p_session])
+        sub_ses = ''.join([sub_ses, '_', p_subject])
+        sub_path = os.path.join(p_subject, p_session)
 
     output_fields = ['t2ws_filtered', 'masks_filtered', 'stacks_order']
 
@@ -81,73 +83,32 @@ def create_input_stage(p_bids_dir,
         dg.inputs.raise_on_empty = False
         dg.inputs.sort_filelist = True
 
-        if p_session is not None:
-            t2ws_template = os.path.join(
-                p_subject,
-                p_session,
-                'anat',
-                '_'.join([sub_ses, '*run-*', '*T2w.nii.gz'])
+        t2ws_template = os.path.join(sub_path, 'anat',
+                                     sub_ses + '*_run-*_T2w.nii.gz'
+                                     )
+        if p_masks_desc is not None:
+            masks_template = os.path.join(
+                'derivatives', p_masks_derivatives_dir,
+                sub_path, 'anat',
+                '_'.join([sub_ses, '*_run-*', '_desc-'+p_masks_desc,
+                          '*mask.nii.gz'])
             )
-            if p_masks_desc is not None:
-                masks_template = os.path.join(
-                    'derivatives',
-                    p_masks_derivatives_dir,
-                    p_subject,
-                    p_session,
-                    'anat', '_'.join([sub_ses,
-                                      '*_run-*',
-                                      '_desc-'+p_masks_desc,
-                                      '*mask.nii.gz'])
-                )
-            else:
-                masks_template = os.path.join(
-                    'derivatives',
-                    p_masks_derivatives_dir,
-                    p_subject,
-                    p_session,
-                    'anat',
-                    '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
-                )
-
-            if p_do_reconstruct_labels:
-                labels_template = os.path.join(
-                    'derivatives',
-                    'labels',
-                    p_subject,
-                    p_session,
-                    'anat',
-                    '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
-                )
         else:
-            t2ws_template = os.path.join(p_subject, 'anat',
-                                         sub_ses + '*_run-*_T2w.nii.gz')
+            masks_template = os.path.join(
+                'derivatives',
+                p_masks_derivatives_dir,
+                sub_path, 'anat',
+                '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
+            )
 
-            if p_masks_desc is not None:
-                masks_template = os.path.join(
-                    'derivatives',
-                    p_masks_derivatives_dir,
-                    p_subject,
-                    p_session,
-                    'anat',
-                    '_'.join([sub_ses,
-                              '*_run-*',
-                              '_desc-'+p_masks_desc,
-                              '*mask.nii.gz'])
-                )
-            else:
-                masks_template = os.path.join(
-                    'derivatives', p_masks_derivatives_dir, p_subject, 'anat',
-                    sub_ses + '*_run-*_*mask.nii.gz'
-                )
-
-            if p_do_reconstruct_labels:
-                labels_template = os.path.join(
-                    'derivatives',
-                    'labels',
-                    p_subject,
-                    'anat',
-                    '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
-                )
+        if p_do_reconstruct_labels:
+            labels_template = os.path.join(
+                'derivatives',
+                'labels',
+                sub_path,
+                'anat',
+                '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
+            )
 
         if p_do_reconstruct_labels:
             dg.inputs.field_template = dict(T2ws=t2ws_template,
@@ -179,13 +140,8 @@ def create_input_stage(p_bids_dir,
         dg.inputs.sort_filelist = True
 
         dg.inputs.field_template = dict(
-            T2ws=os.path.join(p_subject, 'anat',
+            T2ws=os.path.join(sub_path, 'anat',
                               sub_ses+'*_run-*_T2w.nii.gz'))
-        if p_session is not None:
-            dg.inputs.field_template = dict(
-                T2ws=os.path.join(p_subject, p_session, 'anat',
-                                  '_'.join([sub_ses, '*run-*',
-                                            '*T2w.nii.gz'])))
 
         if p_stacks is not None:
             t2ws_filter_prior_masks = pe.Node(

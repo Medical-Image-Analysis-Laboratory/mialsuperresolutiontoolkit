@@ -276,27 +276,21 @@ class AnatomicalPipeline:
 
         """
         sub_ses = self.subject
+        sub_path = self.subject
         if self.session is not None:
             sub_ses = ''.join([sub_ses, '_', self.session])
+            sub_path = os.path.join(self.subject, self.session)
 
-        if self.session is None:
-            wf_base_dir = os.path.join(self.output_dir,
-                                       '-'.join(["nipype", __nipype_version__]),
-                                       self.subject,
-                                       "rec-{}".format(self.sr_id))
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject)
-        else:
-            wf_base_dir = os.path.join(self.output_dir,
-                                       '-'.join(["nipype", __nipype_version__]),
-                                       self.subject,
-                                       self.session,
-                                       "rec-{}".format(self.sr_id))
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject,
-                                         self.session)
+        wf_base_dir = os.path.join(self.output_dir,
+                                   '-'.join(["nipype", __nipype_version__]),
+                                   sub_path,
+                                   "rec-{}".format(self.sr_id)
+                                   )
+
+        final_res_dir = os.path.join(self.output_dir,
+                                     '-'.join(["pymialsrtk", __version__]),
+                                     sub_path
+                                     )
 
         if not os.path.exists(wf_base_dir):
             os.makedirs(wf_base_dir)
@@ -487,25 +481,21 @@ class AnatomicalPipeline:
 
         # Copy and rename the generated "graph.png" image
         src = os.path.join(self.wf.base_dir, self.wf.name, 'graph.png')
+
+        # String formatting for saving
+        subject_str = f"{self.subject}"
+        dst_base = os.path.join(self.output_dir,
+                                '-'.join(["pymialsrtk", __version__]),
+                                self.subject)
+
         if self.session is not None:
-            dst = os.path.join(
-                self.output_dir,
-                '-'.join(["pymialsrtk", __version__]),
-                self.subject,
-                self.session,
-                'figures',
-                (f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_'
-                 'desc-processing_graph.png')
-            )
-        else:
-            dst = os.path.join(
-                    self.output_dir,
-                    '-'.join(["pymialsrtk", __version__]),
-                    self.subject,
-                    'figures',
-                    (f'{self.subject}_rec-SR_id-{self.sr_id}_'
-                     'desc-processing_graph.png')
-            )
+            subject_str += f"_{self.session}"
+            dst_base = os.path.join(dst_base, self.session)
+
+        dst = os.path.join(dst_base, 'figures',
+                           f'{subject_str}_rec-SR_id-{self.sr_id}_' +
+                           'desc-processing_graph.png')
+
         # Create the figures/ and parent directories if they do not exist
         figures_dir = os.path.dirname(dst)
         os.makedirs(figures_dir, exist_ok=True)
@@ -536,23 +526,8 @@ class AnatomicalPipeline:
 
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
-        if self.session is not None:
-            dst = os.path.join(
-                    self.output_dir,
-                    '-'.join(["pymialsrtk", __version__]),
-                    self.subject,
-                    self.session,
-                    'logs',
-                    f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_log.txt'
-            )
-        else:
-            dst = os.path.join(
-                    self.output_dir,
-                    '-'.join(["pymialsrtk", __version__]),
-                    self.subject,
-                    'logs',
-                    f'{self.subject}_rec-SR_id-{self.sr_id}_log.txt'
-            )
+        dst = os.path.join(dst_base, 'logs',
+                           f'{subject_str}_rec-SR_id-{self.sr_id}_log.txt')
         # Create the logs/ and parent directories if they do not exist
         logs_dir = os.path.dirname(dst)
         os.makedirs(logs_dir, exist_ok=True)
@@ -587,17 +562,16 @@ class AnatomicalPipeline:
     def create_subject_report(self):
         """Create the HTML report"""
         # Set main subject derivatives directory
-        if self.session is None:
-            sub_ses = self.subject
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject)
-        else:
-            sub_ses = f'{self.subject}_{self.session}'
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject,
-                                         self.session)
+        sub_ses = self.subject
+        sub_path = self.subject
+        if self.session is not None:
+            sub_ses += f'_{self.session}'
+            sub_path = os.path.join(self.subject, self.session)
+
+        final_res_dir = os.path.join(self.output_dir,
+                                     '-'.join(["pymialsrtk", __version__]),
+                                     sub_path)
+
         # Get the HTML report template
         path = pkg_resources.resource_filename(
             'pymialsrtk',
