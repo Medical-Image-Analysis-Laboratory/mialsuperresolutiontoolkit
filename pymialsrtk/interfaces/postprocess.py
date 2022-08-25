@@ -486,7 +486,6 @@ class QualityMetrics(BaseInterface):
         names = ['in_lambda', 'in_deltat', 'PSNR', 'SSIM']
         row = [TV_params['in_lambda'], TV_params['in_deltat'], psnr, ssim]
 
-
         metrics = []
         metrics.append(dict(zip(names, row)))
 
@@ -520,7 +519,6 @@ class QualityMetrics(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_metrics'] = self._gen_filename('output_metrics')
         return outputs
-
 
 
 class ConcatenateQualityMetricsInputSpec(BaseInterfaceInputSpec):
@@ -562,11 +560,11 @@ class ConcatenateQualityMetrics(BaseInterface):
             #
             # num_configs = len(self.inputs.input_metrics)
 
-            # res.insert(loc=0, column='stacks', value= [ str_stacks for i in range(num_configs) ])
+            # res.insert(loc=0, column='stacks', value= [str_stacks for i in range(num_configs)])
             # res.insert(loc=0, column='num_stacks', value= \
-            # [ len(self.inputs.input_stacks_order) for i in range(num_configs) ])
+            # [len(self.inputs.input_stacks_order) for i in range(num_configs)])
             # res.insert(loc=0, column='sr_id', value=\
-            # [ self.inputs.sr_id for i in range(num_configs)])
+            # [self.inputs.sr_id for i in range(num_configs)])
 
             res.to_csv(
                 self._gen_filename('output_csv'),

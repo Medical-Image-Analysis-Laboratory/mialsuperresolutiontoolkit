@@ -157,13 +157,13 @@ def create_recon_stage(p_paramTV,
             else gamma
 
         srtkTVSuperResolution.iterables = [
-            ("in_lambda",lambdaTV),
-            ("in_deltat",deltatTV),
-            ("in_iter",num_iterations),
-            ("in_loop",num_primal_dual_loops),
-            ("in_bregman_loop",num_bregman_loops),
-            ("in_step_scale",step_scale),
-            ("in_gamma",gamma)
+            ("in_lambda", lambdaTV),
+            ("in_deltat", deltatTV),
+            ("in_iter", num_iterations),
+            ("in_loop", num_primal_dual_loops),
+            ("in_bregman_loop", num_bregman_loops),
+            ("in_step_scale", step_scale),
+            ("in_gamma", gamma)
         ]
     else:
         srtkTVSuperResolution.inputs.in_lambda = lambdaTV
