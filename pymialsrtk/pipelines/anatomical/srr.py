@@ -267,7 +267,7 @@ class AnatomicalPipeline:
         wf_base_dir = os.path.join(self.output_dir,
                                    '-'.join(["nipype", __nipype_version__]),
                                    sub_path,
-                                   "pre-{}".format(self.sr_id)
+                                   "rec-{}".format(self.sr_id)
                                    )
 
         final_res_dir = os.path.join(self.output_dir,
