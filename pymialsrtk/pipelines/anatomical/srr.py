@@ -556,8 +556,9 @@ class AnatomicalPipeline:
                 pipeline_name=toolbox
             )
 
-        iflogger.info("**** Super-resolution HTML report creation ****")
-        self.create_subject_report()
+        if not self._m_multi_parameters:
+            iflogger.info("**** Super-resolution HTML report creation ****")
+            self.create_subject_report()
 
         return res
 
