@@ -81,21 +81,21 @@ def create_sr_assessment_stage(
         )
 
     sr_assessment_stage.connect(inputnode, 'input_image',
-                        quality_metrics, 'input_image')
+                                quality_metrics, 'input_image')
     sr_assessment_stage.connect(inputnode, "input_ground_truth",
-                        quality_metrics, 'input_ground_truth')
+                                quality_metrics, 'input_ground_truth')
 
     sr_assessment_stage.connect(inputnode, "input_TV_parameters",
                                 quality_metrics, 'input_TV_parameters')
 
     if p_multi_parameters:
         sr_assessment_stage.connect(quality_metrics, 'output_metrics',
-                            concatenate_quality_metrics, 'input_metrics')
+                                    concatenate_quality_metrics, 'input_metrics')
 
         sr_assessment_stage.connect(concatenate_quality_metrics, 'output_csv',
-                            outputnode, 'output_metrics')
+                                    outputnode, 'output_metrics')
     else:
         sr_assessment_stage.connect(quality_metrics, 'output_metrics',
-                            outputnode, 'output_metrics')
+                                    outputnode, 'output_metrics')
 
     return sr_assessment_stage
