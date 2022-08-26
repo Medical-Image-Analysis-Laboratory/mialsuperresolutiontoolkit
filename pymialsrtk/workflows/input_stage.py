@@ -52,7 +52,7 @@ def create_input_stage(p_bids_dir,
     sub_ses = p_subject
     sub_path = p_subject
     if p_session is not None:
-        sub_ses = ''.join([sub_ses, '_', p_subject])
+        sub_ses = ''.join([sub_ses, '_', p_session])
         sub_path = os.path.join(p_subject, p_session)
 
     output_fields = ['t2ws_filtered', 'masks_filtered', 'stacks_order']
@@ -69,7 +69,6 @@ def create_input_stage(p_bids_dir,
         ),
         name='outputnode'
     )
-
     if p_use_manual_masks:
         dg_fields = ['T2ws', 'masks']
         if p_do_reconstruct_labels:
@@ -117,6 +116,7 @@ def create_input_stage(p_bids_dir,
         else:
             dg.inputs.field_template = dict(T2ws=t2ws_template,
                                             masks=masks_template)
+
 
         brainMask = pe.MapNode(
             interface=IdentityInterface(fields=['out_file']),
