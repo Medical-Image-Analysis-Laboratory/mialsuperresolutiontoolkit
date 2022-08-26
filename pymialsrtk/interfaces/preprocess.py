@@ -1618,13 +1618,16 @@ class SplitLabelMapsInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the SplitLabelMaps interface."""
 
     in_labelmap = File(desc='Input label map', mandatory=True)
-    all_labels = traits.List(mandatory=True)
+    all_labels = traits.List([], mandatory=False)
 
 
 class SplitLabelMapsOutputSpec(TraitedSpec):
     """Class used to represent outputs of the SplitLabelMaps interface."""
 
-    out_labels = OutputMultiPath(File(), desc='Output masks')
+    out_labelmaps = OutputMultiPath(File(), desc='Output masks')
+    out_labels = traits.List(
+        desc='List of labels ids that were extracted'
+    )
 
 
 class SplitLabelMaps(BaseInterface):
@@ -1634,6 +1637,8 @@ class SplitLabelMaps(BaseInterface):
 
     input_spec = SplitLabelMapsInputSpec
     output_spec = SplitLabelMapsOutputSpec
+
+    _labels = None
 
     def _gen_filename(self, name, i):
         if name == 'out_label':
@@ -1652,9 +1657,14 @@ class SplitLabelMaps(BaseInterface):
 
         binarizer = sitk.BinaryThresholdImageFilter()
 
-        for label_id in self.inputs.all_labels:
-            binarizer.SetLowerThreshold(label_id)
-            binarizer.SetUpperThreshold(label_id)
+        if not len(self.inputs.all_labels):
+            self._labels = list(np.unique(sitk.GetArrayFromImage(labels)).astype(int))
+        else:
+            self._labels = self.inputs.all_labels
+
+        for label_id in self._labels:
+            binarizer.SetLowerThreshold(int(label_id))
+            binarizer.SetUpperThreshold(int(label_id))
 
             label = binarizer.Execute(labels)
 
@@ -1668,37 +1678,36 @@ class SplitLabelMaps(BaseInterface):
         except Exception as e:
             print('Failed splitting labelmaps')
             print(e)
+            raise
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['out_labels'] = \
+        outputs['out_labelmaps'] = \
             [self._gen_filename('out_label', i)
-             for i in self.inputs.all_labels]
+             for i in self._labels]
+        outputs['out_labels'] = self._labels
         return outputs
 
 
-class PathListsMergerInputSpec(BaseInterfaceInputSpec):
+class ListsMergerInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the PathListsMerger interface."""
-
     inputs = traits.List()
 
 
-class PathListsMergerOutputSpec(TraitedSpec):
+class ListsMergerOutputSpec(TraitedSpec):
     """Class used to represent outputs of the PathListsMerger interface."""
+    outputs = traits.List() #OutputMultiPath(File(), desc='Output masks')
 
-    outputs = OutputMultiPath(File(), desc='Output masks')
 
-
-class PathListsMerger(BaseInterface):
+class ListsMerger(BaseInterface):
     """Interface to merge list of paths or list of list of path
-
     """
 
-    input_spec = PathListsMergerInputSpec
-    output_spec = PathListsMergerOutputSpec
+    input_spec = ListsMergerInputSpec
+    output_spec = ListsMergerOutputSpec
 
-    m_list_of_files = []
+    m_list_of_files = None
 
     def _gen_filename(self, name):
         if name == 'outputs':
@@ -1707,21 +1716,22 @@ class PathListsMerger(BaseInterface):
 
     def _run_interface(self, runtime):
         try:
+            self.m_list_of_files = []
             for list_of_one_stack in self.inputs.inputs:
                 if isinstance(list_of_one_stack, list) or \
                         isinstance(list_of_one_stack, InputMultiPath):
-                    print('list_of_one_stack.isinstance(list)')
                     for file in list_of_one_stack:
                         self.m_list_of_files.append(file)
                         print(file)
                 else:
-                    print(' **NOT** list_of_one_stack.isinstance(list)')
-                    print(list_of_one_stack)
                     self.m_list_of_files.append(list_of_one_stack)
+
+            self.m_list_of_files = list(set(self.m_list_of_files))
 
         except Exception as e:
             print('Failed')
             print(e)
+            raise
         return runtime
 
     def _list_outputs(self):
