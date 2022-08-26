@@ -47,10 +47,10 @@ class AnatomicalPipeline:
     wf : nipype.pipeline.Workflow
         Nipype workflow of the reconstruction pipeline
 
-    deltatTV : string
+    deltat_TV : string
         Super-resolution optimization time-step
 
-    lambdaTV : float
+    lambda_TV : float
         Regularization weight (default is 0.75)
 
     num_iterations : string
@@ -116,8 +116,8 @@ class AnatomicalPipeline:
                                       p_stacks=[1,3,2,0],
                                       sr_id=1,
                                       session=None,
-                                      paramTV={deltatTV = "0.001",
-                                               lambdaTV = "0.75",
+                                      paramTV={deltat_TV = "0.001",
+                                               lambda_TV = "0.75",
                                                num_primal_dual_loops = "20"},
                                       masks_derivatives_dir="/custom/mask_dir",
                                       masks_desc=None,
@@ -141,8 +141,8 @@ class AnatomicalPipeline:
     sr_id = None
     session = None
 
-    deltatTV = None
-    lambdaTV = None
+    deltat_TV = None
+    lambda_TV = None
     num_iterations = None
     num_primal_dual_loops = None
     num_bregman_loops = None
@@ -286,7 +286,6 @@ class AnatomicalPipeline:
         The more specific definition given in each node implementing
         the method.
         """
-        pass
 
     def run(self, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.

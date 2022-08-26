@@ -21,7 +21,6 @@ import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
 import pymialsrtk.workflows.output_stage as output_stage
-from pymialsrtk.bids.utils import write_bids_derivative_description
 
 from .anatomical_pipeline import AnatomicalPipeline
 

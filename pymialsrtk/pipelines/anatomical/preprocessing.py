@@ -21,9 +21,6 @@ from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 from pymialsrtk.workflows.output_stage import create_prepro_output_stage
 from pymialsrtk.workflows.various import create_registration_stage
-
-from pymialsrtk.bids.utils import write_bids_derivative_description
-
 from .anatomical_pipeline import AnatomicalPipeline
 
 # Get pymialsrtk version

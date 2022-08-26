@@ -4,7 +4,6 @@
 
 """Entrypoint point script of the BIDS APP."""
 
-from multiprocessing.sharedctypes import Value
 import os
 import sys
 import json
@@ -143,8 +142,8 @@ def main(bids_dir, output_dir,
          run_type,
          p_ga=None,
          p_stacks=None,
-         paramTV=None,
-         srID=None,
+         param_TV=None,
+         sr_id=None,
          masks_derivatives_dir="",
          masks_desc=None,
          dict_custom_interfaces=None,
@@ -175,10 +174,10 @@ def main(bids_dir, output_dir,
     p_stacks : list(int)
         List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
 
-    paramTV dict : {"deltatTV": float, "lambdaTV": float, "primal_dual_loops": int}
+    param_TV dict : {"deltatTV": float, "lambdaTV": float, "primal_dual_loops": int}
         Dictionary of Total-Variation super-resolution optimizer parameters
 
-    srID : string
+    sr_id : string
         ID of the reconstruction useful to distinguish when multiple reconstructions
         with different order of stacks are run on the same subject
 
@@ -204,15 +203,15 @@ def main(bids_dir, output_dir,
 
     """
 
-    if paramTV is None:
-        paramTV = dict()
+    if param_TV is None:
+        param_TV = dict()
 
     subject = "sub-" + subject
     if session is not None:
         session = "ses-" + session
 
-    if srID is None:
-        srID = 1
+    if sr_id is None:
+        sr_id = 1
 
     # Initialize an instance of AnatomicalPipeline
     if run_type == "sr":
@@ -222,9 +221,9 @@ def main(bids_dir, output_dir,
             subject,
             p_ga,
             p_stacks,
-            srID,
+            sr_id,
             session,
-            paramTV,
+            param_TV,
             masks_derivatives_dir,
             masks_desc,
             p_dict_custom_interfaces=dict_custom_interfaces,
@@ -238,9 +237,9 @@ def main(bids_dir, output_dir,
             subject,
             p_ga,
             p_stacks,
-            srID,
+            sr_id,
             session,
-            paramTV,
+            param_TV,
             masks_derivatives_dir,
             masks_desc,
             p_dict_custom_interfaces=dict_custom_interfaces,
@@ -302,16 +301,16 @@ if __name__ == "__main__":
 
             for sr_params in sr_list:
 
-                srID = sr_params["sr-id"] if "sr-id" in sr_params.keys() else None
+                sr_id = sr_params["sr-id"] if "sr-id" in sr_params.keys() else None
                 ses = sr_params["session"] if "session" in sr_params.keys() else None
                 ga = sr_params["ga"] if "ga" in sr_params.keys() else None
                 stacks = sr_params["stacks"] if "stacks" in sr_params.keys() else None
-                paramTV = sr_params["paramTV"] if "paramTV" in sr_params.keys() else None
+                param_TV = sr_params["paramTV"] if "paramTV" in sr_params.keys() else None
                 masks_desc = sr_params["masks_desc"] if "masks_desc" in sr_params.keys() else None
 
                 dict_custom_interfaces = sr_params["custom_interfaces"] if "custom_interfaces" in sr_params.keys() else None
 
-                if srID is None:
+                if sr_id is None:
                     print(f"WARNING: Do not process subjects {sub} because of missing parameters.")
                     continue
 
@@ -322,8 +321,8 @@ if __name__ == "__main__":
                            run_type=args.run_type,
                            p_ga=ga,
                            p_stacks=stacks,
-                           paramTV=paramTV,
-                           srID=srID,
+                           param_TV=param_TV,
+                           sr_id=sr_id,
                            masks_derivatives_dir=args.masks_derivatives_dir,
                            masks_desc=masks_desc,
                            dict_custom_interfaces=dict_custom_interfaces,

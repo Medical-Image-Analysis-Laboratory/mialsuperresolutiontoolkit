@@ -6,7 +6,7 @@
 reconstruction pipeline."""
 
 from traits.api import *
-from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
+from nipype.interfaces.base import (File, InputMultiPath,
                                     OutputMultiPath, BaseInterface,
                                     BaseInterfaceInputSpec)
 from nipype.interfaces import utility as util
@@ -78,7 +78,6 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
 
     srr_output_stage.connect(inputnode, "final_res_dir", datasink,
                              'base_directory')
-                     
 
     if not p_skip_stacks_ordering:
         srr_output_stage.connect(inputnode, "report_image",
@@ -126,9 +125,7 @@ def create_prepro_output_stage(p_do_nlm_denoising=False,
     """
 
     prepro_output_stage = pe.Workflow(name=name)
-    """
-    Set up a node to define all inputs required for the srr output workflow
-    """
+    # Set up a node to define all inputs required for the srr output workflow
     input_fields = ["sub_ses", "sr_id", "stacks_order",
                     "use_manual_masks", "final_res_dir",
                     "run_type"
@@ -163,7 +160,7 @@ def create_prepro_output_stage(p_do_nlm_denoising=False,
     prepro_output_stage.connect(inputnode, "use_manual_masks",
                                 finalFilenamesGeneration, "use_manual_masks")
     prepro_output_stage.connect(inputnode, "run_type",
-                                finalFilenamesGeneration, "run_type")                                                  
+                                finalFilenamesGeneration, "run_type")
 
     prepro_output_stage.connect(finalFilenamesGeneration, "substitutions",
                                 datasink, "substitutions")
