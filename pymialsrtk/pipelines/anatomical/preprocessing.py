@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the super-resolution reconstruction pipeline."""
+"""Module for the preprocessing pipeline."""
 
 import os
 
@@ -29,9 +29,9 @@ from anatomical_pipeline import AnatomicalPipeline
 from pymialsrtk.info import __version__
 
 
-class SRReconPipeline(AnatomicalPipeline):
-    """Class used to represent the workflow of the Super-Resolution
-    reconstruction pipeline.
+class PreprocessingPipeline(AnatomicalPipeline):
+    """Class used to represent the workflow of the preprocessing
+    pipeline.
 
     Attributes
     -----------
@@ -45,7 +45,7 @@ class SRReconPipeline(AnatomicalPipeline):
         Subject ID (in the form ``sub-XX``)
 
     wf : nipype.pipeline.Workflow
-        Nipype workflow of the reconstruction pipeline
+        Nipype workflow of the preprocessing pipeline
 
     deltatTV : string
         Super-resolution optimization time-step
@@ -135,7 +135,7 @@ class SRReconPipeline(AnatomicalPipeline):
         p_masks_desc=None, p_dict_custom_interfaces=None,
         openmp_number_of_cores=None, nipype_number_of_cores=None
     ):
-        """Constructor of SRRecon class instance."""
+        """Constructor of Preprocessing class instance."""
 
         super().__init__(bids_dir, output_dir, subject, p_ga, p_stacks, sr_id,
                          session, paramTV, p_masks_derivatives_dir,
@@ -149,6 +149,7 @@ class SRReconPipeline(AnatomicalPipeline):
         where the output of node i goes to the input of node i+1.
 
         """
+
 
         self.wf = pe.Workflow(name=self.pipeline_name,
                               base_dir=self.wf_base_dir

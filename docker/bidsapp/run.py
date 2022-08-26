@@ -14,7 +14,7 @@ import multiprocessing
 
 # Import the super-resolution pipeline
 from pymialsrtk.parser import get_parser
-from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
+from pymialsrtk.pipelines.anatomical.srr import SRReconPipeline
 
 
 def return_default_nb_of_cores(nb_of_cores, openmp_proportion=2):
@@ -210,7 +210,7 @@ def main(bids_dir, output_dir,
         srID = 1
 
     # Initialize an instance of AnatomicalPipeline
-    pipeline = AnatomicalPipeline(bids_dir,
+    pipeline = SRReconPipeline(bids_dir,
                                   output_dir,
                                   subject,
                                   p_ga,
