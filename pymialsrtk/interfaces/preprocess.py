@@ -1658,7 +1658,9 @@ class SplitLabelMaps(BaseInterface):
         binarizer = sitk.BinaryThresholdImageFilter()
 
         if not len(self.inputs.all_labels):
-            self._labels = list(np.unique(sitk.GetArrayFromImage(labels)).astype(int))
+            self._labels = list(
+                np.unique(sitk.GetArrayFromImage(labels)
+                          ).astype(int))
         else:
             self._labels = self.inputs.all_labels
 
@@ -1697,7 +1699,7 @@ class ListsMergerInputSpec(BaseInterfaceInputSpec):
 
 class ListsMergerOutputSpec(TraitedSpec):
     """Class used to represent outputs of the PathListsMerger interface."""
-    outputs = traits.List() #OutputMultiPath(File(), desc='Output masks')
+    outputs = traits.List()
 
 
 class ListsMerger(BaseInterface):

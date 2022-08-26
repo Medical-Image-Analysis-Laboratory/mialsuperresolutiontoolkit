@@ -22,7 +22,7 @@ import pymialsrtk.interfaces.utils as utils
 
 def create_recon_stage(p_paramTV,
                        p_use_manual_masks,
-                       p_do_nlm_denoising = False,
+                       p_do_nlm_denoising=False,
                        p_do_reconstruct_labels=False,
                        p_do_refine_hr_mask=False,
                        p_skip_svr=False,

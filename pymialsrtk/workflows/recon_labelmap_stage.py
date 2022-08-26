@@ -4,22 +4,11 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the high-resolution reconstruction stage of the low-resolution labelmaps
+"""Module for the high-resolution reconstruction stage
+of the low-resolution labelmaps
 in the super-resolution reconstruction pipeline."""
 
-import os
-import traceback
-from glob import glob
-import pathlib
-
 from traits.api import *
-
-from nipype.interfaces.base import traits, \
-    TraitedSpec, File, \
-    InputMultiPath, OutputMultiPath, \
-    BaseInterface, BaseInterfaceInputSpec
-
-from nipype.interfaces import utility as util
 
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.postprocess as postprocess
@@ -52,12 +41,6 @@ def create_recon_labelmap_stage(sub_ses, name="recon_labels_stage"):
         outputnode.output_labelmap : HR labelmap (filename)
     Example
     -------
-    >>>
-    >>>
-    >>>
-    >>>
-    >>>
-    >>>
     >>>
     >>>
     """
@@ -117,8 +100,10 @@ def create_recon_labelmap_stage(sub_ses, name="recon_labels_stage"):
         name='labels_merge_hr_maps'
     )
 
-    labels_majorityvoting = pe.Node(interface=postprocess.MergeMajorityVote(),
-                                 name='labels_majorityvoting')
+    labels_majorityvoting = pe.Node(
+        interface=postprocess.MergeMajorityVote(),
+        name='labels_majorityvoting'
+    )
 
     recon_labels_stage.connect(inputnode, "input_labels",
                                labels_split_lr_labelmap, "in_labelmap")

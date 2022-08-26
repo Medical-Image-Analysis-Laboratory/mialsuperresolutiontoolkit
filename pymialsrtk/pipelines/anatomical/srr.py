@@ -36,7 +36,6 @@ import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
-import pymialsrtk.workflows.recon_labelmap_stage as recon_labels_stage
 import pymialsrtk.workflows.srr_output_stage as srr_output_stage
 
 from pymialsrtk.workflows.input_stage import create_input_stage
