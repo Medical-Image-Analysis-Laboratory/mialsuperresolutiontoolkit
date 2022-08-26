@@ -354,6 +354,7 @@ class AnatomicalPipeline:
         postprocessing_stage = postproc_stage.create_postproc_stage(
             p_ga=self.m_ga,
             p_do_anat_orientation=self.m_do_anat_orientation,
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             name='postprocessing_stage')
 
         # mask_hr_label: Todo - mode to postproc stage
@@ -420,6 +421,13 @@ class AnatomicalPipeline:
             self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
                             mask_hr_label, "in_mask")
 
+            self.wf.connect(mask_hr_label, "out_im_file",
+                            postprocessing_stage, "inputnode.input_labelmap")
+
+            self.wf.connect(postprocessing_stage, "outputnode.output_labelmap",
+                            output_mgmt_stage, "inputnode.input_labelmap")
+
+
         self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
                         postprocessing_stage, "inputnode.input_sdi")
 
@@ -444,9 +452,6 @@ class AnatomicalPipeline:
         self.wf.connect(postprocessing_stage, "outputnode.output_mask",
                         output_mgmt_stage, "inputnode.input_hr_mask")
 
-        if self.m_do_reconstruct_labels:
-            self.wf.connect(mask_hr_label, "out_im_file",
-                            output_mgmt_stage, "inputnode.input_labelmap")
 
         if self.m_do_nlm_denoising:
             self.wf.connect(preprocessing_stage,

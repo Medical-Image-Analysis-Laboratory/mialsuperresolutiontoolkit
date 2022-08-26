@@ -33,6 +33,7 @@ def convert_ga(ga):
 def create_postproc_stage(
         p_ga,
         p_do_anat_orientation=False,
+        p_do_reconstruct_labels=False,
         name="postproc_stage"
 ):
     """Create a SR preprocessing workflow
@@ -59,14 +60,21 @@ def create_postproc_stage(
 
     # Set up a node to define all inputs for the postprocessing workflow
 
+    input_fields = ['input_image', 'input_mask', 'input_sdi']
+    output_fields = ['output_image', 'output_mask']
+
+    if p_do_reconstruct_labels :
+        input_fields += ['input_labelmap']
+        output_fields += ['output_labelmap']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
-            fields=['input_image', 'input_mask', 'input_sdi']),
+            fields=input_fields),
         name='inputnode')
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(
-            fields=['output_image', 'output_mask']
+            fields=output_fields
         ),
         name='outputnode')
 
@@ -104,10 +112,16 @@ def create_postproc_stage(
             name='compute_alignment'
         )
 
-        align_volume = pe.Node(
+        align_image = pe.Node(
             interface=preprocess.ApplyAlignmentTransform(),
-            name='align_volume'
+            name='align_image'
         )
+
+        if p_do_reconstruct_labels:
+            align_labelmap = pe.Node(
+                interface=preprocess.ApplyAlignmentTransform(),
+                name='align_labelmap'
+            )
 
     postproc_stage.connect(inputnode, "input_image",
                            srtkMaskImage02, "in_file")
@@ -126,6 +140,10 @@ def create_postproc_stage(
         postproc_stage.connect(inputnode, "input_mask",
                                outputnode, "output_mask")
 
+        if p_do_reconstruct_labels:
+            postproc_stage.connect(inputnode, "input_labelmap",
+                                   outputnode, "output_labelmap")
+
     else:
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
                                resample_t2w_template, "input_reference")
@@ -138,19 +156,34 @@ def create_postproc_stage(
                                compute_alignment, "input_template")
 
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
-                               align_volume, "input_image")
+                               align_image, "input_image")
         postproc_stage.connect(resample_t2w_template, "output_image",
-                               align_volume, "input_template")
+                               align_image, "input_template")
 
         postproc_stage.connect(inputnode, "input_mask",
-                               align_volume, "input_mask")
+                               align_image, "input_mask")
 
         postproc_stage.connect(compute_alignment, "output_transform",
-                               align_volume, "input_transform")
+                               align_image, "input_transform")
 
-        postproc_stage.connect(align_volume, "output_image",
+        postproc_stage.connect(align_image, "output_image",
                                outputnode, "output_image")
-        postproc_stage.connect(align_volume, "output_mask",
+        postproc_stage.connect(align_image, "output_mask",
                                outputnode, "output_mask")
+
+        if p_do_reconstruct_labels:
+            postproc_stage.connect(inputnode, "input_labelmap",
+                                   align_labelmap, "input_image")
+            postproc_stage.connect(resample_t2w_template, "output_image",
+                                   align_labelmap, "input_template")
+
+            postproc_stage.connect(inputnode, "input_mask",
+                                   align_labelmap, "input_mask")
+
+            postproc_stage.connect(compute_alignment, "output_transform",
+                                   align_labelmap, "input_transform")
+            postproc_stage.connect(align_labelmap, "output_image",
+                                   outputnode, "output_labelmap")
+
 
     return postproc_stage
