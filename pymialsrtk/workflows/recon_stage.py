@@ -13,7 +13,7 @@ from nipype.interfaces import utility as util
 from nipype.interfaces.io import DataGrabber
 from nipype.pipeline import engine as pe
 
-import pymialsrtk.workflows.recon_labels_stage as recon_labels_stage
+import pymialsrtk.workflows.recon_labelmap_stage as recon_labelmap_stage
 
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
@@ -144,7 +144,7 @@ def create_recon_stage(p_paramTV,
                              name='srtkHRMask')
 
     if p_do_reconstruct_labels:
-        recon_labels_stage = recon_labels_stage.create_recon_labels_stage(
+        recon_labels_stage = recon_labelmap_stage.create_recon_labelmap_stage(
             sub_ses=p_sub_ses)
         recon_labels_stage.inputs.inputnode.label_ids = \
             [0, 1, 2, 3, 4, 5, 6, 7]

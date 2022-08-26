@@ -33,7 +33,7 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
 
 
-def create_recon_labels_stage(sub_ses, name="recon_labels_stage"):
+def create_recon_labelmap_stage(sub_ses, name="recon_labels_stage"):
     """Create a SR reconstruction workflow
     for tissue label maps.
     Parameters
