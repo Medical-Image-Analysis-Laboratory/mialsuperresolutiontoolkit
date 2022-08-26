@@ -1722,7 +1722,6 @@ class ListsMerger(BaseInterface):
                         isinstance(list_of_one_stack, InputMultiPath):
                     for file in list_of_one_stack:
                         self.m_list_of_files.append(file)
-                        print(file)
                 else:
                     self.m_list_of_files.append(list_of_one_stack)
 

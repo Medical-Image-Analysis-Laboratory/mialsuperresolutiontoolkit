@@ -325,6 +325,12 @@ class FilenamesGeneration(BaseInterface):
                                      self.inputs.sub_ses + '_rec-SR' +
                                      '_id-' + str(self.inputs.sr_id) + '_T2w.png'))
 
+        self.m_substitutions.append((self.inputs.sub_ses +
+                                     '_' + str(len(self.inputs.stacks_order)) +
+                                     'HR_labelmap.nii.gz',
+                                     self.inputs.sub_ses + '_rec-SR' +
+                                     '_id-' + str(self.inputs.sr_id) + '_labels.nii.gz'))
+
         self.m_substitutions.append(('motion_index_QC.png',
                                      self.inputs.sub_ses + '_rec-SR' +
                                      '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.png'))
