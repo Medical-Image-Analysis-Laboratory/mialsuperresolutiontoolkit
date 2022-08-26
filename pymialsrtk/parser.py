@@ -33,6 +33,15 @@ def get_parser():
     )
 
     p.add_argument(
+        "--run_type",
+        help="Type of pipeline that is run. Can choose between "
+             "running the super-resolution pipeline (`sr`) "
+             "or only preprocesing (`preprocessing`).",
+        choices=["sr", "preprocessing"],
+        default="sr"
+    )
+
+    p.add_argument(
         "--participant_label",
         help="The label(s) of the participant(s) that should be analyzed. "
              "The label corresponds to sub-<participant_label> from the BIDS spec "
@@ -85,11 +94,19 @@ def get_parser():
     )
 
     p.add_argument(
+            "--prepro_do_registration",
+            help="Run registration in the preprocessing pipeline (default: False)",
+            default=False,
+            action='store_true'
+    )
+
+    p.add_argument(
         "-v",
         "--version",
         action="version",
         version=f"BIDS-App MIALSRTK version {__version__} (Released: {__release_date__})",
     )
+
     return p
 
 

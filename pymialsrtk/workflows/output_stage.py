@@ -36,7 +36,7 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     srr_output_stage = pe.Workflow(name=name)
     # Set up a node to define all inputs required for the srr output workflow
     input_fields = ["sub_ses", "sr_id", "stacks_order", "use_manual_masks",
-                    "final_res_dir"]
+                    "final_res_dir", "run_type"]
 
     input_fields += ["input_masks", "input_images", "input_transforms"]
 
@@ -70,12 +70,15 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
                              finalFilenamesGeneration, "stacks_order")
     srr_output_stage.connect(inputnode, "use_manual_masks",
                              finalFilenamesGeneration, "use_manual_masks")
+    srr_output_stage.connect(inputnode, "run_type",
+                             finalFilenamesGeneration, 'run_type')
 
     srr_output_stage.connect(finalFilenamesGeneration, "substitutions",
                              datasink, "substitutions")
 
     srr_output_stage.connect(inputnode, "final_res_dir", datasink,
                              'base_directory')
+                     
 
     if not p_skip_stacks_ordering:
         srr_output_stage.connect(inputnode, "report_image",
@@ -104,3 +107,85 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
                              datasink, 'anat.@SRmask')
 
     return srr_output_stage
+
+
+def create_prepro_output_stage(p_do_nlm_denoising=False,
+                               p_skip_stacks_ordering=False,
+                               name="prepro_output_stage"):
+    """Create an output management workflow
+    for the preprocessing only.
+    Parameters
+    ----------
+    ::
+        name : name of workflow (default: preproc_stage)
+    Inputs::
+    Outputs::
+    Example
+    -------
+    >>>
+    """
+
+    prepro_output_stage = pe.Workflow(name=name)
+    """
+    Set up a node to define all inputs required for the srr output workflow
+    """
+    input_fields = ["sub_ses", "sr_id", "stacks_order",
+                    "use_manual_masks", "final_res_dir",
+                    "run_type"
+                    ]
+    input_fields += ["input_masks", "input_images",
+                     "input_sdi", "input_transforms"
+                     ]
+
+    if not p_skip_stacks_ordering:
+        input_fields += ['report_image', 'motion_tsv']
+    if p_do_nlm_denoising:
+        input_fields += ['input_images_nlm']
+
+    inputnode = pe.Node(
+        interface=util.IdentityInterface(
+            fields=input_fields),
+        name='inputnode')
+
+    # Datasinker
+    finalFilenamesGeneration = pe.Node(
+        interface=postprocess.FilenamesGeneration(),
+        name='filenames_gen')
+
+    datasink = pe.Node(interface=DataSink(), name='data_sinker')
+
+    prepro_output_stage.connect(inputnode, "sub_ses",
+                                finalFilenamesGeneration, "sub_ses")
+    prepro_output_stage.connect(inputnode, "sr_id",
+                                finalFilenamesGeneration, "sr_id")
+    prepro_output_stage.connect(inputnode, "stacks_order",
+                                finalFilenamesGeneration, "stacks_order")
+    prepro_output_stage.connect(inputnode, "use_manual_masks",
+                                finalFilenamesGeneration, "use_manual_masks")
+    prepro_output_stage.connect(inputnode, "run_type",
+                                finalFilenamesGeneration, "run_type")                                                  
+
+    prepro_output_stage.connect(finalFilenamesGeneration, "substitutions",
+                                datasink, "substitutions")
+
+    prepro_output_stage.connect(inputnode, "final_res_dir",
+                                datasink, 'base_directory')
+
+    if not p_skip_stacks_ordering:
+        prepro_output_stage.connect(inputnode, "report_image",
+                                    datasink, 'figures.@stackOrderingQC')
+        prepro_output_stage.connect(inputnode, "motion_tsv",
+                                    datasink, 'anat.@motionTSV')
+    prepro_output_stage.connect(inputnode, "input_masks",
+                                datasink, 'anat.@LRmasks')
+    prepro_output_stage.connect(inputnode, "input_images",
+                                datasink, 'anat.@LRsPreproc')
+    prepro_output_stage.connect(inputnode, "input_transforms",
+                                datasink, 'xfm.@transforms')
+    prepro_output_stage.connect(inputnode, "input_sdi",
+                                datasink, 'anat.@SDI')
+    if p_do_nlm_denoising:
+        prepro_output_stage.connect(inputnode, "input_images_nlm",
+                                    datasink, 'anat.@LRsDenoised')
+
+    return prepro_output_stage

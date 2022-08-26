@@ -2,7 +2,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the super-resolution reconstruction pipeline."""
+"""Module for the preprocessing pipeline."""
 
 import os
 
@@ -18,9 +18,9 @@ import pymialsrtk.interfaces.utils as utils
 import pymialsrtk.interfaces.reconstruction as reconstruction
 from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
-import pymialsrtk.workflows.recon_stage as recon_stage
-import pymialsrtk.workflows.postproc_stage as postproc_stage
-import pymialsrtk.workflows.output_stage as output_stage
+from pymialsrtk.workflows.output_stage import create_prepro_output_stage
+from pymialsrtk.workflows.various import create_registration_stage
+
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
 from .anatomical_pipeline import AnatomicalPipeline
@@ -28,10 +28,9 @@ from .anatomical_pipeline import AnatomicalPipeline
 # Get pymialsrtk version
 from pymialsrtk.info import __version__
 
-
-class SRReconPipeline(AnatomicalPipeline):
-    """Class used to represent the workflow of the Super-Resolution
-    reconstruction pipeline.
+class PreprocessingPipeline(AnatomicalPipeline):
+    """Class used to represent the workflow of the
+    Preprocessing pipeline.
 
     Attributes
     -----------
@@ -45,7 +44,7 @@ class SRReconPipeline(AnatomicalPipeline):
         Subject ID (in the form ``sub-XX``)
 
     wf : nipype.pipeline.Workflow
-        Nipype workflow of the reconstruction pipeline
+        Nipype workflow of the preprocessing pipeline
 
     deltatTV : string
         Super-resolution optimization time-step
@@ -75,24 +74,24 @@ class SRReconPipeline(AnatomicalPipeline):
         super-resolution algorithm.
 
     sr_id : string
-        ID of the reconstruction useful to distinguish when multiple
-        reconstructions with different order of stacks are run on
+        ID of the preprocessing useful to distinguish when multiple
+        preprocessing with different order of stacks are run on
         the same subject
 
     session : string
         Session ID if applicable (in the form ``ses-YY``)
 
     m_stacks : list(int)
-        List of stack to be used in the reconstruction.
+        List of stack to be used in the preprocessing.
         The specified order is kept if `skip_stacks_ordering` is True.
 
     m_masks_derivatives_dir : string
         directory basename in BIDS directory derivatives where to search
         for masks (optional)
 
-    m_skip_svr : bool
-        Weither the Slice-to-Volume Registration should be skipped in the
-        image reconstruction. (default is False)
+    m_skip_svr : bool 
+        - not run in this context. Weither the Slice-to-Volume Registration
+        should be skipped in the image reconstruction. (default is False)
 
     m_do_refine_hr_mask : bool
         Weither a refinement of the HR mask should be performed.
@@ -108,9 +107,9 @@ class SRReconPipeline(AnatomicalPipeline):
 
     Examples
     --------
-    >>> from pymialsrtk.pipelines.anatomical.srr import SRReconPipeline
+    >>> from pymialsrtk.pipelines.anatomical.srr import PreprocessingPipeline
     >>> # Create a new instance
-    >>> pipeline = SRReconPipeline(bids_dir='/path/to/bids_dir',
+    >>> pipeline = PreprocessingPipeline(bids_dir='/path/to/bids_dir',
                                       output_dir='/path/to/output_dir',
                                       subject='sub-01',
                                       p_stacks=[1,3,2,0],
@@ -129,28 +128,31 @@ class SRReconPipeline(AnatomicalPipeline):
 
     """
 
+    do_registration = None
+
     def __init__(
         self, bids_dir, output_dir, subject, p_ga=None, p_stacks=None, sr_id=1,
         session=None, paramTV=None, p_masks_derivatives_dir=None,
         p_masks_desc=None, p_dict_custom_interfaces=None,
-        openmp_number_of_cores=None, nipype_number_of_cores=None
+        openmp_number_of_cores=None, nipype_number_of_cores=None,
+        p_do_registration=None
     ):
-        """Constructor of SRRecon class instance."""
+        """Constructor of Preprocessing class instance."""
 
         super().__init__(bids_dir, output_dir, subject, p_ga, p_stacks, sr_id,
                          session, paramTV, p_masks_derivatives_dir,
                          p_masks_desc, p_dict_custom_interfaces,
                          openmp_number_of_cores, nipype_number_of_cores,
-                         "rec", True
+                         "pre", False
                          )
 
-
+        self.do_registration = p_do_registration
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
 
-        It is composed of a succession of Nodes and their corresponding parameters,
-        where the output of node i goes to the input of node i+1.
+        It is composed of a succession of Nodes and their corresponding
+        parameters, where the output of node i goes to the input of node i+1.
 
         """
 
@@ -193,30 +195,22 @@ class SRReconPipeline(AnatomicalPipeline):
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising)
 
-        reconstruction_stage = recon_stage.create_recon_stage(
-            p_paramTV=self.paramTV,
-            p_use_manual_masks=self.use_manual_masks,
-            p_do_nlm_denoising=self.m_do_nlm_denoising,
-            p_do_refine_hr_mask=self.m_do_refine_hr_mask,
-            p_skip_svr=self.m_skip_svr,
-            p_sub_ses=self.sub_ses)
+        prepro_mgmt_stage = create_prepro_output_stage(
+                    p_do_nlm_denoising=self.m_do_nlm_denoising,
+                    name='prepro_mgmt_stage')
 
-        postprocessing_stage = postproc_stage.create_postproc_stage(
-            p_ga=self.m_ga,
-            p_do_anat_orientation=self.m_do_anat_orientation,
-            name='postprocessing_stage')
-
-        output_mgmt_stage = output_stage.create_srr_output_stage(
-            p_do_nlm_denoising=self.m_do_nlm_denoising,
-            p_skip_stacks_ordering=self.m_skip_stacks_ordering,
-            name='output_mgmt_stage')
-
-        output_mgmt_stage.inputs.inputnode.sub_ses = self.sub_ses
-        output_mgmt_stage.inputs.inputnode.sr_id = self.sr_id
-        output_mgmt_stage.inputs.inputnode.use_manual_masks = \
+        prepro_mgmt_stage.inputs.inputnode.sub_ses = self.sub_ses
+        prepro_mgmt_stage.inputs.inputnode.sr_id = self.sr_id
+        prepro_mgmt_stage.inputs.inputnode.use_manual_masks = \
             self.use_manual_masks
-        output_mgmt_stage.inputs.inputnode.final_res_dir = self.final_res_dir
-        output_mgmt_stage.inputs.inputnode.run_type = self.run_type
+        prepro_mgmt_stage.inputs.inputnode.final_res_dir = self.final_res_dir
+        prepro_mgmt_stage.inputs.inputnode.run_type = self.run_type
+
+        if self.do_registration:
+            registration_stage = create_registration_stage(
+                p_do_nlm_denoising=self.m_do_nlm_denoising,
+                p_skip_svr=self.m_skip_svr,
+                p_sub_ses=self.sub_ses)
 
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
@@ -226,60 +220,51 @@ class SRReconPipeline(AnatomicalPipeline):
         self.wf.connect(input_stage, "outputnode.masks_filtered",
                         preprocessing_stage, "inputnode.input_masks")
 
-        if self.m_do_nlm_denoising:
-            self.wf.connect(preprocessing_stage,
-                            ("outputnode.output_images_nlm",
-                             utils.sort_ascending),
-                            reconstruction_stage, "inputnode.input_images_nlm")
+        if self.do_registration:
+            if self.m_do_nlm_denoising:
+                self.wf.connect(preprocessing_stage,
+                                ("outputnode.output_images_nlm",
+                                 utils.sort_ascending
+                                 ),
+                                registration_stage,
+                                "inputnode.input_images_nlm"
+                                )
 
-        self.wf.connect(preprocessing_stage,
-                        ("outputnode.output_images", utils.sort_ascending),
-                        reconstruction_stage, "inputnode.input_images")
+            self.wf.connect(preprocessing_stage, ("outputnode.output_images",
+                                                  utils.sort_ascending),
+                            registration_stage, "inputnode.input_images")
 
-        self.wf.connect(preprocessing_stage,
-                        ("outputnode.output_masks", utils.sort_ascending),
-                        reconstruction_stage, "inputnode.input_masks")
+            self.wf.connect(preprocessing_stage, ("outputnode.output_masks",
+                                                  utils.sort_ascending),
+                            registration_stage, "inputnode.input_masks")
+
+            self.wf.connect(input_stage, "outputnode.stacks_order",
+                            registration_stage, "inputnode.stacks_order")
+
+            self.wf.connect(registration_stage, "outputnode.output_sdi",
+                            prepro_mgmt_stage, "inputnode.input_sdi")
+
+            self.wf.connect(registration_stage, "outputnode.output_transforms",
+                            prepro_mgmt_stage, "inputnode.input_transforms")
+        else:
+            self.wf.connect(preprocessing_stage, ("outputnode.output_images",
+                                                  utils.sort_ascending),
+                            prepro_mgmt_stage, "inputnode.input_images")
 
         self.wf.connect(input_stage, "outputnode.stacks_order",
-                        reconstruction_stage, "inputnode.stacks_order")
-
-        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
-                        postprocessing_stage, "inputnode.input_mask")
-
-        self.wf.connect(reconstruction_stage, "outputnode.output_sr",
-                        postprocessing_stage, "inputnode.input_image")
-
-        self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
-                        postprocessing_stage, "inputnode.input_sdi")
-
-        self.wf.connect(input_stage, "outputnode.stacks_order",
-                        output_mgmt_stage, "inputnode.stacks_order")
+                        prepro_mgmt_stage, "inputnode.stacks_order")
 
         self.wf.connect(preprocessing_stage, "outputnode.output_masks",
-                        output_mgmt_stage, "inputnode.input_masks")
-        self.wf.connect(preprocessing_stage, "outputnode.output_images",
-                        output_mgmt_stage, "inputnode.input_images")
-        self.wf.connect(reconstruction_stage, "outputnode.output_transforms",
-                        output_mgmt_stage, "inputnode.input_transforms")
-
-        self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
-                        output_mgmt_stage, "inputnode.input_sdi")
-        self.wf.connect(postprocessing_stage, "outputnode.output_image",
-                        output_mgmt_stage, "inputnode.input_sr")
-        self.wf.connect(reconstruction_stage, "outputnode.output_json_path",
-                        output_mgmt_stage, "inputnode.input_json_path")
-        self.wf.connect(reconstruction_stage, "outputnode.output_sr_png",
-                        output_mgmt_stage, "inputnode.input_sr_png")
-        self.wf.connect(postprocessing_stage, "outputnode.output_mask",
-                        output_mgmt_stage, "inputnode.input_hr_mask")
+                        prepro_mgmt_stage, "inputnode.input_masks")
 
         if self.m_do_nlm_denoising:
-            self.wf.connect(preprocessing_stage,
-                            "outputnode.output_images_nlm",
-                            output_mgmt_stage, "inputnode.input_images_nlm")
+            self.wf.connect(preprocessing_stage, ("output_images_nlm",
+                                                  utils.sort_ascending),
+                            prepro_mgmt_stage, "inputnode.input_images_nlm"
+                            )
 
         if not self.m_skip_stacks_ordering:
             self.wf.connect(input_stage, "outputnode.report_image",
-                            output_mgmt_stage, "inputnode.report_image")
+                            prepro_mgmt_stage, "inputnode.report_image")
             self.wf.connect(input_stage, "outputnode.motion_tsv",
-                            output_mgmt_stage, "inputnode.motion_tsv")
+                            prepro_mgmt_stage, "inputnode.motion_tsv")

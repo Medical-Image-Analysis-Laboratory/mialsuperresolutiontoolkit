@@ -220,6 +220,7 @@ class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True, desc='List of stack run-id that specify the order of the stacks')
     sr_id = traits.Int(mandatory=True, desc='Super-Resolution id')
     use_manual_masks = traits.Bool(mandatory=True, desc='Whether masks were computed or manually performed.')
+    run_type = traits.Str(mandatory=True, desc='Type of run: either rec (SRRecon) or pre (Preprocessing)')
 
 
 class FilenamesGenerationOutputSpec(TraitedSpec):
@@ -249,6 +250,7 @@ class FilenamesGeneration(BaseInterface):
     m_substitutions = []
 
     def _run_interface(self, runtime):
+        run_type = self.inputs.run_type
 
         self.m_substitutions.append(('_T2w_nlm_uni_bcorr_histnorm.nii.gz',
                                      '_id-' + str(self.inputs.sr_id) +
@@ -293,43 +295,43 @@ class FilenamesGeneration(BaseInterface):
 
         self.m_substitutions.append(('SDI_' + self.inputs.sub_ses + '_' +
                                      str(len(self.inputs.stacks_order)) + 'V_rad1.nii.gz',
-                                     self.inputs.sub_ses + '_rec-SDI' + '_id-' +
+                                     self.inputs.sub_ses + f'_{run_type}-SDI' + '_id-' +
                                      str(self.inputs.sr_id) + '_T2w.nii.gz'))
 
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
                                      str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr.nii.gz',
-                                    self.inputs.sub_ses + '_rec-SR' + '_id-' +
+                                    self.inputs.sub_ses + f'_{run_type}-SR' + '_id-' +
                                      str(self.inputs.sr_id) + '_T2w.nii.gz'))
 
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
                                      str(len(self.inputs.stacks_order)) + 'V_rad1.json',
-                                    self.inputs.sub_ses + '_rec-SR' + '_id-' +
+                                    self.inputs.sub_ses + f'_{run_type}-SR' + '_id-' +
                                      str(self.inputs.sr_id) + '_T2w.json'))
 
         self.m_substitutions.append((self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
-                                     self.inputs.sub_ses + '_rec-SR' +
+                                     self.inputs.sub_ses + f'_{run_type}-SR' +
                                      '_id-' + str(self.inputs.sr_id) +
                                      '_mod-T2w_desc-brain_mask.nii.gz'))
 
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses +
                                      '_' + str(len(self.inputs.stacks_order)) +
                                      'V_rad1_srMask.nii.gz',
-                                     self.inputs.sub_ses + '_rec-SR' +
+                                     self.inputs.sub_ses + f'_{run_type}-SR' +
                                      '_id-' + str(self.inputs.sr_id) +
                                      '_mod-T2w_desc-brain_mask.nii.gz'))
 
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses +
                                      '_' + str(len(self.inputs.stacks_order)) +
                                      'V_rad1.png',
-                                     self.inputs.sub_ses + '_rec-SR' +
+                                     self.inputs.sub_ses + f'_{run_type}-SR' +
                                      '_id-' + str(self.inputs.sr_id) + '_T2w.png'))
 
         self.m_substitutions.append(('motion_index_QC.png',
-                                     self.inputs.sub_ses + '_rec-SR' +
+                                     self.inputs.sub_ses + f'_{run_type}-SR' +
                                      '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.png'))
 
         self.m_substitutions.append(('motion_index_QC.tsv',
-                                     self.inputs.sub_ses + '_rec-SR' +
+                                     self.inputs.sub_ses + f'_{run_type}-SR' +
                                      '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.tsv'))
         return runtime
 

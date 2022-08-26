@@ -168,12 +168,14 @@ class AnatomicalPipeline:
     sub_path = None
     wf_base_dir = None
     final_res_dir = None
+    do_report = None
 
     def __init__(
         self, bids_dir, output_dir, subject, p_ga=None, p_stacks=None, sr_id=1,
         session=None, paramTV=None, p_masks_derivatives_dir=None,
         p_masks_desc=None, p_dict_custom_interfaces=None,
-        openmp_number_of_cores=None, nipype_number_of_cores=None
+        openmp_number_of_cores=None, nipype_number_of_cores=None,
+        run_type=None, do_report=None
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -185,6 +187,8 @@ class AnatomicalPipeline:
         self.sr_id = sr_id
         self.session = session
         self.m_stacks = p_stacks
+        self.run_type = run_type
+        self.do_report = do_report
 
         self.openmp_number_of_cores = openmp_number_of_cores
         self.nipype_number_of_cores = nipype_number_of_cores
@@ -244,6 +248,7 @@ class AnatomicalPipeline:
 
         self.sub_ses = self.subject
         self.sub_path = self.subject
+
         if self.session is not None:
             self.sub_ses = ''.join([self.sub_ses, '_', self.session])
             self.sub_path = os.path.join(self.subject, self.session)
@@ -252,7 +257,7 @@ class AnatomicalPipeline:
             self.output_dir,
             '-'.join(["nipype", __nipype_version__]),
             self.sub_path,
-            "rec-{}".format(self.sr_id)
+            f"{self.run_type}-{self.sr_id}"
             )
 
         self.final_res_dir = os.path.join(
@@ -314,7 +319,7 @@ class AnatomicalPipeline:
             dst_base = os.path.join(dst_base, self.session)
 
         dst = os.path.join(dst_base, 'figures',
-                           f'{subject_str}_rec-SR_id-{self.sr_id}_' +
+                           f'{subject_str}_{self.run_type}-SR_id-{self.sr_id}_' +
                            'desc-processing_graph.png')
 
         # Create the figures/ and parent directories if they do not exist
@@ -348,7 +353,7 @@ class AnatomicalPipeline:
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
         dst = os.path.join(dst_base, 'logs',
-                           f'{subject_str}_rec-SR_id-{self.sr_id}_log.txt')
+                           f'{subject_str}_{self.run_type}-SR_id-{self.sr_id}_log.txt')
         # Create the logs/ and parent directories if they do not exist
         logs_dir = os.path.dirname(dst)
         os.makedirs(logs_dir, exist_ok=True)
@@ -374,9 +379,9 @@ class AnatomicalPipeline:
                 deriv_dir=self.output_dir,
                 pipeline_name=toolbox
             )
-
-        iflogger.info("**** Super-resolution HTML report creation ****")
-        self.create_subject_report()
+        if self.do_report:
+            iflogger.info("**** Super-resolution HTML report creation ****")
+            self.create_subject_report()
 
         return res
 
@@ -408,36 +413,36 @@ class AnatomicalPipeline:
         # Load main data derivatives necessary for the report
         sr_nii_image = os.path.join(
             final_res_dir, 'anat',
-            f'{sub_ses}_rec-SR_id-{self.sr_id}_T2w.nii.gz'
+            f'{sub_ses}_{self.run_type}-SR_id-{self.sr_id}_T2w.nii.gz'
         )
         img = nib.load(sr_nii_image)
         sx, sy, sz = img.header.get_zooms()
 
         sr_json_metadata = os.path.join(
             final_res_dir, 'anat',
-            f'{sub_ses}_rec-SR_id-{self.sr_id}_T2w.json'
+            f'{sub_ses}_{self.run_type}-SR_id-{self.sr_id}_T2w.json'
         )
         with open(sr_json_metadata) as f:
             sr_json_metadata = json.load(f)
 
         workflow_image = os.path.join(
             '..', 'figures',
-            f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-processing_graph.png'
+            f'{sub_ses}_{self.run_type}-SR_id-{self.sr_id}_desc-processing_graph.png'
         )
 
         sr_png_image = os.path.join(
             '..', 'figures',
-            f'{sub_ses}_rec-SR_id-{self.sr_id}_T2w.png'
+            f'{sub_ses}_{self.run_type}-SR_id-{self.sr_id}_T2w.png'
         )
 
         motion_report_image = os.path.join(
             '..', 'figures',
-            f'{sub_ses}_rec-SR_id-{self.sr_id}_desc-motion_stats.png'
+            f'{sub_ses}_{self.run_type}-SR_id-{self.sr_id}_desc-motion_stats.png'
         )
 
         log_file = os.path.join(
             '..', 'logs',
-            f'{sub_ses}_rec-SR_id-{self.sr_id}_log.txt'
+            f'{sub_ses}_{self.run_type}-SR_id-{self.sr_id}_log.txt'
         )
 
         # Create the text for {{subject}} and {{session}} fields in template
