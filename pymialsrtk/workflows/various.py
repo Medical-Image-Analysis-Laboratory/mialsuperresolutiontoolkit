@@ -1,4 +1,5 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -34,20 +35,21 @@ def create_registration_stage(p_do_nlm_denoising=False,
         p_do_nlm_denoising : weither to proceed to non-local mean denoising
     Inputs::
         inputnode.input_images : Input T2w images (list of filenames)
-        inputnode.input_images_nlm : Input T2w images (list of filenames), if p_do_nlm_denoising was set (list of filenames)
+        inputnode.input_images_nlm : Input T2w images (list of filenames),
+            if p_do_nlm_denoising was set (list of filenames)
         inputnode.input_masks : Input mask images (list of filenames)
-        inputnode.stacks_order : Order of stacks in the registration (list of integer)
+        inputnode.stacks_order : Order of stacks in the
+            registration (list of integer)
     Outputs::
         outputnode.output_sdi : SDI image (filename)
-        outputnode.output_tranforms : Transfmation estimated parameters (list of filenames)
+        outputnode.output_tranforms : Transfmation estimated parameters
+            (list of filenames)
     Example
     # doctest: +SKIP
     """
 
     registration_stage = pe.Workflow(name=name)
-    """
-    Set up a node to define all inputs required for the preprocessing workflow
-    """
+    # Set up a node to define all inputs required for the preproc workflow
     input_fields = ['input_images', 'input_masks', 'stacks_order']
 
     if p_do_nlm_denoising:
@@ -61,12 +63,11 @@ def create_registration_stage(p_do_nlm_denoising=False,
 
     # Output node with the interpolated HR image + transforms from registration
     outputnode = pe.Node(
-        interface=util.IdentityInterface(fields=
-                                         ['output_sdi', 'output_transforms']),
-        name='outputnode')
-
-    """
-    """
+        interface=util.IdentityInterface(
+            fields=['output_sdi', 'output_transforms']
+            ),
+        name='outputnode'
+        )
 
     srtkImageReconstruction = pe.Node(
         interface=reconstruction.MialsrtkImageReconstruction(),

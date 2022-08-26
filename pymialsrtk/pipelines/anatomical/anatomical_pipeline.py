@@ -1,4 +1,5 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -29,7 +30,7 @@ from pymialsrtk.info import __version__
 
 
 class AnatomicalPipeline:
-    """Class used to represent the workflow of the 
+    """Class used to represent the workflow of the
     anatomical pipeline.
 
     Attributes
@@ -199,7 +200,8 @@ class AnatomicalPipeline:
         self.paramTV = paramTV
 
         # Use manual/custom brain masks
-        # If masks directory is not specified use the automated brain extraction method.
+        # If masks directory is not specified use the
+        # automated brain extraction method.
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
         self.use_manual_masks = True if self.m_masks_derivatives_dir is not None else False
         self.m_masks_desc = p_masks_desc if self.use_manual_masks else None
@@ -273,15 +275,16 @@ class AnatomicalPipeline:
         # Initialization (Not sure we can control the name of nipype log)
         if os.path.isfile(os.path.join(self.wf_base_dir, "pypeline.log")):
             os.unlink(os.path.join(self.wf_base_dir, "pypeline.log"))
-              
+
     @abc.abstractmethod
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
 
-        It is composed of a succession of Nodes and their corresponding parameters,
-        where the output of node i goes to the input of node i+1.
-       
-        The more specific definition given in each node implementing the method.
+        It is composed of a succession of Nodes and their corresponding
+        parameters, where the output of node i goes to the input of node i+1.
+
+        The more specific definition given in each node implementing
+        the method.
         """
         pass
 
@@ -318,9 +321,11 @@ class AnatomicalPipeline:
             subject_str += f"_{self.session}"
             dst_base = os.path.join(dst_base, self.session)
 
-        dst = os.path.join(dst_base, 'figures',
-                           f'{subject_str}_{self.run_type}-SR_id-{self.sr_id}_' +
-                           'desc-processing_graph.png')
+        dst = os.path.join(
+            dst_base,
+            'figures',
+            f'{subject_str}_{self.run_type}-SR_id-{self.sr_id}_' +
+            'desc-processing_graph.png')
 
         # Create the figures/ and parent directories if they do not exist
         figures_dir = os.path.dirname(dst)
@@ -352,8 +357,11 @@ class AnatomicalPipeline:
 
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
-        dst = os.path.join(dst_base, 'logs',
-                           f'{subject_str}_{self.run_type}-SR_id-{self.sr_id}_log.txt')
+        dst = os.path.join(
+            dst_base,
+            'logs',
+            f'{subject_str}_{self.run_type}-SR_id-{self.sr_id}_log.txt'
+            )
         # Create the logs/ and parent directories if they do not exist
         logs_dir = os.path.dirname(dst)
         os.makedirs(logs_dir, exist_ok=True)
@@ -369,7 +377,7 @@ class AnatomicalPipeline:
         # Compute elapsed running time in minutes and seconds
         duration = end - start
         (minutes, seconds) = divmod(duration.total_seconds(), 60)
-        self.run_elapsed_time = f'{int(minutes)} minutes and {int(seconds)} seconds'
+        self.run_elapsed_time = f'{int(minutes)} min. and {int(seconds)} s.'
         print(f" Elapsed time: {self.run_end_time}")
 
         iflogger.info("**** Write dataset derivatives description ****")
@@ -465,8 +473,10 @@ class AnatomicalPipeline:
             nlm_denoising="on" if self.m_do_nlm_denoising else "off",
             stacks_ordering="on" if not self.m_skip_stacks_ordering else "off",
             do_refine_hr_mask="on" if self.m_do_refine_hr_mask else "off",
-            use_auto_masks="on" if self.m_masks_derivatives_dir is None else "off",
-            custom_masks_dir=self.m_masks_derivatives_dir if self.m_masks_derivatives_dir is not None else None,
+            use_auto_masks="on" if self.m_masks_derivatives_dir is None
+                else "off",
+            custom_masks_dir=self.m_masks_derivatives_dir
+                if self.m_masks_derivatives_dir is not None else None,
             sr_resolution=f"{sx} x {sy} x {sz} mm<sup>3</sup>",
             sr_json_metadata=sr_json_metadata,
             workflow_graph=workflow_image,

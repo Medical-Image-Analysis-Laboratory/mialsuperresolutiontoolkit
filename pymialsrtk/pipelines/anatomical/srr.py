@@ -283,3 +283,4 @@ class SRReconPipeline(AnatomicalPipeline):
                             output_mgmt_stage, "inputnode.report_image")
             self.wf.connect(input_stage, "outputnode.motion_tsv",
                             output_mgmt_stage, "inputnode.motion_tsv")
+

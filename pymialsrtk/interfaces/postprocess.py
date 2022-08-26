@@ -220,7 +220,8 @@ class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True, desc='List of stack run-id that specify the order of the stacks')
     sr_id = traits.Int(mandatory=True, desc='Super-Resolution id')
     use_manual_masks = traits.Bool(mandatory=True, desc='Whether masks were computed or manually performed.')
-    run_type = traits.Str(mandatory=True, desc='Type of run: either rec (SRRecon) or pre (Preprocessing)')
+    run_type = traits.Str(mandatory=True, 
+                          desc='Type of run: either rec (SRRecon) or pre (Preprocessing)')
 
 
 class FilenamesGenerationOutputSpec(TraitedSpec):

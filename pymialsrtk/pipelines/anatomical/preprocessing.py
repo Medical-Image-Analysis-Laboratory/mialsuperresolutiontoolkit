@@ -1,4 +1,5 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -27,6 +28,7 @@ from .anatomical_pipeline import AnatomicalPipeline
 
 # Get pymialsrtk version
 from pymialsrtk.info import __version__
+
 
 class PreprocessingPipeline(AnatomicalPipeline):
     """Class used to represent the workflow of the
@@ -89,7 +91,7 @@ class PreprocessingPipeline(AnatomicalPipeline):
         directory basename in BIDS directory derivatives where to search
         for masks (optional)
 
-    m_skip_svr : bool 
+    m_skip_svr : bool
         - not run in this context. Weither the Slice-to-Volume Registration
         should be skipped in the image reconstruction. (default is False)
 
@@ -268,3 +270,4 @@ class PreprocessingPipeline(AnatomicalPipeline):
                             prepro_mgmt_stage, "inputnode.report_image")
             self.wf.connect(input_stage, "outputnode.motion_tsv",
                             prepro_mgmt_stage, "inputnode.motion_tsv")
+

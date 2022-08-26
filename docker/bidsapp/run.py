@@ -216,36 +216,38 @@ def main(bids_dir, output_dir,
 
     # Initialize an instance of AnatomicalPipeline
     if run_type == "sr":
-        pipeline = SRReconPipeline(bids_dir,
-                                   output_dir,
-                                   subject,
-                                   p_ga,
-                                   p_stacks,
-                                   srID,
-                                   session,
-                                   paramTV,
-                                   masks_derivatives_dir,
-                                   masks_desc,
-                                   p_dict_custom_interfaces=dict_custom_interfaces,
-                                   openmp_number_of_cores=openmp_number_of_cores,
-                                   nipype_number_of_cores=nipype_number_of_cores
-                                   )
+        pipeline = SRReconPipeline(
+            bids_dir,
+            output_dir,
+            subject,
+            p_ga,
+            p_stacks,
+            srID,
+            session,
+            paramTV,
+            masks_derivatives_dir,
+            masks_desc,
+            p_dict_custom_interfaces=dict_custom_interfaces,
+            openmp_number_of_cores=openmp_number_of_cores,
+            nipype_number_of_cores=nipype_number_of_cores
+            )
     elif run_type == "preprocessing":
-        pipeline = PreprocessingPipeline(bids_dir,
-                                         output_dir,
-                                         subject,
-                                         p_ga,
-                                         p_stacks,
-                                         srID,
-                                         session,
-                                         paramTV,
-                                         masks_derivatives_dir,
-                                         masks_desc,
-                                         p_dict_custom_interfaces=dict_custom_interfaces,
-                                         openmp_number_of_cores=openmp_number_of_cores,
-                                         nipype_number_of_cores=nipype_number_of_cores,
-                                         p_do_registration=prepro_do_registration
-                                         )
+        pipeline = PreprocessingPipeline(
+            bids_dir,
+            output_dir,
+            subject,
+            p_ga,
+            p_stacks,
+            srID,
+            session,
+            paramTV,
+            masks_derivatives_dir,
+            masks_desc,
+            p_dict_custom_interfaces=dict_custom_interfaces,
+            openmp_number_of_cores=openmp_number_of_cores,
+            nipype_number_of_cores=nipype_number_of_cores,
+            p_do_registration=prepro_do_registration
+            )
     else:
         raise ValueError(f"Invalid run_type {run_type}. Please choose from ('sr,'preprocessing').")
 
