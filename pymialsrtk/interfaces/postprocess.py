@@ -326,7 +326,7 @@ class FilenamesGeneration(BaseInterface):
                                      '_id-' + str(self.inputs.sr_id) + '_T2w.png'))
 
         self.m_substitutions.append((self.inputs.sub_ses +
-                                     '_' + str(len(self.inputs.stacks_order)) +
+                                     '_' +
                                      'HR_labelmap.nii.gz',
                                      self.inputs.sub_ses + '_rec-SR' +
                                      '_id-' + str(self.inputs.sr_id) + '_labels.nii.gz'))
