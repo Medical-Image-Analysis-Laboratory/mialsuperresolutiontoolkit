@@ -6,9 +6,6 @@
 
 import os
 
-from jinja2 import Environment, FileSystemLoader
-from jinja2 import __version__ as __jinja2_version__
-
 from nipype.info import __version__ as __nipype_version__
 from nipype import config
 from nipype import logging as nipype_logging
@@ -18,12 +15,15 @@ from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.utils as utils
 
 # Import the implemented interface from pymialsrtk
+import pymialsrtk.interfaces.reconstruction as reconstruction
 from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
 import pymialsrtk.workflows.srr_output_stage as srr_output_stage
-from anatomical_pipeline import AnatomicalPipeline
+from pymialsrtk.bids.utils import write_bids_derivative_description
+
+from .anatomical_pipeline import AnatomicalPipeline
 
 # Get pymialsrtk version
 from pymialsrtk.info import __version__

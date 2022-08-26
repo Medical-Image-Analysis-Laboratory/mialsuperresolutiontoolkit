@@ -268,14 +268,14 @@ class AnatomicalPipeline:
         # Initialization (Not sure we can control the name of nipype log)
         if os.path.isfile(os.path.join(self.wf_base_dir, "pypeline.log")):
             os.unlink(os.path.join(self.wf_base_dir, "pypeline.log"))
-               
+              
     @abc.abstractmethod
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
 
         It is composed of a succession of Nodes and their corresponding parameters,
         where the output of node i goes to the input of node i+1.
-        
+       
         The more specific definition given in each node implementing the method.
         """
         pass
