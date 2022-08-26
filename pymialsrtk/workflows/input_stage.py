@@ -51,7 +51,7 @@ def create_input_stage(p_bids_dir,
     sub_ses = p_subject
     sub_path = p_subject
     if p_session is not None:
-        sub_ses = ''.join([sub_ses, '_', p_subject])
+        sub_ses = ''.join([sub_ses, '_', p_session])
         sub_path = os.path.join(p_subject, p_session)
 
     output_fields = ['t2ws_filtered', 'masks_filtered', 'stacks_order']
@@ -65,7 +65,6 @@ def create_input_stage(p_bids_dir,
         ),
         name='outputnode'
     )
-
     if p_use_manual_masks:
         dg = pe.Node(
             interface=DataGrabber(outfields=['T2ws', 'masks']),
@@ -92,7 +91,6 @@ def create_input_stage(p_bids_dir,
                 sub_path, 'anat',
                 '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
             )
-
         dg.inputs.field_template = dict(T2ws=t2ws_template,
                                         masks=masks_template)
 
