@@ -119,6 +119,11 @@ def create_postproc_stage(
                 interface=preprocess.ApplyAlignmentTransform(),
                 name='align_labelmap'
             )
+    if p_do_reconstruct_labels:
+        mask_hr_label = pe.Node(
+            interface=preprocess.MialsrtkMaskImage(),
+            name='mask_hr_label'
+        )
 
     postproc_stage.connect(inputnode, "input_image",
                            srtkMaskImage02, "in_file")
@@ -130,6 +135,12 @@ def create_postproc_stage(
     postproc_stage.connect(inputnode, "input_mask",
                            srtkN4BiasFieldCorrection, "input_mask")
 
+    if p_do_reconstruct_labels:
+        postproc_stage.connect(inputnode, "input_labelmap",
+                        mask_hr_label, "in_file")
+        postproc_stage.connect(inputnode, "input_mask",
+                        mask_hr_label, "in_mask")
+
     if not p_do_anat_orientation:
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
                                outputnode, "output_image")
@@ -138,8 +149,8 @@ def create_postproc_stage(
                                outputnode, "output_mask")
 
         if p_do_reconstruct_labels:
-            postproc_stage.connect(inputnode, "input_labelmap",
-                                   outputnode, "output_labelmap")
+            postproc_stage.connect(mask_hr_label, "out_im_file",
+                            outputnode, "output_labelmap")
 
     else:
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
@@ -169,7 +180,7 @@ def create_postproc_stage(
                                outputnode, "output_mask")
 
         if p_do_reconstruct_labels:
-            postproc_stage.connect(inputnode, "input_labelmap",
+            postproc_stage.connect(mask_hr_label, "out_im_file",
                                    align_labelmap, "input_image")
             postproc_stage.connect(resample_t2w_template, "output_image",
                                    align_labelmap, "input_template")
