@@ -180,17 +180,17 @@ def create_postproc_stage(
                                outputnode, "output_mask")
 
         if p_do_reconstruct_labels:
-            postproc_stage.connect(mask_hr_label, "out_im_file",
+            postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
                                    align_labelmap, "input_image")
             postproc_stage.connect(resample_t2w_template, "output_image",
                                    align_labelmap, "input_template")
 
-            postproc_stage.connect(inputnode, "input_mask",
+            postproc_stage.connect(mask_hr_label, "out_im_file",
                                    align_labelmap, "input_mask")
 
             postproc_stage.connect(compute_alignment, "output_transform",
                                    align_labelmap, "input_transform")
-            postproc_stage.connect(align_labelmap, "output_image",
+            postproc_stage.connect(align_labelmap, "output_mask",
                                    outputnode, "output_labelmap")
 
 
