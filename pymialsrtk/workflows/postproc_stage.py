@@ -137,9 +137,9 @@ def create_postproc_stage(
 
     if p_do_reconstruct_labels:
         postproc_stage.connect(inputnode, "input_labelmap",
-                        mask_hr_label, "in_file")
+                               mask_hr_label, "in_file")
         postproc_stage.connect(inputnode, "input_mask",
-                        mask_hr_label, "in_mask")
+                               mask_hr_label, "in_mask")
 
     if not p_do_anat_orientation:
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
@@ -150,7 +150,7 @@ def create_postproc_stage(
 
         if p_do_reconstruct_labels:
             postproc_stage.connect(mask_hr_label, "out_im_file",
-                            outputnode, "output_labelmap")
+                                   outputnode, "output_labelmap")
 
     else:
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
