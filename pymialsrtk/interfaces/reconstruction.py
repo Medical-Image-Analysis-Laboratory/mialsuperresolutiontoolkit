@@ -502,6 +502,7 @@ class MialsrtkSDIComputation(BaseInterface):
                     self.inputs.sub_ses,
                     '_',
                     'HR',
+                    '_',
                     'label-'+str(self.inputs.label_id),
                     '.nii.gz'
                 ])

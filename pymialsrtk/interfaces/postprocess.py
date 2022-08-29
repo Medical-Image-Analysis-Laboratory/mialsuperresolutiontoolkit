@@ -431,7 +431,11 @@ class MergeMajorityVote(BaseInterface):
 
     def _gen_filename(self):
         _, name, ext = split_filename(self.inputs.input_images[0])
-        output = name + '_labelmap' + ext
+        output = ''.join([
+            name.split('_label-')[0],
+            '_labelmap',
+            ext
+        ])
         return os.path.abspath(output)
 
     def _merge_maps(self, in_images):

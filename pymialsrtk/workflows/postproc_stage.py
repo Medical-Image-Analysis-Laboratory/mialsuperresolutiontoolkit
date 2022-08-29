@@ -60,7 +60,7 @@ def create_postproc_stage(
     input_fields = ['input_image', 'input_mask', 'input_sdi']
     output_fields = ['output_image', 'output_mask']
 
-    if p_do_reconstruct_labels :
+    if p_do_reconstruct_labels:
         input_fields += ['input_labelmap']
         output_fields += ['output_labelmap']
 
