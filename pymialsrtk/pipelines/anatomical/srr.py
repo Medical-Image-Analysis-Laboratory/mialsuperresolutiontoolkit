@@ -363,6 +363,7 @@ class AnatomicalPipeline:
                 sr_assessment_stage.create_sr_assessment_stage(
                     p_multi_parameters=self._m_multi_parameters,
                     p_input_srtv_node=srtv_node_name,
+                    p_openmp_number_of_cores=self.openmp_number_of_cores,
                     name='srr_assessment_stage'
                 )
 

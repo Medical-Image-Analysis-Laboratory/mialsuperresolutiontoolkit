@@ -19,6 +19,7 @@ import pymialsrtk.interfaces.utils as utils
 def create_sr_assessment_stage(
         p_multi_parameters=False,
         p_input_srtv_node=None,
+        p_openmp_number_of_cores=1,
         name="sr_assessment_stage"
 ):
     """Create an assessment workflow to compare
@@ -71,7 +72,7 @@ def create_sr_assessment_stage(
         postprocess.QualityMetrics(),
         name='quality_metrics'
     )
-    quality_metrics.inputs.in_num_threads = 3  # TODO
+    quality_metrics.inputs.in_num_threads = p_openmp_number_of_cores
 
     z_debug = pe.Node(
         interface=util.IdentityInterface(
