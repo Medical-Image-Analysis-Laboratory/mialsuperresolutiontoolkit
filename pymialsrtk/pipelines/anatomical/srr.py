@@ -419,8 +419,11 @@ class AnatomicalPipeline:
             self.wf.connect(postprocessing_stage, "outputnode.output_image",
                             srr_assessment_stage, "inputnode.input_image")
 
-            self.wf.connect(input_stage, "outputnode.ground_truth",
-                            srr_assessment_stage, "inputnode.input_ground_truth")
+            self.wf.connect(input_stage, "outputnode.hr_reference_image",
+                            srr_assessment_stage, "inputnode.input_reference_image")
+
+            self.wf.connect(input_stage, "outputnode.hr_reference_mask",
+                            srr_assessment_stage, "inputnode.input_reference_mask")
 
             self.wf.connect(srr_assessment_stage, "outputnode.output_metrics",
                             output_mgmt_stage, "inputnode.input_metrics")

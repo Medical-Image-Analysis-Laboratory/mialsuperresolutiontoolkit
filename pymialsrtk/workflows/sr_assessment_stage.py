@@ -50,7 +50,8 @@ def create_sr_assessment_stage(
     # Set up a node to define all inputs required for the
     # preprocessing workflow
     input_fields = [
-        'input_ground_truth',
+        'input_reference_image',
+        'input_reference_mask',
         'input_image',
         'input_TV_parameters'
     ]
@@ -72,6 +73,13 @@ def create_sr_assessment_stage(
     )
     quality_metrics.inputs.in_num_threads = 3  # TODO
 
+    z_debug = pe.Node(
+        interface=util.IdentityInterface(
+            fields=['output_warped_image']
+        ),
+        name='z_debug'
+    )
+
     if p_multi_parameters:
         concatenate_quality_metrics = pe.JoinNode(
             interface=postprocess.ConcatenateQualityMetrics(),
@@ -82,11 +90,16 @@ def create_sr_assessment_stage(
 
     sr_assessment_stage.connect(inputnode, 'input_image',
                                 quality_metrics, 'input_image')
-    sr_assessment_stage.connect(inputnode, "input_ground_truth",
-                                quality_metrics, 'input_ground_truth')
+    sr_assessment_stage.connect(inputnode, "input_reference_image",
+                                quality_metrics, 'input_reference_image')
+    sr_assessment_stage.connect(inputnode, "input_reference_mask",
+                                quality_metrics, 'input_reference_mask')
 
     sr_assessment_stage.connect(inputnode, "input_TV_parameters",
                                 quality_metrics, 'input_TV_parameters')
+
+    sr_assessment_stage.connect(quality_metrics, 'output_warped_image',
+                                z_debug, 'output_warped_image')
 
     if p_multi_parameters:
         sr_assessment_stage.connect(quality_metrics, 'output_metrics',

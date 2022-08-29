@@ -76,7 +76,7 @@ def create_input_stage(p_bids_dir,
         output_fields += ['report_image', 'motion_tsv']
 
     if p_do_srr_assessment:
-        output_fields += ['ground_truth']
+        output_fields += ['hr_reference_image', 'hr_reference_mask']
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(
@@ -181,28 +181,31 @@ def create_input_stage(p_bids_dir,
 
     if p_do_srr_assessment:
 
-        gt = pe.Node(
-            interface=DataGrabber(outfields=['gt']),
-            name='gt_grabber')
+        rg = pe.Node(
+            interface=DataGrabber(outfields=['T2w', 'mask']),
+            name='reference_grabber')
 
-        gt.inputs.base_directory = p_bids_dir
-        gt.inputs.template = '*'
-        gt.inputs.raise_on_empty = False
-        gt.inputs.sort_filelist = True
+        rg.inputs.base_directory = p_bids_dir
+        rg.inputs.template = '*'
+        rg.inputs.raise_on_empty = False
+        rg.inputs.sort_filelist = True
 
-        gt_template = os.path.join(
-            p_subject,
+        t2w_template = os.path.join(
+            sub_path,
             'anat',
             sub_ses + '_desc-iso_T2w.nii.gz'
         )
-        if p_session is not None:
-            gt_template = os.path.join(
-                p_subject,
-                p_session,
-                'anat',
-                sub_ses + '_desc-iso_T2w.nii.gz'
-            )
-        gt.inputs.field_template = dict(gt=gt_template)
+
+        mask_template = os.path.join(
+            sub_path,
+            'anat',
+            sub_ses + '_desc-iso_T2w_mask.nii.gz'
+        )
+
+        rg.inputs.field_template = dict(
+            T2w=t2w_template,
+            mask=mask_template
+        )
 
 
     if p_use_manual_masks:
@@ -249,7 +252,9 @@ def create_input_stage(p_bids_dir,
                             outputnode, "motion_tsv")
 
     if p_do_srr_assessment:
-        input_stage.connect(gt, "gt",
-                            outputnode, "ground_truth")
+        input_stage.connect(rg, "T2w",
+                            outputnode, "hr_reference_image")
+        input_stage.connect(rg, "mask",
+                            outputnode, "hr_reference_mask")
 
     return input_stage

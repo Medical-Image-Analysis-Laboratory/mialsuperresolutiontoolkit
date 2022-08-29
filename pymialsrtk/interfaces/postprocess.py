@@ -405,7 +405,14 @@ class QualityMetricsInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the QualityMetrics interface."""
 
     input_image = File(desc='Input image filename', mandatory=True)
-    input_ground_truth = File(desc='Input GT filename', mandatory=True)
+    input_reference_image = File(
+        desc='Input reference image filename',
+        mandatory=True
+    )
+    input_reference_mask = File(
+        desc='Input reference mask filename',
+        mandatory=True
+    )
     input_TV_parameters = traits.Dict(mandatory=True)
     in_num_threads = traits.Int(1, usedefault=True, mandatory=False)
 
@@ -416,6 +423,7 @@ class QualityMetricsOutputSpec(TraitedSpec):
     """Class used to represent outputs of the QualityMetrics interface."""
 
     output_metrics = File(desc='Output CSV')
+    output_warped_image = File(desc='')
 
 
 class QualityMetrics(BaseInterface):
@@ -425,52 +433,69 @@ class QualityMetrics(BaseInterface):
     input_spec = QualityMetricsInputSpec
     output_spec = QualityMetricsOutputSpec
 
+    _warped_image_path = None
+
     def _gen_filename(self, name):
         if name == 'output_metrics':
             _, name, ext = split_filename(self.inputs.input_image)
             output = name + '_csv' + '.csv'
             return os.path.abspath(output)
+        if name == 'output_warped_image':
+            return os.path.abspath(self._warped_image_path)
         return None
 
-    def _compute(self, in_image, in_gt):
-
-        # ants_path = '/opt/conda/envs/pymialsrtk-env/bin'
+    def _preproc_images(self, p_in_image, p_in_gt, p_in_gt_mask):
         ants_path = '/opt/conda/bin'
 
         reg = RegistrationSynQuick()
-        reg.inputs.fixed_image = in_gt
-        reg.inputs.moving_image = in_image
+        reg.inputs.fixed_image = p_in_gt
+        reg.inputs.moving_image = p_in_image
         reg.inputs.transform_type = 'r'
         reg.inputs.num_threads = self.inputs.in_num_threads
         reg.environ = {'PATH': ants_path}
         reg.terminal_output = 'file_stderr'
 
-        print('Running RegistrationSynQuick()')
+        # print('Running RegistrationSynQuick()')
         res = reg.run()
-        #
-
-        print('Running PSNR computation')
+        self._warped_image_path = res.outputs.warped_image
 
         reader = sitk.ImageFileReader()
+        masker = sitk.MaskImageFilter()
 
-        reader.SetFileName(in_gt)
-        gt = sitk.GetArrayFromImage(reader.Execute())
+        reader.SetFileName(p_in_gt_mask)
+        mask = reader.Execute()
 
-        reader.SetFileName(res.outputs.warped_image)
-        sr = sitk.GetArrayFromImage(reader.Execute())
+        reader.SetFileName(p_in_gt)
+        gt = reader.Execute()
+        gt = sitk.GetArrayFromImage(masker.Execute(gt, mask))
+
+        reader.SetFileName(self._warped_image_path)
+        sr = reader.Execute()
+        sr = sitk.GetArrayFromImage(masker.Execute(sr, mask))
+
+        return gt, sr
+
+    def _compute(self, p_in_image, p_in_gt, p_in_gt_mask):
+
+        gt_np, sr_np = self._preproc_images(
+            p_in_image=p_in_image,
+            p_in_gt=p_in_gt,
+            p_in_gt_mask=p_in_gt_mask
+        )
+        datarange = int(np.amax(gt_np)-min(np.amin(sr_np), np.amin(gt_np)))
 
         print('Running PSNR computation')
         psnr = skimage.metrics.peak_signal_noise_ratio(
-            gt,
-            sr,
-            data_range=int(np.amax(gt)-min(np.amin(sr), np.amin(gt)))
+            gt_np,
+            sr_np,
+            data_range=datarange
         )
 
         print('Running SSIM computation')
         ssim = skimage.metrics.structural_similarity(
-            gt,
-            sr,
-            data_range=int(np.amax(gt)-min(np.amin(sr), np.amin(gt)))
+            gt_np,
+            sr_np,
+            data_range=datarange
         )
 
         TV_params = self.inputs.input_TV_parameters
@@ -508,7 +533,8 @@ class QualityMetrics(BaseInterface):
         try:
             self._compute(
                 self.inputs.input_image,
-                self.inputs.input_ground_truth
+                self.inputs.input_reference_image,
+                self.inputs.input_reference_mask
             )
         except Exception as e:
             print('Failed')
@@ -518,6 +544,7 @@ class QualityMetrics(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_metrics'] = self._gen_filename('output_metrics')
+        outputs['output_warped_image'] = self._gen_filename('output_warped_image')
         return outputs
 
 
