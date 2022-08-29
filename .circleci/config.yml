@@ -195,8 +195,8 @@ jobs:
                 sebastientourbier/mialsuperresolutiontoolkit \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
-                --openmp_nb_of_cores 2 \
-                --nipype_nb_of_cores 2 \
+                --openmp_nb_of_cores 1 \
+                --nipype_nb_of_cores 1 \
                 --masks_derivatives_dir 'manual_masks'
 
             # Rename log
@@ -245,8 +245,8 @@ jobs:
                 sebastientourbier/mialsuperresolutiontoolkit \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
-                --openmp_nb_of_cores 2 \
-                --nipype_nb_of_cores 2
+                --openmp_nb_of_cores 1 \
+                --nipype_nb_of_cores 1
 
             # Rename log
             mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt \
@@ -356,8 +356,8 @@ jobs:
                 /tmp/cache/mialsuperresolutiontoolkit.simg \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
-                --openmp_nb_of_cores 2 \
-                --nipype_nb_of_cores 2 \
+                --openmp_nb_of_cores 1 \
+                --nipype_nb_of_cores 1 \
                 --masks_derivatives_dir 'manual_masks'
       - run:
           name: "Test-03 - Checking outputs of MIALSRTK BIDS App run"
@@ -394,8 +394,8 @@ jobs:
                 /tmp/cache/mialsuperresolutiontoolkit.simg \
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
-                --openmp_nb_of_cores 2 \
-                --nipype_nb_of_cores 2
+                --openmp_nb_of_cores 1 \
+                --nipype_nb_of_cores 1
       - run:
           name: "Test-04 - Checking outputs of MIALSRTK BIDS App run"
           command: |
