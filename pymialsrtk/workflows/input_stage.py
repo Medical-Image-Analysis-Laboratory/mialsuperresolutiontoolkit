@@ -29,7 +29,7 @@ def create_input_stage(p_bids_dir,
                        p_masks_derivatives_dir,
                        p_skip_stacks_ordering,
                        p_stacks,
-                       p_verbose
+                       p_verbose,
                        name="input_stage"
                        ):
     """Create a input management workflow

@@ -10,6 +10,7 @@ histogram normalization and both manual or deep learning based automatic brain e
 
 """
 
+from decimal import DivisionByZero
 import os
 import traceback
 from glob import glob
@@ -684,7 +685,17 @@ class StacksOrdering(BaseInterface):
 
         nb_of_notnans = np.count_nonzero(~np.isnan(centroid_coord))
         nb_of_nans = np.count_nonzero(np.isnan(centroid_coord))
-        print(f'  Info: Number of NaNs = {nb_of_nans}')
+        if nb_of_nans > 0:
+            print(f'  Info: File {in_file} - Number of NaNs = {nb_of_nans}')
+
+        if nb_of_nans + nb_of_notnans == 0:
+            import re
+            run_id = re.findall(r'run-(\d+)_', in_file)[-1]
+            raise DivisionByZero(
+                f"The mask of run-{run_id} is empty on the range "
+                "considered. The stack should be excluded."
+                )
+
         prop_of_nans = nb_of_nans / (nb_of_nans + nb_of_notnans)
 
         centroid_coord = centroid_coord[~np.isnan(centroid_coord)]
