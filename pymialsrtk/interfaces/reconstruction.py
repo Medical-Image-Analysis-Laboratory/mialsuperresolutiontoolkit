@@ -475,7 +475,7 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that '
                                     'specify the order of the stacks')
-    label_id = traits.Int(mandatory=False)
+    label_id = traits.Int(-1, mandatory=False)
 
 
 class MialsrtkSDIComputationOutputSpec(TraitedSpec):
@@ -497,7 +497,21 @@ class MialsrtkSDIComputation(BaseInterface):
 
     def _gen_filename(self, name):
         if name == 'output_hr':
-            output = ''.join([self.inputs.sub_ses, '_', 'HR', '.nii.gz'])
+            if self.inputs.label_id != -1:
+                output = ''.join([
+                    self.inputs.sub_ses,
+                    '_',
+                    'HR',
+                    'label-'+str(self.inputs.label_id),
+                    '.nii.gz'
+                ])
+            else:
+                output = ''.join([
+                    self.inputs.sub_ses,
+                    '_',
+                    'HR',
+                    '.nii.gz'
+                ])
             return os.path.abspath(output)
 
         return None
@@ -532,10 +546,10 @@ class MialsrtkSDIComputation(BaseInterface):
 
         input_images = self.inputs.input_images
 
-        if self.inputs.label_id:
+        if self.inputs.label_id != -1:
             input_images = \
                 [im for im in input_images
-                 if 'label-'+str(self.inputs.label_id) in im]
+                 if 'label-'+str(self.inputs.label_id)+'.nii.gz' in im]
 
         input_images = reorder_by_run_ids(input_images,
                                           self.inputs.stacks_order)
