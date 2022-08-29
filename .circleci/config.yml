@@ -139,6 +139,7 @@ jobs:
     machine:
       # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
       image: ubuntu-2004:202201-02
+    resource_class: large
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
       - checkout:
