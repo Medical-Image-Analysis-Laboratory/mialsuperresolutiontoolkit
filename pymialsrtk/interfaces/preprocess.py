@@ -1548,7 +1548,7 @@ class ReduceFieldOfView(BaseInterface):
         minimums_copy.reverse()
 
         new_origin = list(
-            image.TransformContinuousIndexToPhysicalPoint(minimums)
+            image.TransformContinuousIndexToPhysicalPoint(minimums_copy)
             )
 
         new_direction = list(image.GetDirection())
