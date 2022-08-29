@@ -255,7 +255,6 @@ if __name__ == '__main__':
     with open(args.param_file, 'r') as f:
         participants_params = json.load(f)
 
-
     subjects_to_analyze = []
     # only for a subset of subjects
     if args.participant_label:
@@ -266,8 +265,10 @@ if __name__ == '__main__':
         subjects_to_analyze = [
             subject_dir.split("-")[-1] for subject_dir in subject_dirs
         ]
-
+    failed_dict = {}
     for sub in subjects_to_analyze:
+        failed_dict[sub] = []
+        print(failed_dict)
         if sub in participants_params.keys():
 
             sr_list = participants_params[sub]
@@ -285,25 +286,40 @@ if __name__ == '__main__':
                 dict_custom_interfaces = sr_params['custom_interfaces'] if 'custom_interfaces' in sr_params.keys() else None
 
                 if srID is None:
-                    print('WARNING: Do not process subjects %s because of missing parameters.' % sub)
+                    e = f'Subject {sub} was not processed because of missing parameters.'
+                    failed_dict[sub] += [e]
+                    print(e)
                     continue
-
-                res = main(bids_dir=args.bids_dir,
-                           output_dir=args.output_dir,
-                           subject=sub,
-                           session=ses,
-                           p_ga=ga,
-                           p_stacks=stacks,
-                           paramTV=paramTV,
-                           srID=srID,
-                           masks_derivatives_dir=args.masks_derivatives_dir,
-                           masks_desc=masks_desc,
-                           dict_custom_interfaces=dict_custom_interfaces,
-                           verbose=args.verbose,
-                           nipype_number_of_cores=nipype_nb_of_cores,
-                           openmp_number_of_cores=openmp_nb_of_cores,
-                           memory=args.memory)
+                try:
+                    res = main(bids_dir=args.bids_dir,
+                               output_dir=args.output_dir,
+                               subject=sub,
+                               session=ses,
+                               p_ga=ga,
+                               p_stacks=stacks,
+                               paramTV=paramTV,
+                               srID=srID,
+                               masks_derivatives_dir=args.masks_derivatives_dir,
+                               masks_desc=masks_desc,
+                               dict_custom_interfaces=dict_custom_interfaces,
+                               verbose=args.verbose,
+                               nipype_number_of_cores=nipype_nb_of_cores,
+                               openmp_number_of_cores=openmp_nb_of_cores,
+                               memory=args.memory)
+                except Exception as e:
+                    e = f"Subject {sub} with parameters {sr_params} failed "\
+                        f"with message \n\t {e}"
+                    failed_dict[sub] += [e]
+                    print(e)
         else:
-            print('WARNING: Do not process subjects %s because of missing configuration.' % sub)
+            e = f"Subject {sub} was not processed because of missing configuration."
+            failed_dict[sub] += [e]
+            print(e)
+
+    if not all([v==[] for v in failed_dict.values()]):
+        print(f"WARNING: Some runs failed.")
+        for sub, v in failed_dict.items():
+            for error in v:
+                print("-> ", error)
 
     sys.exit(0)
