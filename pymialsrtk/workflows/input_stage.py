@@ -76,7 +76,9 @@ def create_input_stage(p_bids_dir,
         output_fields += ['report_image', 'motion_tsv']
 
     if p_do_srr_assessment:
-        output_fields += ['hr_reference_image', 'hr_reference_mask']
+        output_fields += ['hr_reference_image',
+                          'hr_reference_mask',
+                          'hr_reference_labels']
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(
@@ -182,8 +184,11 @@ def create_input_stage(p_bids_dir,
     if p_do_srr_assessment:
 
         rg = pe.Node(
-            interface=DataGrabber(outfields=['T2w', 'mask']),
-            name='reference_grabber')
+            interface=DataGrabber(
+                outfields=['T2w', 'mask', 'labels']
+            ),
+            name='reference_grabber'
+        )
 
         rg.inputs.base_directory = p_bids_dir
         rg.inputs.template = '*'
@@ -201,10 +206,16 @@ def create_input_stage(p_bids_dir,
             'anat',
             sub_ses + '_desc-iso_T2w_mask.nii.gz'
         )
+        labels_template = os.path.join(
+            sub_path,
+            'anat',
+            sub_ses + '_desc-iso_T2w_labels.nii.gz'
+        )
 
         rg.inputs.field_template = dict(
             T2w=t2w_template,
-            mask=mask_template
+            mask=mask_template,
+            labels=labels_template
         )
 
 
@@ -256,5 +267,7 @@ def create_input_stage(p_bids_dir,
                             outputnode, "hr_reference_image")
         input_stage.connect(rg, "mask",
                             outputnode, "hr_reference_mask")
+        input_stage.connect(rg, "labels",
+                            outputnode, "hr_reference_labels")
 
     return input_stage

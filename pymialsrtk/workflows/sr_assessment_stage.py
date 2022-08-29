@@ -35,9 +35,14 @@ def create_sr_assessment_stage(
         p_input_srtv_node : string
             when p_do_multi_parameters is set, name of the sourcenode
             from which metrics must be merged
+        p_openmp_number_of_cores : integer
+            number of threads possible
+            for ants registration (default : 1)
 
     Inputs::
-        inputnode.input_ground_truth
+        inputnode.input_reference_image
+        inputnode.input_reference_mask
+        inputnode.input_reference_labelmap
         inputnode.input_image
         inputnode.input_TV_parameters
     Outputs::
@@ -53,6 +58,7 @@ def create_sr_assessment_stage(
     input_fields = [
         'input_reference_image',
         'input_reference_mask',
+        'input_reference_labelmap',
         'input_image',
         'input_TV_parameters'
     ]

@@ -413,6 +413,10 @@ class QualityMetricsInputSpec(BaseInterfaceInputSpec):
         desc='Input reference mask filename',
         mandatory=True
     )
+    input_reference_labelmap = File(
+        desc='Input reference labelmap filename',
+        mandatory=False
+    )
     input_TV_parameters = traits.Dict(mandatory=True)
     in_num_threads = traits.Int(1, usedefault=True, mandatory=False)
 

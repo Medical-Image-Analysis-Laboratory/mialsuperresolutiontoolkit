@@ -426,6 +426,9 @@ class AnatomicalPipeline:
             self.wf.connect(input_stage, "outputnode.hr_reference_mask",
                             srr_assessment_stage, "inputnode.input_reference_mask")
 
+            self.wf.connect(input_stage, "outputnode.hr_reference_labels",
+                            srr_assessment_stage, "inputnode.input_reference_label")
+
             self.wf.connect(srr_assessment_stage, "outputnode.output_metrics",
                             output_mgmt_stage, "inputnode.input_metrics")
 
