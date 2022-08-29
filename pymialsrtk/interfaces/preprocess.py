@@ -20,6 +20,13 @@ from skimage.morphology import binary_opening, binary_closing
 import numpy as np
 from traits.api import *
 
+# Reorientation
+import SimpleITK as sitk
+import skimage.measure
+import nsol.principal_component_analysis as pca
+from nipype.algorithms.metrics import Similarity
+import transforms3d
+
 import nibabel as nib
 
 import matplotlib
@@ -1474,7 +1481,11 @@ class ReduceFieldOfView(BaseInterface):
             return os.path.abspath(os.path.basename(self.inputs.input_mask))
         return None
 
-    def _crop_image_and_mask(self, in_image, in_mask, paddings_mm=[10, 10, 0]):
+    def _crop_image_and_mask(self,
+                             in_image,
+                             in_mask,
+                             paddings_mm=[15, 15, 15]
+                             ):
         import SimpleITK as sitk
         reader = sitk.ImageFileReader()
 
@@ -1560,3 +1571,390 @@ class ReduceFieldOfView(BaseInterface):
         outputs['output_image'] = self._gen_filename('output_image')
         outputs['output_mask'] = self._gen_filename('output_mask')
         return outputs
+
+
+class ResampleImageInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the ResampleImage interface."""
+    input_image = File(mandatory=True, desc='Input image to resample')
+    input_reference = File(
+        mandatory=True,
+        desc='Input image with reference resolution'
+    )
+
+
+class ResampleImageOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the ResampleImage interface."""
+
+    output_image = File(desc='Masked image')
+
+
+class ResampleImage(BaseInterface):
+    """Retrieve atlas of the same age and
+    resample it to subject's in-plane resolution
+    """
+
+    input_spec = ResampleImageInputSpec
+    output_spec = ResampleImageOutputSpec
+
+    def _gen_filename(self, name):
+        if name == 'output_image':
+            return os.path.abspath(os.path.basename(self.inputs.input_image))
+        return None
+
+    def _run_interface(self, runtime):
+
+        target_resolution = self._get_target_resolution(
+            reference_image=self.inputs.input_reference
+        )
+        self._resample_image(p_image_path=self.inputs.input_image,
+                             p_resolution=target_resolution)
+
+        return runtime
+
+    def _get_target_resolution(self, reference_image):
+        reader = sitk.ImageFileReader()
+        reader.SetFileName(reference_image)
+        sub_image = reader.Execute()
+
+        spacings = list(sub_image.GetSpacing())
+        spacings.sort()
+        print('Target isotropic spacing:', spacings[0])
+        return spacings[0]
+
+    def _resample_image(self, p_image_path, p_resolution):
+
+        ants_path = '/opt/conda/bin'
+
+        image_resampled_path = self._gen_filename('output_image')
+
+        cmd = []
+        cmd.append('ResampleImageBySpacing')
+        cmd.append('3')
+        cmd.append(p_image_path)
+        cmd.append(image_resampled_path)
+        cmd.append(str(p_resolution))
+        cmd.append(str(p_resolution))
+        cmd.append(str(p_resolution))
+
+        print()
+        print()
+        print(cmd)
+        print()
+        print()
+        cmd = ' '.join(cmd)
+        run(cmd, env={'PATH': ants_path})
+
+        cmd = []
+        cmd.append('antsApplyTransforms')
+        cmd.append('-d 3')
+        cmd.append('-i')
+        cmd.append(p_image_path)
+        cmd.append('-r')
+        cmd.append(image_resampled_path)
+        cmd.append('-o')
+        cmd.append(image_resampled_path)
+        cmd.append('-t [identity]')
+
+        cmd = ' '.join(cmd)
+        run(cmd, env={'PATH': ants_path})
+
+        print('Reference STA was resampled.')
+
+        return image_resampled_path
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_image'] = self._gen_filename('output_image')
+        return outputs
+
+
+class ComputeAlignmentToReferenceInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the
+    ComputeAlignmentToReference interface."""
+
+    input_image = File(mandatory=True, desc='Input image to realign')
+    input_template = File(mandatory=True, desc='Input reference image')
+
+
+class ComputeAlignmentToReferenceOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the
+    ComputeAlignmentToReference interface."""
+
+    output_transform = File(
+        mandatory=True,
+        desc='Output 3D rigid tranformation file'
+    )
+
+
+class ComputeAlignmentToReference(BaseInterface):
+    """Reorient image along reference, based on principal brain axis.
+
+    This module relies on the implementation [1]_ from EbnerWang2020 [2]_.
+
+    References
+    ------------
+    .. [1] `(link to github) <https://github.com/gift-surg/NiftyMIC>`_
+    .. [2] Ebner et al. (2020). An automated framework for localization,
+    segmentation and super-resolution reconstruction of fetal brain MRI.
+     NeuroImage, 206, 116324. `(link to paper)
+     <https://www.sciencedirect.com/science/article/pii/S1053811919309152>`_
+
+    Examples
+    --------
+    >>>
+
+    """
+
+    input_spec = ComputeAlignmentToReferenceInputSpec
+    output_spec = ComputeAlignmentToReferenceOutputSpec
+
+    m_best_transform = None
+
+    def _gen_filename(self, name, i_o=-1):
+        _, basename, _ = split_filename(self.inputs.input_image)
+        if name == 'output_transform':
+            output = basename + '_rigid' + '.tfm'
+            return os.path.abspath(output)
+        elif name == 'output_image':
+            output = basename + '_reoriented' + '_' + str(i_o) + '.nii.gz'
+            return os.path.abspath(output)
+        return None
+
+    def _run_interface(self, runtime):
+
+        self.m_best_transform = self._reorient_image()
+
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_transform'] = self._gen_filename('output_transform')
+        return outputs
+
+    def _compute_pca(self, mask):
+
+        def get_largest_connected_region_mask(mask_nda):
+            """ This function is from:
+            https://github.com/gift-surg/NiftyMIC/blob/e62c5389dfa2bb367fb217b7060472978d3e7654/niftymic/utilities/template_stack_estimator.py#L123
+            """
+            # get label for each connected component
+            labels_nda = skimage.measure.label(mask_nda)
+
+            # only pick largest connected region
+            if labels_nda.max() > 1:
+                volumes = [
+                    labels_nda[np.where(labels_nda == i)].sum()
+                    for i in range(1, labels_nda.max() + 1)
+                ]
+                label_max = np.argmax(np.array(volumes)) + 1
+                mask_nda = np.zeros_like(mask_nda)
+                mask_nda[np.where(labels_nda == label_max)] = 1
+
+            return mask_nda
+
+        mask_nda = sitk.GetArrayFromImage(mask)
+        mask_nda = mask_nda > 0
+
+        # # We do a closing (dilation+erosion),
+        # in case slices are discarded from stacks
+        # closing = sitk.BinaryMorphologicalClosingImageFilter()
+        # mask_nda = closing.Execute(mask_nda)
+
+        # # get largest connected region (if more than one connected region)
+        mask_nda = get_largest_connected_region_mask(mask_nda)
+
+        # [z, y, x] x n_points to [x, y, z] x n_points
+        points = np.array(np.where(mask_nda > 0))[::-1, :]
+        n_points = len(points[0])
+        for i in range(n_points):
+            points[:, i] = mask.TransformIndexToPhysicalPoint(
+                [int(j) for j in points[:, i]])
+
+        pca_fixed = pca.PrincipalComponentAnalysis(points.transpose())
+
+        pca_fixed.run()
+        return pca_fixed
+
+    def _reorient_image(self):
+        reader = sitk.ImageFileReader()
+        writer = sitk.ImageFileWriter()
+
+        reader.SetFileName(self.inputs.input_image)
+        sub = reader.Execute()
+
+        reader.SetFileName(self.inputs.input_template)
+        template = reader.Execute()
+
+        # - PBA computation
+        pca_fixed = self._compute_pca(template)
+        pca_moving = self._compute_pca(sub)
+
+        # perform PCAs for fixed and moving images
+        eigvec_moving = pca_moving.get_eigvec()
+        mean_moving = pca_moving.get_mean()
+
+        eigvec_fixed = pca_fixed.get_eigvec()
+        mean_fixed = pca_fixed.get_mean()
+
+        # test different initializations based on eigenvector orientations
+        orientations = [
+            [1, 1],
+            [1, -1],
+            [-1, 1],
+            [-1, -1],
+        ]
+
+        transformations = []
+        similarities_abs = []
+
+        for i_o, orientation in enumerate(orientations):
+            eigvec_moving_o = np.array(eigvec_moving)
+            eigvec_moving_o[:, 0] *= orientation[0]
+            eigvec_moving_o[:, 1] *= orientation[1]
+
+            # get right-handed coordinate system
+            cross = np.cross(eigvec_moving_o[:, 0], eigvec_moving_o[:, 1])
+            eigvec_moving_o[:, 2] = cross
+
+            # transformation to align fixed with moving eigenbasis
+            R = eigvec_moving_o.dot(eigvec_fixed.transpose())
+            t = mean_moving - R.dot(mean_fixed)
+
+            # build rigid transformation as sitk object
+            rigid_transform_sitk = sitk.VersorRigid3DTransform()
+            rigid_transform_sitk.SetMatrix(R.flatten())
+            rigid_transform_sitk.SetTranslation(t)
+            transformations.append(rigid_transform_sitk)
+
+            warped_moving_sitk_sta = sitk.Resample(
+                sub,
+                template,  # Reference
+                rigid_transform_sitk,
+                sitk.sitkLinear)
+
+            im_tfm = self._gen_filename('output_image', i_o)
+            writer.SetFileName(im_tfm)
+            writer.Execute(warped_moving_sitk_sta)
+
+            similarity = Similarity()
+            similarity.inputs.volume1 = self.inputs.input_template
+            similarity.inputs.volume2 = im_tfm
+            similarity.inputs.metric = 'mi'
+
+            mi = similarity.run()
+            similarities_abs.append(abs(float(mi.outputs.similarity[0])))
+
+        i_best_transform = similarities_abs.index(max(similarities_abs))
+        best_transform = transformations[i_best_transform]
+
+        sitk.WriteTransform(
+            best_transform.GetInverse(),
+            self._gen_filename('output_transform')
+        )
+
+        return i_best_transform
+
+
+class ApplyAlignmentTransformInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the
+    ApplyAlignmentTransform interface."""
+
+    input_image = File(mandatory=True, desc='Input image to realign')
+    input_template = File(mandatory=True, desc='Input reference image')
+
+    input_mask = File(mandatory=False, desc='Input mask to realign')
+
+    input_transform = File(
+        mandatory=True,
+        desc='Input alignment transform to apply'
+    )
+
+
+class ApplyAlignmentTransformOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the
+    ApplyAlignmentTransform interface."""
+
+    output_image = File(
+        mandatory=True,
+        desc='Output reoriented image'
+    )
+    output_mask = File(
+        mandatory=False,
+        desc='Output reoriented mask'
+    )
+
+
+class ApplyAlignmentTransform(BaseInterface):
+    """Apply a rigid 3D transform.
+
+    Examples
+    --------
+    >>>
+
+    """
+    input_spec = ApplyAlignmentTransformInputSpec
+    output_spec = ApplyAlignmentTransformOutputSpec
+
+    def _gen_filename(self, name):
+        if name == 'output_image':
+            output = os.path.basename(self.inputs.input_image)
+            return os.path.abspath(output)
+        elif name == 'output_mask':
+            output = os.path.basename(self.inputs.input_mask)
+            return os.path.abspath(output)
+        return None
+
+    def _run_interface(self, runtime):
+        self._reorient_image()
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_image'] = self._gen_filename('output_image')
+        outputs['output_mask'] = self._gen_filename('output_mask')
+        return outputs
+
+    def _reorient_image(self):
+        reader = sitk.ImageFileReader()
+        writer = sitk.ImageFileWriter()
+
+        reader.SetFileName(self.inputs.input_image)
+        sub = reader.Execute()
+
+        if self.inputs.input_mask:
+            reader.SetFileName(self.inputs.input_mask)
+            mask = reader.Execute()
+
+        reader.SetFileName(self.inputs.input_template)
+        template = reader.Execute()
+
+        # build rigid transformation as sitk VersorRigid3DTransform object
+        transform = sitk.ReadTransform(self.inputs.input_transform)
+        transform_params = transform.GetParameters()
+
+        rigid_transform_sitk = sitk.VersorRigid3DTransform()
+        rigid_transform_sitk.SetParameters(transform_params)
+        rigid_transform_sitk = rigid_transform_sitk.GetInverse()
+
+        warped_moving_sitk_sta = sitk.Resample(
+            sub,
+            template,  # Reference
+            rigid_transform_sitk,
+            sitk.sitkLinear)
+
+        im_tfm = self._gen_filename('output_image')
+        writer.SetFileName(im_tfm)
+        writer.Execute(warped_moving_sitk_sta)
+
+        if self.inputs.input_mask:
+            warped_moving_sitk_mask = sitk.Resample(
+                mask,
+                template,  # Reference
+                rigid_transform_sitk,
+                sitk.sitkNearestNeighbor)
+
+            mask_tfm = self._gen_filename('output_mask')
+            writer.SetFileName(mask_tfm)
+            writer.Execute(warped_moving_sitk_mask)
+
+        return

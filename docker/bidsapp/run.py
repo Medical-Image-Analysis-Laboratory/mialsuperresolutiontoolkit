@@ -138,7 +138,8 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
 def main(bids_dir, output_dir,
          subject,
          session,
-         p_stacks,
+         p_ga=None,
+         p_stacks=None,
          paramTV=None,
          srID=None,
          masks_derivatives_dir='',
@@ -213,6 +214,7 @@ def main(bids_dir, output_dir,
     pipeline = AnatomicalPipeline(bids_dir,
                                   output_dir,
                                   subject,
+                                  p_ga,
                                   p_stacks,
                                   srID,
                                   session,
@@ -275,6 +277,7 @@ if __name__ == '__main__':
 
                 srID = sr_params['sr-id'] if 'sr-id' in sr_params.keys() else None
                 ses = sr_params["session"] if "session" in sr_params.keys() else None
+                ga = sr_params['ga'] if 'ga' in sr_params.keys() else None
                 stacks = sr_params['stacks'] if 'stacks' in sr_params.keys() else None
                 paramTV = sr_params['paramTV'] if 'paramTV' in sr_params.keys() else None
                 masks_desc = sr_params['masks_desc'] if 'masks_desc' in sr_params.keys() else None
@@ -289,6 +292,7 @@ if __name__ == '__main__':
                            output_dir=args.output_dir,
                            subject=sub,
                            session=ses,
+                           p_ga=ga,
                            p_stacks=stacks,
                            paramTV=paramTV,
                            srID=srID,

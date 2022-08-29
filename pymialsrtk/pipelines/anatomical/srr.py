@@ -169,6 +169,7 @@ class AnatomicalPipeline:
     m_do_nlm_denoising = None
     m_skip_stacks_ordering = None
     m_do_refine_hr_mask = None
+    m_do_anat_orientation = None
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
@@ -178,7 +179,7 @@ class AnatomicalPipeline:
     nipype_number_of_cores = None
 
     def __init__(
-        self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
+        self, bids_dir, output_dir, subject, p_ga=None, p_stacks=None, sr_id=1,
         session=None, paramTV=None, p_masks_derivatives_dir=None,
         p_masks_desc=None, p_dict_custom_interfaces=None,
         p_verbose=None, openmp_number_of_cores=None,
@@ -190,6 +191,7 @@ class AnatomicalPipeline:
         self.bids_dir = bids_dir
         self.output_dir = output_dir
         self.subject = subject
+        self.m_ga = p_ga
         self.sr_id = sr_id
         self.session = session
         self.m_stacks = p_stacks
@@ -211,10 +213,16 @@ class AnatomicalPipeline:
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
-            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] if 'skip_svr' in p_dict_custom_interfaces.keys() else False
-            self.m_do_refine_hr_mask = p_dict_custom_interfaces['do_refine_hr_mask'] if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() else False
+            self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
+                if 'skip_svr' in p_dict_custom_interfaces.keys() \
+                else False
+            self.m_do_refine_hr_mask = \
+                p_dict_custom_interfaces['do_refine_hr_mask'] \
+                if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() \
+                else False
             self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising']\
-                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() else False
+                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
+                else False
 
             self.m_skip_stacks_ordering =\
                 p_dict_custom_interfaces['skip_stacks_ordering']\
@@ -222,11 +230,28 @@ class AnatomicalPipeline:
                         ('skip_stacks_ordering' in
                          p_dict_custom_interfaces.keys())) \
                     else False
+
+            self.m_do_anat_orientation = \
+                p_dict_custom_interfaces['do_anat_orientation'] \
+                if 'do_anat_orientation' in p_dict_custom_interfaces.keys() \
+                else False
+
         else:
             self.m_skip_svr = False
             self.m_do_refine_hr_mask = False
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
+            self.m_do_anat_orientation = False
+
+        if self.m_do_anat_orientation:
+            if not os.path.isdir('/sta'):
+                print('A template directory must '
+                      'be specified to perform alignement.')
+                self.m_do_anat_orientation = False
+            if self.m_ga is None:
+                print('A gestational age must '
+                      'be specified to perform alignement.')
+                self.m_do_anat_orientation = False
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -236,27 +261,21 @@ class AnatomicalPipeline:
 
         """
         sub_ses = self.subject
+        sub_path = self.subject
         if self.session is not None:
             sub_ses = ''.join([sub_ses, '_', self.session])
+            sub_path = os.path.join(self.subject, self.session)
 
-        if self.session is None:
-            wf_base_dir = os.path.join(self.output_dir,
-                                       '-'.join(["nipype", __nipype_version__]),
-                                       self.subject,
-                                       "rec-{}".format(self.sr_id))
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject)
-        else:
-            wf_base_dir = os.path.join(self.output_dir,
-                                       '-'.join(["nipype", __nipype_version__]),
-                                       self.subject,
-                                       self.session,
-                                       "rec-{}".format(self.sr_id))
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject,
-                                         self.session)
+        wf_base_dir = os.path.join(self.output_dir,
+                                   '-'.join(["nipype", __nipype_version__]),
+                                   sub_path,
+                                   "rec-{}".format(self.sr_id)
+                                   )
+
+        final_res_dir = os.path.join(self.output_dir,
+                                     '-'.join(["pymialsrtk", __version__]),
+                                     sub_path
+                                     )
 
         if not os.path.exists(wf_base_dir):
             os.makedirs(wf_base_dir)
@@ -317,11 +336,14 @@ class AnatomicalPipeline:
             p_verbose=self.m_verbose)
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
+            p_ga=self.m_ga,
+            p_do_anat_orientation=self.m_do_anat_orientation,
             p_verbose=self.m_verbose,
             name='postprocessing_stage')
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_skip_stacks_ordering=self.m_skip_stacks_ordering,
             name='output_mgmt_stage')
 
         output_mgmt_stage.inputs.inputnode.sub_ses = sub_ses
@@ -333,7 +355,6 @@ class AnatomicalPipeline:
 
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
-
         self.wf.connect(input_stage, "outputnode.t2ws_filtered",
                         preprocessing_stage, "inputnode.input_images")
 
@@ -363,6 +384,9 @@ class AnatomicalPipeline:
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         postprocessing_stage, "inputnode.input_image")
 
+        self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                        postprocessing_stage, "inputnode.input_sdi")
+
         self.wf.connect(input_stage, "outputnode.stacks_order",
                         output_mgmt_stage, "inputnode.stacks_order")
 
@@ -381,7 +405,7 @@ class AnatomicalPipeline:
                         output_mgmt_stage, "inputnode.input_json_path")
         self.wf.connect(reconstruction_stage, "outputnode.output_sr_png",
                         output_mgmt_stage, "inputnode.input_sr_png")
-        self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
+        self.wf.connect(postprocessing_stage, "outputnode.output_mask",
                         output_mgmt_stage, "inputnode.input_hr_mask")
 
         if self.m_do_nlm_denoising:
@@ -417,25 +441,21 @@ class AnatomicalPipeline:
 
         # Copy and rename the generated "graph.png" image
         src = os.path.join(self.wf.base_dir, self.wf.name, 'graph.png')
+
+        # String formatting for saving
+        subject_str = f"{self.subject}"
+        dst_base = os.path.join(self.output_dir,
+                                '-'.join(["pymialsrtk", __version__]),
+                                self.subject)
+
         if self.session is not None:
-            dst = os.path.join(
-                self.output_dir,
-                '-'.join(["pymialsrtk", __version__]),
-                self.subject,
-                self.session,
-                'figures',
-                (f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_'
-                 'desc-processing_graph.png')
-            )
-        else:
-            dst = os.path.join(
-                    self.output_dir,
-                    '-'.join(["pymialsrtk", __version__]),
-                    self.subject,
-                    'figures',
-                    (f'{self.subject}_rec-SR_id-{self.sr_id}_'
-                     'desc-processing_graph.png')
-            )
+            subject_str += f"_{self.session}"
+            dst_base = os.path.join(dst_base, self.session)
+
+        dst = os.path.join(dst_base, 'figures',
+                           f'{subject_str}_rec-SR_id-{self.sr_id}_' +
+                           'desc-processing_graph.png')
+
         # Create the figures/ and parent directories if they do not exist
         figures_dir = os.path.dirname(dst)
         os.makedirs(figures_dir, exist_ok=True)
@@ -466,23 +486,8 @@ class AnatomicalPipeline:
 
         # Copy and rename the workflow execution log
         src = os.path.join(self.wf.base_dir, "pypeline.log")
-        if self.session is not None:
-            dst = os.path.join(
-                    self.output_dir,
-                    '-'.join(["pymialsrtk", __version__]),
-                    self.subject,
-                    self.session,
-                    'logs',
-                    f'{self.subject}_{self.session}_rec-SR_id-{self.sr_id}_log.txt'
-            )
-        else:
-            dst = os.path.join(
-                    self.output_dir,
-                    '-'.join(["pymialsrtk", __version__]),
-                    self.subject,
-                    'logs',
-                    f'{self.subject}_rec-SR_id-{self.sr_id}_log.txt'
-            )
+        dst = os.path.join(dst_base, 'logs',
+                           f'{subject_str}_rec-SR_id-{self.sr_id}_log.txt')
         # Create the logs/ and parent directories if they do not exist
         logs_dir = os.path.dirname(dst)
         os.makedirs(logs_dir, exist_ok=True)
@@ -517,17 +522,16 @@ class AnatomicalPipeline:
     def create_subject_report(self):
         """Create the HTML report"""
         # Set main subject derivatives directory
-        if self.session is None:
-            sub_ses = self.subject
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject)
-        else:
-            sub_ses = f'{self.subject}_{self.session}'
-            final_res_dir = os.path.join(self.output_dir,
-                                         '-'.join(["pymialsrtk", __version__]),
-                                         self.subject,
-                                         self.session)
+        sub_ses = self.subject
+        sub_path = self.subject
+        if self.session is not None:
+            sub_ses += f'_{self.session}'
+            sub_path = os.path.join(self.subject, self.session)
+
+        final_res_dir = os.path.join(self.output_dir,
+                                     '-'.join(["pymialsrtk", __version__]),
+                                     sub_path)
+
         # Get the HTML report template
         path = pkg_resources.resource_filename(
             'pymialsrtk',
