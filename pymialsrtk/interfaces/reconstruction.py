@@ -237,7 +237,9 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     output_sr_png = File(desc='Output super-resolution PNG image file for quality assessment')
     output_json_path = File(desc='Output json file where super-resolution reconstruction parameters '
                                  'are summarized')
-    output_TV_parameters = traits.Dict(desc='Dictionary of all TV parameters used')
+    output_TV_parameters = traits.Dict(
+        desc='Dictionary of all TV parameters used'
+    )
 
 
 class MialsrtkTVSuperResolution(BaseInterface):

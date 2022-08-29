@@ -265,8 +265,8 @@ class AnatomicalPipeline:
         # if any of the TV parameters is a list of more than one item,
         # we are in a multi_parameters running mode
         self._m_multi_parameters = len([value
-                                       for value in list(self.paramTV.values())
-                                       if (isinstance(value, list)
+                                        for value in list(self.paramTV.values())
+                                        if (isinstance(value, list)
                                             and len(value) > 1)]) > 0
 
     def create_workflow(self):
@@ -414,20 +414,22 @@ class AnatomicalPipeline:
 
         if self.m_do_srr_assessment:
 
-            self.wf.connect(reconstruction_stage, "outputnode.output_TV_parameters",
-                            srr_assessment_stage, "inputnode.input_TV_parameters")
+            self.wf.connect(reconstruction_stage,
+                            "outputnode.output_TV_parameters",
+                            srr_assessment_stage,
+                            "inputnode.input_TV_parameters")
 
             self.wf.connect(postprocessing_stage, "outputnode.output_image",
                             srr_assessment_stage, "inputnode.input_image")
 
             self.wf.connect(input_stage, "outputnode.hr_reference_image",
-                            srr_assessment_stage, "inputnode.input_reference_image")
+                            srr_assessment_stage, "inputnode.input_ref_image")
 
             self.wf.connect(input_stage, "outputnode.hr_reference_mask",
-                            srr_assessment_stage, "inputnode.input_reference_mask")
+                            srr_assessment_stage, "inputnode.input_ref_mask")
 
             self.wf.connect(input_stage, "outputnode.hr_reference_labels",
-                            srr_assessment_stage, "inputnode.input_reference_label")
+                            srr_assessment_stage, "inputnode.input_ref_label")
 
             self.wf.connect(srr_assessment_stage, "outputnode.output_metrics",
                             output_mgmt_stage, "inputnode.input_metrics")

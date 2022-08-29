@@ -56,9 +56,9 @@ def create_sr_assessment_stage(
     # Set up a node to define all inputs required for the
     # preprocessing workflow
     input_fields = [
-        'input_reference_image',
-        'input_reference_mask',
-        'input_reference_labelmap',
+        'input_ref_image',
+        'input_ref_mask',
+        'input_ref_labelmap',
         'input_image',
         'input_TV_parameters'
     ]
@@ -97,10 +97,10 @@ def create_sr_assessment_stage(
 
     sr_assessment_stage.connect(inputnode, 'input_image',
                                 quality_metrics, 'input_image')
-    sr_assessment_stage.connect(inputnode, "input_reference_image",
-                                quality_metrics, 'input_reference_image')
-    sr_assessment_stage.connect(inputnode, "input_reference_mask",
-                                quality_metrics, 'input_reference_mask')
+    sr_assessment_stage.connect(inputnode, "input_ref_image",
+                                quality_metrics, 'input_ref_image')
+    sr_assessment_stage.connect(inputnode, "input_ref_mask",
+                                quality_metrics, 'input_ref_mask')
 
     sr_assessment_stage.connect(inputnode, "input_TV_parameters",
                                 quality_metrics, 'input_TV_parameters')
@@ -109,8 +109,10 @@ def create_sr_assessment_stage(
                                 z_debug, 'output_warped_image')
 
     if p_multi_parameters:
-        sr_assessment_stage.connect(quality_metrics, 'output_metrics',
-                                    concatenate_quality_metrics, 'input_metrics')
+        sr_assessment_stage.connect(quality_metrics,
+                                    'output_metrics',
+                                    concatenate_quality_metrics,
+                                    'input_metrics')
 
         sr_assessment_stage.connect(concatenate_quality_metrics, 'output_csv',
                                     outputnode, 'output_metrics')

@@ -405,15 +405,15 @@ class QualityMetricsInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the QualityMetrics interface."""
 
     input_image = File(desc='Input image filename', mandatory=True)
-    input_reference_image = File(
+    input_ref_image = File(
         desc='Input reference image filename',
         mandatory=True
     )
-    input_reference_mask = File(
+    input_ref_mask = File(
         desc='Input reference mask filename',
         mandatory=True
     )
-    input_reference_labelmap = File(
+    input_ref_labelmap = File(
         desc='Input reference labelmap filename',
         mandatory=False
     )
@@ -537,8 +537,8 @@ class QualityMetrics(BaseInterface):
         try:
             self._compute(
                 self.inputs.input_image,
-                self.inputs.input_reference_image,
-                self.inputs.input_reference_mask
+                self.inputs.input_ref_image,
+                self.inputs.input_ref_mask
             )
         except Exception as e:
             print('Failed')
@@ -547,8 +547,10 @@ class QualityMetrics(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_metrics'] = self._gen_filename('output_metrics')
-        outputs['output_warped_image'] = self._gen_filename('output_warped_image')
+        outputs['output_metrics'] = \
+            self._gen_filename('output_metrics')
+        outputs['output_warped_image'] = \
+            self._gen_filename('output_warped_image')
         return outputs
 
 
@@ -591,9 +593,14 @@ class ConcatenateQualityMetrics(BaseInterface):
             #
             # num_configs = len(self.inputs.input_metrics)
 
-            # res.insert(loc=0, column='stacks', value= [str_stacks for i in range(num_configs)])
+            # res.insert(
+            #     loc=0,
+            #     column='stacks',
+            #     value= [str_stacks for i in range(num_configs)]
+            # )
             # res.insert(loc=0, column='num_stacks', value= \
-            # [len(self.inputs.input_stacks_order) for i in range(num_configs)])
+            # [len(self.inputs.input_stacks_order) \
+            # for i in range(num_configs)])
             # res.insert(loc=0, column='sr_id', value=\
             # [self.inputs.sr_id for i in range(num_configs)])
 
