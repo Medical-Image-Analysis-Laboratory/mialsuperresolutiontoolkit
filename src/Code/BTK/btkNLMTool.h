@@ -244,6 +244,13 @@ class NLMTool
    */
   bool CheckSpeed(typename itkTImage::IndexType p, typename itkTImage::IndexType q);
 
+  bool SetVerbose(bool verbose){
+    this -> m_verbose = verbose;
+  }
+
+  bool GetVerbose(){
+      return this -> m_verbose;
+  }
 protected:
 
   itkTPointer m_inputImage;/**< Pointer to input Image */
@@ -274,6 +281,7 @@ private :
   float m_lowerVarianceThreshold;/**< todo */
   bool  m_useTheReferenceImage;/**< todo */
   bool  m_useGlobalSmoothing;/**< todo */
+  bool  m_verbose;
 };
 }
 

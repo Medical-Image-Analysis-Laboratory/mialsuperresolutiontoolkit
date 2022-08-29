@@ -53,7 +53,7 @@ class BtkNLMDenoisingInputSpec(BaseInterfaceInputSpec):
     weight = traits.Float(0.1,
                           desc='NLM smoothing parameter (high beta produces smoother result)',
                           usedefault=True)
-
+    verbose = traits.Bool(desc="Enable verbosity")
 
 class BtkNLMDenoisingOutputSpec(TraitedSpec):
     """Class used to represent outputs of the BtkNLMDenoising interface."""
@@ -92,7 +92,7 @@ class BtkNLMDenoising(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime, verbose=False):
+    def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_file = self._gen_filename('out_file')
 
@@ -100,7 +100,8 @@ class BtkNLMDenoising(BaseInterface):
             cmd = 'btkNLMDenoising -i "{}" -m "{}" -o "{}" -b {}'.format(self.inputs.in_file, self.inputs.in_mask, out_file, self.inputs.weight)
         else:
             cmd = 'btkNLMDenoising -i "{}" -o "{}" -b {}'.format(self.inputs.in_file, out_file, self.inputs.weight)
-        if verbose:
+        if self.inputs.verbose:
+            cmd += ' --verbose'
             print('... cmd: {}'.format(cmd))
         run(cmd, env={})
         return runtime
@@ -123,7 +124,7 @@ class MialsrtkCorrectSliceIntensityInputSpec(BaseInterfaceInputSpec):
     out_postfix = traits.Str("",
                              desc='Suffix to be added to input image file to construct corrected output filename',
                              usedefault=True)
-
+    verbose = traits.Bool(desc="Enable verbosity")
 
 class MialsrtkCorrectSliceIntensityOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkCorrectSliceIntensity interface."""
@@ -155,15 +156,17 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime, verbose=False):
+    def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_file = self._gen_filename('out_file')
 
         cmd = 'mialsrtkCorrectSliceIntensity "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_file)
-        if verbose:
+        if self.inputs.verbose:
+            cmd += " verbose"
             print('... cmd: {}'.format(cmd))
         env_cpp = os.environ.copy()
         env_cpp['LD_PRELOAD'] = ""
+        print(cmd)
         run(cmd, env=env_cpp)
 
         return runtime
@@ -188,7 +191,7 @@ class MialsrtkSliceBySliceN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec)
     out_fld_postfix = traits.Str("_n4bias",
                                  desc='Suffix to be added to input image filename to construct output bias field filename',
                                  usedefault=True)
-
+    verbose = traits.Bool(desc="Enable verbosity")
 
 class MialsrtkSliceBySliceN4BiasFieldCorrectionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkSliceBySliceN4BiasFieldCorrection interface."""
@@ -232,7 +235,7 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime, verbose=False):
+    def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_im_file = self._gen_filename('out_im_file')
         out_fld_file = self._gen_filename('out_fld_file')
@@ -240,7 +243,8 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
         cmd = 'mialsrtkSliceBySliceN4BiasFieldCorrection "{}" "{}" "{}" "{}"'.format(self.inputs.in_file,
                                                                                      self.inputs.in_mask,
                                                                                      out_im_file, out_fld_file)
-        if verbose:
+        if self.inputs.verbose:
+            cmd += ' verbose'
             print('... cmd: {}'.format(cmd))
         run(cmd, env={})
 
@@ -265,6 +269,7 @@ class MialsrtkSliceBySliceCorrectBiasFieldInputSpec(BaseInterfaceInputSpec):
     out_im_postfix = traits.Str("_bcorr",
                                 desc='Suffix to be added to bias field corrected `in_file`',
                                 usedefault=True)
+    verbose = traits.Bool(desc="Enable verbosity")
 
 
 class MialsrtkSliceBySliceCorrectBiasFieldOutputSpec(TraitedSpec):
@@ -297,12 +302,12 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime, verbose=False):
+    def _run_interface(self, runtime):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_im_file = self._gen_filename('out_im_file')
 
         cmd = 'mialsrtkSliceBySliceCorrectBiasField "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, self.inputs.in_field, out_im_file)
-        if verbose:
+        if self.inputs.verbose:
             cmd += ' verbose'
             print('... cmd: {}'.format(cmd))
         run(cmd, env={})
@@ -325,6 +330,7 @@ class MialsrtkIntensityStandardizationInputSpec(BaseInterfaceInputSpec):
     in_max = traits.Float(desc='Maximal intensity', usedefault=False)
     stacks_order = traits.List(desc='Order of images index. To ensure images are processed with their correct corresponding mask',
                                mandatory=False) # ToDo: Can be removed -> Also in pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline !!!
+    verbose = traits.Bool(desc="Enable verbosity")
 
 
 class MialsrtkIntensityStandardizationOutputSpec(TraitedSpec):
@@ -350,7 +356,6 @@ class MialsrtkIntensityStandardization(BaseInterface):
     input_spec = MialsrtkIntensityStandardizationInputSpec
     output_spec = MialsrtkIntensityStandardizationOutputSpec
 
-
     def _gen_filename(self, orig, name):
         if name == 'output_images':
             _, name, ext = split_filename(orig)
@@ -358,7 +363,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime, verbose=False):
+    def _run_interface(self, runtime):
 
         cmd = 'mialsrtkIntensityStandardization'
         for input_image in self.inputs.input_images:
@@ -368,7 +373,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
         if self.inputs.in_max:
             cmd = cmd + ' --max "{}"'.format(self.inputs.in_max)
 
-        if verbose:
+        if self.inputs.verbose:
             cmd = cmd + ' --verbose'
             print('... cmd: {}'.format(cmd))
         run(cmd, env={})
@@ -391,7 +396,7 @@ class MialsrtkHistogramNormalizationInputSpec(BaseInterfaceInputSpec):
     out_postfix = traits.Str("_histnorm",
                              desc='Suffix to be added to normalized input image filenames to construct ouptut normalized image filenames',
                              usedefault=True)
-
+    verbose = traits.Bool(desc="Enable verbosity")
 
 class MialsrtkHistogramNormalizationOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkHistogramNormalization interface."""
@@ -439,8 +444,9 @@ class MialsrtkHistogramNormalization(BaseInterface):
         else:
             for in_file in self.inputs.input_images:
                 out_file = self._gen_filename(in_file, 'output_images')
-                cmd = cmd + ' -i "{}" -o "{}"" '.format(in_file, out_file)
-        if verbose:
+                cmd = cmd + ' -i "{}" -o "{}" '.format(in_file, out_file)
+        if self.inputs.verbose:
+            cmd += ' -v'
             print('... cmd: {}'.format(cmd))
         run(cmd, env={})
 
@@ -462,6 +468,7 @@ class MialsrtkMaskImageInputSpec(BaseInterfaceInputSpec):
     in_file = File(desc='Input image filename to be masked',mandatory=True)
     in_mask = File(desc='Input mask filename',mandatory=True)
     out_im_postfix = traits.Str("", desc='Suffix to be added to masked in_file', usedefault=True)
+    verbose = traits.Bool(desc="Enable verbosity")
 
 
 class MialsrtkMaskImageOutputSpec(TraitedSpec):
@@ -494,11 +501,11 @@ class MialsrtkMaskImage(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime, verbose=False):
+    def _run_interface(self, runtime):
         out_im_file = self._gen_filename('out_im_file')
 
         cmd = 'mialsrtkMaskImage -i "{}" -m "{}" -o "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file)
-        if verbose:
+        if self.inputs.verbose:
             cmd += ' --verbose'
             print('... cmd: {}'.format(cmd))
         run(cmd, env={})
@@ -576,7 +583,7 @@ class StacksOrderingInputSpec(BaseInterfaceInputSpec):
 
     input_masks = InputMultiPath(File(mandatory=True),
                                  desc='Input brain masks on which motion is computed')
-
+    verbose = traits.Bool(desc="Enable verbosity")
 
 class StacksOrderingOutputSpec(TraitedSpec):
     """Class used to represent outputs of the StacksOrdering interface."""
@@ -628,7 +635,7 @@ class StacksOrdering(BaseInterface):
         outputs['motion_tsv'] = os.path.abspath('motion_index_QC.tsv')
         return outputs
 
-    def _compute_motion_index(self, in_file, verbose=False):
+    def _compute_motion_index(self, in_file):
         """Function to compute the motion index.
 
         The motion index is computed from the inter-slice displacement of
@@ -689,10 +696,10 @@ class StacksOrdering(BaseInterface):
 
         return score, prop_of_nans, centroid_coord[:, 0], centroid_coord[:, 1]
 
-    def _create_report_image(self, score, prop_of_nans, centroid_coordx, centroid_coordy, verbose=False):
+    def _create_report_image(self, score, prop_of_nans, centroid_coordx, centroid_coordy):
         # Output report image basename
         image_basename = 'motion_index_QC'
-        if verbose:
+        if self.inputs.verbose:
             print("\t>> Create report image...")
         # Visualization setup
         matplotlib.use('agg')
@@ -707,7 +714,7 @@ class StacksOrdering(BaseInterface):
             mean_centroid_coordy[f] = np.nanmean(centroid_coordy[f])
 
         # Format data and create a Pandas DataFrame
-        if verbose:
+        if self.inputs.verbose:
             print("\t\t\t - Format data...")
         df_files = []
         df_slices = []
@@ -738,7 +745,7 @@ class StacksOrdering(BaseInterface):
                     df_centroid_displ.append(np.nan)
 
         # Create a dataframe to facilitate handling with the results
-        if verbose:
+        if self.inputs.verbose:
             print("\t\t\t - Create DataFrame...")
         df = pd.DataFrame(
             {
@@ -755,14 +762,14 @@ class StacksOrdering(BaseInterface):
 
         # Save the results in a TSV file
         tsv_file = os.path.abspath('motion_index_QC.tsv')
-        if verbose:
+        if self.inputs.verbose:
             print(f"\t\t\t - Save motion results to {tsv_file}...")
         df.to_csv(tsv_file, sep='\t')
 
         # Make multiple figures with seaborn,
         # Saved in temporary png image and
         # combined in a final report image
-        if verbose:
+        if self.inputs.verbose:
             print("\t\t\t - Create figures...")
 
         # Show the zero-centered positions of the centroids
@@ -773,7 +780,7 @@ class StacksOrdering(BaseInterface):
         )
         # Save the temporary report image
         image_filename = os.path.abspath(image_basename + '_0.png')
-        if verbose:
+        if self.inputs.verbose:
             print(f'\t\t\t - Save report image 0 as {image_filename}...')
         sf0.savefig(image_filename, dpi=150)
         plt.close(sf0.fig)
@@ -790,7 +797,7 @@ class StacksOrdering(BaseInterface):
         sf1.fig.set_size_inches(6, 2)
         # Save the temporary report image
         image_filename = os.path.abspath(image_basename + '_1.png')
-        if verbose:
+        if self.inputs.verbose:
             print(f'\t\t\t - Save report image 1 as {image_filename}...')
         sf1.savefig(image_filename, dpi=150)
         plt.close(sf1.fig)
@@ -808,7 +815,7 @@ class StacksOrdering(BaseInterface):
         sf2.fig.set_size_inches(6, 2)
         # Save the temporary report image
         image_filename = os.path.abspath(image_basename + '_2.png')
-        if verbose:
+        if self.inputs.verbose:
             print(f'\t\t\t - Save report image 2 as {image_filename}...')
         sf2.savefig(image_filename, dpi=150)
         plt.close(sf2.fig)
@@ -826,7 +833,7 @@ class StacksOrdering(BaseInterface):
         sf3.fig.set_size_inches(6, 2)
         # Save the temporary report image
         image_filename = os.path.abspath(image_basename + '_3.png')
-        if verbose:
+        if self.inputs.verbose:
             print(f'\t\t\t - Save report image 3 as {image_filename}...')
         sf3.savefig(image_filename, dpi=150)
         plt.close(sf3.fig)
@@ -861,11 +868,11 @@ class StacksOrdering(BaseInterface):
 
         # Save the final report image
         image_filename = os.path.abspath('motion_index_QC.png')
-        if verbose:
+        if self.inputs.verbose:
             print(f'\t\t\t - Save final report image as {image_filename}...')
         plt.savefig(image_filename, dpi=150)
 
-    def _compute_stack_order(self, verbose=False):
+    def _compute_stack_order(self):
         """Function to compute the stacks order.
 
         The motion index is computed for each mask.
@@ -882,10 +889,13 @@ class StacksOrdering(BaseInterface):
         centroid_coordy = {}
 
         for f in self.inputs.input_masks:
-            score[f], prop_of_nans[f], centroid_coordx[f], centroid_coordy[f] = self._compute_motion_index(f, verbose)
+            score[f], prop_of_nans[f], centroid_coordx[f], \
+                centroid_coordy[f] = self._compute_motion_index(f)
             motion_ind.append(score[f])
 
-        self._create_report_image(score, prop_of_nans, centroid_coordx, centroid_coordy, verbose)
+        self._create_report_image(score, prop_of_nans,
+                                  centroid_coordx, centroid_coordy
+                                  )
 
         vp_defined = -1 not in [f.find('vp') for f in self.inputs.input_masks]
         if vp_defined:
@@ -937,8 +947,7 @@ class BrainExtractionInputSpec(BaseInterfaceInputSpec):
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
     threshold_seg = traits.Float(0.5, desc='Threshold for cutoff probability (0.5 by default)')
     out_postfix = traits.Str("_brainMask", desc='Suffix of the automatically generated mask', usedefault=True)
-
-
+    
 class BrainExtractionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the BrainExtraction interface."""
 

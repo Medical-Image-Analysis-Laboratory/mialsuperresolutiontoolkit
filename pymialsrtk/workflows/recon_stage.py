@@ -22,6 +22,7 @@ def create_recon_stage(p_paramTV,
                        p_do_refine_hr_mask=False,
                        p_skip_svr=False,
                        p_sub_ses='',
+                       p_verbose=False,
                        name="recon_stage"):
     """Create a super-resolution reconstruction workflow
     Parameters
@@ -96,6 +97,7 @@ def create_recon_stage(p_paramTV,
         name='srtkImageReconstruction')
     srtkImageReconstruction.inputs.sub_ses = p_sub_ses
     srtkImageReconstruction.inputs.no_reg = p_skip_svr
+    srtkImageReconstruction.inputs.verbose = p_verbose
 
     if p_do_nlm_denoising:
         # srtkMaskImage01_nlm = pe.MapNode(
@@ -107,6 +109,7 @@ def create_recon_stage(p_paramTV,
             interface=reconstruction.MialsrtkSDIComputation(),
             name='sdiComputation')
         sdiComputation.inputs.sub_ses = p_sub_ses
+        sdiComputation.inputs.verbose = p_verbose
 
     srtkTVSuperResolution = pe.Node(
         interface=reconstruction.MialsrtkTVSuperResolution(),
@@ -121,11 +124,13 @@ def create_recon_stage(p_paramTV,
     srtkTVSuperResolution.inputs.in_gamma = gamma
     srtkTVSuperResolution.inputs.in_deltat = deltatTV
     srtkTVSuperResolution.inputs.in_lambda = lambdaTV
+    srtkTVSuperResolution.inputs.verbose = p_verbose
 
     if p_do_refine_hr_mask:
         srtkHRMask = pe.Node(
             interface=postprocess.MialsrtkRefineHRMaskByIntersection(),
             name='srtkHRMask')
+        srtkHRMask.inputs.verbose = p_verbose
     else:
         srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(),
                              name='srtkHRMask')

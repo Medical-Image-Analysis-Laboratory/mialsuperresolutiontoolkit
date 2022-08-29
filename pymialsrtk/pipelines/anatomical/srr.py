@@ -179,9 +179,10 @@ class AnatomicalPipeline:
 
     def __init__(
         self, bids_dir, output_dir, subject, p_stacks=None, sr_id=1,
-        session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
-        p_dict_custom_interfaces=None,
-        openmp_number_of_cores=None, nipype_number_of_cores=None
+        session=None, paramTV=None, p_masks_derivatives_dir=None,
+        p_masks_desc=None, p_dict_custom_interfaces=None,
+        p_verbose=None, openmp_number_of_cores=None,
+        nipype_number_of_cores=None
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -192,6 +193,7 @@ class AnatomicalPipeline:
         self.sr_id = sr_id
         self.session = session
         self.m_stacks = p_stacks
+        self.m_verbose = p_verbose
 
         self.openmp_number_of_cores = openmp_number_of_cores
         self.nipype_number_of_cores = nipype_number_of_cores
@@ -297,10 +299,13 @@ class AnatomicalPipeline:
                         self.m_masks_desc,
                         self.m_masks_derivatives_dir,
                         self.m_skip_stacks_ordering,
-                        self.m_stacks)
+                        self.m_stacks,
+                        self.m_verbose)
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
-            p_do_nlm_denoising=self.m_do_nlm_denoising)
+            p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_verbose=self.m_verbose
+            )
 
         reconstruction_stage = recon_stage.create_recon_stage(
             p_paramTV=self.paramTV,
@@ -308,9 +313,11 @@ class AnatomicalPipeline:
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
-            p_sub_ses=sub_ses)
+            p_sub_ses=sub_ses,
+            p_verbose=self.m_verbose)
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
+            p_verbose=self.m_verbose,
             name='postprocessing_stage')
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(

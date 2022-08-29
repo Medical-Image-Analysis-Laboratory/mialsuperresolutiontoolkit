@@ -305,10 +305,13 @@ parser.add_argument('-m', '--mask', required=True,
 parser.add_argument('-o', '--output', required=True,
                     action='append', help='Output normalized image(s)')
 
+parser.add_argument('-v', '--verbose', default=False,
+                    action='store_true', help='Enable verbosity')
+
 #TODO: add parser for verbose
 args = parser.parse_args()
 
-verbose = False
+verbose = args.verbose
 if verbose:
     print(len(args.input) > 0)
     print(len(args.mask) > 0)

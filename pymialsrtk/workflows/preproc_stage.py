@@ -19,7 +19,11 @@ import pymialsrtk.interfaces.utils as utils
 from nipype import config
 
 
-def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
+def create_preproc_stage(
+    p_do_nlm_denoising=False,
+    p_verbose=False,
+    name="preproc_stage"
+    ):
     """Create a SR preprocessing workflow
     Parameters
     ----------
@@ -69,6 +73,7 @@ def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
     nlmDenoise = pe.MapNode(interface=preprocess.BtkNLMDenoising(),
                             name='nlmDenoise',
                             iterfield=['in_file', 'in_mask'])
+    nlmDenoise.inputs.verbose = p_verbose
 
     # Sans le mask le premier correct slice intensity...
     srtkCorrectSliceIntensity01_nlm = pe.MapNode(
@@ -76,68 +81,82 @@ def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
         name='srtkCorrectSliceIntensity01_nlm',
         iterfield=['in_file', 'in_mask'])
     srtkCorrectSliceIntensity01_nlm.inputs.out_postfix = '_uni'
+    srtkCorrectSliceIntensity01_nlm.inputs.verbose = p_verbose
 
     srtkCorrectSliceIntensity01 = pe.MapNode(
         interface=preprocess.MialsrtkCorrectSliceIntensity(),
         name='srtkCorrectSliceIntensity01',
         iterfield=['in_file', 'in_mask'])
     srtkCorrectSliceIntensity01.inputs.out_postfix = '_uni'
+    srtkCorrectSliceIntensity01.inputs.verbose = p_verbose
 
     srtkSliceBySliceN4BiasFieldCorrection = pe.MapNode(
         interface=preprocess.MialsrtkSliceBySliceN4BiasFieldCorrection(),
         name='srtkSliceBySliceN4BiasFieldCorrection',
         iterfield=['in_file', 'in_mask'])
+    srtkSliceBySliceN4BiasFieldCorrection.inputs.verbose = p_verbose
 
     srtkSliceBySliceCorrectBiasField = pe.MapNode(
         interface=preprocess.MialsrtkSliceBySliceCorrectBiasField(),
         name='srtkSliceBySliceCorrectBiasField',
         iterfield=['in_file', 'in_mask', 'in_field'])
+    srtkSliceBySliceCorrectBiasField.inputs.verbose = p_verbose
 
     if p_do_nlm_denoising:
         srtkCorrectSliceIntensity02_nlm = pe.MapNode(
             interface=preprocess.MialsrtkCorrectSliceIntensity(),
             name='srtkCorrectSliceIntensity02_nlm',
             iterfield=['in_file', 'in_mask'])
+        srtkCorrectSliceIntensity02_nlm.inputs.verbose = p_verbose
 
         srtkIntensityStandardization01_nlm = pe.Node(
             interface=preprocess.MialsrtkIntensityStandardization(),
             name='srtkIntensityStandardization01_nlm')
+        srtkIntensityStandardization01_nlm.inputs.verbose = p_verbose
 
         srtkHistogramNormalization_nlm = pe.Node(
             interface=preprocess.MialsrtkHistogramNormalization(),
             name='srtkHistogramNormalization_nlm')
+        srtkHistogramNormalization_nlm.inputs.verbose = p_verbose
 
         srtkIntensityStandardization02_nlm = pe.Node(
             interface=preprocess.MialsrtkIntensityStandardization(),
             name='srtkIntensityStandardization02_nlm')
+        srtkIntensityStandardization02_nlm.inputs.verbose = p_verbose
 
     # 4-modules sequence to be defined as a stage.
     srtkCorrectSliceIntensity02 = pe.MapNode(
         interface=preprocess.MialsrtkCorrectSliceIntensity(),
         name='srtkCorrectSliceIntensity02',
         iterfield=['in_file', 'in_mask'])
+    srtkCorrectSliceIntensity02.inputs.verbose = p_verbose
 
     srtkIntensityStandardization01 = pe.Node(
         interface=preprocess.MialsrtkIntensityStandardization(),
         name='srtkIntensityStandardization01')
+    srtkIntensityStandardization01.inputs.verbose = p_verbose
 
     srtkHistogramNormalization = pe.Node(
         interface=preprocess.MialsrtkHistogramNormalization(),
         name='srtkHistogramNormalization')
+    srtkHistogramNormalization.inputs.verbose = p_verbose
 
     srtkIntensityStandardization02 = pe.Node(
         interface=preprocess.MialsrtkIntensityStandardization(),
         name='srtkIntensityStandardization02')
+    srtkIntensityStandardization02.inputs.verbose = p_verbose
 
     srtkMaskImage01 = pe.MapNode(interface=preprocess.MialsrtkMaskImage(),
                                  name='srtkMaskImage01',
                                  iterfield=['in_file', 'in_mask'])
+    srtkMaskImage01.inputs.verbose = p_verbose
 
     if p_do_nlm_denoising:
         srtkMaskImage01_nlm = pe.MapNode(
             interface=preprocess.MialsrtkMaskImage(),
             name='srtkMaskImage01_nlm',
             iterfield=['in_file', 'in_mask'])
+        srtkMaskImage01_nlm.inputs.verbose = p_verbose
 
     preproc_stage.connect(inputnode, 'input_images', reduceFOV, 'input_image')
     preproc_stage.connect(inputnode, 'input_masks', reduceFOV, 'input_mask')

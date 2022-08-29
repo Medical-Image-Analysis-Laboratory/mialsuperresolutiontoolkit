@@ -144,6 +144,7 @@ def main(bids_dir, output_dir,
          masks_derivatives_dir='',
          masks_desc=None,
          dict_custom_interfaces=None,
+         verbose=None,
          nipype_number_of_cores=1,
          openmp_number_of_cores=1,
          memory=0):
@@ -219,6 +220,7 @@ def main(bids_dir, output_dir,
                                   masks_derivatives_dir,
                                   masks_desc,
                                   p_dict_custom_interfaces=dict_custom_interfaces,
+                                  p_verbose=verbose,
                                   openmp_number_of_cores=openmp_number_of_cores,
                                   nipype_number_of_cores=nipype_number_of_cores
                                   )
@@ -248,12 +250,9 @@ if __name__ == '__main__':
     os.environ['OMP_NUM_THREADS'] = str(openmp_nb_of_cores)
     print('INFO: Environment variable OMP_NUM_THREADS set to: {}'.format(os.environ['OMP_NUM_THREADS']))
 
-    print(args.param_file)
     with open(args.param_file, 'r') as f:
         participants_params = json.load(f)
-        print(participants_params)
-        print(participants_params.keys())
-    print()
+
 
     subjects_to_analyze = []
     # only for a subset of subjects
@@ -296,6 +295,7 @@ if __name__ == '__main__':
                            masks_derivatives_dir=args.masks_derivatives_dir,
                            masks_desc=masks_desc,
                            dict_custom_interfaces=dict_custom_interfaces,
+                           verbose=args.verbose,
                            nipype_number_of_cores=nipype_nb_of_cores,
                            openmp_number_of_cores=openmp_nb_of_cores,
                            memory=args.memory)

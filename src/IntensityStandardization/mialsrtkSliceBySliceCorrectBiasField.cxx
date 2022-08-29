@@ -44,16 +44,14 @@ int main( int argc, char * argv [] )
         return EXIT_FAILURE;
     }
     bool verbose = false;
-    if ( argc == 6 )
-    {
+    if (argc == 6){
         if (argv[5] == std::string("verbose")){
-        verbose = true;
+            verbose = true;
         }
         else{
-            std::cerr << "ERROR: Last parameter ought to be verbose" << std::endl;
-            std::cerr << "Usage: " << argv[0];
-            std::cerr << " inputImageFile inputMaskFile inputBiasFieldFile outputImageFile *verbose* ";
-            return EXIT_FAILURE;
+            throw std::invalid_argument("ERROR: Last parameter ought to be verbose \nUsage: " +
+                                        std::string(argv[0]) +
+                                        " inputImageFile inputMaskFile inputBiasFieldFile outputImageFile *verbose* ");
         }
     }
 

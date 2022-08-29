@@ -34,6 +34,7 @@ Copyright (c) 2017 Medical Image Analysis Laboratory (MIAL), Lausanne
 #include "float.h"
 #include "vnl_index_sort.h"
 #include <algorithm>
+#include <stdexcept>
 
 int main( int argc, char * argv [] )
 {
@@ -45,10 +46,16 @@ int main( int argc, char * argv [] )
         std::cerr << " inputImageFile inputMaskFile outputImageFile (verbose)";
         return EXIT_FAILURE;
     }
-    
     bool verbose = false;
-    if (argc == 4){
-        bool verbose = true;
+    if (argc == 5){
+        if (argv[4] == std::string("verbose")){
+            verbose = true;
+        }
+        else{
+            throw std::invalid_argument("ERROR: Last parameter ought to be verbose \nUsage: " +
+                                        std::string(argv[0]) +
+                                        " inputImageFile inputMaskFile outputImageFile *verbose* ");
+        }
     }
     
 

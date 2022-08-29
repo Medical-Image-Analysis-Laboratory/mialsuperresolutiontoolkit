@@ -29,7 +29,8 @@ def create_input_stage(bids_dir,
                        m_masks_derivatives_dir,
                        m_skip_stacks_ordering,
                        m_stacks,
-                       name="input_stage"
+                       verbose,
+                       name="input_stage",
                        ):
     """Create a input management workflow
     for srr pipeline
@@ -175,6 +176,7 @@ def create_input_stage(bids_dir,
             interface=IdentityInterface(fields=['stacks_order']),
             name='stackOrdering')
         stacksOrdering.inputs.stacks_order = m_stacks
+        stacksOrdering.inputs.verbose = verbose
 
     if use_manual_masks:
         if m_stacks is not None:

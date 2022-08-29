@@ -62,6 +62,7 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     no_reg = traits.Bool(default=False,
                          desc=("Skip slice-to-volume registration.")
                          )
+    verbose = traits.Bool(desc="Enable verbosity")
 
 
 class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
@@ -124,7 +125,7 @@ class MialsrtkImageReconstruction(BaseInterface):
             return os.path.abspath(output)
         return None
 
-    def _run_interface(self, runtime, verbose=False):
+    def _run_interface(self, runtime):
         params = [''.join(["--", self.inputs.in_roi])]
 
         input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
@@ -149,13 +150,13 @@ class MialsrtkImageReconstruction(BaseInterface):
 
         if self.inputs.no_reg:
             params.append("--noreg")
-        if verbose:
+        if self.inputs.verbose:
             params.append("--verbose")
 
         cmd = ["mialsrtkImageReconstruction"]
         cmd += params
 
-        if verbose:
+        if self.inputs.verbose:
             print('... cmd: {}'.format(cmd))
         cmd = ' '.join(cmd)
         run(cmd)
@@ -227,6 +228,7 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     use_manual_masks = traits.Bool(False,
                                    desc='Use masks of input files',
                                    usedefault=True)
+    verbose = traits.Bool(desc="Enable verbosity")
 
 
 class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
@@ -310,7 +312,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         return None
 
-    def _run_interface(self, runtime, verbose=False):
+    def _run_interface(self, runtime):
 
         cmd = ['mialsrtkTVSuperResolution']
 
@@ -340,7 +342,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--gamma', str(self.inputs.in_gamma)]
         cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
         cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
-        if verbose:
+        if self.inputs.verbose:
             cmd += ["--verbose"]
         cmd = ' '.join(cmd)
         run(cmd)
@@ -360,7 +362,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
-            if verbose:
+            if self.inputs.verbose:
                 print('  > Write JSON side-car...')
             json.dump(self.m_output_dict, outfile, indent=4)
 
@@ -370,7 +372,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         out_sr_png = self._gen_filename('output_sr_png')
 
         # Load the super-resolution image
-        if verbose:
+        if self.inputs.verbose:
             print(f'  > Load SR image {out_sr}...')
         img = nib.load(out_sr)
         # Get image properties
@@ -379,11 +381,11 @@ class MialsrtkTVSuperResolution(BaseInterface):
         fovs = np.array(zooms) * np.array(shapes)
         # Get middle cut
         cuts = [s // 2 for s in shapes]
-        if verbose:
+        if self.inputs.verbose:
             print(f'    Image properties: Zooms={zooms}/ Shape={shapes}/ FOV={fovs}/ middle cut={cuts}')
 
         # Crop the image if the FOV exceeds a certain value
-        def compute_axis_crop_indices(cut, fov, max_fov=120, verbose=False):
+        def compute_axis_crop_indices(cut, fov, max_fov=120):
             """Compute the cropping index in a dimension if the Field-Of-View exceeds a maximum value of 120mm by default.
 
             Parameters
@@ -411,7 +413,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         crop_start_x, crop_end_x = compute_axis_crop_indices(cuts[0], fovs[0], max_fov=120)
         crop_start_y, crop_end_y = compute_axis_crop_indices(cuts[1], fovs[1], max_fov=120)
         crop_start_z, crop_end_z = compute_axis_crop_indices(cuts[2], fovs[2], max_fov=120)
-        if verbose:
+        if self.inputs.verbose:
             print(f'  > Crop SR image at '
                 f'({crop_start_x}:{crop_end_x}, '
                 f'{crop_start_y}:{crop_end_y}, '
@@ -432,7 +434,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
             dim='auto',
             display_mode='ortho',
         )
-        if verbose:
+        if self.inputs.verbose:
             print(f'Save the PNG image cuts as {out_sr_png}')
         plt.savefig(
             out_sr_png,
@@ -474,6 +476,7 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that '
                                     'specify the order of the stacks')
+    verbose = traits.Bool(desc="Enable verbosity")
 
 
 class MialsrtkSDIComputationOutputSpec(TraitedSpec):
@@ -521,7 +524,7 @@ class MialsrtkSDIComputation(BaseInterface):
 
         return out_path
 
-    def _run_interface(self, runtime, verbose=False):
+    def _run_interface(self, runtime):
 
         # Reference image must be empty
         empty_ref_image = self.get_empty_ref_image(self.inputs.input_reference)
@@ -556,7 +559,7 @@ class MialsrtkSDIComputation(BaseInterface):
 
         cmd = ["mialsrtkSDIComputation"]
         cmd += params
-        if verbose:
+        if self.inputs.verbose:
             cmd += ["--verbose"]
             print('... cmd: {}'.format(cmd))
         cmd = ' '.join(cmd)

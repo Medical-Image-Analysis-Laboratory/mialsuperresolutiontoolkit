@@ -89,7 +89,8 @@ int main(int argc, char** argv)
     cmd.add( outputDifferenceImageArg );
     TCLAP::ValueArg< int > localArg("","local","Estimation of the smoothing parameter. 0: global, 1: local (default is 0)",false,0,"int");
     cmd.add( localArg );
-    
+    TCLAP::SwitchArg  verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
+
  
     // Parse the args.
     cmd.parse( argc, argv );
@@ -112,6 +113,7 @@ int main(int argc, char** argv)
     float lowerVarianceThreshold = lowerVarianceThresholdArg.getValue();
     std::string difference_file  = outputDifferenceImageArg.getValue();
     int localSmoothing           = localArg.getValue();
+    bool verbose                 = verboseArg.getValue();
 
     //ITK declaration
     typedef float PixelType;
@@ -136,7 +138,8 @@ int main(int argc, char** argv)
     btk::NLMTool<PixelType> myTool;
 
     myTool.SetInput(inputImage);
-
+    myTool.SetVerbose(verbose);
+    
     if (mask_file != ""){               //reading the mask image
       ReaderType::Pointer maskReader = ReaderType::New();
       maskReader->SetFileName( mask_file );

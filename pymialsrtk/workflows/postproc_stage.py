@@ -18,7 +18,10 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
 
 
-def create_postproc_stage(name="postproc_stage"):
+def create_postproc_stage(
+        p_verbose=False,
+        name="postproc_stage"
+        ):
     """Create a SR preprocessing workflow
     Parameters
     ----------
@@ -53,10 +56,12 @@ def create_postproc_stage(name="postproc_stage"):
     srtkN4BiasFieldCorrection = pe.Node(
         interface=postprocess.MialsrtkN4BiasFieldCorrection(),
         name='srtkN4BiasFieldCorrection')
+    srtkN4BiasFieldCorrection.inputs.verbose = p_verbose
 
     srtkMaskImage02 = pe.Node(
         interface=preprocess.MialsrtkMaskImage(),
         name='srtkMaskImage02')
+    srtkMaskImage02.inputs.verbose = p_verbose
 
     postproc_stage.connect(inputnode, "input_image",
                            srtkMaskImage02, "in_file")

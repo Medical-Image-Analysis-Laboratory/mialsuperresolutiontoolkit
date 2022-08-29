@@ -90,6 +90,13 @@ def get_parser():
         action="version",
         version=f"BIDS-App MIALSRTK version {__version__} (Released: {__release_date__})",
     )
+
+    p.add_argument(
+        '--verbose',
+        action='store_true',
+        default=False,
+        help="Verbose mode",
+    )
     return p
 
 

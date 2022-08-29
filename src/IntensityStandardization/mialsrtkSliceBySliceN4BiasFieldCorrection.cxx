@@ -48,7 +48,14 @@ int main(int argc, char *argv[])
     // TODO: check if content of last argument is indeed verbose
     bool verbose = false;
     if (argc == 6){
-        verbose = true;
+        if (argv[5] == std::string("verbose")){
+            verbose = true;
+        }
+        else{
+            throw std::invalid_argument("ERROR: Last parameter ought to be verbose \nUsage: " +
+                                        std::string(argv[0]) +
+                                        " inputImageFile inputMaskFile outputImageFile outputBiasFile *verbose* ");
+        }
     }
  
     const unsigned int dimension3D = 3;

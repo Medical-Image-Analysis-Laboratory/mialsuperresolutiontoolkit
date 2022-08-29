@@ -350,9 +350,9 @@ int main( int argc, char *argv[] )
 
         }
   }
-  if (verbose){
-    std::cout<<"Start rigid registration on the desired target image (#0 by default)\n";
-  }
+  
+  std::cout<<"Start rigid registration on the desired target image (#0 by default)\n";
+  
   try
     {
 
@@ -465,9 +465,7 @@ int main( int argc, char *argv[] )
 
   for(unsigned int it=1; it <= itMax; it++)
   {
-    if (verbose){
-      std::cout << "Iteration " << it << std::endl; std::cout.flush();
-    }
+    std::cout << "Iteration " << it << std::endl; std::cout.flush();
     // Start registration
 
     #pragma omp parallel for private(im) schedule(dynamic)
