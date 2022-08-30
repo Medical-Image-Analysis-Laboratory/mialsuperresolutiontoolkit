@@ -31,7 +31,7 @@ jobs:
             - /tmp/cache/docker.tar.gz
       - checkout
       - setup_remote_docker:
-          docker_layer_caching: false
+          docker_layer_caching: true 
       - run:
           name: "Load Docker image layer cache"
           no_output_timeout: 30m
@@ -78,11 +78,6 @@ jobs:
             mkdir -p /tmp/cache
             docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit \
             | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - cache/docker.tar.gz
-            - src/mialsuperresolutiontoolkit
 
   build-singularity:
     machine:
@@ -128,12 +123,6 @@ jobs:
             docker push localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
             SINGULARITY_NOHTTPS=1 singularity build /tmp/cache/mialsuperresolutiontoolkit.simg docker://localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
           no_output_timeout: 5h
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - cache/mialsuperresolutiontoolkit.simg
-      - store_artifacts:
-          path: /tmp/cache/mialsuperresolutiontoolkit.simg
 
   test-docker:
     machine:
@@ -282,16 +271,6 @@ jobs:
                 -not -name "*.txt" -not -name "*.pklz" \
                 -not -name "*.log" -not -name "*.html" \
                 -type f -delete
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - src/mialsuperresolutiontoolkit/data/test
-      - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/code
-      - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/test
-      - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/derivatives
 
   codacy-coverage-report:
     docker:
@@ -423,16 +402,6 @@ jobs:
                 -not -name "*.txt" -not -name "*.pklz" \
                 -not -name "*.log" -not -name "*.html" \
                 -type f -delete
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - src/mialsuperresolutiontoolkit/data/test
-      - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/code
-      - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/test
-      - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives
 
   test-python-install:
     parameters:
