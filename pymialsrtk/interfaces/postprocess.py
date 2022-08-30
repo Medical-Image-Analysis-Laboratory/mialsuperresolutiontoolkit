@@ -294,12 +294,14 @@ class FilenamesGeneration(BaseInterface):
                                      str(len(self.inputs.stacks_order)) +
                                      'V.txt',
                                      '_id-' + str(self.inputs.sr_id) +
-                                     '_mod-T2w_from-origin_to-SDI_mode-image_xfm.txt'))
+                                     '_mod-T2w_from-origin_to-SDI_' +
+                                     'mode-image_xfm.txt'))
         for stack in self.inputs.stacks_order:
-            self.m_substitutions.append(('_run-' + str(stack) +
-                                         '_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
+            self.m_substitutions.append(('_run-' + str(stack) + '_T2w_uni_' +
+                                         'bcorr_histnorm_LRmask.nii.gz',
                                          '_run-' + str(stack) + '_id-' + str(
-                                         self.inputs.sr_id) + '_desc-brain_mask.nii.gz'))
+                                         self.inputs.sr_id) +
+                                         '_desc-brain_mask.nii.gz'))
 
         self.m_substitutions.append(('SDI_' + self.inputs.sub_ses + '_' +
                                      str(len(self.inputs.stacks_order)) +
@@ -316,11 +318,14 @@ class FilenamesGeneration(BaseInterface):
                                      '_T2w.nii.gz'))
 
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order)) + 'V_rad1.json',
-                                    self.inputs.sub_ses + f'_{run_type}-SR' + '_id-' +
-                                     str(self.inputs.sr_id) + '_T2w.json'))
+                                     str(len(self.inputs.stacks_order))
+                                     + 'V_rad1.json',
+                                    self.inputs.sub_ses + f'_{run_type}-SR' +
+                                    '_id-' + str(self.inputs.sr_id) +
+                                     '_T2w.json'))
 
-        self.m_substitutions.append((self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
+        self.m_substitutions.append((self.inputs.sub_ses +
+                                     '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
                                      self.inputs.sub_ses + f'_{run_type}-SR' +
                                      '_id-' + str(self.inputs.sr_id) +
                                      '_mod-T2w_desc-brain_mask.nii.gz'))
@@ -336,15 +341,18 @@ class FilenamesGeneration(BaseInterface):
                                      '_' + str(len(self.inputs.stacks_order)) +
                                      'V_rad1.png',
                                      self.inputs.sub_ses + f'_{run_type}-SR' +
-                                     '_id-' + str(self.inputs.sr_id) + '_T2w.png'))
+                                     '_id-' + str(self.inputs.sr_id) +
+                                     '_T2w.png'))
 
         self.m_substitutions.append(('motion_index_QC.png',
                                      self.inputs.sub_ses + f'_{run_type}-SR' +
-                                     '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.png'))
+                                     '_id-' + str(self.inputs.sr_id) +
+                                     '_desc-motion_stats.png'))
 
         self.m_substitutions.append(('motion_index_QC.tsv',
                                      self.inputs.sub_ses + f'_{run_type}-SR' +
-                                     '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.tsv'))
+                                     '_id-' + str(self.inputs.sr_id) +
+                                     '_desc-motion_stats.tsv'))
         return runtime
 
     def _list_outputs(self):

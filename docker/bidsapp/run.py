@@ -195,17 +195,21 @@ def main(bids_dir, output_dir,
         Session ID if applicable (in the form ``ses-YY``)
 
     p_stacks : list(int)
-        List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
+        List of stack to be used in the reconstruction. The specified order is
+        kept if `skip_stacks_ordering` is True.
 
-    param_TV dict : {"deltatTV": float, "lambdaTV": float, "primal_dual_loops": int}
+    param_TV dict : {"deltatTV": float, "lambdaTV": float,
+                     "primal_dual_loops": int}
         Dictionary of Total-Variation super-resolution optimizer parameters
 
     sr_id : string
-        ID of the reconstruction useful to distinguish when multiple reconstructions
-        with different order of stacks are run on the same subject
+        ID of the reconstruction useful to distinguish when multiple
+        reconstructions with different order of stacks are run on the
+        same subject
 
     masks_derivatives_dir : string
-        directory basename in BIDS directory derivatives where to search for masks (optional)
+        directory basename in BIDS directory derivatives where to search
+        for masks (optional)
 
     masks_desc : string
         BIDS description tag of masks to use (optional)
