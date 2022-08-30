@@ -475,13 +475,14 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that '
                                     'specify the order of the stacks')
+    label_id = traits.Int(-1, mandatory=False, usedefault=True)
 
 
 class MialsrtkSDIComputationOutputSpec(TraitedSpec):
     """Class used to represent outputs of the
     MialsrtkSDIComputation interface."""
 
-    output_sdi = File(desc='Output scattered data interpolation image file')
+    output_hr = File(desc='Output scattered data interpolation image file')
 
 
 class MialsrtkSDIComputation(BaseInterface):
@@ -495,8 +496,23 @@ class MialsrtkSDIComputation(BaseInterface):
     output_spec = MialsrtkSDIComputationOutputSpec
 
     def _gen_filename(self, name):
-        if name == 'output_sdi':
-            output = ''.join([self.inputs.sub_ses, '_', '_SDI', '.nii.gz'])
+        if name == 'output_hr':
+            if self.inputs.label_id != -1:
+                output = ''.join([
+                    self.inputs.sub_ses,
+                    '_',
+                    'HR',
+                    '_',
+                    'label-'+str(self.inputs.label_id),
+                    '.nii.gz'
+                ])
+            else:
+                output = ''.join([
+                    self.inputs.sub_ses,
+                    '_',
+                    'HR',
+                    '.nii.gz'
+                ])
             return os.path.abspath(output)
 
         return None
@@ -529,12 +545,21 @@ class MialsrtkSDIComputation(BaseInterface):
         params = []
         # params.append(''.join(["--", self.inputs.in_roi]))
 
-        input_images = reorder_by_run_ids(self.inputs.input_images,
+        input_images = self.inputs.input_images
+
+        if self.inputs.label_id != -1:
+            input_images = \
+                [im for im in input_images
+                 if 'label-'+str(self.inputs.label_id)+'.nii.gz' in im]
+
+        input_images = reorder_by_run_ids(input_images,
                                           self.inputs.stacks_order)
         input_masks = reorder_by_run_ids(self.inputs.input_masks,
                                          self.inputs.stacks_order)
         input_transforms = reorder_by_run_ids(self.inputs.input_transforms,
                                               self.inputs.stacks_order)
+
+
 
         params.append("-r")
         params.append(empty_ref_image)
@@ -551,7 +576,7 @@ class MialsrtkSDIComputation(BaseInterface):
             params.append("-t")
             params.append(in_transform)
 
-        out_file = self._gen_filename('output_sdi')
+        out_file = self._gen_filename('output_hr')
         params.append("-o")
         params.append(out_file)
 
@@ -569,5 +594,5 @@ class MialsrtkSDIComputation(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_sdi'] = self._gen_filename('output_sdi')
+        outputs['output_hr'] = self._gen_filename('output_hr')
         return outputs

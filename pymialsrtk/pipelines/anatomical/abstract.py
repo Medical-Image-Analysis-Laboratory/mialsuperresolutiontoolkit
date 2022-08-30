@@ -100,7 +100,6 @@ class AbstractAnatomicalPipeline:
     # Custom interfaces options
     m_do_nlm_denoising = None
     m_skip_stacks_ordering = None
-    m_do_anat_orientation = None
 
     m_masks_derivatives_dir = None
     m_use_manual_masks = False
@@ -167,25 +166,9 @@ class AbstractAnatomicalPipeline:
                      p_dict_custom_interfaces.keys())) \
                 else False
 
-            self.m_do_anat_orientation = \
-                p_dict_custom_interfaces['do_anat_orientation'] \
-                if 'do_anat_orientation' in p_dict_custom_interfaces.keys() \
-                else False
-
         else:
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
-            self.m_do_anat_orientation = False
-
-        if self.m_do_anat_orientation:
-            if not os.path.isdir('/sta'):
-                print('A template directory must '
-                      'be specified to perform alignement.')
-                self.m_do_anat_orientation = False
-            if self.m_ga is None:
-                print('A gestational age must '
-                      'be specified to perform alignement.')
-                self.m_do_anat_orientation = False
 
         self.m_sub_ses = self.m_subject
         self.m_sub_path = self.m_subject

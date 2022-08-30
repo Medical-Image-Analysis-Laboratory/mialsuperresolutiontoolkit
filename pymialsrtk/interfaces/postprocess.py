@@ -19,6 +19,7 @@ from nipype.interfaces.base import traits, \
 from pymialsrtk.interfaces.utils import run
 import nibabel as nib
 import numpy as np
+import SimpleITK as sitk
 
 
 #######################
@@ -344,6 +345,15 @@ class FilenamesGeneration(BaseInterface):
                                      '_id-' + str(self.inputs.sr_id) +
                                      '_T2w.png'))
 
+        self.m_substitutions.append((self.inputs.sub_ses +
+                                     '_' +
+                                     'HR_labelmap.nii.gz',
+                                     self.inputs.sub_ses +
+                                     '_rec-SR' +
+                                     '_id-' +
+                                     str(self.inputs.sr_id) +
+                                     '_labels.nii.gz'))
+
         self.m_substitutions.append(('motion_index_QC.png',
                                      self.inputs.sub_ses + f'_{run_type}-SR' +
                                      '_id-' + str(self.inputs.sr_id) +
@@ -416,4 +426,72 @@ class BinarizeImage(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_srmask'] = self._gen_filename('output_srmask')
+        return outputs
+
+
+class MergeMajorityVoteInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the MergeMajorityVote interface."""
+    input_images = InputMultiPath(
+        File(),
+        desc='Inputs label-wise labelmaps to be merged',
+        mandatory=True
+    )
+
+
+class MergeMajorityVoteOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the MergeMajorityVote interface."""
+
+    output_image = File(desc='Output label map')
+
+
+class MergeMajorityVote(BaseInterface):
+    """Perform majority voting to merge a list of label-wise labelmaps.
+    """
+
+    input_spec = MergeMajorityVoteInputSpec
+    output_spec = MergeMajorityVoteOutputSpec
+
+    def _gen_filename(self):
+        _, name, ext = split_filename(self.inputs.input_images[0])
+        output = ''.join([
+            name.split('_label-')[0],
+            '_labelmap',
+            ext
+        ])
+        return os.path.abspath(output)
+
+    def _merge_maps(self, in_images):
+
+        in_images.sort()
+
+        reader = sitk.ImageFileReader()
+
+        arrays = []
+        for p in in_images:
+            reader.SetFileName(p)
+            mask_c = reader.Execute()
+            arrays.append(sitk.GetArrayFromImage(mask_c))
+
+        maps = np.stack(arrays)
+        maps = np.argmax(maps, axis=0)
+
+        maps_sitk = sitk.GetImageFromArray(maps.astype(int))
+        maps_sitk.CopyInformation(mask_c)
+
+        writer = sitk.ImageFileWriter()
+        writer.SetFileName(self._gen_filename())
+
+        writer.Execute(sitk.Cast(maps_sitk, sitk.sitkUInt8))
+
+    def _run_interface(self, runtime):
+        try:
+            self._merge_maps(self.inputs.input_images)
+        except Exception as e:
+            print('Failed merging label maps')
+            print(e)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['output_image'] = self._gen_filename()
         return outputs

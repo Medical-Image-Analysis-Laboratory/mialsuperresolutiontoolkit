@@ -74,12 +74,6 @@ RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_
     && make -j6 && make install
 
 ##############################################################
-# Make MIALSRTK happy
-##############################################################
-ENV BIN_DIR "/usr/local/bin"
-ENV PATH "${BIN_DIR}:$PATH"
-
-##############################################################
 # Python cache setup and creation of conda environment
 ##############################################################
 # Create .cache and set right permissions for generated
@@ -98,9 +92,12 @@ RUN micromamba install -v -y -n base -f /app/environment.yml
 # than "base" is not recommended:
 # https://github.com/mamba-org/micromamba-docker
 
-# Make ANTs happy
-ENV ANTSPATH="/opt/conda/bin" \
-PATH="$ANTSPATH:$PATH"
+##############################################################
+# Make MIALSRTK and ANTs happy
+##############################################################
+ENV BIN_DIR="/usr/local/bin" \
+    ANTSPATH="/opt/conda/bin" \
+    PATH="$ANTSPATH:${BIN_DIR}:$PATH"
 
 ##############################################################
 # Setup for scikit-image

@@ -94,6 +94,12 @@ def get_parser():
     )
 
     p.add_argument(
+        "--labels_derivatives_dir",
+        help="Use low-resolution labelmaps found in "
+             "``<output_dir>/<labels_derivatives_dir>/`` directory.",
+    )
+
+    p.add_argument(
         "-v",
         "--version",
         action="version",

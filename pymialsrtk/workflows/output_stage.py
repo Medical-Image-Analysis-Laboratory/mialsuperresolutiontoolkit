@@ -14,6 +14,7 @@ from nipype.interfaces.io import DataSink
 
 
 def create_srr_output_stage(p_do_nlm_denoising=False,
+                            p_do_reconstruct_labels=False,
                             p_skip_stacks_ordering=False,
                             name="srr_output_stage"):
     """Create a output management workflow for the
@@ -23,6 +24,8 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     ----------
     p_do_nlm_denoising : :obj:`bool`
         Enable non-local means denoising (default: False)
+    p_do_reconstruct_labels: :obj:`bool`
+        Enable the reconstruction of labelmaps
     p_skip_stacks_ordering :  :obj:`bool`
         Skip stacks ordering (default: False)
         If disabled, `report_image` and `motion_tsv` are not generated
@@ -90,6 +93,9 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     if p_do_nlm_denoising:
         input_fields += ['input_images_nlm']
 
+    if p_do_reconstruct_labels:
+        input_fields += ['input_labelmap']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=input_fields),
@@ -119,21 +125,12 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     srr_output_stage.connect(inputnode, "final_res_dir", datasink,
                              'base_directory')
 
-    if not p_skip_stacks_ordering:
-        srr_output_stage.connect(inputnode, "report_image",
-                                 datasink, 'figures.@stackOrderingQC')
-        srr_output_stage.connect(inputnode, "motion_tsv",
-                                 datasink, 'anat.@motionTSV')
     srr_output_stage.connect(inputnode, "input_masks",
                              datasink, 'anat.@LRmasks')
     srr_output_stage.connect(inputnode, "input_images",
                              datasink, 'anat.@LRsPreproc')
-    if p_do_nlm_denoising:
-        srr_output_stage.connect(inputnode, "input_images_nlm",
-                                 datasink, 'anat.@LRsDenoised')
     srr_output_stage.connect(inputnode, "input_transforms",
                              datasink, 'xfm.@transforms')
-
     srr_output_stage.connect(inputnode, "input_sdi",
                              datasink, 'anat.@SDI')
     srr_output_stage.connect(inputnode, "input_sr",
@@ -144,6 +141,20 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
                              datasink, 'figures.@SRpng')
     srr_output_stage.connect(inputnode, "input_hr_mask",
                              datasink, 'anat.@SRmask')
+
+    if p_do_nlm_denoising:
+        srr_output_stage.connect(inputnode, "input_images_nlm",
+                                 datasink, 'anat.@LRsDenoised')
+
+    if p_do_reconstruct_labels:
+        srr_output_stage.connect(inputnode, "input_labelmap",
+                                 datasink, 'anat.@SRlabelmap')
+
+    if not p_skip_stacks_ordering:
+        srr_output_stage.connect(inputnode, "report_image",
+                                 datasink, 'figures.@stackOrderingQC')
+        srr_output_stage.connect(inputnode, "motion_tsv",
+                                 datasink, 'anat.@motionTSV')
 
     return srr_output_stage
 
