@@ -149,21 +149,23 @@ class AbstractAnatomicalPipeline:
         # If masks directory is not specified use the
         # automated brain extraction method.
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
-        self.m_use_manual_masks = True if self.m_masks_derivatives_dir is not None else False
+        self.m_use_manual_masks = True \
+            if self.m_masks_derivatives_dir is not None else False
         self.m_masks_desc = p_masks_desc if self.m_use_manual_masks else None
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
-            self.m_do_nlm_denoising = p_dict_custom_interfaces['do_nlm_denoising']\
+            self.m_do_nlm_denoising = \
+                p_dict_custom_interfaces['do_nlm_denoising'] \
                 if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
                 else False
 
             self.m_skip_stacks_ordering =\
                 p_dict_custom_interfaces['skip_stacks_ordering']\
-                    if ((self.m_stacks is not None) and
-                        ('skip_stacks_ordering' in
-                         p_dict_custom_interfaces.keys())) \
-                    else False
+                if ((self.m_stacks is not None) and
+                    ('skip_stacks_ordering' in
+                     p_dict_custom_interfaces.keys())) \
+                else False
 
             self.m_do_anat_orientation = \
                 p_dict_custom_interfaces['do_anat_orientation'] \
@@ -225,7 +227,8 @@ class AbstractAnatomicalPipeline:
         """
 
     def run(self, memory=None, logger=None):
-        """Execute the workflow of the super-resolution reconstruction pipeline.
+        """Execute the workflow of the super-resolution
+        reconstruction pipeline.
 
         Nipype execution engine will take care of the management and
         execution of all processing steps involved in the super-resolution
@@ -245,7 +248,7 @@ class AbstractAnatomicalPipeline:
             iflogger = nipype_logging.getLogger('nipype.interface')
         iflogger.info("**** Workflow graph creation ****")
         self.m_wf.write_graph(dotfilename='graph.dot', graph2use='colored',
-                            format='png', simple_form=True)
+                              format='png', simple_form=True)
 
         # Copy and rename the generated "graph.png" image
         src = os.path.join(self.m_wf.base_dir, self.m_wf.name, 'graph.png')

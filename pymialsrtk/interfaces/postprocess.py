@@ -216,12 +216,19 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
 class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the FilenamesGeneration interface."""
 
-    sub_ses = traits.Str(mandatory=True, desc='Subject and session BIDS identifier to construct output filename.')
-    stacks_order = traits.List(mandatory=True, desc='List of stack run-id that specify the order of the stacks')
+    sub_ses = traits.Str(mandatory=True,
+                         desc='Subject and session BIDS identifier to '
+                              'construct output filename.')
+    stacks_order = traits.List(mandatory=True,
+                               desc='List of stack run-id that specify the'
+                                    ' order of the stacks')
     sr_id = traits.Int(mandatory=True, desc='Super-Resolution id')
-    use_manual_masks = traits.Bool(mandatory=True, desc='Whether masks were computed or manually performed.')
-    run_type = traits.Str(mandatory=True, 
-                          desc='Type of run: either rec (SRRecon) or pre (Preprocessing)')
+    use_manual_masks = traits.Bool(mandatory=True,
+                                   desc='Whether masks were computed or '
+                                        'manually performed.')
+    run_type = traits.Str(mandatory=True,
+                          desc='Type of run: either rec (SRRecon) '
+                               'or pre (Preprocessing)')
 
 
 class FilenamesGenerationOutputSpec(TraitedSpec):
@@ -295,14 +302,18 @@ class FilenamesGeneration(BaseInterface):
                                          self.inputs.sr_id) + '_desc-brain_mask.nii.gz'))
 
         self.m_substitutions.append(('SDI_' + self.inputs.sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order)) + 'V_rad1.nii.gz',
-                                     self.inputs.sub_ses + f'_{run_type}-SDI' + '_id-' +
-                                     str(self.inputs.sr_id) + '_T2w.nii.gz'))
+                                     str(len(self.inputs.stacks_order)) +
+                                     'V_rad1.nii.gz',
+                                     self.inputs.sub_ses + f'_{run_type}-SDI' +
+                                     '_id-' + str(self.inputs.sr_id) +
+                                     '_T2w.nii.gz'))
 
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr.nii.gz',
-                                    self.inputs.sub_ses + f'_{run_type}-SR' + '_id-' +
-                                     str(self.inputs.sr_id) + '_T2w.nii.gz'))
+                                     str(len(self.inputs.stacks_order)) +
+                                     'V_rad1_gbcorr.nii.gz',
+                                    self.inputs.sub_ses + f'_{run_type}-SR' +
+                                    '_id-' + str(self.inputs.sr_id) +
+                                     '_T2w.nii.gz'))
 
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
                                      str(len(self.inputs.stacks_order)) + 'V_rad1.json',

@@ -140,8 +140,8 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
         """
 
         self.m_wf = pe.Workflow(name=self.m_pipeline_name,
-                              base_dir=self.m_wf_base_dir
-                              )
+                                base_dir=self.m_wf_base_dir
+                                )
 
         config.update_config(
             {

@@ -57,8 +57,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         - lambdaTV : float
             Regularization weight (default is 0.75)
         - num_iterations : string
-            Number of iterations in the primal/dual loops used in the optimization
-            of the total-variation super-resolution algorithm.
+            Number of iterations in the primal/dual loops used in the
+            optimization of the total-variation super-resolution algorithm.
         - num_primal_dual_loops : string
             Number of primal/dual (inner) loops used in the optimization of the
             total-variation super-resolution algorithm.
@@ -66,8 +66,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             Number of Bregman (outer) loops used in the optimization of the
             total-variation super-resolution algorithm.
         - step_scale : string
-            Step scale parameter used in the optimization of the total-variation
-            super-resolution algorithm.
+            Step scale parameter used in the optimization of the total-
+            variation super-resolution algorithm.
         - gamma : string
             Gamma parameter used in the optimization of the total-variation
             super-resolution algorithm.
@@ -364,7 +364,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         workflow_image = os.path.join(
             '..', 'figures',
-            f'{sub_ses}_{self.run_type}-SR_id-{self.m_sr_id}_desc-processing_graph.png'
+            f'{sub_ses}_{self.run_type}-SR_id-'
+            f'{self.m_sr_id}_desc-processing_graph.png'
         )
 
         sr_png_image = os.path.join(
@@ -374,7 +375,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         motion_report_image = os.path.join(
             '..', 'figures',
-            f'{sub_ses}_{self.run_type}-SR_id-{self.m_sr_id}_desc-motion_stats.png'
+            f'{sub_ses}_{self.run_type}-SR_id-'
+            f'{self.m_sr_id}_desc-motion_stats.png'
         )
 
         log_file = os.path.join(
