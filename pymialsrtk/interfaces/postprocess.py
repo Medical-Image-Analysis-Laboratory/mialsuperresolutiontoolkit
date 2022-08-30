@@ -608,7 +608,7 @@ class ConcatenateQualityMetrics(BaseInterface):
 
     def _run_interface(self, runtime):
         try:
-            frames = [ pd.read_csv(s, index_col=False)
+            frames = [pd.read_csv(s, index_col=False)
                        for s in self.inputs.input_metrics]
 
             # if len(frames):

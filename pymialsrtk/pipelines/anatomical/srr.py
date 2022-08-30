@@ -318,9 +318,9 @@ class AnatomicalPipeline:
             # we are in a multi_parameters running mode
 
             num_parameters_multi = [value
-                                         for value in list(self.paramTV.values())
-                                         if (isinstance(value, list)
-                                             and len(value) > 1)]
+                                    for value in list(self.paramTV.values())
+                                    if (isinstance(value, list)
+                                        and len(value) > 1)]
             if not num_parameters_multi:
                 print('With do_multi_parameters interface,'
                       'at least one entry of \'paramsTV\' should'
@@ -496,7 +496,8 @@ class AnatomicalPipeline:
                             srr_assessment_stage, "inputnode.input_ref_mask")
 
             self.wf.connect(input_mgmt_stage, "outputnode.hr_reference_labels",
-                            srr_assessment_stage, "inputnode.input_ref_labelmap")
+                            srr_assessment_stage,
+                            "inputnode.input_ref_labelmap")
 
             self.wf.connect(srr_assessment_stage, "outputnode.output_metrics",
                             output_mgmt_stage, "inputnode.input_metrics")
