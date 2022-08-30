@@ -289,18 +289,17 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             name='postprocessing_stage')
 
         output_mgmt_stage = output_stage.create_srr_output_stage(
+            self.m_sub_ses,
+            self.m_sr_id,
+            self.m_run_type,
+            self.m_use_manual_masks,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_skip_stacks_ordering=self.m_skip_stacks_ordering,
             name='output_mgmt_stage'
         )
 
-        output_mgmt_stage.inputs.inputnode.sub_ses = self.m_sub_ses
-        output_mgmt_stage.inputs.inputnode.sr_id = self.m_sr_id
-        output_mgmt_stage.inputs.inputnode.use_manual_masks = \
-            self.m_use_manual_masks
         output_mgmt_stage.inputs.inputnode.final_res_dir = self.m_final_res_dir
-        output_mgmt_stage.inputs.inputnode.run_type = self.run_type
 
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
@@ -422,38 +421,38 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         # Load main data derivatives necessary for the report
         sr_nii_image = os.path.join(
             final_res_dir, 'anat',
-            f'{sub_ses}_{self.run_type}-SR_id-{self.m_sr_id}_T2w.nii.gz'
+            f'{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.nii.gz'
         )
         img = nib.load(sr_nii_image)
         sx, sy, sz = img.header.get_zooms()
 
         sr_json_metadata = os.path.join(
             final_res_dir, 'anat',
-            f'{sub_ses}_{self.run_type}-SR_id-{self.m_sr_id}_T2w.json'
+            f'{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.json'
         )
         with open(sr_json_metadata) as f:
             sr_json_metadata = json.load(f)
 
         workflow_image = os.path.join(
             '..', 'figures',
-            f'{sub_ses}_{self.run_type}-SR_id-'
+            f'{sub_ses}_{self.m_run_type}-SR_id-'
             f'{self.m_sr_id}_desc-processing_graph.png'
         )
 
         sr_png_image = os.path.join(
             '..', 'figures',
-            f'{sub_ses}_{self.run_type}-SR_id-{self.m_sr_id}_T2w.png'
+            f'{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.png'
         )
 
         motion_report_image = os.path.join(
             '..', 'figures',
-            f'{sub_ses}_{self.run_type}-SR_id-'
+            f'{sub_ses}_{self.m_run_type}-SR_id-'
             f'{self.m_sr_id}_desc-motion_stats.png'
         )
 
         log_file = os.path.join(
             '..', 'logs',
-            f'{sub_ses}_{self.run_type}-SR_id-{self.m_sr_id}_log.txt'
+            f'{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_log.txt'
         )
 
         # Create the text for {{subject}} and {{session}} fields in template

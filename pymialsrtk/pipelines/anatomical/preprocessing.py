@@ -185,16 +185,15 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
             p_do_nlm_denoising=self.m_do_nlm_denoising)
 
         prepro_mgmt_stage = create_preproc_output_stage(
+                    self.m_sub_ses,
+                    self.m_sr_id,
+                    self.m_run_type,
+                    self.m_use_manual_masks,
                     p_do_nlm_denoising=self.m_do_nlm_denoising,
                     p_do_registration=self.m_do_registration,
                     name='prepro_mgmt_stage')
 
-        prepro_mgmt_stage.inputs.inputnode.sub_ses = self.m_sub_ses
-        prepro_mgmt_stage.inputs.inputnode.sr_id = self.m_sr_id
-        prepro_mgmt_stage.inputs.inputnode.use_manual_masks = \
-            self.m_use_manual_masks
         prepro_mgmt_stage.inputs.inputnode.final_res_dir = self.m_final_res_dir
-        prepro_mgmt_stage.inputs.inputnode.run_type = self.run_type
 
         if self.m_do_registration:
             registration_stage = create_registration_stage(

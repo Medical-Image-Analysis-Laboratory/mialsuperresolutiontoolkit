@@ -13,7 +13,11 @@ import pymialsrtk.interfaces.postprocess as postprocess
 from nipype.interfaces.io import DataSink
 
 
-def create_srr_output_stage(p_do_nlm_denoising=False,
+def create_srr_output_stage(p_sub_ses,
+                            p_sr_id,
+                            p_run_type,
+                            p_use_manual_masks,
+                            p_do_nlm_denoising=False,
                             p_do_reconstruct_labels=False,
                             p_skip_stacks_ordering=False,
                             name="srr_output_stage"):
@@ -22,6 +26,14 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
 
     Parameters
     ----------
+    p_sub_ses :
+        String containing subject-session information for output formatting
+    p_sr_id :
+        ID of the current run
+    p_run_type :
+        Type of run (preprocessing/super resolution/ ...)
+    p_use_manual_masks :
+        Whether manual masks were used in the pipeline
     p_do_nlm_denoising : :obj:`bool`
         Enable non-local means denoising (default: False)
     p_do_reconstruct_labels: :obj:`bool`
@@ -34,18 +46,13 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
 
     Inputs
     ------
-    sub_ses
-        String containing subject-session information for output formatting
-    sr_id
-        ID of the current run
     stacks_order
         Order of stacks in the registration (list of integer)
     use_manual_masks
         Whether manual masks were used in the pipeline
     final_res_dir
         Output directory
-    run_type
-        Type of run (preprocessing/super resolution/ ...)
+
     input_masks
         Input mask images from the low-resolution T2w images
         (list of filenames)
@@ -81,8 +88,7 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
 
     srr_output_stage = pe.Workflow(name=name)
     # Set up a node to define all inputs required for the srr output workflow
-    input_fields = ["sub_ses", "sr_id", "stacks_order", "use_manual_masks",
-                    "final_res_dir", "run_type"]
+    input_fields = ["stacks_order", "final_res_dir"]
     input_fields += ["input_masks", "input_images", "input_transforms"]
     input_fields += ["input_sdi", "input_sr", "input_hr_mask"]
     input_fields += ["input_json_path", "input_sr_png"]
@@ -103,22 +109,18 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
 
     # Datasinker
     finalFilenamesGeneration = pe.Node(
-        interface=postprocess.FilenamesGeneration(),
+        interface=postprocess.FilenamesGeneration(
+            p_sub_ses,
+            p_sr_id,
+            p_run_type,
+            p_use_manual_masks,
+            ),
         name='filenames_gen')
 
     datasink = pe.Node(interface=DataSink(), name='data_sinker')
 
-    srr_output_stage.connect(inputnode, "sub_ses", finalFilenamesGeneration,
-                             "sub_ses")
-    srr_output_stage.connect(inputnode, "sr_id", finalFilenamesGeneration,
-                             "sr_id")
     srr_output_stage.connect(inputnode, "stacks_order",
                              finalFilenamesGeneration, "stacks_order")
-    srr_output_stage.connect(inputnode, "use_manual_masks",
-                             finalFilenamesGeneration, "use_manual_masks")
-    srr_output_stage.connect(inputnode, "run_type",
-                             finalFilenamesGeneration, 'run_type')
-
     srr_output_stage.connect(finalFilenamesGeneration, "substitutions",
                              datasink, "substitutions")
 
@@ -159,7 +161,11 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     return srr_output_stage
 
 
-def create_preproc_output_stage(p_do_nlm_denoising=False,
+def create_preproc_output_stage(p_sub_ses,
+                                p_sr_id,
+                                p_run_type,
+                                p_use_manual_masks,
+                                p_do_nlm_denoising=False,
                                 p_skip_stacks_ordering=False,
                                 p_do_registration=False,
                                 name="preproc_output_stage"):
@@ -168,6 +174,14 @@ def create_preproc_output_stage(p_do_nlm_denoising=False,
 
     Parameters
     ----------
+    p_sub_ses :
+        String containing subject-session information for output formatting
+    p_sr_id :
+        ID of the current run
+    p_run_type :
+        Type of run (preprocessing/super resolution/ ...)
+    p_use_manual_masks :
+        Whether manual masks were used in the pipeline
     p_do_nlm_denoising : :obj:`bool`
         Enable non-local means denoising (default: False)
     p_skip_stacks_ordering :  :obj:`bool`
@@ -186,8 +200,6 @@ def create_preproc_output_stage(p_do_nlm_denoising=False,
         ID of the current run
     stacks_order
         Order of stacks in the registration (list of integer)
-    use_manual_masks
-        Whether manual masks were used in the pipeline
     final_res_dir
         Output directory
     run_type
@@ -217,10 +229,7 @@ def create_preproc_output_stage(p_do_nlm_denoising=False,
 
     prepro_output_stage = pe.Workflow(name=name)
     # Set up a node to define all inputs required for the srr output workflow
-    input_fields = ["sub_ses", "sr_id", "stacks_order",
-                    "use_manual_masks", "final_res_dir",
-                    "run_type"
-                    ]
+    input_fields = ["stacks_order", "final_res_dir"]
     input_fields += ["input_masks", "input_images"]
     if p_do_registration:
         input_fields += ["input_sdi", "input_transforms"]
@@ -236,22 +245,18 @@ def create_preproc_output_stage(p_do_nlm_denoising=False,
 
     # Datasinker
     finalFilenamesGeneration = pe.Node(
-        interface=postprocess.FilenamesGeneration(),
+        interface=postprocess.FilenamesGeneration(
+            p_sub_ses,
+            p_sr_id,
+            p_run_type,
+            p_use_manual_masks
+            ),
         name='filenames_gen')
 
     datasink = pe.Node(interface=DataSink(), name='data_sinker')
 
-    prepro_output_stage.connect(inputnode, "sub_ses",
-                                finalFilenamesGeneration, "sub_ses")
-    prepro_output_stage.connect(inputnode, "sr_id",
-                                finalFilenamesGeneration, "sr_id")
     prepro_output_stage.connect(inputnode, "stacks_order",
                                 finalFilenamesGeneration, "stacks_order")
-    prepro_output_stage.connect(inputnode, "use_manual_masks",
-                                finalFilenamesGeneration, "use_manual_masks")
-    prepro_output_stage.connect(inputnode, "run_type",
-                                finalFilenamesGeneration, "run_type")
-
     prepro_output_stage.connect(finalFilenamesGeneration, "substitutions",
                                 datasink, "substitutions")
 

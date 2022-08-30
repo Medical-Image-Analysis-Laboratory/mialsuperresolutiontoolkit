@@ -139,7 +139,7 @@ class AbstractAnatomicalPipeline:
         self.m_sr_id = sr_id
         self.m_session = p_session
         self.m_stacks = p_stacks
-        self.run_type = p_run_type
+        self.m_run_type = p_run_type
 
         self.m_openmp_number_of_cores = p_openmp_number_of_cores
         self.m_nipype_number_of_cores = p_nipype_number_of_cores
@@ -181,7 +181,7 @@ class AbstractAnatomicalPipeline:
             self.m_output_dir,
             '-'.join(["nipype", __nipype_version__]),
             self.m_sub_path,
-            f"{self.run_type}-{self.m_sr_id}"
+            f"{self.m_run_type}-{self.m_sr_id}"
             )
 
         self.m_final_res_dir = os.path.join(
@@ -249,7 +249,7 @@ class AbstractAnatomicalPipeline:
         dst = os.path.join(
             dst_base,
             'figures',
-            f'{subject_str}_{self.run_type}-SR_id-{self.m_sr_id}_' +
+            f'{subject_str}_{self.m_run_type}-SR_id-{self.m_sr_id}_' +
             'desc-processing_graph.png')
 
         # Create the figures/ and parent directories if they do not exist
@@ -285,7 +285,7 @@ class AbstractAnatomicalPipeline:
         dst = os.path.join(
             dst_base,
             'logs',
-            f'{subject_str}_{self.run_type}-SR_id-{self.m_sr_id}_log.txt'
+            f'{subject_str}_{self.m_run_type}-SR_id-{self.m_sr_id}_log.txt'
             )
         # Create the logs/ and parent directories if they do not exist
         logs_dir = os.path.dirname(dst)
