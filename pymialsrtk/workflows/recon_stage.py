@@ -265,10 +265,10 @@ def create_recon_stage(p_paramTV,
         recon_stage.connect(srtkImageReconstruction, ("output_transforms",
                                                       utils.sort_ascending),
                             srtkHRMask, "input_transforms")
-        recon_stage.connect(srtkTVSuperResolution, "output_sr",
+        recon_stage.connect(srtkImageReconstruction, "output_sdi",
                             srtkHRMask, "input_sr")
     else:
-        recon_stage.connect(srtkTVSuperResolution, "output_sr",
+        recon_stage.connect(srtkImageReconstruction, "output_sdi",
                             srtkHRMask, "input_image")
 
     if p_do_nlm_denoising:
