@@ -279,7 +279,6 @@ class AnatomicalPipeline:
                       'be specified to perform alignement.')
                 self.m_do_anat_orientation = False
 
-
         if self.m_do_reconstruct_labels:
             if not self.m_labels_derivatives_dir:
                 print('A derivatives directory of LR labelmaps must '
@@ -290,11 +289,9 @@ class AnatomicalPipeline:
                                                 self.m_labels_derivatives_dir
                                                 )
                                    ):
-                print('An *existing* derivatives directory of LR labelmaps must '
+                print('An existing derivatives directory of LR labelmaps must'
                       'be specified to perform labelmap reconstruction.')
                 self.m_do_reconstruct_labels = False
-
-
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
