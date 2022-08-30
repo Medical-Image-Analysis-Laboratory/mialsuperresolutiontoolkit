@@ -6,9 +6,7 @@
 reconstruction pipeline."""
 
 from traits.api import *
-from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
-                                    OutputMultiPath, BaseInterface,
-                                    BaseInterfaceInputSpec)
+
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.postprocess as postprocess
@@ -16,6 +14,7 @@ from nipype.interfaces.io import DataSink
 
 
 def create_srr_output_stage(p_do_nlm_denoising=False,
+                            p_do_reconstruct_labels=False,
                             p_skip_stacks_ordering=False,
                             name="srr_output_stage"):
     """Create a output management workflow
@@ -50,6 +49,9 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     if p_do_nlm_denoising:
         input_fields += ['input_images_nlm']
 
+    if p_do_reconstruct_labels:
+        input_fields += ['input_labelmap']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=input_fields),
@@ -77,11 +79,6 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     srr_output_stage.connect(inputnode, "final_res_dir", datasink,
                              'base_directory')
 
-    if not p_skip_stacks_ordering:
-        srr_output_stage.connect(inputnode, "report_image",
-                                 datasink, 'figures.@stackOrderingQC')
-        srr_output_stage.connect(inputnode, "motion_tsv",
-                                 datasink, 'anat.@motionTSV')
     srr_output_stage.connect(inputnode, "input_masks",
                              datasink, 'anat.@LRmasks')
     srr_output_stage.connect(inputnode, "input_images",
@@ -102,5 +99,15 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
                              datasink, 'figures.@SRpng')
     srr_output_stage.connect(inputnode, "input_hr_mask",
                              datasink, 'anat.@SRmask')
+
+    if p_do_reconstruct_labels:
+        srr_output_stage.connect(inputnode, "input_labelmap",
+                                 datasink, 'anat.@SRlabelmap')
+
+    if not p_skip_stacks_ordering:
+        srr_output_stage.connect(inputnode, "report_image",
+                                 datasink, 'figures.@stackOrderingQC')
+        srr_output_stage.connect(inputnode, "motion_tsv",
+                                 datasink, 'anat.@motionTSV')
 
     return srr_output_stage
