@@ -174,9 +174,8 @@ class AnatomicalPipeline:
     m_skip_stacks_ordering = None
     m_do_refine_hr_mask = None
     m_do_anat_orientation = None
+    m_do_multi_parameters = None
     m_do_srr_assessment = None
-
-    _m_multi_parameters = None
 
     m_masks_derivatives_dir = None
     use_manual_masks = False
@@ -246,10 +245,6 @@ class AnatomicalPipeline:
                 p_dict_custom_interfaces['do_nlm_denoising']\
                 if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
                 else False
-            self.m_do_srr_assessment = \
-                p_dict_custom_interfaces['do_srr_assessment'] \
-                if 'do_srr_assessment' in p_dict_custom_interfaces.keys() \
-                else False
 
             self.m_skip_stacks_ordering = \
                 p_dict_custom_interfaces['skip_stacks_ordering']\
@@ -268,6 +263,16 @@ class AnatomicalPipeline:
                 if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() \
                 else False
 
+            self.m_do_multi_parameters = \
+                p_dict_custom_interfaces['do_multi_parameters'] \
+                if 'do_multi_parameters' in p_dict_custom_interfaces.keys() \
+                else False
+
+            self.m_do_srr_assessment = \
+                p_dict_custom_interfaces['do_srr_assessment'] \
+                if 'do_srr_assessment' in p_dict_custom_interfaces.keys() \
+                else False
+
         else:
             self.m_skip_svr = False
             self.m_do_refine_hr_mask = False
@@ -275,30 +280,29 @@ class AnatomicalPipeline:
             self.m_skip_stacks_ordering = False
             self.m_do_reconstruct_labels = False
             self.m_do_anat_orientation = False
+            self.m_do_multi_parameters = False
+            self.m_do_srr_assessment = False
 
-        # if any of the TV parameters is a list of more than one item,
-        # we are in a multi_parameters running mode
-        self._m_multi_parameters = len([value
-                                        for value in list(self.paramTV.values())
-                                        if (isinstance(value, list)
-                                            and len(value) > 1)]) > 0
+        abort_process = False
 
         if self.m_do_anat_orientation:
             if not os.path.isdir('/sta'):
                 print('A template directory must '
                       'be specified to perform alignement.')
                 self.m_do_anat_orientation = False
+                abort_process = True
             if self.m_ga is None:
                 print('A gestational age must '
                       'be specified to perform alignement.')
                 self.m_do_anat_orientation = False
-
+                abort_process = True
 
         if self.m_do_reconstruct_labels:
             if not self.m_labels_derivatives_dir:
                 print('A derivatives directory of LR labelmaps must '
                       'be specified to perform labelmap reconstruction.')
                 self.m_do_reconstruct_labels = False
+                abort_process = True
             elif not os.path.isdir(os.path.join(self.bids_dir,
                                                 'derivatives',
                                                 self.m_labels_derivatives_dir
@@ -307,6 +311,19 @@ class AnatomicalPipeline:
                 print('An existing derivatives directory of LR labelmaps must'
                       'be specified to perform labelmap reconstruction.')
                 self.m_do_reconstruct_labels = False
+                abort_process = True
+
+        if self.m_do_multi_parameters:
+            # if any of the TV parameters is a list of more than one item,
+            # we are in a multi_parameters running mode
+            self.m_do_multi_parameters = len([value
+                                            for value in list(self.paramTV.values())
+                                            if (isinstance(value, list)
+                                                and len(value) > 1)]) > 0
+            abort_process = True
+
+        if abort_process:
+            print('We should do something !! ')
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -388,7 +405,7 @@ class AnatomicalPipeline:
         reconstruction_stage, srtv_node_name = recon_stage.create_recon_stage(
             p_paramTV=self.paramTV,
             p_use_manual_masks=self.use_manual_masks,
-            p_multi_parameters=self._m_multi_parameters,
+            p_do_multi_parameters=self.m_do_multi_parameters,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
@@ -406,7 +423,7 @@ class AnatomicalPipeline:
         if self.m_do_srr_assessment:
             srr_assessment_stage = \
                 sr_assessment_stage.create_sr_assessment_stage(
-                    p_multi_parameters=self._m_multi_parameters,
+                    p_do_multi_parameters=self.m_do_multi_parameters,
                     p_input_srtv_node=srtv_node_name,
                     p_openmp_number_of_cores=self.openmp_number_of_cores,
                     name='srr_assessment_stage'
@@ -419,7 +436,6 @@ class AnatomicalPipeline:
             p_do_srr_assessment=self.m_do_srr_assessment,
             name='output_mgmt_stage'
         )
-
         output_mgmt_stage.inputs.inputnode.sub_ses = sub_ses
         output_mgmt_stage.inputs.inputnode.sr_id = self.sr_id
         output_mgmt_stage.inputs.inputnode.use_manual_masks = \
@@ -622,7 +638,7 @@ class AnatomicalPipeline:
                 pipeline_name=toolbox
             )
 
-        if not self._m_multi_parameters:
+        if not self._do_multi_parameters:
             iflogger.info("**** Super-resolution HTML report creation ****")
             self.create_subject_report()
 

@@ -20,7 +20,7 @@ import pymialsrtk.interfaces.utils as utils
 
 def create_recon_stage(p_paramTV,
                        p_use_manual_masks,
-                       p_multi_parameters=False,
+                       p_do_multi_parameters=False,
                        p_do_nlm_denoising=False,
                        p_do_reconstruct_labels=False,
                        p_do_refine_hr_mask=False,
@@ -34,7 +34,7 @@ def create_recon_stage(p_paramTV,
         name : name of workflow (default: recon_stage)
         p_use_manual_masks :
         p_do_nlm_denoising : weither to proceed to non-local mean denoising
-        p_multi_parameters :
+        p_do_multi_parameters :
         p_do_reconstruct_labels :
         p_do_refine_hr_mask :
         p_skip_svr :
@@ -143,7 +143,7 @@ def create_recon_stage(p_paramTV,
     srtkTVSuperResolution.inputs.in_step_scale = step_scale
     srtkTVSuperResolution.inputs.in_gamma = gamma
 
-    if p_multi_parameters:
+    if p_do_multi_parameters:
         deltatTV = [deltatTV] \
             if not isinstance(deltatTV, list) \
             else deltatTV

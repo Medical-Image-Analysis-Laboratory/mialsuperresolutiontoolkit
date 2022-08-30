@@ -14,7 +14,7 @@ import pymialsrtk.interfaces.postprocess as postprocess
 
 
 def create_sr_assessment_stage(
-        p_multi_parameters=False,
+        p_do_multi_parameters=False,
         p_input_srtv_node=None,
         p_openmp_number_of_cores=1,
         name='sr_assessment_stage'
@@ -26,7 +26,7 @@ def create_sr_assessment_stage(
     ----------
     ::
         name : name of workflow (default: sr_assessment_stage)
-        p_multi_parameters : boolean
+        p_do_multi_parameters : boolean
             weither multiple SR are to be assessed
             with different TV parameters(default: False)
         p_input_srtv_node : string
@@ -84,7 +84,7 @@ def create_sr_assessment_stage(
         name='z_debug'
     )
 
-    if p_multi_parameters:
+    if p_do_multi_parameters:
         concat_quality_metrics = pe.JoinNode(
             interface=postprocess.ConcatenateQualityMetrics(),
             joinfield='input_metrics',
@@ -107,7 +107,7 @@ def create_sr_assessment_stage(
     sr_assessment_stage.connect(quality_metrics, 'output_warped_image',
                                 z_debug, 'output_warped_image')
 
-    if p_multi_parameters:
+    if p_do_multi_parameters:
         sr_assessment_stage.connect(quality_metrics, 'output_metrics',
                                     concat_quality_metrics, 'input_metrics')
 
