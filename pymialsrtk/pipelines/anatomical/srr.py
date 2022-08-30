@@ -17,23 +17,26 @@ from jinja2 import __version__ as __jinja2_version__
 
 import nibabel as nib
 
-# Nipype related imports
 from nipype.info import __version__ as __nipype_version__
 from nipype import config
 from nipype import logging as nipype_logging
+from nipype.interfaces.io import DataSink
 
 from nipype.pipeline import engine as pe
 
-# Import the implemented interfaces and workflow from pymialsrtk
 import pymialsrtk.interfaces.utils as utils
+from nipype.interfaces.utility import IdentityInterface
 
-import pymialsrtk.workflows.input_stage as input_stage
+# Import the implemented interface from pymialsrtk
+import pymialsrtk.interfaces.reconstruction as reconstruction
+import pymialsrtk.interfaces.postprocess as postprocess
+import pymialsrtk.interfaces.preprocess as preprocess
+from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
 import pymialsrtk.workflows.sr_assessment_stage as sr_assessment_stage
 import pymialsrtk.workflows.srr_output_stage as srr_output_stage
-
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
 # Get pymialsrtk version
@@ -323,7 +326,7 @@ class AnatomicalPipeline:
         nipype_logging.update_logging(config)
         # config.enable_provenance()
 
-        input_stage = input_stage.create_input_stage(
+        input_stage = create_input_stage(
             p_bids_dir=self.bids_dir,
             p_subject=self.subject,
             p_session=self.session,
@@ -407,6 +410,7 @@ class AnatomicalPipeline:
 
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         postprocessing_stage, "inputnode.input_image")
+
 
         if self.m_do_srr_assessment:
 

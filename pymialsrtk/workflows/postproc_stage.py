@@ -10,6 +10,9 @@ import numpy as np
 
 from traits.api import *
 
+from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
+                                    OutputMultiPath, BaseInterface,
+                                    BaseInterfaceInputSpec)
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.postprocess as postprocess
 from nipype.pipeline import engine as pe

@@ -6,7 +6,9 @@
 reconstruction pipeline."""
 
 from traits.api import *
-
+from nipype.interfaces.base import (TraitedSpec, File,
+                                    InputMultiPath, OutputMultiPath,
+                                    BaseInterface, BaseInterfaceInputSpec)
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
 
@@ -14,6 +16,7 @@ from nipype.interfaces.io import DataGrabber
 
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
+import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.utils as utils
 
 def create_recon_stage(p_paramTV,
