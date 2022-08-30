@@ -183,10 +183,21 @@ class AnatomicalPipeline:
     nipype_number_of_cores = None
 
     def __init__(
-        self, bids_dir, output_dir, subject, p_ga=None, p_stacks=None, sr_id=1,
-        session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
-        p_dict_custom_interfaces=None,
-        openmp_number_of_cores=None, nipype_number_of_cores=None
+            self,
+            bids_dir,
+            output_dir,
+            subject,
+            p_ga=None,
+            p_stacks=None,
+            sr_id=1,
+            session=None,
+            paramTV=None,
+            p_masks_derivatives_dir=None,
+            p_labels_derivatives_dir=None,
+            p_masks_desc=None,
+            p_dict_custom_interfaces=None,
+            openmp_number_of_cores=None,
+            nipype_number_of_cores=None
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -212,6 +223,8 @@ class AnatomicalPipeline:
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
         self.use_manual_masks = True if self.m_masks_derivatives_dir is not None else False
         self.m_masks_desc = p_masks_desc if self.use_manual_masks else None
+
+        self.m_labels_derivatives_dir = p_labels_derivatives_dir
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
@@ -265,6 +278,22 @@ class AnatomicalPipeline:
                 print('A gestational age must '
                       'be specified to perform alignement.')
                 self.m_do_anat_orientation = False
+
+
+        if self.m_do_reconstruct_labels:
+            if not self.m_labels_derivatives_dir:
+                print('A derivatives directory of LR labelmaps must '
+                      'be specified to perform labelmap reconstruction.')
+                self.m_do_reconstruct_labels = False
+            elif not os.path.isdir(os.path.join(self.bids_dir,
+                                                'derivatives',
+                                                self.m_labels_derivatives_dir
+                                                )
+                                   ):
+                print('An *existing* derivatives directory of LR labelmaps must '
+                      'be specified to perform labelmap reconstruction.')
+                self.m_do_reconstruct_labels = False
+
 
 
     def create_workflow(self):
@@ -331,6 +360,7 @@ class AnatomicalPipeline:
             self.use_manual_masks,
             self.m_masks_desc,
             self.m_masks_derivatives_dir,
+            self.m_labels_derivatives_dir,
             self.m_skip_stacks_ordering,
             self.m_do_reconstruct_labels,
             self.m_stacks

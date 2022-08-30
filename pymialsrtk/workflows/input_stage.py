@@ -27,6 +27,7 @@ def create_input_stage(p_bids_dir,
                        p_use_manual_masks,
                        p_masks_desc,
                        p_masks_derivatives_dir,
+                       p_labels_derivatives_dir,
                        p_skip_stacks_ordering,
                        p_do_reconstruct_labels,
                        p_stacks,
@@ -82,12 +83,14 @@ def create_input_stage(p_bids_dir,
         dg.inputs.raise_on_empty = False
         dg.inputs.sort_filelist = True
 
-        t2ws_template = os.path.join(sub_path, 'anat',
+        t2ws_template = os.path.join(sub_path,
+                                     'anat',
                                      sub_ses + '*_run-*_T2w.nii.gz'
                                      )
         if p_masks_desc is not None:
             masks_template = os.path.join(
-                'derivatives', p_masks_derivatives_dir,
+                'derivatives',
+                p_masks_derivatives_dir,
                 sub_path, 'anat',
                 '_'.join([sub_ses, '*_run-*', '_desc-'+p_masks_desc,
                           '*mask.nii.gz'])
@@ -103,7 +106,7 @@ def create_input_stage(p_bids_dir,
         if p_do_reconstruct_labels:
             labels_template = os.path.join(
                 'derivatives',
-                'labels',
+                p_labels_derivatives_dir,
                 sub_path,
                 'anat',
                 '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
