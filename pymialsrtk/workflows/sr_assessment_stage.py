@@ -6,21 +6,18 @@
 reconstruction pipeline."""
 
 from traits.api import *
-from nipype.interfaces.base import (TraitedSpec, File,
-                                    InputMultiPath, OutputMultiPath,
-                                    BaseInterface, BaseInterfaceInputSpec)
+
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
-import pymialsrtk.interfaces.reconstruction as reconstruction
+
 import pymialsrtk.interfaces.postprocess as postprocess
-import pymialsrtk.interfaces.utils as utils
 
 
 def create_sr_assessment_stage(
         p_multi_parameters=False,
         p_input_srtv_node=None,
         p_openmp_number_of_cores=1,
-        name="sr_assessment_stage"
+        name='sr_assessment_stage'
 ):
     """Create an assessment workflow to compare
     a SR-reconstructed image and a reference target.
@@ -82,39 +79,39 @@ def create_sr_assessment_stage(
 
     z_debug = pe.Node(
         interface=util.IdentityInterface(
-            fields=['output_warped_image']
+            fields=["output_warped_image"]
         ),
         name='z_debug'
     )
 
     if p_multi_parameters:
-        concatenate_quality_metrics = pe.JoinNode(
+        concat_quality_metrics = pe.JoinNode(
             interface=postprocess.ConcatenateQualityMetrics(),
             joinfield='input_metrics',
             joinsource=p_input_srtv_node,
-            name='concatenate_quality_metrics'
+            name='concat_quality_metrics'
         )
 
     sr_assessment_stage.connect(inputnode, 'input_image',
                                 quality_metrics, 'input_image')
-    sr_assessment_stage.connect(inputnode, "input_ref_image",
+    sr_assessment_stage.connect(inputnode, 'input_ref_image',
                                 quality_metrics, 'input_ref_image')
-    sr_assessment_stage.connect(inputnode, "input_ref_mask",
+    sr_assessment_stage.connect(inputnode, 'input_ref_mask',
                                 quality_metrics, 'input_ref_mask')
+    sr_assessment_stage.connect(inputnode, 'input_ref_labelmap',
+                                quality_metrics, 'input_ref_labelmap')
 
-    sr_assessment_stage.connect(inputnode, "input_TV_parameters",
+    sr_assessment_stage.connect(inputnode, 'input_TV_parameters',
                                 quality_metrics, 'input_TV_parameters')
 
     sr_assessment_stage.connect(quality_metrics, 'output_warped_image',
                                 z_debug, 'output_warped_image')
 
     if p_multi_parameters:
-        sr_assessment_stage.connect(quality_metrics,
-                                    'output_metrics',
-                                    concatenate_quality_metrics,
-                                    'input_metrics')
+        sr_assessment_stage.connect(quality_metrics, 'output_metrics',
+                                    concat_quality_metrics, 'input_metrics')
 
-        sr_assessment_stage.connect(concatenate_quality_metrics, 'output_csv',
+        sr_assessment_stage.connect(concat_quality_metrics, 'output_csv',
                                     outputnode, 'output_metrics')
     else:
         sr_assessment_stage.connect(quality_metrics, 'output_metrics',
