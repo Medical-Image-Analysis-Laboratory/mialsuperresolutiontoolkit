@@ -161,7 +161,7 @@ def create_recon_stage(p_paramTV,
 
         recon_stage.connect(inputnode, "stacks_order",
                             sdiComputation, "stacks_order")
-        recon_stage.connect(inputnode, "input_images_nlm",
+        recon_stage.connect(inputnode, "input_images",
                             sdiComputation, "input_images")
         recon_stage.connect(inputnode, "input_masks",
                             sdiComputation, "input_masks")
