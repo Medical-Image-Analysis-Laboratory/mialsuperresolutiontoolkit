@@ -316,11 +316,17 @@ class AnatomicalPipeline:
         if self.m_do_multi_parameters:
             # if any of the TV parameters is a list of more than one item,
             # we are in a multi_parameters running mode
-            self.m_do_multi_parameters = len([value
-                                            for value in list(self.paramTV.values())
-                                            if (isinstance(value, list)
-                                                and len(value) > 1)]) > 0
-            abort_process = True
+
+            num_parameters_multi = [value
+                                         for value in list(self.paramTV.values())
+                                         if (isinstance(value, list)
+                                             and len(value) > 1)]
+            if not num_parameters_multi:
+                print('With do_multi_parameters interface,'
+                      'at least one entry of \'paramsTV\' should'
+                      'be defined as a list of more than one item.')
+
+                abort_process = True
 
         if abort_process:
             print('We should do something !! ')
@@ -638,7 +644,7 @@ class AnatomicalPipeline:
                 pipeline_name=toolbox
             )
 
-        if not self._do_multi_parameters:
+        if not self.m_do_multi_parameters:
             iflogger.info("**** Super-resolution HTML report creation ****")
             self.create_subject_report()
 
