@@ -6,7 +6,7 @@ cd "$BASEDIR"
 CMP_BUILD_DATE="$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")"
 echo "$CMP_BUILD_DATE"
 
-VERSION="v$(python get_version.py)"
+VERSION="v$(python get_version.py)_labelmaps"
 echo "$VERSION"
 
 VCS_REF="$(git rev-parse --verify HEAD)"

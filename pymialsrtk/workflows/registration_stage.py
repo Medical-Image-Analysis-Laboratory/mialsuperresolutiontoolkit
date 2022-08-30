@@ -6,8 +6,6 @@
 """Module for the various parts of workflow pipeline."""
 
 from nipype.pipeline import engine as pe
-
-
 # Import the implemented interface from pymialsrtk
 import pymialsrtk.interfaces.reconstruction as reconstruction
 from pymialsrtk.workflows.input_stage import create_input_stage
@@ -15,9 +13,7 @@ from pymialsrtk.bids.utils import write_bids_derivative_description
 
 # Get pymialsrtk version
 from pymialsrtk.info import __version__
-
 from nipype.interfaces import utility as util
-import pymialsrtk.interfaces.postprocess as postprocess
 
 
 def create_registration_stage(p_do_nlm_denoising=False,
@@ -30,21 +26,36 @@ def create_registration_stage(p_do_nlm_denoising=False,
 
     Parameters
     ----------
-    ::
-        name : name of workflow (default: registration_stage)
-        p_do_nlm_denoising : weither to proceed to non-local mean denoising
-    Inputs::
-        inputnode.input_images : Input T2w images (list of filenames)
-        inputnode.input_images_nlm : Input T2w images (list of filenames),
-            if p_do_nlm_denoising was set (list of filenames)
-        inputnode.input_masks : Input mask images (list of filenames)
-        inputnode.stacks_order : Order of stacks in the
-            registration (list of integer)
-    Outputs::
-        outputnode.output_sdi : SDI image (filename)
-        outputnode.output_tranforms : Transfmation estimated parameters
+        p_do_nlm_denoising : :obj:`bool`
+            Enable non-local means denoising (default: False)
+        p_skip_svr : :obj:`bool`
+            Skip slice-to-volume registration (default: False)
+        p_sub_ses : :obj:`str`
+            String containing subject-session information.
+        name : :obj:`str`
+            name of workflow (default: registration_stage)
+
+    Inputs
+    ------
+        input_images :
+            Input low-resolution T2w images (list of filenames)
+        input_images_nlm :
+            Input low-resolution denoised T2w images (list of filenames),
+            Optional - only if p_do_nlm_denoising = True
+        input_masks :
+            Input mask images from the low-resolution T2w images
             (list of filenames)
-    Example
+        stacks_order :
+            Order of stacks in the
+            registration (list of integer)
+
+    Outputs
+    -------
+        output_sdi :
+            SDI image (filename)
+        output_tranforms :
+            Transfmation estimated parameters (list of filenames)
+
     # doctest: +SKIP
     """
 

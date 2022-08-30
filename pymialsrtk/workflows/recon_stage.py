@@ -102,11 +102,6 @@ def create_recon_stage(p_paramTV,
     srtkImageReconstruction.inputs.no_reg = p_skip_svr
 
     if p_do_nlm_denoising:
-        # srtkMaskImage01_nlm = pe.MapNode(
-        #     interface=preprocess.MialsrtkMaskImage(),
-        #     name='srtkMaskImage01_nlm',
-        #     iterfield=['in_file', 'in_mask'])
-
         sdiComputation = pe.Node(
             interface=reconstruction.MialsrtkSDIComputation(),
             name='sdiComputation')

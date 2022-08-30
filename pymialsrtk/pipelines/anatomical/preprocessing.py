@@ -19,7 +19,7 @@ import pymialsrtk.interfaces.utils as utils
 import pymialsrtk.interfaces.reconstruction as reconstruction
 from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
-from pymialsrtk.workflows.output_stage import create_prepro_output_stage
+from pymialsrtk.workflows.output_stage import create_preproc_output_stage
 from pymialsrtk.workflows.various import create_registration_stage
 from .anatomical_pipeline import AnatomicalPipeline
 
@@ -194,7 +194,7 @@ class PreprocessingPipeline(AnatomicalPipeline):
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising)
 
-        prepro_mgmt_stage = create_prepro_output_stage(
+        prepro_mgmt_stage = create_preproc_output_stage(
                     p_do_nlm_denoising=self.m_do_nlm_denoising,
                     name='prepro_mgmt_stage')
 
