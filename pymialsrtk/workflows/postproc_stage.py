@@ -36,21 +36,32 @@ def create_postproc_stage(
     """Create a SR preprocessing workflow
     Parameters
     ----------
-    ::
-        name : name of workflow (default: preproc_stage)
-        p_ga
-        p_do_anat_orientation
-    Inputs::
-        inputnode.input_image : Input T2w image (filename)
-        inputnode.input_mask : Input mask image (filenames)
-    Outputs::
-        outputnode.output_image : Postprocessed image (filename)
-    Example
+        name : :str:
+            name of workflow (default: preproc_stage)
+        p_ga: :int:
+            subject's gestational age in weeks
+        p_do_anat_orientation: :bool:
+            weither the alignement to template should be performed
+        p_do_reconstruct_labels: :bool:
+            weither the reconstruction of LR labelmaps should be performed
+    Inputs
+    ------
+        input_sdi:
+            Input SDI image (filename)
+        input_image:
+            Input T2w image (filename)
+        input_mask:
+            Input mask image (filename)
+        input_labelmap: (optional)
+            Input labelmap image (filename)
+    Outputs
     -------
-    >>> postproc_stage = create_preproc_stage(p_do_nlm_denoising=False)
-    >>> postproc_stage.inputs.inputnode.input_image = 'sub-01_run-1_T2w.nii.gz'
-    >>> postproc_stage.inputs.inputnode.input_mask = 'sub-01_run-1_T2w_mask.nii.gz'
-    >>> postproc_stage.run() # doctest: +SKIP
+        output_image :
+            Postprocessed image (filename)
+        output_mask :
+            Postprocessed mask (filename)
+        output_labelmap :
+            Postprocessed labelmap (filename)
     """
 
     postproc_stage = pe.Workflow(name=name)
