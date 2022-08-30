@@ -439,6 +439,10 @@ class QualityMetrics(BaseInterface):
 
     _warped_image_path = None
 
+    _image_array = None
+    _mask_array = None
+    _labelmap_array = None
+
     def _gen_filename(self, name):
         if name == 'output_metrics':
             _, name, ext = split_filename(self.inputs.input_image)
@@ -492,7 +496,6 @@ class QualityMetrics(BaseInterface):
             p_in_gt_mask=p_in_gt_mask
         )
 
-
         #
         # Metrics overall
         #
@@ -520,24 +523,15 @@ class QualityMetrics(BaseInterface):
         print('SSIM', ssim)
         print()
 
+
+        #
+        # Metrics label-wise
+        #
         if self.inputs.input_ref_labelmap:
-            print()
-            print()
-            print()
-            print()
-            print()
-            print('On')
-            print('   va')
-            print('      pouvoir')
-            print('              faire')
-            print('                    du')
-            print('                       PER LABEL!')
-            print()
-            print()
-            print()
-            print()
-            print()
-            print()
+            reader = sitk.ImageFileReader()
+            reader.SetFileName(self.inputs.input_ref_labelmap)
+            labelmap_sitk = reader.Execute()
+
         # names = ['in_sr_node'] if self.inputs.in_sr_node else []
         # row = [self.inputs.in_sr_node] if self.inputs.in_sr_node else []
 
