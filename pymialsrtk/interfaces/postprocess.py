@@ -465,9 +465,14 @@ class QualityMetrics(BaseInterface):
 
         reader = sitk.ImageFileReader()
         masker = sitk.MaskImageFilter()
+        binarizer = sitk.BinaryThresholdImageFilter()
 
         reader.SetFileName(p_in_gt_mask)
         mask = reader.Execute()
+
+        binarizer.SetLowerThreshold(1)
+        binarizer.SetUpperThreshold(10)
+        mask = binarizer.Execute(mask)
 
         reader.SetFileName(p_in_gt)
         gt = reader.Execute()
@@ -486,6 +491,11 @@ class QualityMetrics(BaseInterface):
             p_in_gt=p_in_gt,
             p_in_gt_mask=p_in_gt_mask
         )
+
+
+        #
+        # Metrics overall
+        #
         datarange = int(np.amax(gt_np)-min(np.amin(sr_np), np.amin(gt_np)))
 
         print('Running PSNR computation')
@@ -504,11 +514,30 @@ class QualityMetrics(BaseInterface):
 
         TV_params = self.inputs.input_TV_parameters
 
+
         print()
         print('PSNR', psnr)
         print('SSIM', ssim)
         print()
 
+        if self.inputs.input_ref_labelmap:
+            print()
+            print()
+            print()
+            print()
+            print()
+            print('On')
+            print('   va')
+            print('      pouvoir')
+            print('              faire')
+            print('                    du')
+            print('                       PER LABEL!')
+            print()
+            print()
+            print()
+            print()
+            print()
+            print()
         # names = ['in_sr_node'] if self.inputs.in_sr_node else []
         # row = [self.inputs.in_sr_node] if self.inputs.in_sr_node else []
 
@@ -578,8 +607,8 @@ class ConcatenateQualityMetrics(BaseInterface):
 
     def _run_interface(self, runtime):
         try:
-            frames = [ pd.read_csv(s, index_col=False)
-                       for s in self.inputs.input_metrics]
+            frames = [pd.read_csv(s, index_col=False)
+                      for s in self.inputs.input_metrics]
 
             # if len(frames):
             res = pd.concat(frames)

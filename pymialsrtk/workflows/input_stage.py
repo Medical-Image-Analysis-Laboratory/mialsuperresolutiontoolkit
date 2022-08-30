@@ -11,13 +11,11 @@ import os
 import pkg_resources
 
 from traits.api import *
-from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
-                                    OutputMultiPath, BaseInterface,
-                                    BaseInterfaceInputSpec)
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
 from nipype.interfaces.io import DataGrabber
 from nipype.interfaces.utility import IdentityInterface
+
 from pymialsrtk.interfaces import preprocess
 
 
