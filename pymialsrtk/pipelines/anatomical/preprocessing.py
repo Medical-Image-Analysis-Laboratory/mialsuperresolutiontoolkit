@@ -127,6 +127,10 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
             self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
                 if 'skip_svr' in p_dict_custom_interfaces.keys() \
                 else False
+            if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() and \
+               p_dict_custom_interfaces['do_reconstruct_labels']:
+                raise RuntimeError("do_reconstruct_labels should not be "
+                                   "enabled when run_type=preprocessing.")
         else:
             self.m_do_registration = False
             self.m_skip_svr = False
@@ -171,7 +175,9 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
             self.m_use_manual_masks,
             self.m_masks_desc,
             self.m_masks_derivatives_dir,
+            None,
             self.m_skip_stacks_ordering,
+            False,
             self.m_stacks
         )
 

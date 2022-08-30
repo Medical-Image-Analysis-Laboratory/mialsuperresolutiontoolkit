@@ -209,17 +209,19 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         if self.m_do_reconstruct_labels:
             if not self.m_labels_derivatives_dir:
-                print('A derivatives directory of LR labelmaps must '
-                      'be specified to perform labelmap reconstruction.')
-                self.m_do_reconstruct_labels = False
-            elif not os.path.isdir(os.path.join(self.bids_dir,
-                                                'derivatives',
-                                                self.m_labels_derivatives_dir
-                                                )
-                                   ):
-                print('An existing derivatives directory of LR labelmaps must'
-                      'be specified to perform labelmap reconstruction.')
-                self.m_do_reconstruct_labels = False
+                raise OSError(
+                    'A derivatives directory of LR labelmaps must '
+                    'be specified to perform labelmap reconstruction.'
+                    )
+            elif not os.path.isdir(
+                os.path.join(self.m_bids_dir,
+                             'derivatives',
+                             self.m_labels_derivatives_dir
+                             )):
+                raise OSError(
+                    'An existing derivatives directory of LR labelmaps must'
+                    'be specified to perform labelmap reconstruction.'
+                    )
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -333,20 +335,24 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                           postprocessing_stage, "inputnode.input_image")
 
         if self.m_do_reconstruct_labels:
-            self.wf.connect(input_stage, "outputnode.labels_filtered",
-                            preprocessing_stage, "inputnode.input_labels")
+            self.m_wf.connect(input_stage, "outputnode.labels_filtered",
+                              preprocessing_stage, "inputnode.input_labels")
 
-            self.wf.connect(preprocessing_stage, "outputnode.output_labels",
-                            reconstruction_stage, "inputnode.input_labels")
+            self.m_wf.connect(preprocessing_stage, "outputnode.output_labels",
+                              reconstruction_stage, "inputnode.input_labels")
 
-            self.wf.connect(reconstruction_stage, "outputnode.output_labelmap",
-                            postprocessing_stage, "inputnode.input_labelmap")
+            self.m_wf.connect(reconstruction_stage,
+                              "outputnode.output_labelmap",
+                              postprocessing_stage,
+                              "inputnode.input_labelmap")
 
-            self.wf.connect(postprocessing_stage, "outputnode.output_labelmap",
-                            output_mgmt_stage, "inputnode.input_labelmap")
+            self.m_wf.connect(postprocessing_stage,
+                              "outputnode.output_labelmap",
+                              output_mgmt_stage,
+                              "inputnode.input_labelmap")
 
-        self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
-                        postprocessing_stage, "inputnode.input_sdi")
+        self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                          postprocessing_stage, "inputnode.input_sdi")
 
         self.m_wf.connect(input_stage, "outputnode.stacks_order",
                           output_mgmt_stage, "inputnode.stacks_order")
