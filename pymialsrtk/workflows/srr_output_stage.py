@@ -6,9 +6,7 @@
 reconstruction pipeline."""
 
 from traits.api import *
-from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
-                                    OutputMultiPath, BaseInterface,
-                                    BaseInterfaceInputSpec)
+
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.postprocess as postprocess
