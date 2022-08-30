@@ -532,12 +532,7 @@ class MialsrtkSDIComputation(BaseInterface):
                     '.nii.gz'
                 ])
             else:
-                output = ''.join([
-                    self.inputs.sub_ses,
-                    '_',
-                    'HR',
-                    '.nii.gz'
-                ])
+                output = self.inputs.input_reference
             return os.path.abspath(output)
 
         return None
