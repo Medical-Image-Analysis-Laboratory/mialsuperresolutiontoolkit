@@ -25,7 +25,9 @@ def create_input_stage(p_bids_dir,
                        p_use_manual_masks,
                        p_masks_desc,
                        p_masks_derivatives_dir,
+                       p_labels_derivatives_dir,
                        p_skip_stacks_ordering,
+                       p_do_reconstruct_labels,
                        p_stacks,
                        p_do_srr_assessment,
                        name="input_stage"
@@ -78,15 +80,22 @@ def create_input_stage(p_bids_dir,
                           'hr_reference_mask',
                           'hr_reference_labels']
 
+    if p_do_reconstruct_labels:
+        output_fields += ['labels_filtered']
+
     outputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=output_fields
         ),
         name='outputnode'
     )
+
     if p_use_manual_masks:
+        dg_fields = ['T2ws', 'masks']
+        if p_do_reconstruct_labels:
+            dg_fields += ['labels']
         dg = pe.Node(
-            interface=DataGrabber(outfields=['T2ws', 'masks']),
+            interface=DataGrabber(outfields=dg_fields),
             name='data_grabber'
         )
         dg.inputs.base_directory = p_bids_dir
@@ -94,24 +103,43 @@ def create_input_stage(p_bids_dir,
         dg.inputs.raise_on_empty = False
         dg.inputs.sort_filelist = True
 
-        t2ws_template = os.path.join(sub_path, 'anat',
+        t2ws_template = os.path.join(sub_path,
+                                     'anat',
                                      sub_ses + '*_run-*_T2w.nii.gz'
                                      )
         if p_masks_desc is not None:
             masks_template = os.path.join(
-                'derivatives', p_masks_derivatives_dir,
+                'derivatives',
+                p_masks_derivatives_dir,
                 sub_path, 'anat',
                 '_'.join([sub_ses, '*_run-*', '_desc-'+p_masks_desc,
                           '*mask.nii.gz'])
             )
         else:
             masks_template = os.path.join(
-                'derivatives', p_masks_derivatives_dir,
+                'derivatives',
+                p_masks_derivatives_dir,
                 sub_path, 'anat',
                 '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
             )
-        dg.inputs.field_template = dict(T2ws=t2ws_template,
-                                        masks=masks_template)
+
+        if p_do_reconstruct_labels:
+            labels_template = os.path.join(
+                'derivatives',
+                p_labels_derivatives_dir,
+                sub_path,
+                'anat',
+                '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
+            )
+
+        if p_do_reconstruct_labels:
+            dg.inputs.field_template = dict(T2ws=t2ws_template,
+                                            masks=masks_template,
+                                            labels=labels_template)
+        else:
+            dg.inputs.field_template = dict(T2ws=t2ws_template,
+                                            masks=masks_template)
+
 
         brainMask = pe.MapNode(
             interface=IdentityInterface(fields=['out_file']),
@@ -169,6 +197,10 @@ def create_input_stage(p_bids_dir,
                             name='t2ws_filtered')
     masks_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
                              name='masks_filtered')
+
+    if p_do_reconstruct_labels:
+        labels_filtered = pe.Node(interface=preprocess.FilteringByRunid(),
+                                  name='labels_filtered')
 
     if not p_skip_stacks_ordering:
         stacksOrdering = pe.Node(interface=preprocess.StacksOrdering(),
@@ -253,6 +285,15 @@ def create_input_stage(p_bids_dir,
                         outputnode, "t2ws_filtered")
     input_stage.connect(stacksOrdering, "stacks_order",
                         outputnode, "stacks_order")
+
+    if p_do_reconstruct_labels:
+        input_stage.connect(stacksOrdering, "stacks_order",
+                            labels_filtered, "stacks_id")
+        input_stage.connect(dg, "labels",
+                            labels_filtered, "input_files")
+
+        input_stage.connect(labels_filtered, "output_files",
+                            outputnode, "labels_filtered")
 
     if not p_skip_stacks_ordering:
         input_stage.connect(stacksOrdering, "report_image",

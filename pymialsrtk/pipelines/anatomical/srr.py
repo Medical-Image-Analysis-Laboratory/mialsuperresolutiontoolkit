@@ -31,12 +31,15 @@ from nipype.interfaces.utility import IdentityInterface
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
-from pymialsrtk.workflows.input_stage import create_input_stage
+
+# Import the implemented workflows from pymialsrtk
 import pymialsrtk.workflows.preproc_stage as preproc_stage
-import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
 import pymialsrtk.workflows.sr_assessment_stage as sr_assessment_stage
+import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.srr_output_stage as srr_output_stage
+import pymialsrtk.workflows.input_stage as input_stage
+
 from pymialsrtk.bids.utils import write_bids_derivative_description
 
 # Get pymialsrtk version
@@ -183,10 +186,21 @@ class AnatomicalPipeline:
     nipype_number_of_cores = None
 
     def __init__(
-        self, bids_dir, output_dir, subject, p_ga=None, p_stacks=None, sr_id=1,
-        session=None, paramTV=None, p_masks_derivatives_dir=None, p_masks_desc=None,
-        p_dict_custom_interfaces=None,
-        openmp_number_of_cores=None, nipype_number_of_cores=None
+            self,
+            bids_dir,
+            output_dir,
+            subject,
+            p_ga=None,
+            p_stacks=None,
+            sr_id=1,
+            session=None,
+            paramTV=None,
+            p_masks_derivatives_dir=None,
+            p_labels_derivatives_dir=None,
+            p_masks_desc=None,
+            p_dict_custom_interfaces=None,
+            openmp_number_of_cores=None,
+            nipype_number_of_cores=None
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -213,6 +227,8 @@ class AnatomicalPipeline:
         self.use_manual_masks = True if self.m_masks_derivatives_dir is not None else False
         self.m_masks_desc = p_masks_desc if self.use_manual_masks else None
 
+        self.m_labels_derivatives_dir = p_labels_derivatives_dir
+
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
 
@@ -220,10 +236,12 @@ class AnatomicalPipeline:
                 p_dict_custom_interfaces['skip_svr'] \
                 if 'skip_svr' in p_dict_custom_interfaces.keys() \
                 else False
+
             self.m_do_refine_hr_mask = \
                 p_dict_custom_interfaces['do_refine_hr_mask'] \
                 if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() \
                 else False
+
             self.m_do_nlm_denoising = \
                 p_dict_custom_interfaces['do_nlm_denoising']\
                 if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
@@ -245,12 +263,25 @@ class AnatomicalPipeline:
                 if 'do_anat_orientation' in p_dict_custom_interfaces.keys() \
                 else False
 
+            self.m_do_reconstruct_labels = \
+                p_dict_custom_interfaces['do_reconstruct_labels'] \
+                if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() \
+                else False
+
         else:
             self.m_skip_svr = False
             self.m_do_refine_hr_mask = False
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
+            self.m_do_reconstruct_labels = False
             self.m_do_anat_orientation = False
+
+        # if any of the TV parameters is a list of more than one item,
+        # we are in a multi_parameters running mode
+        self._m_multi_parameters = len([value
+                                        for value in list(self.paramTV.values())
+                                        if (isinstance(value, list)
+                                            and len(value) > 1)]) > 0
 
         if self.m_do_anat_orientation:
             if not os.path.isdir('/sta'):
@@ -262,12 +293,20 @@ class AnatomicalPipeline:
                       'be specified to perform alignement.')
                 self.m_do_anat_orientation = False
 
-        # if any of the TV parameters is a list of more than one item,
-        # we are in a multi_parameters running mode
-        self._m_multi_parameters = len([value
-                                        for value in list(self.paramTV.values())
-                                        if (isinstance(value, list)
-                                            and len(value) > 1)]) > 0
+
+        if self.m_do_reconstruct_labels:
+            if not self.m_labels_derivatives_dir:
+                print('A derivatives directory of LR labelmaps must '
+                      'be specified to perform labelmap reconstruction.')
+                self.m_do_reconstruct_labels = False
+            elif not os.path.isdir(os.path.join(self.bids_dir,
+                                                'derivatives',
+                                                self.m_labels_derivatives_dir
+                                                )
+                                   ):
+                print('An existing derivatives directory of LR labelmaps must'
+                      'be specified to perform labelmap reconstruction.')
+                self.m_do_reconstruct_labels = False
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -326,20 +365,24 @@ class AnatomicalPipeline:
         nipype_logging.update_logging(config)
         # config.enable_provenance()
 
-        input_stage = create_input_stage(
+        input_mgmt_stage = input_stage.create_input_stage(
             p_bids_dir=self.bids_dir,
             p_subject=self.subject,
             p_session=self.session,
             p_use_manual_masks=self.use_manual_masks,
             p_masks_desc=self.m_masks_desc,
             p_masks_derivatives_dir=self.m_masks_derivatives_dir,
+            p_labels_derivatives_dir=self.m_labels_derivatives_dir,
             p_skip_stacks_ordering=self.m_skip_stacks_ordering,
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_stacks=self.m_stacks,
-            p_do_srr_assessment=self.m_do_srr_assessment
+            p_do_srr_assessment=self.m_do_srr_assessment,
+            name='input_mgmt_stage'
         )
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
-            p_do_nlm_denoising=self.m_do_nlm_denoising
+            p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels
         )
 
         reconstruction_stage, srtv_node_name = recon_stage.create_recon_stage(
@@ -347,6 +390,7 @@ class AnatomicalPipeline:
             p_use_manual_masks=self.use_manual_masks,
             p_multi_parameters=self._m_multi_parameters,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
             p_sub_ses=sub_ses
@@ -355,6 +399,7 @@ class AnatomicalPipeline:
         postprocessing_stage = postproc_stage.create_postproc_stage(
             p_ga=self.m_ga,
             p_do_anat_orientation=self.m_do_anat_orientation,
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             name='postprocessing_stage'
         )
 
@@ -369,6 +414,7 @@ class AnatomicalPipeline:
 
         output_mgmt_stage = srr_output_stage.create_srr_output_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_skip_stacks_ordering=self.m_skip_stacks_ordering,
             p_do_srr_assessment=self.m_do_srr_assessment,
             name='output_mgmt_stage'
@@ -382,10 +428,10 @@ class AnatomicalPipeline:
 
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
-        self.wf.connect(input_stage, "outputnode.t2ws_filtered",
+        self.wf.connect(input_mgmt_stage, "outputnode.t2ws_filtered",
                         preprocessing_stage, "inputnode.input_images")
 
-        self.wf.connect(input_stage, "outputnode.masks_filtered",
+        self.wf.connect(input_mgmt_stage, "outputnode.masks_filtered",
                         preprocessing_stage, "inputnode.input_masks")
 
         if self.m_do_nlm_denoising:
@@ -402,7 +448,7 @@ class AnatomicalPipeline:
                         ("outputnode.output_masks", utils.sort_ascending),
                         reconstruction_stage, "inputnode.input_masks")
 
-        self.wf.connect(input_stage, "outputnode.stacks_order",
+        self.wf.connect(input_mgmt_stage, "outputnode.stacks_order",
                         reconstruction_stage, "inputnode.stacks_order")
 
         self.wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
@@ -410,7 +456,6 @@ class AnatomicalPipeline:
 
         self.wf.connect(reconstruction_stage, "outputnode.output_sr",
                         postprocessing_stage, "inputnode.input_image")
-
 
         if self.m_do_srr_assessment:
 
@@ -422,22 +467,35 @@ class AnatomicalPipeline:
             self.wf.connect(postprocessing_stage, "outputnode.output_image",
                             srr_assessment_stage, "inputnode.input_image")
 
-            self.wf.connect(input_stage, "outputnode.hr_reference_image",
+            self.wf.connect(input_mgmt_stage, "outputnode.hr_reference_image",
                             srr_assessment_stage, "inputnode.input_ref_image")
 
-            self.wf.connect(input_stage, "outputnode.hr_reference_mask",
+            self.wf.connect(input_mgmt_stage, "outputnode.hr_reference_mask",
                             srr_assessment_stage, "inputnode.input_ref_mask")
 
-            self.wf.connect(input_stage, "outputnode.hr_reference_labels",
+            self.wf.connect(input_mgmt_stage, "outputnode.hr_reference_labels",
                             srr_assessment_stage, "inputnode.input_ref_labelmap")
 
             self.wf.connect(srr_assessment_stage, "outputnode.output_metrics",
                             output_mgmt_stage, "inputnode.input_metrics")
 
+        if self.m_do_reconstruct_labels:
+            self.wf.connect(input_mgmt_stage, "outputnode.labels_filtered",
+                            preprocessing_stage, "inputnode.input_labels")
+
+            self.wf.connect(preprocessing_stage, "outputnode.output_labels",
+                            reconstruction_stage, "inputnode.input_labels")
+
+            self.wf.connect(reconstruction_stage, "outputnode.output_labelmap",
+                            postprocessing_stage, "inputnode.input_labelmap")
+
+            self.wf.connect(postprocessing_stage, "outputnode.output_labelmap",
+                            output_mgmt_stage, "inputnode.input_labelmap")
+
         self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
                         postprocessing_stage, "inputnode.input_sdi")
 
-        self.wf.connect(input_stage, "outputnode.stacks_order",
+        self.wf.connect(input_mgmt_stage, "outputnode.stacks_order",
                         output_mgmt_stage, "inputnode.stacks_order")
 
         self.wf.connect(preprocessing_stage, "outputnode.output_masks",
@@ -464,11 +522,10 @@ class AnatomicalPipeline:
                             output_mgmt_stage, "inputnode.input_images_nlm")
 
         if not self.m_skip_stacks_ordering:
-            self.wf.connect(input_stage, "outputnode.report_image",
+            self.wf.connect(input_mgmt_stage, "outputnode.report_image",
                             output_mgmt_stage, "inputnode.report_image")
-            self.wf.connect(input_stage, "outputnode.motion_tsv",
+            self.wf.connect(input_mgmt_stage, "outputnode.motion_tsv",
                             output_mgmt_stage, "inputnode.motion_tsv")
-
 
     def run(self, memory=None):
         """Execute the workflow of the super-resolution reconstruction pipeline.

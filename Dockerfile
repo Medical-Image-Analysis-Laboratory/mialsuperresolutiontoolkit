@@ -92,7 +92,6 @@ RUN micromamba install -v -y -n base -f /app/environment.yml
 # than "base" is not recommended:
 # https://github.com/mamba-org/micromamba-docker
 
-
 ##############################################################
 # Make MIALSRTK and ANTs happy
 ##############################################################

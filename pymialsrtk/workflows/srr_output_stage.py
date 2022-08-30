@@ -15,6 +15,7 @@ from nipype.interfaces.io import DataSink
 
 def create_srr_output_stage(p_do_nlm_denoising=False,
                             p_do_srr_assessment=False,
+                            p_do_reconstruct_labels=False,
                             p_skip_stacks_ordering=False,
                             name="srr_output_stage"):
     """Create a output management workflow
@@ -68,6 +69,9 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     if p_do_srr_assessment:
         input_fields += ["input_metrics"]
 
+    if p_do_reconstruct_labels:
+        input_fields += ['input_labelmap']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=input_fields),
@@ -95,11 +99,6 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     srr_output_stage.connect(inputnode, "final_res_dir", datasink,
                              'base_directory')
 
-    if not p_skip_stacks_ordering:
-        srr_output_stage.connect(inputnode, "report_image",
-                                 datasink, 'figures.@stackOrderingQC')
-        srr_output_stage.connect(inputnode, "motion_tsv",
-                                 datasink, 'anat.@motionTSV')
     srr_output_stage.connect(inputnode, "input_masks",
                              datasink, 'anat.@LRmasks')
     srr_output_stage.connect(inputnode, "input_images",
@@ -124,5 +123,16 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     if p_do_srr_assessment:
         srr_output_stage.connect(inputnode, "input_metrics",
                                  datasink, 'anat.@SRmetrics')
+
+    if p_do_reconstruct_labels:
+        srr_output_stage.connect(inputnode, "input_labelmap",
+                                 datasink, 'anat.@SRlabelmap')
+
+    if not p_skip_stacks_ordering:
+        srr_output_stage.connect(inputnode, "report_image",
+                                 datasink, 'figures.@stackOrderingQC')
+        srr_output_stage.connect(inputnode, "motion_tsv",
+                                 datasink, 'anat.@motionTSV')
+
 
     return srr_output_stage

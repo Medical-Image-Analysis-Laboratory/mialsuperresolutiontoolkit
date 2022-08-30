@@ -8,7 +8,10 @@ reconstruction pipeline."""
 from traits.api import *
 
 from nipype.interfaces import utility as util
+from nipype.interfaces.io import DataGrabber
 from nipype.pipeline import engine as pe
+
+import pymialsrtk.workflows.recon_labelmap_stage as recon_labelmap_stage
 
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
@@ -19,6 +22,7 @@ def create_recon_stage(p_paramTV,
                        p_use_manual_masks,
                        p_multi_parameters=False,
                        p_do_nlm_denoising=False,
+                       p_do_reconstruct_labels=False,
                        p_do_refine_hr_mask=False,
                        p_skip_svr=False,
                        p_sub_ses='',
@@ -28,9 +32,13 @@ def create_recon_stage(p_paramTV,
     ----------
     ::
         name : name of workflow (default: recon_stage)
+        p_use_manual_masks :
         p_do_nlm_denoising : weither to proceed to non-local mean denoising
         p_multi_parameters :
+        p_do_reconstruct_labels :
         p_do_refine_hr_mask :
+        p_skip_svr :
+        p_sub_ses :
     Inputs::
         inputnode.input_images : Input T2w images (list of filenames)
         inputnode.input_images_nlm : Input T2w images (list of filenames),
@@ -67,6 +75,9 @@ def create_recon_stage(p_paramTV,
     if p_do_nlm_denoising:
         input_fields += ['input_images_nlm']
 
+    if p_do_reconstruct_labels:
+        input_fields += ['input_labels']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=input_fields),
@@ -80,6 +91,9 @@ def create_recon_stage(p_paramTV,
                      'output_sr_png',
                      'output_TV_parameters'
                      ]
+
+    if p_do_reconstruct_labels:
+        output_fields += ['output_labelmap']
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(
@@ -180,6 +194,13 @@ def create_recon_stage(p_paramTV,
         srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(),
                              name='srtkHRMask')
 
+    if p_do_reconstruct_labels:
+        recon_labels_stage = recon_labelmap_stage.create_recon_labelmap_stage(
+            sub_ses=p_sub_ses)
+        # recon_labels_stage.inputs.inputnode.label_ids = \
+        #     [0, 1, 2, 3, 4, 5, 6, 7]
+
+
     recon_stage.connect(inputnode, "input_masks",
                         srtkImageReconstruction, "input_masks")
     recon_stage.connect(inputnode, "stacks_order",
@@ -191,7 +212,7 @@ def create_recon_stage(p_paramTV,
 
         recon_stage.connect(inputnode, "stacks_order",
                             sdiComputation, "stacks_order")
-        recon_stage.connect(inputnode, "input_images_nlm",
+        recon_stage.connect(inputnode, "input_images",
                             sdiComputation, "input_images")
         recon_stage.connect(inputnode, "input_masks",
                             sdiComputation, "input_masks")
@@ -200,7 +221,7 @@ def create_recon_stage(p_paramTV,
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
                             sdiComputation, "input_reference")
 
-        recon_stage.connect(sdiComputation, "output_sdi",
+        recon_stage.connect(sdiComputation, "output_hr",
                             srtkTVSuperResolution, "input_sdi")
     else:
         recon_stage.connect(inputnode, "input_images",
@@ -218,6 +239,23 @@ def create_recon_stage(p_paramTV,
     recon_stage.connect(inputnode, "stacks_order",
                         srtkTVSuperResolution, "stacks_order")
 
+    if p_do_reconstruct_labels:
+        recon_stage.connect(inputnode, "input_labels",
+                            recon_labels_stage, "inputnode.input_labels")
+        recon_stage.connect(inputnode, "input_masks",
+                            recon_labels_stage, "inputnode.input_masks")
+        recon_stage.connect(srtkImageReconstruction, "output_transforms",
+                            recon_labels_stage, "inputnode.input_transforms")
+
+        recon_stage.connect(srtkImageReconstruction, "output_sdi",
+                            recon_labels_stage, "inputnode.input_reference")
+        recon_stage.connect(inputnode, "stacks_order",
+                            recon_labels_stage, "inputnode.stacks_order")
+
+        recon_stage.connect(recon_labels_stage,
+                            "outputnode.output_labelmap",
+                            outputnode, "output_labelmap")
+
     if p_do_refine_hr_mask:
         recon_stage.connect(inputnode, "input_images",
                             srtkHRMask, "input_images")
@@ -234,7 +272,7 @@ def create_recon_stage(p_paramTV,
                             srtkHRMask, "input_image")
 
     if p_do_nlm_denoising:
-        recon_stage.connect(sdiComputation, "output_sdi",
+        recon_stage.connect(sdiComputation, "output_hr",
                             outputnode, "output_sdi")
     else:
         recon_stage.connect(srtkImageReconstruction, "output_sdi",

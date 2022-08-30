@@ -28,6 +28,7 @@ from nipype.algorithms.metrics import Similarity
 import transforms3d
 
 import nibabel as nib
+import SimpleITK as sitk
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -1465,6 +1466,7 @@ class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
 
     input_image = File(mandatory=True, desc='Input image filename')
     input_mask = File(mandatory=True, desc='Input mask filename')
+    input_label = File(mandatory=False, desc='Input label filename')
 
 
 class ReduceFieldOfViewOutputSpec(TraitedSpec):
@@ -1472,6 +1474,7 @@ class ReduceFieldOfViewOutputSpec(TraitedSpec):
 
     output_image = File(desc='Cropped image')
     output_mask = File(desc='Cropped mask')
+    output_label = File(desc='Cropped labels')
 
 
 class ReduceFieldOfView(BaseInterface):
@@ -1486,11 +1489,14 @@ class ReduceFieldOfView(BaseInterface):
             return os.path.abspath(os.path.basename(self.inputs.input_image))
         elif name == 'output_mask':
             return os.path.abspath(os.path.basename(self.inputs.input_mask))
+        elif name == 'output_label':
+            return os.path.abspath(os.path.basename(self.inputs.input_label))
         return None
 
     def _crop_image_and_mask(self,
                              in_image,
                              in_mask,
+                             in_label,
                              paddings_mm=[15, 15, 15]
                              ):
         import SimpleITK as sitk
@@ -1538,11 +1544,13 @@ class ReduceFieldOfView(BaseInterface):
                           minimums[2]:maximums[2]
                           ]
 
-        minimums.reverse()
+        minimums_copy = minimums.copy()
+        minimums_copy.reverse()
 
         new_origin = list(
-            image.TransformContinuousIndexToPhysicalPoint(minimums)
+            image.TransformContinuousIndexToPhysicalPoint(minimums_copy)
             )
+
         new_direction = list(image.GetDirection())
         new_spacing = list(image.GetSpacing())
 
@@ -1564,14 +1572,33 @@ class ReduceFieldOfView(BaseInterface):
         writer.SetFileName(self._gen_filename('output_mask'))
         writer.Execute(mask_cropped)
 
-        return
+        if in_label:
+            reader.SetFileName(in_label)
+            label = reader.Execute()
+            label_np = sitk.GetArrayFromImage(label)
+
+            label_np = label_np[
+                       minimums[0]:maximums[0],
+                       minimums[1]:maximums[1],
+                       minimums[2]:maximums[2]
+                       ]
+
+            label_cropped = sitk.GetImageFromArray(label_np)
+            label_cropped.SetOrigin(new_origin)
+            label_cropped.SetDirection(new_direction)
+            label_cropped.SetSpacing(new_spacing)
+
+            writer = sitk.ImageFileWriter()
+            writer.SetFileName(self._gen_filename('output_label'))
+            writer.Execute(label_cropped)
 
     def _run_interface(self, runtime):
 
         try:
             self._crop_image_and_mask(
                 self.inputs.input_image,
-                self.inputs.input_mask
+                self.inputs.input_mask,
+                self.inputs.input_label
             )
         except Exception as e:
             print('Failed')
@@ -1582,6 +1609,135 @@ class ReduceFieldOfView(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_image'] = self._gen_filename('output_image')
         outputs['output_mask'] = self._gen_filename('output_mask')
+        if self.inputs.input_label:
+            outputs['output_label'] = self._gen_filename('output_label')
+        return outputs
+
+
+class SplitLabelMapsInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the SplitLabelMaps interface."""
+
+    in_labelmap = File(desc='Input label map', mandatory=True)
+    all_labels = traits.List([], mandatory=False)
+
+
+class SplitLabelMapsOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the SplitLabelMaps interface."""
+
+    out_labelmaps = OutputMultiPath(File(), desc='Output masks')
+    out_labels = traits.List(
+        desc='List of labels ids that were extracted'
+    )
+
+
+class SplitLabelMaps(BaseInterface):
+    """Split a multi-label labelmap
+    into one label map per label.
+    """
+
+    input_spec = SplitLabelMapsInputSpec
+    output_spec = SplitLabelMapsOutputSpec
+
+    _labels = None
+
+    def _gen_filename(self, name, i):
+        if name == 'out_label':
+            _, name, ext = split_filename(self.inputs.in_labelmap)
+            if 'labels' in name:
+                output = name.replace('labels', 'label-'+str(i)) + ext
+            return os.path.abspath(output)
+        return None
+
+    def _extractlabelimage(self, in_labelmap):
+        reader = sitk.ImageFileReader()
+        writer = sitk.ImageFileWriter()
+
+        reader.SetFileName(in_labelmap)
+        labels = reader.Execute()
+
+        binarizer = sitk.BinaryThresholdImageFilter()
+
+        if not len(self.inputs.all_labels):
+            self._labels = list(
+                np.unique(sitk.GetArrayFromImage(labels)
+                          ).astype(int))
+        else:
+            self._labels = self.inputs.all_labels
+
+        for label_id in self._labels:
+            binarizer.SetLowerThreshold(int(label_id))
+            binarizer.SetUpperThreshold(int(label_id))
+
+            label = binarizer.Execute(labels)
+
+            writer.SetFileName(self._gen_filename('out_label', label_id))
+            writer.Execute(label)
+
+    def _run_interface(self, runtime):
+
+        try:
+            self._extractlabelimage(self.inputs.in_labelmap)
+        except Exception as e:
+            print('Failed splitting labelmaps')
+            print(e)
+            raise
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['out_labelmaps'] = \
+            [self._gen_filename('out_label', i)
+             for i in self._labels]
+        outputs['out_labels'] = self._labels
+        return outputs
+
+
+class ListsMergerInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the PathListsMerger interface."""
+    inputs = traits.List()
+
+
+class ListsMergerOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the PathListsMerger interface."""
+    outputs = traits.List()
+
+
+class ListsMerger(BaseInterface):
+    """Interface to merge list of paths or list of list of path
+    """
+
+    input_spec = ListsMergerInputSpec
+    output_spec = ListsMergerOutputSpec
+
+    m_list_of_files = None
+
+    def _gen_filename(self, name):
+        if name == 'outputs':
+            return self.m_list_of_files
+        return None
+
+    def _run_interface(self, runtime):
+        try:
+            self.m_list_of_files = []
+            for list_of_one_stack in self.inputs.inputs:
+                if isinstance(list_of_one_stack, list) or \
+                        isinstance(list_of_one_stack, InputMultiPath):
+                    for file in list_of_one_stack:
+                        self.m_list_of_files.append(file)
+                else:
+                    self.m_list_of_files.append(list_of_one_stack)
+
+            self.m_list_of_files = list(set(self.m_list_of_files))
+
+        except Exception as e:
+            print('Failed')
+            print(e)
+            raise
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['outputs'] = self._gen_filename('outputs')
         return outputs
 
 

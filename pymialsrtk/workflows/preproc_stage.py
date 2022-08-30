@@ -17,20 +17,26 @@ import pymialsrtk.interfaces.utils as utils
 from nipype import config
 
 
-def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
+def create_preproc_stage(p_do_nlm_denoising=False,
+                         p_do_reconstruct_labels=False,
+                         name="preproc_stage"):
+
     """Create a SR preprocessing workflow
     Parameters
     ----------
     ::
         name : name of workflow (default: preproc_stage)
         p_do_nlm_denoising : weither to proceed to non-local mean denoising
+        p_do_reconstruct_labels :
     Inputs::
         inputnode.input_images : Input T2w images (list of filenames)
         inputnode.input_masks : Input mask images (list of filenames)
     Outputs::
         outputnode.output_images : Processed images (list of filenames)
+        outputnode.output_masks : Processed images (list of filenames)
         outputnode.output_images_nlm : Processed images with NLM denoising,
         if p_do_nlm_denoising was set (list of filenames)
+
     Example
     -------
     >>> preproc_stage = create_preproc_stage(p_do_nlm_denoising=False)
@@ -48,21 +54,37 @@ def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
     # Set up a node to define all inputs required
     # for the preprocessing workflow
 
-    inputnode = pe.Node(
-        interface=util.IdentityInterface(
-            fields=['input_images', 'input_masks']),
-        name='inputnode')
-
+    input_fields = ['input_images', 'input_masks']
     output_fields = ['output_images', 'output_masks']
+
     if p_do_nlm_denoising:
         output_fields += ['output_images_nlm']
 
-    outputnode = pe.Node(interface=util.IdentityInterface(fields=output_fields),
-                         name='outputnode')
+    if p_do_reconstruct_labels:
+        input_fields += ['input_labels']
+        output_fields += ['output_labels']
+
+    inputnode = pe.Node(
+        interface=util.IdentityInterface(
+            fields=input_fields
+        ),
+        name='inputnode'
+    )
+
+    outputnode = pe.Node(
+        interface=util.IdentityInterface(
+            fields=output_fields
+        ),
+        name='outputnode'
+    )
+
+    iterfields = ['input_image', 'input_mask']
+    if p_do_reconstruct_labels:
+        iterfields += ['input_label']
 
     reduceFOV = pe.MapNode(interface=preprocess.ReduceFieldOfView(),
                            name='reduceFOV',
-                           iterfield=['input_image', 'input_mask'])
+                           iterfield=iterfields)
 
     nlmDenoise = pe.MapNode(interface=preprocess.BtkNLMDenoising(),
                             name='nlmDenoise',
@@ -139,6 +161,12 @@ def create_preproc_stage(p_do_nlm_denoising=False, name="preproc_stage"):
 
     preproc_stage.connect(inputnode, 'input_images', reduceFOV, 'input_image')
     preproc_stage.connect(inputnode, 'input_masks', reduceFOV, 'input_mask')
+
+    if p_do_reconstruct_labels:
+        preproc_stage.connect(inputnode, 'input_labels',
+                              reduceFOV, "input_label")
+        preproc_stage.connect(reduceFOV, "output_label",
+                              outputnode, 'output_labels')
 
     preproc_stage.connect(reduceFOV,
                           ('output_image', utils.sort_ascending),
