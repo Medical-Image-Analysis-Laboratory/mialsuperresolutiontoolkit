@@ -475,7 +475,7 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that '
                                     'specify the order of the stacks')
-    label_id = traits.Int(-1, mandatory=False)
+    label_id = traits.Int(-1, mandatory=False, usedefault=True)
 
 
 class MialsrtkSDIComputationOutputSpec(TraitedSpec):

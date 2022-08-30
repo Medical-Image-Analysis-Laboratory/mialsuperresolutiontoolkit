@@ -119,7 +119,6 @@ def create_recon_stage(p_paramTV,
             interface=reconstruction.MialsrtkSDIComputation(),
             name='sdiComputation')
         sdiComputation.inputs.sub_ses = p_sub_ses
-        sdiComputation.inputs.label_id = -1
 
     srtkTVSuperResolution = pe.Node(
         interface=reconstruction.MialsrtkTVSuperResolution(),
