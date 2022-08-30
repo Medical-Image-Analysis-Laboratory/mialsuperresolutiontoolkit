@@ -171,8 +171,7 @@ def main(bids_dir, output_dir,
          dict_custom_interfaces=None,
          nipype_number_of_cores=1,
          openmp_number_of_cores=1,
-         memory=0,
-         prepro_do_registration=None
+         memory=0
          ):
     """Main function that creates and executes the workflow of the BIDS App on
     one subject.
@@ -212,7 +211,8 @@ def main(bids_dir, output_dir,
         BIDS description tag of masks to use (optional)
 
     dict_custom_interfaces : {"do_refine_hr_mask": False,
-        "m_do_nlm_denoising": False, "skip_stacks_ordering": False}
+        "do_nlm_denoising": False, "skip_stacks_ordering": False,
+        "prepro_do_registration": False}
         Dictionary that customize the workflow (skip interfaces).
 
     nipype_number_of_cores : int
@@ -251,8 +251,8 @@ def main(bids_dir, output_dir,
             masks_derivatives_dir,
             masks_desc,
             p_dict_custom_interfaces=dict_custom_interfaces,
-            openmp_number_of_cores=openmp_number_of_cores,
-            nipype_number_of_cores=nipype_number_of_cores
+            p_openmp_number_of_cores=openmp_number_of_cores,
+            p_nipype_number_of_cores=nipype_number_of_cores
             )
     elif run_type == "preprocessing":
         pipeline = PreprocessingPipeline(
@@ -263,13 +263,11 @@ def main(bids_dir, output_dir,
             p_stacks,
             sr_id,
             session,
-            param_TV,
             masks_derivatives_dir,
             masks_desc,
             p_dict_custom_interfaces=dict_custom_interfaces,
-            openmp_number_of_cores=openmp_number_of_cores,
-            nipype_number_of_cores=nipype_number_of_cores,
-            p_do_registration=prepro_do_registration
+            p_openmp_number_of_cores=openmp_number_of_cores,
+            p_nipype_number_of_cores=nipype_number_of_cores,
             )
     else:
         raise ValueError(f"Invalid run_type {run_type}."
@@ -363,8 +361,8 @@ if __name__ == "__main__":
                            dict_custom_interfaces=dict_custom_interfaces,
                            nipype_number_of_cores=nipype_nb_of_cores,
                            openmp_number_of_cores=openmp_nb_of_cores,
-                           memory=args.memory,
-                           prepro_do_registration=args.prepro_do_registration)
+                           memory=args.memory
+                           )
         else:
             print(f"WARNING: Do not process subjects {sub} "
                   "because of missing configuration.")

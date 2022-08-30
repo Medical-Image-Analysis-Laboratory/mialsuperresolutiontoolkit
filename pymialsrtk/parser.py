@@ -94,14 +94,6 @@ def get_parser():
     )
 
     p.add_argument(
-            "--prepro_do_registration",
-            help="Run registration in the preprocessing "
-                 "pipeline (default: False)",
-            default=False,
-            action='store_true'
-    )
-
-    p.add_argument(
         "-v",
         "--version",
         action="version",

@@ -8,6 +8,7 @@ reconstruction pipeline."""
 from traits.api import *
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
+
 import pymialsrtk.interfaces.postprocess as postprocess
 from nipype.interfaces.io import DataSink
 
@@ -255,10 +256,11 @@ def create_preproc_output_stage(p_do_nlm_denoising=False,
                                 datasink, 'anat.@LRmasks')
     prepro_output_stage.connect(inputnode, "input_images",
                                 datasink, 'anat.@LRsPreproc')
-    prepro_output_stage.connect(inputnode, "input_transforms",
-                                datasink, 'xfm.@transforms')
-    prepro_output_stage.connect(inputnode, "input_sdi",
-                                datasink, 'anat.@SDI')
+    if p_do_registration:
+        prepro_output_stage.connect(inputnode, "input_transforms",
+                                    datasink, 'xfm.@transforms')
+        prepro_output_stage.connect(inputnode, "input_sdi",
+                                    datasink, 'anat.@SDI')
     if p_do_nlm_denoising:
         prepro_output_stage.connect(inputnode, "input_images_nlm",
                                     datasink, 'anat.@LRsDenoised')
