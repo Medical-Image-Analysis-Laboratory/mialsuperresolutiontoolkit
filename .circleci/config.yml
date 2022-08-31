@@ -23,10 +23,9 @@ jobs:
             apk add --no-cache pigz python2 git-lfs
       - restore_cache:
           keys:
-            - dockerb-{{ .Branch }}-{{ epoch }}
-            - dockerb-{{ .Branch }}-
-            - dockerb-master-
-            - dockerb-
+            - dockerb-{{ .Branch }}
+            - dockerb-master
+            - dockerb
           paths:
             - /tmp/src/mialsuperresolutiontoolkit/
       - checkout
@@ -79,7 +78,7 @@ jobs:
             docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit \
             | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
       - save_cache:
-          key: dockerb-{{ .Branch }}-{{ epoch }}
+          key: dockerb-{{ .Branch }}
           paths:
             - /tmp/src/mialsuperresolutiontoolkit/
       - persist_to_workspace:
