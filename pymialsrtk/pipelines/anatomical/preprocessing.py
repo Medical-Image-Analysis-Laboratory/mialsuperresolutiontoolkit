@@ -121,8 +121,8 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
 
         if p_dict_custom_interfaces is not None:
             self.m_do_registration = \
-                p_dict_custom_interfaces['prepro_do_registration'] \
-                if 'prepro_do_registration' in p_dict_custom_interfaces.keys()\
+                p_dict_custom_interfaces['preproc_do_registration'] \
+                if 'preproc_do_registration' in p_dict_custom_interfaces.keys()\
                 else False
             self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
                 if 'skip_svr' in p_dict_custom_interfaces.keys() \
@@ -184,16 +184,16 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising)
 
-        prepro_mgmt_stage = create_preproc_output_stage(
+        preproc_mgmt_stage = create_preproc_output_stage(
                     self.m_sub_ses,
                     self.m_sr_id,
                     self.m_run_type,
                     self.m_use_manual_masks,
                     p_do_nlm_denoising=self.m_do_nlm_denoising,
                     p_do_registration=self.m_do_registration,
-                    name='prepro_mgmt_stage')
+                    name='preproc_mgmt_stage')
 
-        prepro_mgmt_stage.inputs.inputnode.final_res_dir = self.m_final_res_dir
+        preproc_mgmt_stage.inputs.inputnode.final_res_dir = self.m_final_res_dir
 
         if self.m_do_registration:
             registration_stage = create_registration_stage(
@@ -231,32 +231,32 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
                               registration_stage, "inputnode.stacks_order")
 
             self.m_wf.connect(registration_stage, "outputnode.output_sdi",
-                              prepro_mgmt_stage, "inputnode.input_sdi")
+                              preproc_mgmt_stage, "inputnode.input_sdi")
 
             self.m_wf.connect(registration_stage,
                               "outputnode.output_transforms",
-                              prepro_mgmt_stage,
+                              preproc_mgmt_stage,
                               "inputnode.input_transforms")
         else:
             self.m_wf.connect(preprocessing_stage, ("outputnode.output_images",
                                                     utils.sort_ascending),
-                              prepro_mgmt_stage, "inputnode.input_images")
+                              preproc_mgmt_stage, "inputnode.input_images")
 
         self.m_wf.connect(input_stage, "outputnode.stacks_order",
-                          prepro_mgmt_stage, "inputnode.stacks_order")
+                          preproc_mgmt_stage, "inputnode.stacks_order")
 
         self.m_wf.connect(preprocessing_stage, "outputnode.output_masks",
-                          prepro_mgmt_stage, "inputnode.input_masks")
+                          preproc_mgmt_stage, "inputnode.input_masks")
 
         if self.m_do_nlm_denoising:
             self.m_wf.connect(preprocessing_stage,
                               ("outputnode.output_images_nlm",
                                utils.sort_ascending),
-                              prepro_mgmt_stage, "inputnode.input_images_nlm"
+                              preproc_mgmt_stage, "inputnode.input_images_nlm"
                               )
 
         if not self.m_skip_stacks_ordering:
             self.m_wf.connect(input_stage, "outputnode.report_image",
-                              prepro_mgmt_stage, "inputnode.report_image")
+                              preproc_mgmt_stage, "inputnode.report_image")
             self.m_wf.connect(input_stage, "outputnode.motion_tsv",
-                              prepro_mgmt_stage, "inputnode.motion_tsv")
+                              preproc_mgmt_stage, "inputnode.motion_tsv")
