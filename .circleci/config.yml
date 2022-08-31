@@ -289,8 +289,8 @@ jobs:
                 -type f -delete
       - store_artifacts:
           path: 
-			- /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
-			- /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
+              - /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
+              - /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
 
   codacy-coverage-report:
     docker:
@@ -424,8 +424,8 @@ jobs:
                 -type f -delete
       - store_artifacts:
           path: 
-			- /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
-			- /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
+              - /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
+              - /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
 
   test-python-install:
     parameters:
