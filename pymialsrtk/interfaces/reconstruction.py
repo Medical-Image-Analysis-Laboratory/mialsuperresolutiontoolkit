@@ -507,7 +507,7 @@ class MialsrtkSDIComputationOutputSpec(TraitedSpec):
     """Class used to represent outputs of the
     MialsrtkSDIComputation interface."""
 
-    output_hr = File(desc='Output scattered data interpolation image file')
+    output_sdi = File(desc='Output scattered data interpolation image file')
 
 
 class MialsrtkSDIComputation(BaseInterface):

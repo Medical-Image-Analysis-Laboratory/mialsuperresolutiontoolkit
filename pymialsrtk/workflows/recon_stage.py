@@ -221,7 +221,7 @@ def create_recon_stage(p_paramTV,
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
                             sdiComputation, "input_reference")
 
-        recon_stage.connect(sdiComputation, "output_hr",
+        recon_stage.connect(sdiComputation, "output_sdi",
                             srtkTVSuperResolution, "input_sdi")
     else:
         recon_stage.connect(inputnode, "input_images",
