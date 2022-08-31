@@ -234,12 +234,12 @@ def create_input_stage(p_bids_dir,
         mask_template = os.path.join(
             sub_path,
             'anat',
-            sub_ses + '_desc-iso_T2w_mask.nii.gz'
+            sub_ses + '_desc-iso_mask.nii.gz'
         )
         labels_template = os.path.join(
             sub_path,
             'anat',
-            sub_ses + '_desc-iso_T2w_labels.nii.gz'
+            sub_ses + '_desc-iso_labels.nii.gz'
         )
 
         rg.inputs.field_template = dict(
