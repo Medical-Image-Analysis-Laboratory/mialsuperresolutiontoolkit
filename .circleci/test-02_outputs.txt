@@ -245,7 +245,7 @@ nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkHRMask/_inputs.pklz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkHRMask/_node.pklz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkHRMask/_report/report.rst
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkHRMask/result_srtkHRMask.pklz
-nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkHRMask/SRTV_sub-01_3V_rad1_srMask.nii.gz
+nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkHRMask/SDI_sub-01_3V_rad1_srMask.nii.gz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkImageReconstruction/_inputs.pklz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkImageReconstruction/_node.pklz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkImageReconstruction/_report/report.rst
