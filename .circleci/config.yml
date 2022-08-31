@@ -79,11 +79,7 @@ jobs:
             docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit \
             | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
       - save_cache:
-          keys:
-            - docker-{{ .Branch }}-{{ epoch }}
-            - docker-{{ .Branch }}-
-            - docker-master-
-            - docker-
+          key: docker-{{ .Branch }}-{{ epoch }}
           paths:
             - /tmp/cache/docker.tar.gz
       - persist_to_workspace:
