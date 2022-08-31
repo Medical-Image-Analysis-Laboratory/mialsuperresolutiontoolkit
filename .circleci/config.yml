@@ -288,6 +288,10 @@ jobs:
           path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
       - store_artifacts:
           path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_coverage.xml
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_coverage.xml
 
   codacy-coverage-report:
     docker:
