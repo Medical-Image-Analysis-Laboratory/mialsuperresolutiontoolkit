@@ -88,7 +88,7 @@ where:
         * ``"do_anat_orientation"`` (optional) indicates weither the alignement into anatomical planes should be performed. (default is False)
         If True, path to a directory containing STA atlas (Gholipour et al., 2017 [1]_, [2]_) must be mounted to `/sta`.
 
-        * ``"prepro_do_registration"`` (optional) indicates whether the Slice-to-Volume Registration should be computed in the ``"preprocessing"`` run (default is False).
+        * ``"preproc_do_registration"`` (optional) indicates whether the Slice-to-Volume Registration should be computed in the ``"preprocessing"`` run (default is False).
         
 References
 ----------
