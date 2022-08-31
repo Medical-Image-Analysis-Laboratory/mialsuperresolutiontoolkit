@@ -123,18 +123,17 @@ def create_sr_assessment_stage(
         name='mask_sr'
     )
 
-
-    quality_metrics = pe.Node(
-        postprocess.QualityMetrics(),
-        name='quality_metrics'
+    sr_image_metrics = pe.Node(
+        postprocess.ImageMetrics(),
+        name='sr_image_metrics'
     )
 
     if p_do_multi_parameters:
-        concat_quality_metrics = pe.JoinNode(
+        concat_sr_image_metrics = pe.JoinNode(
             interface=postprocess.ConcatenateQualityMetrics(),
             joinfield='input_metrics',
             joinsource=p_input_srtv_node,
-            name='concat_quality_metrics'
+            name='concat_sr_image_metrics'
         )
 
     sr_assessment_stage.connect(inputnode, 'input_ref_image',
@@ -175,22 +174,22 @@ def create_sr_assessment_stage(
                                 mask_sr, 'in_mask')
 
     sr_assessment_stage.connect(mask_sr, 'out_im_file',
-                                quality_metrics, 'input_image')
+                                sr_image_metrics, 'input_image')
     sr_assessment_stage.connect(crop_reference, 'output_image',
-                                quality_metrics, 'input_ref_image')
+                                sr_image_metrics, 'input_ref_image')
     sr_assessment_stage.connect(crop_reference, 'output_label',
-                                quality_metrics, 'input_ref_labelmap')
+                                sr_image_metrics, 'input_ref_labelmap')
     sr_assessment_stage.connect(inputnode, 'input_TV_parameters',
-                                quality_metrics, 'input_TV_parameters')
+                                sr_image_metrics, 'input_TV_parameters')
 
     if p_do_multi_parameters:
-        sr_assessment_stage.connect(quality_metrics, 'output_metrics',
-                                    concat_quality_metrics, 'input_metrics')
+        sr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
+                                    concat_sr_image_metrics, 'input_metrics')
 
-        sr_assessment_stage.connect(concat_quality_metrics, 'output_csv',
+        sr_assessment_stage.connect(concat_sr_image_metrics, 'output_csv',
                                     outputnode, 'output_metrics')
     else:
-        sr_assessment_stage.connect(quality_metrics, 'output_metrics',
+        sr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
                                     outputnode, 'output_metrics')
 
     return sr_assessment_stage

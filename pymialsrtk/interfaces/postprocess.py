@@ -417,7 +417,7 @@ class BinarizeImage(BaseInterface):
         return outputs
 
 
-class QualityMetricsInputSpec(BaseInterfaceInputSpec):
+class ImageMetricsInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the QualityMetrics interface."""
 
     input_image = File(desc='Input image filename', mandatory=True)
@@ -431,59 +431,57 @@ class QualityMetricsInputSpec(BaseInterfaceInputSpec):
     )
     input_TV_parameters = traits.Dict(mandatory=True)
 
-    # in_sr_node = traits.Str(mandatory=False)
 
-
-class QualityMetricsOutputSpec(TraitedSpec):
+class ImageMetricsOutputSpec(TraitedSpec):
     """Class used to represent outputs of the QualityMetrics interface."""
 
     output_metrics = File(desc='Output CSV')
 
 
-class QualityMetrics(BaseInterface):
+class ImageMetrics(BaseInterface):
     """
     """
-    input_spec = QualityMetricsInputSpec
-    output_spec = QualityMetricsOutputSpec
+    input_spec = ImageMetricsInputSpec
+    output_spec = ImageMetricsOutputSpec
 
     _image_array = None
     _reference_array = None
     _labelmap_array = None
+    _dict_metrics = None
 
     def _gen_filename(self, name):
         if name == 'output_metrics':
             _, name, ext = split_filename(self.inputs.input_image)
             output = name + '_csv' + '.csv'
             return os.path.abspath(output)
-        if name == 'output_warped_image':
-            return os.path.abspath(self._warped_image_path)
         return None
 
-    def _load_image_arrays(self, p_in_image, p_in_gt, p_in_labelmap):
+    def _reset_class_members(self):
+        self._image_array = None
+        self._reference_array = None
+        self._labelmap_array = None
+
+        self._dict_metrics = {}
+
+
+    def _load_image_arrays(self):
 
         reader = sitk.ImageFileReader()
 
-        reader.SetFileName(p_in_gt)
+        reader.SetFileName(self.inputs.input_ref_image)
         self._reference_array = sitk.GetArrayFromImage(reader.Execute())
 
-        reader.SetFileName(p_in_image)
+        reader.SetFileName(self.inputs.input_image)
         self._image_array = sitk.GetArrayFromImage(reader.Execute())
 
-        if p_in_labelmap is not None:
-            reader.SetFileName(p_in_labelmap)
+        if self.inputs.input_ref_image is not None:
+            reader.SetFileName(self.inputs.input_ref_image)
             self._labelmap_array = sitk.GetArrayFromImage(reader.Execute())
 
-        return
+    def _compute_metrics(self):
 
-    def _compute(self, p_in_image, p_in_gt, p_in_labelmap):
-
-        self._load_image_arrays(
-            p_in_image=p_in_image,
-            p_in_gt=p_in_gt,
-            p_in_labelmap=p_in_labelmap
-        )
-
-        datarange = int(np.amax(self._reference_array)-min(np.amin(self._image_array), np.amin(self._reference_array)))
+        datarange = int(
+            np.amax(self._reference_array) - min(np.amin(self._image_array), np.amin(self._reference_array)))
 
         print('Running PSNR computation')
         psnr = skimage.metrics.peak_signal_noise_ratio(
@@ -491,6 +489,7 @@ class QualityMetrics(BaseInterface):
             self._image_array,
             data_range=datarange
         )
+        self._dict_metrics['PSNR'] = psnr
 
         print('Running SSIM computation')
         ssim = skimage.metrics.structural_similarity(
@@ -498,34 +497,24 @@ class QualityMetrics(BaseInterface):
             self._image_array,
             data_range=datarange
         )
+        self._dict_metrics['SSIM'] = ssim
 
+    def _generate_csv(self):
         TV_params = self.inputs.input_TV_parameters
 
-        print()
-        print('PSNR', psnr)
-        print('SSIM', ssim)
-        print()
+        data = []
+        data.append({**TV_params, **self._dict_metrics})
 
+        df_metrics = pd.DataFrame.from_records(data)
+
+        # names = ['in_lambda', 'in_deltat', 'PSNR', 'SSIM']
+        # row = [TV_params['in_lambda'], TV_params['in_deltat'], psnr, ssim]
         #
-        # Metrics label-wise
+        # metrics = []
+        # metrics.append(dict(zip(names, row)))
         #
-        if self.inputs.input_ref_labelmap:
-            print('labels are:', np.unique(self._labelmap_array))
+        # df_metrics = pd.DataFrame(metrics)
 
-        # names = ['in_sr_node'] if self.inputs.in_sr_node else []
-        # row = [self.inputs.in_sr_node] if self.inputs.in_sr_node else []
-
-        names = ['in_lambda', 'in_deltat', 'PSNR', 'SSIM']
-        row = [TV_params['in_lambda'], TV_params['in_deltat'], psnr, ssim]
-
-        metrics = []
-        metrics.append(dict(zip(names, row)))
-
-        df_metrics = pd.DataFrame(metrics)
-        print()
-        print(df_metrics.head())
-        print()
-        print(self._gen_filename('output_metrics'))
         df_metrics.to_csv(
             self._gen_filename('output_metrics'),
             index=False,
@@ -534,18 +523,20 @@ class QualityMetrics(BaseInterface):
         )
         print('saved!')
 
-        return
-
     def _run_interface(self, runtime):
         try:
-            self._compute(
-                self.inputs.input_image,
-                self.inputs.input_ref_image,
-                self.inputs.input_ref_labelmap
-            )
+            self._reset_class_members()
+            self._load_image_arrays()
+            self._compute_metrics()
+            self._generate_csv()
+
+            if self.inputs.input_ref_labelmap:
+                print('labels are:', np.unique(self._labelmap_array))
+
         except Exception as e:
             print('Failed')
             print(e)
+            raise
         return runtime
 
     def _list_outputs(self):
