@@ -323,6 +323,13 @@ class FilenamesGeneration(BaseInterface):
                                      '_id-' + str(self.inputs.sr_id) +
                                      '_mod-T2w_desc-brain_mask.nii.gz'))
 
+        self.m_substitutions.append(('SDI_' + self.inputs.sub_ses +
+                                     '_' + str(len(self.inputs.stacks_order)) +
+                                     'V_rad1_srMask.nii.gz',
+                                     self.inputs.sub_ses + '_rec-SR' +
+                                     '_id-' + str(self.inputs.sr_id) +
+                                     '_mod-T2w_desc-brain_mask.nii.gz'))
+
         self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses +
                                      '_' + str(len(self.inputs.stacks_order)) +
                                      'V_rad1.png',
