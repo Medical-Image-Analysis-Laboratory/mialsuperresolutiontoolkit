@@ -82,6 +82,11 @@ def create_sr_assessment_stage(
         name='mask_reference'
     )
 
+    crop_reference = pe.Node(
+        interface=preprocess.ReduceFieldOfView(),
+        name='crop_reference'
+    )
+
     registration_quick = pe.Node(
         interface=RegistrationSynQuick(),
         name='registration_quick'
@@ -129,40 +134,41 @@ def create_sr_assessment_stage(
 
     sr_assessment_stage.connect(inputnode, 'input_ref_image',
                                 mask_reference, 'in_file')
-
     sr_assessment_stage.connect(inputnode, 'input_ref_mask',
                                 mask_reference, 'in_mask')
 
-    # TBD: Add here a ReduceFOV...?
+    sr_assessment_stage.connect(mask_reference, 'out_im_file',
+                                crop_reference, 'input_image')
+    sr_assessment_stage.connect(inputnode, 'input_ref_mask',
+                                crop_reference, 'input_mask')
+    sr_assessment_stage.connect(inputnode, 'input_ref_labelmap',
+                                crop_reference, "input_label")
 
     sr_assessment_stage.connect(inputnode, 'input_sdi_image',
                                 registration_quick, 'moving_image')
-    sr_assessment_stage.connect(mask_reference, 'out_im_file',
+    sr_assessment_stage.connect(crop_reference, 'output_image',
                                 registration_quick, 'fixed_image')
 
     sr_assessment_stage.connect(inputnode, 'input_sr_image',
                                 apply_transform, 'input_image')
-    sr_assessment_stage.connect(inputnode, 'input_ref_image',
+    sr_assessment_stage.connect(crop_reference, 'output_image',
                                 apply_transform, 'reference_image')
     sr_assessment_stage.connect(registration_quick, 'out_matrix',
                                 apply_transform, 'transforms')
 
     sr_assessment_stage.connect(apply_transform, 'output_image',
                                 mask_sr, 'in_file')
-    sr_assessment_stage.connect(inputnode, 'input_ref_mask',
+    sr_assessment_stage.connect(crop_reference, 'output_mask',
                                 mask_sr, 'in_mask')
 
     sr_assessment_stage.connect(mask_sr, 'out_im_file',
                                 quality_metrics, 'input_image')
-    sr_assessment_stage.connect(mask_reference, 'out_im_file',
+    sr_assessment_stage.connect(crop_reference, 'output_image',
                                 quality_metrics, 'input_ref_image')
-    sr_assessment_stage.connect(inputnode, 'input_ref_labelmap',
+    sr_assessment_stage.connect(crop_reference, 'output_label',
                                 quality_metrics, 'input_ref_labelmap')
     sr_assessment_stage.connect(inputnode, 'input_TV_parameters',
                                 quality_metrics, 'input_TV_parameters')
-
-    sr_assessment_stage.connect(registration_quick, 'warped_image',
-                                z_debug, 'output_warped_image')
 
     if p_do_multi_parameters:
         sr_assessment_stage.connect(quality_metrics, 'output_metrics',
