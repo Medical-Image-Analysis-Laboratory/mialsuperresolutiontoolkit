@@ -154,14 +154,10 @@ def create_sr_assessment_stage(
 
     sr_assessment_stage.connect(mask_sr, 'out_im_file',
                                 quality_metrics, 'input_image')
-
     sr_assessment_stage.connect(mask_reference, 'out_im_file',
                                 quality_metrics, 'input_ref_image')
-    sr_assessment_stage.connect(inputnode, 'input_ref_mask',
-                                quality_metrics, 'input_ref_mask')
     sr_assessment_stage.connect(inputnode, 'input_ref_labelmap',
                                 quality_metrics, 'input_ref_labelmap')
-
     sr_assessment_stage.connect(inputnode, 'input_TV_parameters',
                                 quality_metrics, 'input_TV_parameters')
 

@@ -15,7 +15,6 @@ from traits.api import *
 from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
-from nipype.interfaces.ants import RegistrationSynQuick
 
 from pymialsrtk.interfaces.utils import run
 import nibabel as nib
@@ -426,10 +425,6 @@ class QualityMetricsInputSpec(BaseInterfaceInputSpec):
         desc='Input reference image filename',
         mandatory=True
     )
-    input_ref_mask = File(
-        desc='Input reference mask filename',
-        mandatory=True
-    )
     input_ref_labelmap = File(
         desc='Input reference labelmap filename',
         mandatory=False
@@ -444,20 +439,16 @@ class QualityMetricsOutputSpec(TraitedSpec):
     """Class used to represent outputs of the QualityMetrics interface."""
 
     output_metrics = File(desc='Output CSV')
-    output_warped_image = File(desc='')
 
 
 class QualityMetrics(BaseInterface):
     """
     """
-
     input_spec = QualityMetricsInputSpec
     output_spec = QualityMetricsOutputSpec
 
-    _warped_image_path = None
-
     _image_array = None
-    _mask_array = None
+    _reference_array = None
     _labelmap_array = None
 
     def _gen_filename(self, name):
@@ -469,58 +460,43 @@ class QualityMetrics(BaseInterface):
             return os.path.abspath(self._warped_image_path)
         return None
 
-    def _preproc_images(self, p_in_image, p_in_gt, p_in_gt_mask):
-        ants_path = '/opt/conda/bin'
-
-        reg = RegistrationSynQuick()
-        reg.inputs.fixed_image = p_in_gt
-        reg.inputs.moving_image = p_in_image
-        reg.inputs.transform_type = 'r'
-        reg.inputs.num_threads = self.inputs.in_num_threads
-        reg.environ = {'PATH': ants_path}
-        reg.terminal_output = 'file_stderr'
-
-        # print('Running RegistrationSynQuick()')
-        res = reg.run()
-        self._warped_image_path = res.outputs.warped_image
+    def _load_image_arrays(self, p_in_image, p_in_gt, p_in_labelmap):
 
         reader = sitk.ImageFileReader()
-        masker = sitk.MaskImageFilter()
-
-        reader.SetFileName(p_in_gt_mask)
-        mask = reader.Execute()
 
         reader.SetFileName(p_in_gt)
-        gt = reader.Execute()
-        gt = sitk.GetArrayFromImage(masker.Execute(gt, mask))
+        self._reference_array = sitk.GetArrayFromImage(reader.Execute())
 
-        reader.SetFileName(self._warped_image_path)
-        sr = reader.Execute()
-        sr = sitk.GetArrayFromImage(masker.Execute(sr, mask))
+        reader.SetFileName(p_in_image)
+        self._image_array = sitk.GetArrayFromImage(reader.Execute())
 
-        return gt, sr
+        if p_in_labelmap is not None:
+            reader.SetFileName(p_in_labelmap)
+            self._labelmap_array = sitk.GetArrayFromImage(reader.Execute())
 
-    def _compute(self, p_in_image, p_in_gt, p_in_gt_mask):
+        return
 
-        gt_np, sr_np = self._preproc_images(
+    def _compute(self, p_in_image, p_in_gt, p_in_labelmap):
+
+        self._load_image_arrays(
             p_in_image=p_in_image,
             p_in_gt=p_in_gt,
-            p_in_gt_mask=p_in_gt_mask
+            p_in_labelmap=p_in_labelmap
         )
 
-        datarange = int(np.amax(gt_np)-min(np.amin(sr_np), np.amin(gt_np)))
+        datarange = int(np.amax(self._reference_array)-min(np.amin(self._image_array), np.amin(self._reference_array)))
 
         print('Running PSNR computation')
         psnr = skimage.metrics.peak_signal_noise_ratio(
-            gt_np,
-            sr_np,
+            self._reference_array,
+            self._image_array,
             data_range=datarange
         )
 
         print('Running SSIM computation')
         ssim = skimage.metrics.structural_similarity(
-            gt_np,
-            sr_np,
+            self._reference_array,
+            self._image_array,
             data_range=datarange
         )
 
@@ -535,9 +511,7 @@ class QualityMetrics(BaseInterface):
         # Metrics label-wise
         #
         if self.inputs.input_ref_labelmap:
-            reader = sitk.ImageFileReader()
-            reader.SetFileName(self.inputs.input_ref_labelmap)
-            labelmap_sitk = reader.Execute()
+            print('labels are:', np.unique(self._labelmap_array))
 
         # names = ['in_sr_node'] if self.inputs.in_sr_node else []
         # row = [self.inputs.in_sr_node] if self.inputs.in_sr_node else []
@@ -568,7 +542,7 @@ class QualityMetrics(BaseInterface):
             self._compute(
                 self.inputs.input_image,
                 self.inputs.input_ref_image,
-                self.inputs.input_ref_mask
+                self.inputs.input_ref_labelmap
             )
         except Exception as e:
             print('Failed')
@@ -579,8 +553,6 @@ class QualityMetrics(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_metrics'] = \
             self._gen_filename('output_metrics')
-        outputs['output_warped_image'] = \
-            self._gen_filename('output_warped_image')
         return outputs
 
 
