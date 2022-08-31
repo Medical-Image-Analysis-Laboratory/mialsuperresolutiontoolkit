@@ -78,7 +78,19 @@ jobs:
             mkdir -p /tmp/cache
             docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit \
             | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
-
+      - save_cache:
+          keys:
+            - docker-{{ .Branch }}-{{ epoch }}
+            - docker-{{ .Branch }}-
+            - docker-master-
+            - docker-
+          paths:
+            - /tmp/cache/docker.tar.gz
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - cache/docker.tar.gz
+            - src/mialsuperresolutiontoolkit
   build-singularity:
     machine:
       # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
@@ -123,6 +135,10 @@ jobs:
             docker push localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
             SINGULARITY_NOHTTPS=1 singularity build /tmp/cache/mialsuperresolutiontoolkit.simg docker://localhost:5000/sebastientourbier/mialsuperresolutiontoolkit:latest
           no_output_timeout: 5h
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - cache/mialsuperresolutiontoolkit.simg
 
   test-docker:
     machine:
@@ -271,6 +287,10 @@ jobs:
                 -not -name "*.txt" -not -name "*.pklz" \
                 -not -name "*.log" -not -name "*.html" \
                 -type f -delete
+      - store_artifacts:
+          path: 
+			- /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
+			- /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
 
   codacy-coverage-report:
     docker:
@@ -402,6 +422,10 @@ jobs:
                 -not -name "*.txt" -not -name "*.pklz" \
                 -not -name "*.log" -not -name "*.html" \
                 -type f -delete
+      - store_artifacts:
+          path: 
+			- /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
+			- /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
 
   test-python-install:
     parameters:
