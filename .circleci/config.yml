@@ -28,7 +28,6 @@ jobs:
             - docker-master-
             - docker-
           paths:
-            - /tmp/cache/docker.tar.gz
             - /tmp/src/mialsuperresolutiontoolkit/
       - checkout
       - setup_remote_docker:
@@ -82,7 +81,6 @@ jobs:
       - save_cache:
           key: docker-{{ .Branch }}-{{ epoch }}
           paths:
-            - /tmp/cache/docker.tar.gz
             - /tmp/src/mialsuperresolutiontoolkit/
       - persist_to_workspace:
           root: /tmp
@@ -324,7 +322,7 @@ jobs:
           name: "Check whether test should be skipped"
           command: |
             cd /home/circleci/src/mialsuperresolutiontoolkit
-            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?test-singularity]' )" != "" ]]; then
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?build-singularity]|\[skip[ _]?test-singularity]' )" != "" ]]; then
               echo "Skipping singularity test"
               circleci step halt
             fi
