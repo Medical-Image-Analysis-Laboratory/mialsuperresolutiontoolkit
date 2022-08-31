@@ -87,6 +87,7 @@ jobs:
           paths:
             - cache/docker.tar.gz
             - src/mialsuperresolutiontoolkit
+  
   build-singularity:
     machine:
       # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
@@ -284,9 +285,9 @@ jobs:
                 -not -name "*.log" -not -name "*.html" \
                 -type f -delete
       - store_artifacts:
-          path: 
-              - /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
-              - /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
 
   codacy-coverage-report:
     docker:
@@ -419,9 +420,9 @@ jobs:
                 -not -name "*.log" -not -name "*.html" \
                 -type f -delete
       - store_artifacts:
-          path: 
-              - /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
-              - /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
+      - store_artifacts:
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
 
   test-python-install:
     parameters:
