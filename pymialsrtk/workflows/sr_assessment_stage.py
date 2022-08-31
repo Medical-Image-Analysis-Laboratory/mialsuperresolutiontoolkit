@@ -77,7 +77,7 @@ def create_sr_assessment_stage(
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(
-            fields=['output_metrics']
+            fields=['output_metrics', 'output_metrics_labels']
         ),
         name='outputnode')
 
@@ -130,8 +130,8 @@ def create_sr_assessment_stage(
 
     if p_do_multi_parameters:
         concat_sr_image_metrics = pe.JoinNode(
-            interface=postprocess.ConcatenateQualityMetrics(),
-            joinfield='input_metrics',
+            interface=postprocess.ConcatenateImageMetrics(),
+            joinfield=['input_metrics', 'input_metrics_labels'],
             joinsource=p_input_srtv_node,
             name='concat_sr_image_metrics'
         )
@@ -185,11 +185,18 @@ def create_sr_assessment_stage(
     if p_do_multi_parameters:
         sr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
                                     concat_sr_image_metrics, 'input_metrics')
+        sr_assessment_stage.connect(sr_image_metrics, 'output_metrics_labels',
+                                    concat_sr_image_metrics, 'input_metrics_labels')
 
         sr_assessment_stage.connect(concat_sr_image_metrics, 'output_csv',
                                     outputnode, 'output_metrics')
+        sr_assessment_stage.connect(concat_sr_image_metrics, 'output_csv_labels',
+                                    outputnode, 'output_metrics_labels')
     else:
         sr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
                                     outputnode, 'output_metrics')
+
+        sr_assessment_stage.connect(sr_image_metrics, 'output_metrics_labels',
+                                    outputnode, 'output_metrics_labels')
 
     return sr_assessment_stage

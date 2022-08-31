@@ -436,6 +436,7 @@ class ImageMetricsOutputSpec(TraitedSpec):
     """Class used to represent outputs of the QualityMetrics interface."""
 
     output_metrics = File(desc='Output CSV')
+    output_metrics_labels = File(desc='Output per-label CSV')
 
 
 class ImageMetrics(BaseInterface):
@@ -447,12 +448,18 @@ class ImageMetrics(BaseInterface):
     _image_array = None
     _reference_array = None
     _labelmap_array = None
+
     _dict_metrics = None
+    _dict_metrics_labels = None
 
     def _gen_filename(self, name):
         if name == 'output_metrics':
             _, name, ext = split_filename(self.inputs.input_image)
             output = name + '_csv' + '.csv'
+            return os.path.abspath(output)
+        if name == 'output_metrics_labels':
+            _, name, ext = split_filename(self.inputs.input_image)
+            output = name + 'labels_csv' + '.csv'
             return os.path.abspath(output)
         return None
 
@@ -462,6 +469,7 @@ class ImageMetrics(BaseInterface):
         self._labelmap_array = None
 
         self._dict_metrics = {}
+        self._list_metrics_labels = []
 
 
     def _load_image_arrays(self):
@@ -474,8 +482,8 @@ class ImageMetrics(BaseInterface):
         reader.SetFileName(self.inputs.input_image)
         self._image_array = sitk.GetArrayFromImage(reader.Execute())
 
-        if self.inputs.input_ref_image is not None:
-            reader.SetFileName(self.inputs.input_ref_image)
+        if self.inputs.input_ref_labelmap is not None:
+            reader.SetFileName(self.inputs.input_ref_labelmap)
             self._labelmap_array = sitk.GetArrayFromImage(reader.Execute())
 
     def _compute_metrics(self):
@@ -499,21 +507,27 @@ class ImageMetrics(BaseInterface):
         )
         self._dict_metrics['SSIM'] = ssim
 
+        print('Running nSSIM computation')
+        nssim = skimage.metrics.structural_similarity(
+            (self._reference_array - np.min(self._reference_array)) / np.ptp(self._reference_array),
+            (self._image_array - np.min(self._image_array)) / np.ptp(self._image_array),
+            data_range=1
+        )
+        self._dict_metrics['nSSIM'] = nssim
+
+        print('Running RMSE computation')
+        rmse = skimage.metrics.normalized_root_mse(
+            self._reference_array,
+            self._image_array
+        )
+        self._dict_metrics['RMSE'] = rmse
+
     def _generate_csv(self):
         TV_params = self.inputs.input_TV_parameters
 
         data = []
         data.append({**TV_params, **self._dict_metrics})
-
         df_metrics = pd.DataFrame.from_records(data)
-
-        # names = ['in_lambda', 'in_deltat', 'PSNR', 'SSIM']
-        # row = [TV_params['in_lambda'], TV_params['in_deltat'], psnr, ssim]
-        #
-        # metrics = []
-        # metrics.append(dict(zip(names, row)))
-        #
-        # df_metrics = pd.DataFrame(metrics)
 
         df_metrics.to_csv(
             self._gen_filename('output_metrics'),
@@ -521,7 +535,53 @@ class ImageMetrics(BaseInterface):
             header=True,
             sep=','
         )
-        print('saved!')
+
+    def _compute_metrics_labels(self):
+        label_ids = list(np.unique(self._labelmap_array).astype(int))
+        label_ids.remove(0)
+        print(label_ids)
+
+        for label in label_ids:
+            dict_label = {'Label': label}
+            ref_label = np.where(self._labelmap_array == label, self._reference_array, 0)
+            img_label = np.where(self._labelmap_array == label, self._image_array, 0)
+
+            datarange = int(
+                np.amax(ref_label) - min(np.amin(img_label), np.amin(ref_label)))
+
+            print('Running PSNR computation')
+            psnr = skimage.metrics.peak_signal_noise_ratio(
+                ref_label,
+                img_label,
+                data_range=datarange
+            )
+            dict_label['PSNR'] = psnr
+
+            print('Running SSIM computation')
+            ssim = skimage.metrics.structural_similarity(
+                ref_label,
+                img_label,
+                data_range=datarange
+            )
+            dict_label['SSIM'] = ssim
+
+            self._list_metrics_labels.append(dict_label)
+            # return
+
+    def _generate_csv_labels(self):
+        TV_params = self.inputs.input_TV_parameters
+
+        data = []
+        for it in self._list_metrics_labels:
+            data.append({**TV_params, **it})
+        df_metrics = pd.DataFrame.from_records(data)
+
+        df_metrics.to_csv(
+            self._gen_filename('output_metrics_labels'),
+            index=False,
+            header=True,
+            sep=','
+        )
 
     def _run_interface(self, runtime):
         try:
@@ -529,9 +589,12 @@ class ImageMetrics(BaseInterface):
             self._load_image_arrays()
             self._compute_metrics()
             self._generate_csv()
+            print('Computed and saved overall metrics!')
 
             if self.inputs.input_ref_labelmap:
-                print('labels are:', np.unique(self._labelmap_array))
+                self._compute_metrics_labels()
+                self._generate_csv_labels()
+                print('Computed and saved per label metrics!')
 
         except Exception as e:
             print('Failed')
@@ -543,33 +606,41 @@ class ImageMetrics(BaseInterface):
         outputs = self._outputs().get()
         outputs['output_metrics'] = \
             self._gen_filename('output_metrics')
+        outputs['output_metrics_labels'] = \
+            self._gen_filename('output_metrics_labels')
         return outputs
 
 
-class ConcatenateQualityMetricsInputSpec(BaseInterfaceInputSpec):
+class ConcatenateImageMetricsInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of
-    the ConcatenateQualityMetrics interface."""
+    the ConcatenateImageMetrics interface."""
 
     input_metrics = InputMultiPath(File(mandatory=True), desc='')
+    input_metrics_labels = InputMultiPath(File(mandatory=True), desc='')
 
 
-class ConcatenateQualityMetricsOutputSpec(TraitedSpec):
+class ConcatenateImageMetricsOutputSpec(TraitedSpec):
     """Class used to represent outputs of
-    the ConcatenateQualityMetrics interface."""
+    the ConcatenateImageMetrics interface."""
 
     output_csv = File(desc='')
+    output_csv_labels = File(desc='')
 
 
-class ConcatenateQualityMetrics(BaseInterface):
-    """ConcatenateQualityMetrics
+class ConcatenateImageMetrics(BaseInterface):
+    """ConcatenateImageMetrics
 
     """
 
-    input_spec = ConcatenateQualityMetricsInputSpec
-    output_spec = ConcatenateQualityMetricsOutputSpec
+    input_spec = ConcatenateImageMetricsInputSpec
+    output_spec = ConcatenateImageMetricsOutputSpec
 
     def _gen_filename(self, name):
         if name == 'output_csv':
+            return os.path.abspath(
+                os.path.basename(self.inputs.input_metrics[0])
+            )
+        if name == 'output_csv_labels':
             return os.path.abspath(
                 os.path.basename(self.inputs.input_metrics[0])
             )
@@ -580,29 +651,7 @@ class ConcatenateQualityMetrics(BaseInterface):
             frames = [pd.read_csv(s, index_col=False)
                        for s in self.inputs.input_metrics]
 
-            # if len(frames):
             res = pd.concat(frames)
-
-            # str_stacks = '['
-            # for i, s in enumerate(self.inputs.input_stacks_order):
-            #     if i > 0:
-            #         str_stacks += ','
-            #     str_stacks += str(s)
-            # str_stacks += ']'
-            #
-            # num_configs = len(self.inputs.input_metrics)
-
-            # res.insert(
-            #     loc=0,
-            #     column='stacks',
-            #     value= [str_stacks for i in range(num_configs)]
-            # )
-            # res.insert(loc=0, column='num_stacks', value= \
-            # [len(self.inputs.input_stacks_order) \
-            # for i in range(num_configs)])
-            # res.insert(loc=0, column='sr_id', value=\
-            # [self.inputs.sr_id for i in range(num_configs)])
-
             res.to_csv(
                 self._gen_filename('output_csv'),
                 index=False,
@@ -610,12 +659,16 @@ class ConcatenateQualityMetrics(BaseInterface):
                 sep=','
             )
 
-            print()
-            print()
-            print(res)
-            print()
-            print()
-            print()
+            frames_labels = [pd.read_csv(s, index_col=False)
+                       for s in self.inputs.input_metrics_labels]
+
+            res = pd.concat(frames_labels)
+            res.to_csv(
+                self._gen_filename('output_csv_labels'),
+                index=False,
+                header=True,
+                sep=','
+            )
 
         except Exception as e:
             print('Fail in ConcatenateQualityMetrics()')
@@ -625,6 +678,7 @@ class ConcatenateQualityMetrics(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['output_csv'] = self._gen_filename('output_csv')
+        outputs['output_csv_labels'] = self._gen_filename('output_csv_labels')
         return outputs
 
 
