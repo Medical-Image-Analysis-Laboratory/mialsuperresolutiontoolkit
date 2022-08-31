@@ -67,7 +67,7 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
         input_fields += ['input_images_nlm']
 
     if p_do_srr_assessment:
-        input_fields += ["input_metrics"]
+        input_fields += ["input_metrics", "input_metrics_labels"]
 
     if p_do_reconstruct_labels:
         input_fields += ['input_labelmap']
@@ -123,6 +123,8 @@ def create_srr_output_stage(p_do_nlm_denoising=False,
     if p_do_srr_assessment:
         srr_output_stage.connect(inputnode, "input_metrics",
                                  datasink, 'anat.@SRmetrics')
+        srr_output_stage.connect(inputnode, "input_metrics_labels",
+                                 datasink, 'anat.@SRmetricsLabels')
 
     if p_do_reconstruct_labels:
         srr_output_stage.connect(inputnode, "input_labelmap",

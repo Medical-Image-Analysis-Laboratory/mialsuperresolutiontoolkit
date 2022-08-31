@@ -351,6 +351,19 @@ class FilenamesGeneration(BaseInterface):
         self.m_substitutions.append(('motion_index_QC.tsv',
                                      self.inputs.sub_ses + '_rec-SR' +
                                      '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.tsv'))
+
+
+        # Metric CSV files
+        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
+                                     str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr_trans_csv.csv',
+                                    self.inputs.sub_ses + '_rec-SR' + '_id-' +
+                                     str(self.inputs.sr_id) + '_desc-volume_metrics.csv'))
+
+        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
+                                     str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr_trans_labels_csv.csv',
+                                    self.inputs.sub_ses + '_rec-SR' + '_id-' +
+                                     str(self.inputs.sr_id) + '_desc-labels_metrics.csv'))
+
         return runtime
 
     def _list_outputs(self):
@@ -459,7 +472,7 @@ class ImageMetrics(BaseInterface):
             return os.path.abspath(output)
         if name == 'output_metrics_labels':
             _, name, ext = split_filename(self.inputs.input_image)
-            output = name + 'labels_csv' + '.csv'
+            output = name + '_labels_csv' + '.csv'
             return os.path.abspath(output)
         return None
 
@@ -654,7 +667,7 @@ class ConcatenateImageMetrics(BaseInterface):
             )
         if name == 'output_csv_labels':
             return os.path.abspath(
-                os.path.basename(self.inputs.input_metrics[0])
+                os.path.basename(self.inputs.input_metrics_labels[0])
             )
         return None
 
@@ -674,8 +687,8 @@ class ConcatenateImageMetrics(BaseInterface):
             frames_labels = [pd.read_csv(s, index_col=False)
                              for s in self.inputs.input_metrics_labels]
 
-            res = pd.concat(frames_labels)
-            res.to_csv(
+            res_labels = pd.concat(frames_labels)
+            res_labels.to_csv(
                 self._gen_filename('output_csv_labels'),
                 index=False,
                 header=True,

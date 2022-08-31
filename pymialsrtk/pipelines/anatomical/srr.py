@@ -512,6 +512,9 @@ class AnatomicalPipeline:
             self.wf.connect(srr_assessment_stage, "outputnode.output_metrics",
                             output_mgmt_stage, "inputnode.input_metrics")
 
+            self.wf.connect(srr_assessment_stage, "outputnode.output_metrics_labels",
+                            output_mgmt_stage, "inputnode.input_metrics_labels")
+
         if self.m_do_reconstruct_labels:
             self.wf.connect(input_mgmt_stage, "outputnode.labels_filtered",
                             preprocessing_stage, "inputnode.input_labels")
