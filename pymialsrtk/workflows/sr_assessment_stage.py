@@ -19,6 +19,7 @@ import pymialsrtk.interfaces.preprocess as preprocess
 
 def create_sr_assessment_stage(
         p_do_multi_parameters=False,
+        p_do_reconstruct_labels=False,
         p_input_srtv_node=None,
         p_openmp_number_of_cores=1,
         name='sr_assessment_stage'
@@ -66,6 +67,9 @@ def create_sr_assessment_stage(
         'input_TV_parameters'
     ]
 
+    if p_do_reconstruct_labels:
+        input_fields += ['input_sr_labelmap']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=input_fields),
@@ -104,6 +108,15 @@ def create_sr_assessment_stage(
     apply_transform.environ = {'PATH': '/opt/conda/bin'}
     apply_transform.terminal_output = 'file_stderr'
 
+    if p_do_reconstruct_labels:
+        apply_transform_labels = pe.Node(
+            interface=ApplyTransforms(),
+            name='apply_transform_labels'
+        )
+        apply_transform_labels.inputs.num_threads = p_openmp_number_of_cores
+        apply_transform_labels.environ = {'PATH': '/opt/conda/bin'}
+        apply_transform_labels.terminal_output = 'file_stderr'
+        apply_transform_labels.interpolation = 'NearestNeighbor'
 
     mask_sr = pe.Node(
         interface=preprocess.MialsrtkMaskImage(),
@@ -116,13 +129,6 @@ def create_sr_assessment_stage(
         name='quality_metrics'
     )
     quality_metrics.inputs.in_num_threads = p_openmp_number_of_cores
-
-    z_debug = pe.Node(
-        interface=util.IdentityInterface(
-            fields=["output_warped_image"]
-        ),
-        name='z_debug'
-    )
 
     if p_do_multi_parameters:
         concat_quality_metrics = pe.JoinNode(
@@ -155,6 +161,14 @@ def create_sr_assessment_stage(
                                 apply_transform, 'reference_image')
     sr_assessment_stage.connect(registration_quick, 'out_matrix',
                                 apply_transform, 'transforms')
+
+    if p_do_reconstruct_labels:
+        sr_assessment_stage.connect(inputnode, 'input_sr_labelmap',
+                                    apply_transform_labels, 'input_image')
+        sr_assessment_stage.connect(crop_reference, 'output_image',
+                                    apply_transform_labels, 'reference_image')
+        sr_assessment_stage.connect(registration_quick, 'out_matrix',
+                                    apply_transform_labels, 'transforms')
 
     sr_assessment_stage.connect(apply_transform, 'output_image',
                                 mask_sr, 'in_file')
