@@ -430,7 +430,6 @@ class QualityMetricsInputSpec(BaseInterfaceInputSpec):
         mandatory=False
     )
     input_TV_parameters = traits.Dict(mandatory=True)
-    in_num_threads = traits.Int(1, usedefault=True, mandatory=False)
 
     # in_sr_node = traits.Str(mandatory=False)
 

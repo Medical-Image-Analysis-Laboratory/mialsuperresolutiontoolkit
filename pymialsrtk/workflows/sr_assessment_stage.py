@@ -128,7 +128,6 @@ def create_sr_assessment_stage(
         postprocess.QualityMetrics(),
         name='quality_metrics'
     )
-    quality_metrics.inputs.in_num_threads = p_openmp_number_of_cores
 
     if p_do_multi_parameters:
         concat_quality_metrics = pe.JoinNode(
