@@ -328,7 +328,6 @@ class AnatomicalPipeline:
 
                 abort_process = True
 
-
         if self.m_do_anat_orientation and self.m_do_srr_assessment:
             print('SRR pipeline with custom interfaces do_anat_orientation'
                   'and do_srr_assessment is subject to inconsistencies.'

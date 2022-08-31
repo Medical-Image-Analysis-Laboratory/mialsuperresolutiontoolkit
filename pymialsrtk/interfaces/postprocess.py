@@ -471,7 +471,6 @@ class ImageMetrics(BaseInterface):
         self._dict_metrics = {}
         self._list_metrics_labels = []
 
-
     def _load_image_arrays(self):
 
         reader = sitk.ImageFileReader()
@@ -489,9 +488,11 @@ class ImageMetrics(BaseInterface):
     def _compute_metrics(self):
 
         datarange = int(
-            np.amax(self._reference_array) - min(np.amin(self._image_array), np.amin(self._reference_array)))
+            np.amax(self._reference_array) - \
+            min(np.amin(self._image_array), np.amin(self._reference_array))
+        )
 
-        print('Running PSNR computation')
+        # print('Running PSNR computation')
         psnr = skimage.metrics.peak_signal_noise_ratio(
             self._reference_array,
             self._image_array,
@@ -499,7 +500,7 @@ class ImageMetrics(BaseInterface):
         )
         self._dict_metrics['PSNR'] = psnr
 
-        print('Running SSIM computation')
+        # print('Running SSIM computation')
         ssim = skimage.metrics.structural_similarity(
             self._reference_array,
             self._image_array,
@@ -507,15 +508,17 @@ class ImageMetrics(BaseInterface):
         )
         self._dict_metrics['SSIM'] = ssim
 
-        print('Running nSSIM computation')
+        # print('Running nSSIM computation')
         nssim = skimage.metrics.structural_similarity(
-            (self._reference_array - np.min(self._reference_array)) / np.ptp(self._reference_array),
-            (self._image_array - np.min(self._image_array)) / np.ptp(self._image_array),
+            (self._reference_array - np.min(self._reference_array)) / \
+            np.ptp(self._reference_array),
+            (self._image_array - np.min(self._image_array)) / \
+            np.ptp(self._image_array),
             data_range=1
         )
         self._dict_metrics['nSSIM'] = nssim
 
-        print('Running RMSE computation')
+        # print('Running RMSE computation')
         rmse = skimage.metrics.normalized_root_mse(
             self._reference_array,
             self._image_array
@@ -539,17 +542,26 @@ class ImageMetrics(BaseInterface):
     def _compute_metrics_labels(self):
         label_ids = list(np.unique(self._labelmap_array).astype(int))
         label_ids.remove(0)
-        print(label_ids)
 
         for label in label_ids:
             dict_label = {'Label': label}
-            ref_label = np.where(self._labelmap_array == label, self._reference_array, 0)
-            img_label = np.where(self._labelmap_array == label, self._image_array, 0)
+            ref_label = np.where(
+                self._labelmap_array == label,
+                self._reference_array,
+                0
+            )
+            img_label = np.where(
+                self._labelmap_array == label,
+                self._image_array,
+                0
+            )
 
             datarange = int(
-                np.amax(ref_label) - min(np.amin(img_label), np.amin(ref_label)))
+                np.amax(ref_label) - \
+                min(np.amin(img_label), np.amin(ref_label))
+            )
 
-            print('Running PSNR computation')
+            # print('Running PSNR computation')
             psnr = skimage.metrics.peak_signal_noise_ratio(
                 ref_label,
                 img_label,
@@ -557,7 +569,7 @@ class ImageMetrics(BaseInterface):
             )
             dict_label['PSNR'] = psnr
 
-            print('Running SSIM computation')
+            # print('Running SSIM computation')
             ssim = skimage.metrics.structural_similarity(
                 ref_label,
                 img_label,
@@ -649,7 +661,7 @@ class ConcatenateImageMetrics(BaseInterface):
     def _run_interface(self, runtime):
         try:
             frames = [pd.read_csv(s, index_col=False)
-                       for s in self.inputs.input_metrics]
+                      for s in self.inputs.input_metrics]
 
             res = pd.concat(frames)
             res.to_csv(
@@ -660,7 +672,7 @@ class ConcatenateImageMetrics(BaseInterface):
             )
 
             frames_labels = [pd.read_csv(s, index_col=False)
-                       for s in self.inputs.input_metrics_labels]
+                             for s in self.inputs.input_metrics_labels]
 
             res = pd.concat(frames_labels)
             res.to_csv(

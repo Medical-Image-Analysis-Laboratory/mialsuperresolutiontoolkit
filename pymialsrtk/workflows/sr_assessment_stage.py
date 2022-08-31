@@ -186,11 +186,13 @@ def create_sr_assessment_stage(
         sr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
                                     concat_sr_image_metrics, 'input_metrics')
         sr_assessment_stage.connect(sr_image_metrics, 'output_metrics_labels',
-                                    concat_sr_image_metrics, 'input_metrics_labels')
+                                    concat_sr_image_metrics,
+                                    'input_metrics_labels')
 
         sr_assessment_stage.connect(concat_sr_image_metrics, 'output_csv',
                                     outputnode, 'output_metrics')
-        sr_assessment_stage.connect(concat_sr_image_metrics, 'output_csv_labels',
+        sr_assessment_stage.connect(concat_sr_image_metrics,
+                                    'output_csv_labels',
                                     outputnode, 'output_metrics_labels')
     else:
         sr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
