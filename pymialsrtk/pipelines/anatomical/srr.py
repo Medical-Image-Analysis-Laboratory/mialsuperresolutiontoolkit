@@ -328,6 +328,14 @@ class AnatomicalPipeline:
 
                 abort_process = True
 
+
+        if self.m_do_anat_orientation and self.m_do_srr_assessment:
+            print('SRR pipeline with custom interfaces do_anat_orientation'
+                  'and do_srr_assessment is subject to inconsistencies.'
+                  'Abort!')
+
+            abort_process = True
+
         if abort_process:
             print('We should do something !! ')
 
@@ -486,8 +494,11 @@ class AnatomicalPipeline:
                             srr_assessment_stage,
                             "inputnode.input_TV_parameters")
 
+            self.wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                            srr_assessment_stage, "inputnode.input_sdi_image")
+
             self.wf.connect(postprocessing_stage, "outputnode.output_image",
-                            srr_assessment_stage, "inputnode.input_image")
+                            srr_assessment_stage, "inputnode.input_sr_image")
 
             self.wf.connect(input_mgmt_stage, "outputnode.hr_reference_image",
                             srr_assessment_stage, "inputnode.input_ref_image")

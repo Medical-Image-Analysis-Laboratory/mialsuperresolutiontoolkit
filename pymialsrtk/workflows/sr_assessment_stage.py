@@ -7,10 +7,14 @@ reconstruction pipeline."""
 
 from traits.api import *
 
-from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
 
+from nipype.interfaces import utility as util
+from nipype.interfaces.ants \
+    import RegistrationSynQuick, ApplyTransforms
+
 import pymialsrtk.interfaces.postprocess as postprocess
+import pymialsrtk.interfaces.preprocess as preprocess
 
 
 def create_sr_assessment_stage(
@@ -37,11 +41,12 @@ def create_sr_assessment_stage(
             for ants registration (default : 1)
 
     Inputs::
-        inputnode.input_reference_image
-        inputnode.input_reference_mask
-        inputnode.input_reference_labelmap
-        inputnode.input_image
-        inputnode.input_TV_parameters
+        input_reference_image
+        input_reference_mask
+        input_reference_labelmap
+        input_sr_image
+        input_sdi_image
+        input_TV_parameters
     Outputs::
         outputnode.output_metrics
     Example
@@ -56,7 +61,8 @@ def create_sr_assessment_stage(
         'input_ref_image',
         'input_ref_mask',
         'input_ref_labelmap',
-        'input_image',
+        'input_sr_image',
+        'input_sdi_image',
         'input_TV_parameters'
     ]
 
@@ -70,6 +76,35 @@ def create_sr_assessment_stage(
             fields=['output_metrics']
         ),
         name='outputnode')
+
+    mask_reference = pe.Node(
+        interface=preprocess.MialsrtkMaskImage(),
+        name='mask_reference'
+    )
+
+    registration_quick = pe.Node(
+        interface=RegistrationSynQuick(),
+        name='registration_quick'
+    )
+    registration_quick.inputs.num_threads = p_openmp_number_of_cores
+    registration_quick.inputs.transform_type = 'r'
+    registration_quick.environ = {'PATH': '/opt/conda/bin'}
+    registration_quick.terminal_output = 'file_stderr'
+
+    apply_transform = pe.Node(
+        interface=ApplyTransforms(),
+        name='apply_transform'
+    )
+    apply_transform.inputs.num_threads = p_openmp_number_of_cores
+    apply_transform.environ = {'PATH': '/opt/conda/bin'}
+    apply_transform.terminal_output = 'file_stderr'
+
+
+    mask_sr = pe.Node(
+        interface=preprocess.MialsrtkMaskImage(),
+        name='mask_sr'
+    )
+
 
     quality_metrics = pe.Node(
         postprocess.QualityMetrics(),
@@ -92,9 +127,35 @@ def create_sr_assessment_stage(
             name='concat_quality_metrics'
         )
 
-    sr_assessment_stage.connect(inputnode, 'input_image',
-                                quality_metrics, 'input_image')
     sr_assessment_stage.connect(inputnode, 'input_ref_image',
+                                mask_reference, 'in_file')
+
+    sr_assessment_stage.connect(inputnode, 'input_ref_mask',
+                                mask_reference, 'in_mask')
+
+    # TBD: Add here a ReduceFOV...?
+
+    sr_assessment_stage.connect(inputnode, 'input_sdi_image',
+                                registration_quick, 'moving_image')
+    sr_assessment_stage.connect(mask_reference, 'out_im_file',
+                                registration_quick, 'fixed_image')
+
+    sr_assessment_stage.connect(inputnode, 'input_sr_image',
+                                apply_transform, 'input_image')
+    sr_assessment_stage.connect(inputnode, 'input_ref_image',
+                                apply_transform, 'reference_image')
+    sr_assessment_stage.connect(registration_quick, 'out_matrix',
+                                apply_transform, 'transforms')
+
+    sr_assessment_stage.connect(apply_transform, 'output_image',
+                                mask_sr, 'in_file')
+    sr_assessment_stage.connect(inputnode, 'input_ref_mask',
+                                mask_sr, 'in_mask')
+
+    sr_assessment_stage.connect(mask_sr, 'out_im_file',
+                                quality_metrics, 'input_image')
+
+    sr_assessment_stage.connect(mask_reference, 'out_im_file',
                                 quality_metrics, 'input_ref_image')
     sr_assessment_stage.connect(inputnode, 'input_ref_mask',
                                 quality_metrics, 'input_ref_mask')
@@ -104,7 +165,7 @@ def create_sr_assessment_stage(
     sr_assessment_stage.connect(inputnode, 'input_TV_parameters',
                                 quality_metrics, 'input_TV_parameters')
 
-    sr_assessment_stage.connect(quality_metrics, 'output_warped_image',
+    sr_assessment_stage.connect(registration_quick, 'warped_image',
                                 z_debug, 'output_warped_image')
 
     if p_do_multi_parameters:
