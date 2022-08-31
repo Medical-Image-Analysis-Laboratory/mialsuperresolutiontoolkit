@@ -521,7 +521,7 @@ class MialsrtkSDIComputation(BaseInterface):
     output_spec = MialsrtkSDIComputationOutputSpec
 
     def _gen_filename(self, name):
-        if name == 'output_hr':
+        if name == 'output_sdi':
             if self.inputs.label_id != -1:
                 output = ''.join([
                     self.inputs.sub_ses,
@@ -596,7 +596,7 @@ class MialsrtkSDIComputation(BaseInterface):
             params.append("-t")
             params.append(in_transform)
 
-        out_file = self._gen_filename('output_hr')
+        out_file = self._gen_filename('output_sdi')
         params.append("-o")
         params.append(out_file)
 
@@ -614,5 +614,5 @@ class MialsrtkSDIComputation(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_hr'] = self._gen_filename('output_hr')
+        outputs['output_sdi'] = self._gen_filename('output_sdi')
         return outputs
