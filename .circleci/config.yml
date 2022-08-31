@@ -24,8 +24,6 @@ jobs:
       - restore_cache:
           keys:
             - dockerb-{{ .Branch }}
-            - dockerb-master
-            - dockerb
           paths:
             - /tmp/src/mialsuperresolutiontoolkit/
       - checkout
@@ -93,6 +91,11 @@ jobs:
       image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
+      - restore_cache:
+          keys:
+            - dockerb-{{ .Branch }}
+          paths:
+            - /tmp/src/mialsuperresolutiontoolkit/
       - checkout:
           path: /home/circleci/src/mialsuperresolutiontoolkit
       - run:
@@ -143,6 +146,11 @@ jobs:
     resource_class: medium
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
+      - restore_cache:
+          keys:
+            - dockerb-{{ .Branch }}
+          paths:
+            - /tmp/src/mialsuperresolutiontoolkit/
       - checkout:
           path: /home/circleci/src/mialsuperresolutiontoolkit
       - run:
@@ -315,6 +323,11 @@ jobs:
     resource_class: medium
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
+      - restore_cache:
+          keys:
+            - dockerb-{{ .Branch }}
+          paths:
+            - /tmp/src/mialsuperresolutiontoolkit/
       - checkout:
           path: /home/circleci/src/mialsuperresolutiontoolkit
       - run:
