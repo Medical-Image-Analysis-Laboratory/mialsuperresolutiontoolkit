@@ -93,6 +93,15 @@ jobs:
       image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: "Check what there is at /tmp/src"
+          command: |
+            pwd
+            ls -la
+            echo "Checking /tmp/src"
+            ls -la /tmp/src
       - checkout:
           path: /tmp/src/mialsuperresolutiontoolkit
       - run:
@@ -102,8 +111,6 @@ jobs:
               echo "Skipping build-singularity"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       - run:
           name: "Starting local registry"
           command: docker run -d -p 5000:5000 --restart=always --name registry registry:2
@@ -142,6 +149,8 @@ jobs:
     resource_class: medium
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
+      - attach_workspace:
+          at: /tmp
       - run:
           name: "Check what there is at /tmp/src"
           command: |
@@ -158,8 +167,6 @@ jobs:
               echo "Skipping test"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       # - restore_cache:
       #     keys:
       #       - ds-sample-derivatives-{{ .Branch }}-{{ epoch }}
@@ -320,6 +327,8 @@ jobs:
     resource_class: medium
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
+      - attach_workspace:
+          at: /tmp
       - checkout:
           path: /tmp/src/mialsuperresolutiontoolkit
       - run:
@@ -329,8 +338,6 @@ jobs:
               echo "Skipping singularity test"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       - singularity/install-go:
           go-version: '1.13'
       - singularity/debian-install-3:
@@ -512,10 +519,10 @@ jobs:
       image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
-      - checkout:
-          path: /tmp/src/mialsuperresolutiontoolkit
       - attach_workspace:
           at: /tmp
+      - checkout:
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Load Docker image layer cache"
           no_output_timeout: 30m
@@ -551,10 +558,10 @@ jobs:
       image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
-      - checkout:
-          path: /tmp/src/mialsuperresolutiontoolkit
       - attach_workspace:
           at: /tmp
+      - checkout:
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Load Docker image layer cache"
           no_output_timeout: 30m
@@ -588,6 +595,8 @@ jobs:
       image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
+      - attach_workspace:
+          at: /tmp
       - checkout:
           path: /tmp/src/mialsuperresolutiontoolkit
       - run:
@@ -597,8 +606,6 @@ jobs:
               echo "Skipping singularity deployment"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       - singularity/install-go:
           go-version: '1.13'
       - singularity/debian-install-3:
@@ -625,6 +632,8 @@ jobs:
       image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
+      - attach_workspace:
+          at: /tmp
       - checkout:
           path: /tmp/src/mialsuperresolutiontoolkit
       - run:
@@ -634,8 +643,6 @@ jobs:
               echo "Skipping singularity deployment"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       - singularity/install-go:
           go-version: '1.13'
       - singularity/debian-install-3:
