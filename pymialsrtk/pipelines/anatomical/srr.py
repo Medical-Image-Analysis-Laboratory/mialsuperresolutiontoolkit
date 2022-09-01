@@ -232,15 +232,14 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         if self.m_do_anat_orientation:
             if not os.path.isdir('/sta'):
-                raise OSError(
-                    'A template directory must be specified '
-                    'with interface \'do_anat_orientation\'.'
-                )
+                raise RuntimeError(
+                    'A template directory must be specified to '
+                    'perform alignement.')
             if self.m_ga is None:
-                raise OSError(
-                    'A gestational age must be specified '
-                    'with interface \'do_anat_orientation\'.'
-                )
+                raise RuntimeError(
+                    'A gestational age must be specified to '
+                    'perform alignement.'
+                      )
 
         if self.m_do_reconstruct_labels:
             if not self.m_labels_derivatives_dir:
