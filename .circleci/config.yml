@@ -32,13 +32,6 @@ jobs:
           key: docker-{{ .Branch }}-{{ epoch }}
           paths:
             - /tmp/src/mialsuperresolutiontoolkit/
-      - run:
-          name: "Check what there is at /tmp/src"
-          command: |
-            pwd
-            ls -la
-            echo "Checking /tmp/src"
-            ls -la /tmp/src
       - setup_remote_docker:
           docker_layer_caching: true 
       - run:
@@ -96,12 +89,6 @@ jobs:
       - attach_workspace:
           at: /tmp
       - run:
-          name: "Check what there is at /tmp/src"
-          command: |
-            pwd
-            ls -la
-            echo "Checking /tmp/src"
-            ls -la /tmp/src
       - checkout:
           path: /tmp/src/mialsuperresolutiontoolkit
       - run:
@@ -151,13 +138,6 @@ jobs:
     steps:
       - attach_workspace:
           at: /tmp
-      - run:
-          name: "Check what there is at /tmp/src"
-          command: |
-            pwd
-            ls -la
-            echo "Checking /tmp/src"
-            ls -la /tmp/src
       - checkout:
           path: /tmp/src/mialsuperresolutiontoolkit
       - run:
