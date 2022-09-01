@@ -10,9 +10,6 @@ import numpy as np
 
 from traits.api import *
 
-from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
-                                    OutputMultiPath, BaseInterface,
-                                    BaseInterfaceInputSpec)
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.postprocess as postprocess
 from nipype.pipeline import engine as pe
@@ -33,39 +30,62 @@ def convert_ga(ga):
 def create_postproc_stage(
         p_ga,
         p_do_anat_orientation=False,
+        p_do_reconstruct_labels=False,
         p_verbose=False,
         name="postproc_stage"
 ):
     """Create a SR preprocessing workflow
     Parameters
     ----------
-    ::
-        name : name of workflow (default: preproc_stage)
-    Inputs::
-        inputnode.input_image : Input T2w image (filename)
-        inputnode.input_mask : Input mask image (filenames)
-    Outputs::
-        outputnode.output_image : Postprocessed image (filename)
-    Example
+        name : :str:
+            name of workflow (default: preproc_stage)
+        p_ga: :int:
+            Subject's gestational age in weeks
+        p_do_anat_orientation: :bool:
+            Whether the alignement to template should be performed
+        p_do_reconstruct_labels: :bool:
+            Whether the reconstruction of LR labelmaps should be performed
+        p_verbose: :bool:
+            Whether verbosity is enabled.
+    Inputs
+    ------
+        input_sdi:
+            Input SDI image (filename)
+        input_image:
+            Input T2w image (filename)
+        input_mask:
+            Input mask image (filename)
+        input_labelmap: (optional)
+            Input labelmap image (filename)
+    Outputs
     -------
-    >>> postproc_stage = create_preproc_stage(p_do_nlm_denoising=False)
-    >>> postproc_stage.inputs.inputnode.input_image = 'sub-01_run-1_T2w.nii.gz'
-    >>> postproc_stage.inputs.inputnode.input_mask = 'sub-01_run-1_T2w_mask.nii.gz'
-    >>> postproc_stage.run() # doctest: +SKIP
+        output_image :
+            Postprocessed image (filename)
+        output_mask :
+            Postprocessed mask (filename)
+        output_labelmap :
+            Postprocessed labelmap (filename)
     """
 
     postproc_stage = pe.Workflow(name=name)
 
     # Set up a node to define all inputs for the postprocessing workflow
 
+    input_fields = ['input_image', 'input_mask', 'input_sdi']
+    output_fields = ['output_image', 'output_mask']
+
+    if p_do_reconstruct_labels:
+        input_fields += ['input_labelmap']
+        output_fields += ['output_labelmap']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
-            fields=['input_image', 'input_mask', 'input_sdi']),
+            fields=input_fields),
         name='inputnode')
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(
-            fields=['output_image', 'output_mask']
+            fields=output_fields
         ),
         name='outputnode')
 
@@ -105,9 +125,20 @@ def create_postproc_stage(
             name='compute_alignment'
         )
 
-        align_volume = pe.Node(
+        align_image = pe.Node(
             interface=preprocess.ApplyAlignmentTransform(),
-            name='align_volume'
+            name='align_image'
+        )
+
+        if p_do_reconstruct_labels:
+            align_labelmap = pe.Node(
+                interface=preprocess.ApplyAlignmentTransform(),
+                name='align_labelmap'
+            )
+    if p_do_reconstruct_labels:
+        mask_hr_label = pe.Node(
+            interface=preprocess.MialsrtkMaskImage(),
+            name='mask_hr_label'
         )
 
     postproc_stage.connect(inputnode, "input_image",
@@ -120,12 +151,22 @@ def create_postproc_stage(
     postproc_stage.connect(inputnode, "input_mask",
                            srtkN4BiasFieldCorrection, "input_mask")
 
+    if p_do_reconstruct_labels:
+        postproc_stage.connect(inputnode, "input_labelmap",
+                               mask_hr_label, "in_file")
+        postproc_stage.connect(inputnode, "input_mask",
+                               mask_hr_label, "in_mask")
+
     if not p_do_anat_orientation:
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
                                outputnode, "output_image")
 
         postproc_stage.connect(inputnode, "input_mask",
                                outputnode, "output_mask")
+
+        if p_do_reconstruct_labels:
+            postproc_stage.connect(mask_hr_label, "out_im_file",
+                                   outputnode, "output_labelmap")
 
     else:
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
@@ -139,19 +180,34 @@ def create_postproc_stage(
                                compute_alignment, "input_template")
 
         postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
-                               align_volume, "input_image")
+                               align_image, "input_image")
         postproc_stage.connect(resample_t2w_template, "output_image",
-                               align_volume, "input_template")
+                               align_image, "input_template")
 
         postproc_stage.connect(inputnode, "input_mask",
-                               align_volume, "input_mask")
+                               align_image, "input_mask")
 
         postproc_stage.connect(compute_alignment, "output_transform",
-                               align_volume, "input_transform")
+                               align_image, "input_transform")
 
-        postproc_stage.connect(align_volume, "output_image",
+        postproc_stage.connect(align_image, "output_image",
                                outputnode, "output_image")
-        postproc_stage.connect(align_volume, "output_mask",
+        postproc_stage.connect(align_image, "output_mask",
                                outputnode, "output_mask")
+
+        if p_do_reconstruct_labels:
+            postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
+                                   align_labelmap, "input_image")
+            postproc_stage.connect(resample_t2w_template, "output_image",
+                                   align_labelmap, "input_template")
+
+            postproc_stage.connect(mask_hr_label, "out_im_file",
+                                   align_labelmap, "input_mask")
+
+            postproc_stage.connect(compute_alignment, "output_transform",
+                                   align_labelmap, "input_transform")
+            postproc_stage.connect(align_labelmap, "output_mask",
+                                   outputnode, "output_labelmap")
+
 
     return postproc_stage
