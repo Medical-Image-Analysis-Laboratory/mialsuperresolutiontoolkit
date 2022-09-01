@@ -16,6 +16,8 @@ from nipype.interfaces.ants \
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
 
+import pymialsrtk.workflows.postproc_stage as postproc_stage
+
 
 def create_sr_assessment_stage(
         p_do_multi_parameters=False,
@@ -70,6 +72,8 @@ def create_sr_assessment_stage(
     if p_do_reconstruct_labels:
         input_fields += ['input_sr_labelmap']
 
+    output_fields = ['output_metrics', 'output_metrics_labels']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=input_fields),
@@ -77,13 +81,15 @@ def create_sr_assessment_stage(
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(
-            fields=['output_metrics', 'output_metrics_labels']
+            fields=output_fields
         ),
         name='outputnode')
 
-    mask_reference = pe.Node(
-        interface=preprocess.MialsrtkMaskImage(),
-        name='mask_reference'
+    proc_reference = postproc_stage.create_postproc_stage(
+        p_ga=None,
+        p_do_anat_orientation=False,
+        p_do_reconstruct_labels=False,
+        name='proc_reference'
     )
 
     crop_reference = pe.Node(
@@ -137,13 +143,13 @@ def create_sr_assessment_stage(
         )
 
     sr_assessment_stage.connect(inputnode, 'input_ref_image',
-                                mask_reference, 'in_file')
+                                proc_reference, 'inputnode.input_image')
     sr_assessment_stage.connect(inputnode, 'input_ref_mask',
-                                mask_reference, 'in_mask')
+                                proc_reference, 'inputnode.input_mask')
 
-    sr_assessment_stage.connect(mask_reference, 'out_im_file',
+    sr_assessment_stage.connect(proc_reference, 'outputnode.output_image',
                                 crop_reference, 'input_image')
-    sr_assessment_stage.connect(inputnode, 'input_ref_mask',
+    sr_assessment_stage.connect(proc_reference, 'outputnode.output_mask',
                                 crop_reference, 'input_mask')
     sr_assessment_stage.connect(inputnode, 'input_ref_labelmap',
                                 crop_reference, "input_label")
@@ -194,6 +200,7 @@ def create_sr_assessment_stage(
         sr_assessment_stage.connect(concat_sr_image_metrics,
                                     'output_csv_labels',
                                     outputnode, 'output_metrics_labels')
+
     else:
         sr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
                                     outputnode, 'output_metrics')
