@@ -117,8 +117,8 @@ int main( int argc, char * argv [] )
 
     if (verbose){
         std::cout << "Input image: " << inputImage << std::endl;
+        std::cerr << "Read input mask... " << std::endl;
     }
-    std::cerr << "Read input mask... " << std::endl;
     MaskReaderType::Pointer maskReader = MaskReaderType::New();
     maskReader->SetFileName( argv[2] );
     maskReader->Update();

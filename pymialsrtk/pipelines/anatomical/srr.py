@@ -142,7 +142,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         p_subject,
         p_ga=None,
         p_stacks=None,
-        sr_id=1,
+        p_sr_id=1,
         p_session=None,
         p_paramTV=None,
         p_masks_derivatives_dir=None,
@@ -156,12 +156,11 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         """Constructor of SRReconPipeline class instance."""
 
         super().__init__(p_bids_dir, p_output_dir, p_subject, p_ga, p_stacks,
-                         sr_id, p_session, p_masks_derivatives_dir,
+                         p_sr_id, p_session, p_masks_derivatives_dir,
                          p_masks_desc, p_dict_custom_interfaces, p_verbose,
                          p_openmp_number_of_cores, p_nipype_number_of_cores,
                          "rec"
                          )
-
         # (default) sr tv parameters
         if p_paramTV is None:
             p_paramTV = dict()
@@ -258,14 +257,14 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         # config.enable_provenance()
 
         input_stage = create_input_stage(
-                        self.bids_dir,
-                        self.subject,
-                        self.session,
-                        self.use_manual_masks,
+                        self.m_bids_dir,
+                        self.m_subject,
+                        self.m_session,
+                        self.m_use_manual_masks,
                         self.m_masks_desc,
                         self.m_masks_derivatives_dir,
-                        self.m_skip_stacks_ordering,
                         self.m_labels_derivatives_dir,
+                        self.m_skip_stacks_ordering,
                         self.m_do_reconstruct_labels,
                         self.m_stacks,
                         self.m_verbose)

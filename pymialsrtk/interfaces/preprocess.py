@@ -175,7 +175,6 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
             print('... cmd: {}'.format(cmd))
         env_cpp = os.environ.copy()
         env_cpp['LD_PRELOAD'] = ""
-        print(cmd)
         run(cmd, env=env_cpp)
 
         return runtime

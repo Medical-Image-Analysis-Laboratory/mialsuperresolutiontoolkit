@@ -102,7 +102,7 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
         p_output_dir, p_subject,
         p_ga=None,
         p_stacks=None,
-        sr_id=1,
+        p_sr_id=1,
         p_session=None,
         p_masks_derivatives_dir=None,
         p_masks_desc=None,
@@ -114,7 +114,7 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
         """Constructor of PreprocessingPipeline class instance."""
 
         super().__init__(p_bids_dir, p_output_dir, p_subject, p_ga, p_stacks,
-                         sr_id, p_session, p_masks_derivatives_dir,
+                         p_sr_id, p_session, p_masks_derivatives_dir,
                          p_masks_desc, p_dict_custom_interfaces, p_verbose,
                          p_openmp_number_of_cores, p_nipype_number_of_cores,
                          "pre"
@@ -176,10 +176,11 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
             self.m_use_manual_masks,
             self.m_masks_desc,
             self.m_masks_derivatives_dir,
-            None,
+            None,  # p_labels_derivatives_dir
             self.m_skip_stacks_ordering,
-            self.m_verbose,
-            self.m_stacks
+            False,  # p_do_reconstruct_labels
+            self.m_stacks,
+            self.m_verbose
         )
 
         preprocessing_stage = preproc_stage.create_preproc_stage(

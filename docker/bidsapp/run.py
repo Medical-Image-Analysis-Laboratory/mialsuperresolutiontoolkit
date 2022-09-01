@@ -242,7 +242,6 @@ def main(bids_dir, output_dir,
 
     if sr_id is None:
         sr_id = 1
-
     # Initialize an instance of AnatomicalPipeline
     if run_type == "sr":
         pipeline = SRReconPipeline(
@@ -326,7 +325,6 @@ if __name__ == "__main__":
     failed_dict = {}
     for sub in subjects_to_analyze:
         failed_dict[sub] = []
-        print(failed_dict)
         if sub in participants_params.keys():
 
             sr_list = participants_params[sub]
@@ -360,6 +358,7 @@ if __name__ == "__main__":
                                output_dir=args.output_dir,
                                subject=sub,
                                session=ses,
+                               run_type=args.run_type,
                                p_ga=ga,
                                p_stacks=stacks,
                                param_TV=param_TV,
