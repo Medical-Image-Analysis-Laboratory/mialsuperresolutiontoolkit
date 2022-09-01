@@ -383,7 +383,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                           preprocessing_stage, "inputnode.input_masks")
 
         if self.m_do_nlm_denoising:
-            self.m_wf.connect(preprocessing_stage, "outputnode.output_images_nlm",
+            self.m_wf.connect(preprocessing_stage,
+                              "outputnode.output_images_nlm",
                               reconstruction_stage,
                               "inputnode.input_images_nlm")
 

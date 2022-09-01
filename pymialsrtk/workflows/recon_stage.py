@@ -274,7 +274,7 @@ def create_recon_stage(p_paramTV,
                             ("input_masks", utils.sort_ascending),
                             srtkHRMask, "input_masks")
         recon_stage.connect(srtkImageReconstruction,
-                            ("output_transforms",utils.sort_ascending),
+                            ("output_transforms",   utils.sort_ascending),
                             srtkHRMask, "input_transforms")
         recon_stage.connect(srtkImageReconstruction, "output_sdi",
                             srtkHRMask, "input_sr")
