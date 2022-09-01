@@ -8,7 +8,7 @@
 			"deltatTV": 0.01 },
 		"custom_interfaces": {
 			"skip_stacks_ordering": false,
-			"skip_svr": false
+			"skip_svr": true 
 		}
 	}]
 }
