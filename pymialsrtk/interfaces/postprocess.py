@@ -220,10 +220,9 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
 class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
     """Class used to represent inputs of the FilenamesGeneration interface."""
 
-    sub_ses = traits.Str(mandatory=True, desc='Subject and session BIDS identifier to construct output filename.')
-    stacks_order = traits.List(mandatory=True, desc='List of stack run-id that specify the order of the stacks')
-    sr_id = traits.Int(mandatory=True, desc='Super-Resolution id')
-    use_manual_masks = traits.Bool(mandatory=True, desc='Whether masks were computed or manually performed.')
+    stacks_order = traits.List(mandatory=True,
+                               desc='List of stack run-id that specify the'
+                                    ' order of the stacks')
 
 
 class FilenamesGenerationOutputSpec(TraitedSpec):
@@ -233,16 +232,29 @@ class FilenamesGenerationOutputSpec(TraitedSpec):
 
 
 class FilenamesGeneration(BaseInterface):
-    """Generates final filenames from outputs of super-resolution reconstruction.
+    """Generates final filenames from outputs of
+    super-resolution reconstruction.
 
+    Attributes
+    ----------
+    m_sub_ses :
+        String containing subject-session information for output formatting
+    m_sr_id :
+        Super-Resolution id
+    m_run_type :
+        Type of run: either rec (SRRecon) or pre (Preprocessing)
     Example
     ----------
     >>> from pymialsrtk.interfaces.postprocess import FilenamesGeneration
-    >>> filenamesGen = FilenamesGeneration()
+    >>> filenamesGen = FilenamesGeneration(
+        p_sub_ses = 'sub-01',
+        p_sr_id = 3,crop_reference
+        p_run_type = "rec",
+        p_use_manual_masks=False
+        )
     >>> filenamesGen.inputs.sub_ses = 'sub-01'
     >>> filenamesGen.inputs.stacks_order = [3,1,4]
     >>> filenamesGen.inputs.sr_id = 3
-    >>> filenamesGen.inputs.use_manual_masks = False
     >>> filenamesGen.run() # doctest: +SKIP
 
     """
@@ -251,23 +263,41 @@ class FilenamesGeneration(BaseInterface):
     output_spec = FilenamesGenerationOutputSpec
 
     m_substitutions = []
+    m_sub_ses = None
+    m_sr_id = None
+    m_run_type = None
+    m_use_manual_masks = None
+
+    def __init__(
+            self,
+            p_sub_ses,
+            p_sr_id,
+            p_run_type,
+            p_use_manual_masks
+            ):
+        super().__init__()
+        self.m_sub_ses = p_sub_ses
+        self.m_sr_id = p_sr_id
+        self.m_run_type = p_run_type
+        self.m_use_manual_masks = p_use_manual_masks
 
     def _run_interface(self, runtime):
+        run_type = self.m_run_type
 
         self.m_substitutions.append(('_T2w_nlm_uni_bcorr_histnorm.nii.gz',
-                                     '_id-' + str(self.inputs.sr_id) +
+                                     '_id-' + str(self.m_sr_id) +
                                      '_desc-preprocSDI_T2w.nii.gz'))
 
-        if not self.inputs.use_manual_masks:
+        if not self.m_use_manual_masks:
             self.m_substitutions += [(f'_brainExtraction{n}/', '')
                                      for n in range(10)]
 
             self.m_substitutions.append(('_T2w_brainMask.nii.gz',
-                                         '_id-' + str(self.inputs.sr_id) +
+                                         '_id-' + str(self.m_sr_id) +
                                          '_desc-brain_mask.nii.gz'))
         else:
             self.m_substitutions.append(('_T2w_mask.nii.gz',
-                                         '_id-' + str(self.inputs.sr_id) +
+                                         '_id-' + str(self.m_sr_id) +
                                          '_desc-brain_mask.nii.gz'))
 
         self.m_substitutions.append(('_T2w_desc-brain_', '_desc-brain_'))
@@ -281,88 +311,98 @@ class FilenamesGeneration(BaseInterface):
                                  for n in range(10)]
 
         self.m_substitutions.append(('_T2w_uni_bcorr_histnorm.nii.gz',
-                                     '_id-' + str(self.inputs.sr_id) +
+                                     '_id-' + str(self.m_sr_id) +
                                      '_desc-preprocSR_T2w.nii.gz'))
 
         self.m_substitutions.append(('_T2w_nlm_uni_bcorr_histnorm_transform_' +
                                      str(len(self.inputs.stacks_order)) +
                                      'V.txt',
-                                     '_id-' + str(self.inputs.sr_id) +
-                                     '_mod-T2w_from-origin_to-SDI_mode-image_xfm.txt'))
+                                     '_id-' + str(self.m_sr_id) +
+                                     '_mod-T2w_from-origin_to-SDI_' +
+                                     'mode-image_xfm.txt'))
         for stack in self.inputs.stacks_order:
-            self.m_substitutions.append(('_run-' + str(stack) +
-                                         '_T2w_uni_bcorr_histnorm_LRmask.nii.gz',
+            self.m_substitutions.append(('_run-' + str(stack) + '_T2w_uni_' +
+                                         'bcorr_histnorm_LRmask.nii.gz',
                                          '_run-' + str(stack) + '_id-' + str(
-                                         self.inputs.sr_id) + '_desc-brain_mask.nii.gz'))
+                                         self.m_sr_id) +
+                                         '_desc-brain_mask.nii.gz'))
 
-        self.m_substitutions.append(('SDI_' + self.inputs.sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order)) + 'V_rad1.nii.gz',
-                                     self.inputs.sub_ses + '_rec-SDI' + '_id-' +
-                                     str(self.inputs.sr_id) + '_T2w.nii.gz'))
+        self.m_substitutions.append(('SDI_' + self.m_sub_ses + '_' +
+                                     str(len(self.inputs.stacks_order)) +
+                                     'V_rad1.nii.gz',
+                                     self.m_sub_ses + f'_{run_type}-SDI' +
+                                     '_id-' + str(self.m_sr_id) +
+                                     '_T2w.nii.gz'))
 
-        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr.nii.gz',
-                                    self.inputs.sub_ses + '_rec-SR' + '_id-' +
-                                     str(self.inputs.sr_id) + '_T2w.nii.gz'))
+        self.m_substitutions.append(('SRTV_' + self.m_sub_ses + '_' +
+                                     str(len(self.inputs.stacks_order)) +
+                                     'V_rad1_gbcorr.nii.gz',
+                                    self.m_sub_ses + f'_{run_type}-SR' +
+                                    '_id-' + str(self.m_sr_id) +
+                                     '_T2w.nii.gz'))
 
-        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order)) + 'V_rad1.json',
-                                    self.inputs.sub_ses + '_rec-SR' + '_id-' +
-                                     str(self.inputs.sr_id) + '_T2w.json'))
+        self.m_substitutions.append(('SRTV_' + self.m_sub_ses + '_' +
+                                     str(len(self.inputs.stacks_order))
+                                     + 'V_rad1.json',
+                                    self.m_sub_ses + f'_{run_type}-SR' +
+                                    '_id-' + str(self.m_sr_id) +
+                                     '_T2w.json'))
 
-        self.m_substitutions.append((self.inputs.sub_ses + '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
-                                     self.inputs.sub_ses + '_rec-SR' +
-                                     '_id-' + str(self.inputs.sr_id) +
+        self.m_substitutions.append((self.m_sub_ses +
+                                     '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
+                                     self.m_sub_ses + f'_{run_type}-SR' +
+                                     '_id-' + str(self.m_sr_id) +
                                      '_mod-T2w_desc-brain_mask.nii.gz'))
 
-        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses +
+        self.m_substitutions.append(('SRTV_' + self.m_sub_ses +
                                      '_' + str(len(self.inputs.stacks_order)) +
                                      'V_rad1_srMask.nii.gz',
-                                     self.inputs.sub_ses + '_rec-SR' +
-                                     '_id-' + str(self.inputs.sr_id) +
+                                     self.m_sub_ses + f'_{run_type}-SR' +
+                                     '_id-' + str(self.m_sr_id) +
                                      '_mod-T2w_desc-brain_mask.nii.gz'))
 
-        self.m_substitutions.append(('SDI_' + self.inputs.sub_ses +
+        self.m_substitutions.append(('SDI_' + self.m_sub_ses +
                                      '_' + str(len(self.inputs.stacks_order)) +
                                      'V_rad1_srMask.nii.gz',
-                                     self.inputs.sub_ses + '_rec-SR' +
+                                     self.m_sub_ses + '_rec-SR' +
                                      '_id-' + str(self.inputs.sr_id) +
                                      '_mod-T2w_desc-brain_mask.nii.gz'))
 
-        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses +
+        self.m_substitutions.append(('SRTV_' + self.m_sub_ses +
                                      '_' + str(len(self.inputs.stacks_order)) +
                                      'V_rad1.png',
-                                     self.inputs.sub_ses + '_rec-SR' +
-                                     '_id-' + str(self.inputs.sr_id) + '_T2w.png'))
+                                     self.m_sub_ses + f'_{run_type}-SR' +
+                                     '_id-' + str(self.m_sr_id) +
+                                     '_T2w.png'))
 
-        self.m_substitutions.append((self.inputs.sub_ses +
+        self.m_substitutions.append((self.m_sub_ses +
                                      '_' +
                                      'HR_labelmap.nii.gz',
-                                     self.inputs.sub_ses +
+                                     self.m_sub_ses +
                                      '_rec-SR' +
                                      '_id-' +
-                                     str(self.inputs.sr_id) +
+                                     str(self.m_sr_id) +
                                      '_labels.nii.gz'))
 
         self.m_substitutions.append(('motion_index_QC.png',
-                                     self.inputs.sub_ses + '_rec-SR' +
-                                     '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.png'))
+                                     self.m_sub_ses + f'_{run_type}-SR' +
+                                     '_id-' + str(self.m_sr_id) +
+                                     '_desc-motion_stats.png'))
 
         self.m_substitutions.append(('motion_index_QC.tsv',
-                                     self.inputs.sub_ses + '_rec-SR' +
-                                     '_id-' + str(self.inputs.sr_id) + '_desc-motion_stats.tsv'))
-
-
+                                     self.m_sub_ses + f'_{run_type}-SR' +
+                                     '_id-' + str(self.m_sr_id) +
+                                     '_desc-motion_stats.tsv'))
         # Metric CSV files
-        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
+        self.m_substitutions.append(('SRTV_' + self.m_sub_ses + '_' +
                                      str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr_trans_csv.csv',
-                                    self.inputs.sub_ses + '_rec-SR' + '_id-' +
-                                     str(self.inputs.sr_id) + '_desc-volume_metrics.csv'))
+                                    self.m_sub_ses + '_rec-SR' + '_id-' +
+                                     str(self.m_sr_id) + '_desc-volume_metrics.csv'))
 
-        self.m_substitutions.append(('SRTV_' + self.inputs.sub_ses + '_' +
+        self.m_substitutions.append(('SRTV_' + self.m_sub_ses + '_' +
                                      str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr_trans_labels_csv.csv',
-                                    self.inputs.sub_ses + '_rec-SR' + '_id-' +
-                                     str(self.inputs.sr_id) + '_desc-labels_metrics.csv'))
+                                    self.m_sub_ses + '_rec-SR' + '_id-' +
+                                     str(self.m_sr_id) + '_desc-labels_metrics.csv'))
 
         return runtime
 
