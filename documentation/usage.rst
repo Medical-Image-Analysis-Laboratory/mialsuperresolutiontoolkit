@@ -32,8 +32,7 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
           "paramTV": { 
             "lambdaTV": 0.75, 
             "deltatTV": 0.01 }
-        }],
-      "01": [
+        },
         { "sr-id": 2,
           ("session": 01,)
           "stacks": [2, 3, 5, 4],
@@ -61,7 +60,7 @@ The BIDS App configuration file specified by the input flag `--param_file` adopt
     } 
 
 where:
-    * ``"sr-id"`` (mandatoy) allows to distinguish between runs with different configurations of the same acquisition set.
+    * ``"sr-id"`` (mandatory) allows to distinguish between runs with different configurations of the same acquisition set.
 
     * ``"stacks"`` (optional) defines the list of scans to be used in the reconstruction. The specified order is considered if ``"skip_stacks_ordering"`` is False
 
@@ -71,6 +70,8 @@ where:
     * ``"session"`` (optional) It MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
 
     * ``"ga"`` (optional but mandatory when ``do_anat_orientation`` is true) subject's gestational age in weeks.
+
+    * ``"run_type"`` (optional): defines the type of run that should be done. It can be set between `sr` (super-resolution) and `preprocessing` (preprocessing-only). (default is ``"sr"``)
 
     * ``"custom_interfaces"`` (optional): indicates weither optional interfaces of the pipeline should be performed.
 
@@ -86,6 +87,9 @@ where:
 
         * ``"do_anat_orientation"`` (optional) indicates weither the alignement into anatomical planes should be performed. (default is False)
         If True, path to a directory containing STA atlas (Gholipour et al., 2017 [1]_, [2]_) must be mounted to `/sta`.
+
+        * ``"preproc_do_registration"`` (optional) indicates whether the Slice-to-Volume Registration should be computed in the ``"preprocessing"`` run (default is False).
+        
 References
 ----------
 .. [1] Gholipour et al.; A normative spatiotemporal MRI atlas of the fetal brain for automatic segmentation and analysis of early brain growth, Scientific Reports 7, Article number: 476 (2017). `(link to article)<http://www.nature.com/articles/s41598-017-00525-w>`_ .
