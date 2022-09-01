@@ -273,11 +273,11 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                 )
 
         if self.m_do_anat_orientation and self.m_do_srr_assessment:
-                raise RuntimeError(
-                    'At the moment, srr pipeline with custom interfaces '
-                    'do_anat_orientation and do_srr_assessment '
-                    'is not available.'
-                )
+            raise RuntimeError(
+                'At the moment, srr pipeline with custom interfaces '
+                'do_anat_orientation and do_srr_assessment '
+                'is not available.'
+            )
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
