@@ -132,7 +132,10 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
     m_labels_derivatives_dir = None
 
     m_paramTV = None
+
     # Custom interfaces options
+    m_do_nlm_denoising = None
+    m_skip_stacks_ordering = None
     m_skip_svr = None
     m_do_refine_hr_mask = None
     m_do_anat_orientation = None
@@ -174,6 +177,17 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
+            self.m_do_nlm_denoising = \
+                p_dict_custom_interfaces['do_nlm_denoising'] \
+                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
+                else False
+
+            self.m_skip_stacks_ordering =\
+                p_dict_custom_interfaces['skip_stacks_ordering']\
+                if ((self.m_stacks is not None) and
+                    ('skip_stacks_ordering' in
+                     p_dict_custom_interfaces.keys())) \
+                else False
 
             self.m_skip_svr = \
                 p_dict_custom_interfaces['skip_svr'] \
@@ -206,6 +220,9 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                 else False
 
         else:
+
+            self.m_do_nlm_denoising = False
+            self.m_skip_stacks_ordering = False
             self.m_skip_svr = False
             self.m_do_refine_hr_mask = False
             self.m_do_reconstruct_labels = False
@@ -249,7 +266,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                                     if (isinstance(value, list)
                                         and len(value) > 1)]
             if not num_parameters_multi:
-                raise OSError(
+                raise RuntimeError(
                     'With do_multi_parameters interface,'
                     'at least one entry of \'paramsTV\' should'
                     'be defined as a list of more than one item.'
@@ -257,7 +274,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
 
         if self.m_do_anat_orientation and self.m_do_srr_assessment:
-                raise OSError(
+                raise RuntimeError(
                     'At the moment, srr pipeline with custom interfaces '
                     'do_anat_orientation  and and do_srr_assessment '
                     'is not available.'
