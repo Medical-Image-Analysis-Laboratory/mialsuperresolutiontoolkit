@@ -272,13 +272,12 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                     'be defined as a list of more than one item.'
                 )
 
-
-        if self.m_do_anat_orientation and self.m_do_srr_assessment:
-                raise RuntimeError(
-                    'At the moment, srr pipeline with custom interfaces '
-                    'do_anat_orientation  and and do_srr_assessment '
-                    'is not available.'
-                )
+        # if self.m_do_anat_orientation and self.m_do_srr_assessment:
+        #         raise RuntimeError(
+        #             'At the moment, srr pipeline with custom interfaces '
+        #             'do_anat_orientation and do_srr_assessment '
+        #             'is not available.'
+        #         )
 
 
     def create_workflow(self):
@@ -399,42 +398,13 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                           reconstruction_stage, "inputnode.input_masks")
 
         self.m_wf.connect(input_mgmt_stage, "outputnode.stacks_order",
-                        reconstruction_stage, "inputnode.stacks_order")
+                          reconstruction_stage, "inputnode.stacks_order")
 
         self.m_wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
                           postprocessing_stage, "inputnode.input_mask")
 
         self.m_wf.connect(reconstruction_stage, "outputnode.output_sr",
                           postprocessing_stage, "inputnode.input_image")
-
-        if self.m_do_srr_assessment:
-
-            self.m_wf.connect(reconstruction_stage,
-                              "outputnode.output_TV_parameters",
-                              srr_assessment_stage,
-                              "inputnode.input_TV_parameters")
-
-            self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
-                              srr_assessment_stage, "inputnode.input_sdi_image")
-
-            self.m_wf.connect(postprocessing_stage, "outputnode.output_image",
-                              srr_assessment_stage, "inputnode.input_sr_image")
-
-            self.m_wf.connect(input_mgmt_stage, "outputnode.hr_reference_image",
-                              srr_assessment_stage, "inputnode.input_ref_image")
-
-            self.m_wf.connect(input_mgmt_stage, "outputnode.hr_reference_mask",
-                              srr_assessment_stage, "inputnode.input_ref_mask")
-
-            self.m_wf.connect(input_mgmt_stage, "outputnode.hr_reference_labels",
-                              srr_assessment_stage,
-                              "inputnode.input_ref_labelmap")
-
-            self.m_wf.connect(srr_assessment_stage, "outputnode.output_metrics",
-                              output_mgmt_stage, "inputnode.input_metrics")
-
-            self.m_wf.connect(srr_assessment_stage, "outputnode.output_metrics_labels",
-                              output_mgmt_stage, "inputnode.input_metrics_labels")
 
         if self.m_do_reconstruct_labels:
             self.m_wf.connect(input_mgmt_stage, "outputnode.labels_filtered",
@@ -456,6 +426,38 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         if self.m_do_anat_orientation:
             self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
                               postprocessing_stage, "inputnode.input_sdi")
+
+        if self.m_do_srr_assessment:
+            self.m_wf.connect(reconstruction_stage,
+                              "outputnode.output_TV_parameters",
+                              srr_assessment_stage,
+                              "inputnode.input_TV_parameters")
+
+            if self.m_do_anat_orientation:
+                self.m_wf.connect(postprocessing_stage, "outputnode.output_sdi",
+                                  srr_assessment_stage, "inputnode.input_sdi_image")
+            else:
+                self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                                  srr_assessment_stage, "inputnode.input_sdi_image")
+
+            self.m_wf.connect(postprocessing_stage, "outputnode.output_image",
+                              srr_assessment_stage, "inputnode.input_sr_image")
+
+            self.m_wf.connect(input_mgmt_stage, "outputnode.hr_reference_image",
+                              srr_assessment_stage, "inputnode.input_ref_image")
+
+            self.m_wf.connect(input_mgmt_stage, "outputnode.hr_reference_mask",
+                              srr_assessment_stage, "inputnode.input_ref_mask")
+
+            self.m_wf.connect(input_mgmt_stage, "outputnode.hr_reference_labels",
+                              srr_assessment_stage,
+                              "inputnode.input_ref_labelmap")
+
+            self.m_wf.connect(srr_assessment_stage, "outputnode.output_metrics",
+                              output_mgmt_stage, "inputnode.input_metrics")
+
+            self.m_wf.connect(srr_assessment_stage, "outputnode.output_metrics_labels",
+                              output_mgmt_stage, "inputnode.input_metrics_labels")
 
         self.m_wf.connect(input_mgmt_stage, "outputnode.stacks_order",
                           output_mgmt_stage, "inputnode.stacks_order")
