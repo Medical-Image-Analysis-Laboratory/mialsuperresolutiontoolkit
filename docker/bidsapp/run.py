@@ -217,7 +217,7 @@ def main(bids_dir, output_dir,
 
     dict_custom_interfaces : {"do_refine_hr_mask": False,
         "do_nlm_denoising": False, "skip_stacks_ordering": False,
-        "prepro_do_registration": False}
+        "preproc_do_registration": False}
         Dictionary that customize the workflow (skip interfaces).
 
     nipype_number_of_cores : int
