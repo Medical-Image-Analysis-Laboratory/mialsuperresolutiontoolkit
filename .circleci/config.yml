@@ -76,7 +76,7 @@ jobs:
             | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
       - run:
           name: "Check what there is at /tmp/src"
-          command:
+          command: |
             pwd
             ls -la
             echo "Checking /tmp/src"
@@ -144,7 +144,7 @@ jobs:
     steps:
       - run:
           name: "Check what there is at /tmp/src"
-          command:
+          command: |
             pwd
             ls -la
             echo "Checking /tmp/src"
