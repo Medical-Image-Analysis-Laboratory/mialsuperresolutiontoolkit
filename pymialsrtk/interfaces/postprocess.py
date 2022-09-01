@@ -394,15 +394,19 @@ class FilenamesGeneration(BaseInterface):
                                      '_id-' + str(self.m_sr_id) +
                                      '_desc-motion_stats.tsv'))
         # Metric CSV files
-        self.m_substitutions.append(('SRTV_' + self.m_sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr_trans_csv.csv',
-                                    self.m_sub_ses + '_rec-SR' + '_id-' +
-                                     str(self.m_sr_id) + '_desc-volume_metrics.csv'))
+        self.m_substitutions.append(
+            ('SRTV_' + self.m_sub_ses + '_' +
+             str(len(self.inputs.stacks_order)) +
+             'V_rad1_gbcorr_trans_csv.csv',
+             self.m_sub_ses + '_rec-SR' + '_id-' +
+             str(self.m_sr_id) + '_desc-volume_metrics.csv'))
 
-        self.m_substitutions.append(('SRTV_' + self.m_sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order)) + 'V_rad1_gbcorr_trans_labels_csv.csv',
-                                    self.m_sub_ses + '_rec-SR' + '_id-' +
-                                     str(self.m_sr_id) + '_desc-labels_metrics.csv'))
+        self.m_substitutions.append(
+            ('SRTV_' + self.m_sub_ses + '_' +
+             str(len(self.inputs.stacks_order)) +
+             'V_rad1_gbcorr_trans_labels_csv.csv',
+             self.m_sub_ses + '_rec-SR' + '_id-' +
+             str(self.m_sr_id) + '_desc-labels_metrics.csv'))
 
         return runtime
 
@@ -541,7 +545,7 @@ class ImageMetrics(BaseInterface):
     def _compute_metrics(self):
 
         datarange = int(
-            np.amax(self._reference_array) - \
+            np.amax(self._reference_array) -
             min(np.amin(self._image_array), np.amin(self._reference_array))
         )
 
@@ -563,9 +567,9 @@ class ImageMetrics(BaseInterface):
 
         # print('Running nSSIM computation')
         nssim = skimage.metrics.structural_similarity(
-            (self._reference_array - np.min(self._reference_array)) / \
+            (self._reference_array - np.min(self._reference_array)) /
             np.ptp(self._reference_array),
-            (self._image_array - np.min(self._image_array)) / \
+            (self._image_array - np.min(self._image_array)) /
             np.ptp(self._image_array),
             data_range=1
         )
@@ -610,7 +614,7 @@ class ImageMetrics(BaseInterface):
             )
 
             datarange = int(
-                np.amax(ref_label) - \
+                np.amax(ref_label) -
                 min(np.amin(img_label), np.amin(ref_label))
             )
 

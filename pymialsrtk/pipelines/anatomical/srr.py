@@ -434,30 +434,45 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                               "inputnode.input_TV_parameters")
 
             if self.m_do_anat_orientation:
-                self.m_wf.connect(postprocessing_stage, "outputnode.output_sdi",
-                                  srr_assessment_stage, "inputnode.input_sdi_image")
+                self.m_wf.connect(postprocessing_stage,
+                                  "outputnode.output_sdi",
+                                  srr_assessment_stage,
+                                  "inputnode.input_sdi_image")
             else:
-                self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
-                                  srr_assessment_stage, "inputnode.input_sdi_image")
+                self.m_wf.connect(reconstruction_stage,
+                                  "outputnode.output_sdi",
+                                  srr_assessment_stage,
+                                  "inputnode.input_sdi_image")
 
-            self.m_wf.connect(postprocessing_stage, "outputnode.output_image",
-                              srr_assessment_stage, "inputnode.input_sr_image")
+            self.m_wf.connect(postprocessing_stage,
+                              "outputnode.output_image",
+                              srr_assessment_stage,
+                              "inputnode.input_sr_image")
 
-            self.m_wf.connect(input_mgmt_stage, "outputnode.hr_reference_image",
-                              srr_assessment_stage, "inputnode.input_ref_image")
+            self.m_wf.connect(input_mgmt_stage,
+                              "outputnode.hr_reference_image",
+                              srr_assessment_stage,
+                              "inputnode.input_ref_image")
 
-            self.m_wf.connect(input_mgmt_stage, "outputnode.hr_reference_mask",
-                              srr_assessment_stage, "inputnode.input_ref_mask")
+            self.m_wf.connect(input_mgmt_stage,
+                              "outputnode.hr_reference_mask",
+                              srr_assessment_stage,
+                              "inputnode.input_ref_mask")
 
-            self.m_wf.connect(input_mgmt_stage, "outputnode.hr_reference_labels",
+            self.m_wf.connect(input_mgmt_stage,
+                              "outputnode.hr_reference_labels",
                               srr_assessment_stage,
                               "inputnode.input_ref_labelmap")
 
-            self.m_wf.connect(srr_assessment_stage, "outputnode.output_metrics",
-                              output_mgmt_stage, "inputnode.input_metrics")
+            self.m_wf.connect(srr_assessment_stage,
+                              "outputnode.output_metrics",
+                              output_mgmt_stage,
+                              "inputnode.input_metrics")
 
-            self.m_wf.connect(srr_assessment_stage, "outputnode.output_metrics_labels",
-                              output_mgmt_stage, "inputnode.input_metrics_labels")
+            self.m_wf.connect(srr_assessment_stage,
+                              "outputnode.output_metrics_labels",
+                              output_mgmt_stage,
+                              "inputnode.input_metrics_labels")
 
         self.m_wf.connect(input_mgmt_stage, "outputnode.stacks_order",
                           output_mgmt_stage, "inputnode.stacks_order")
