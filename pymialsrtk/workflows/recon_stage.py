@@ -197,9 +197,6 @@ def create_recon_stage(p_paramTV,
     if p_do_reconstruct_labels:
         recon_labels_stage = recon_labelmap_stage.create_recon_labelmap_stage(
             sub_ses=p_sub_ses)
-        # recon_labels_stage.inputs.inputnode.label_ids = \
-        #     [0, 1, 2, 3, 4, 5, 6, 7]
-
 
     recon_stage.connect(inputnode, "input_masks",
                         srtkImageReconstruction, "input_masks")
