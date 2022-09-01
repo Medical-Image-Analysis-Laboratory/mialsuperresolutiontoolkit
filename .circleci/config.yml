@@ -23,10 +23,15 @@ jobs:
             apk add --no-cache pigz python2 git-lfs
       - restore_cache:
           keys:
-            - dockerb-{{ .Branch }}
+            - docker-{{ .Branch }}-{{ epoch }}
+            - docker-{{ .Branch }}-
           paths:
             - /tmp/src/mialsuperresolutiontoolkit/
       - checkout
+      - save_cache:
+          key: docker-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /tmp/src/mialsuperresolutiontoolkit/
       - setup_remote_docker:
           docker_layer_caching: true 
       - run:
@@ -56,16 +61,10 @@ jobs:
 
             # Build main docker image
             ls -la .
-            e=1 && for i in {1..5}; do
-              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 --rm=false --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=$VCS_REF --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 . \
-              && e=0 && break || sleep 15
-            done && [ "$e" -eq "0" ]   
+            docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 --rm=false --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=$VCS_REF --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 .
             # Build CMP BIDS App docker image
             ls -la ./docker/bidsapp
-            e=1 && for i in {1..5}; do
-              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit ./docker/bidsapp \
-              && e=0 && break || sleep 15
-            done && [ "$e" -eq "0" ]
+            docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit ./docker/bidsapp
       - run:
           name: "Save Docker Images"
           no_output_timeout: 40m
@@ -75,10 +74,6 @@ jobs:
             mkdir -p /tmp/cache
             docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit \
             | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
-      - save_cache:
-          key: dockerb-{{ .Branch }}
-          paths:
-            - /tmp/src/mialsuperresolutiontoolkit/
       - persist_to_workspace:
           root: /tmp
           paths:
@@ -91,19 +86,13 @@ jobs:
       image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
-      - restore_cache:
-          keys:
-            - dockerb-{{ .Branch }}
-          paths:
-            - /tmp/src/mialsuperresolutiontoolkit/
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether build-singularity job should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?build-singularity]' )" != "" ]]; then
-              echo "Skipping test"
+              echo "Skipping build-singularity"
               circleci step halt
             fi
       - attach_workspace:
@@ -144,19 +133,13 @@ jobs:
       # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
       image: ubuntu-2004:202201-02
     resource_class: medium
-    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
+    working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
-      - restore_cache:
-          keys:
-            - dockerb-{{ .Branch }}
-          paths:
-            - /tmp/src/mialsuperresolutiontoolkit/
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether test should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?test]' )" != "" ]]; then
               echo "Skipping test"
               circleci step halt
@@ -230,7 +213,7 @@ jobs:
                 -type f -print | \
                 sed s+/tmp/src/mialsuperresolutiontoolkit/data/derivatives/++ | \
                 sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
-            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-01_outputs.txt \
+            diff /tmp/src/mialsuperresolutiontoolkit/.circleci/test-01_outputs.txt \
                 /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
             exit $?
       - run:
@@ -275,7 +258,7 @@ jobs:
                 -type f -print | \
                 sed s+/tmp/src/mialsuperresolutiontoolkit/data/derivatives/++ | \
                 sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
-            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-02_outputs.txt \
+            diff /tmp/src/mialsuperresolutiontoolkit/.circleci/test-02_outputs.txt \
                 /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
             exit $?
       - run:
@@ -323,17 +306,11 @@ jobs:
     resource_class: medium
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
-      - restore_cache:
-          keys:
-            - dockerb-{{ .Branch }}
-          paths:
-            - /tmp/src/mialsuperresolutiontoolkit/
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether test should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?build-singularity]|\[skip[ _]?test-singularity]' )" != "" ]]; then
               echo "Skipping singularity test"
               circleci step halt
@@ -383,7 +360,7 @@ jobs:
                 -type f -print | \
                 sed s+/tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives/++ | \
                 sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
-            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-03_outputs.txt \
+            diff /tmp/src/mialsuperresolutiontoolkit/.circleci/test-03_outputs.txt \
                 /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
             exit $?
       - run:
@@ -420,7 +397,7 @@ jobs:
                 -type f -print | \
                 sed s+/tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives/++ | \
                 sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
-            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-04_outputs.txt \
+            diff /tmp/src/mialsuperresolutiontoolkit/.circleci/test-04_outputs.txt \
                 /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
             exit $?
       - run:
@@ -522,7 +499,7 @@ jobs:
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - attach_workspace:
           at: /tmp
       - run:
@@ -542,7 +519,7 @@ jobs:
           no_output_timeout: 40m
           command: |
             # Get version, update files.
-            THISVERSION=$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            THISVERSION=$( python /tmp/src/mialsuperresolutiontoolkit/get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_TAG : ${CIRCLE_TAG}"
 
@@ -561,7 +538,7 @@ jobs:
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - attach_workspace:
           at: /tmp
       - run:
@@ -581,7 +558,7 @@ jobs:
           no_output_timeout: 40m
           command: |
             # Get version, update files.
-            THISVERSION=$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            THISVERSION=$( python /tmp/src/mialsuperresolutiontoolkit/get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_BRANCH : ${CIRCLE_BRANCH}"
 
@@ -598,11 +575,10 @@ jobs:
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether test should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?deploy-singularity]' )" != "" ]]; then
               echo "Skipping singularity deployment"
               circleci step halt
@@ -636,11 +612,10 @@ jobs:
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether test should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?deploy-singularity]' )" != "" ]]; then
               echo "Skipping singularity deployment"
               circleci step halt
