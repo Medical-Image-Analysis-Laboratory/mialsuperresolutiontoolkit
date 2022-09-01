@@ -248,7 +248,7 @@ class FilenamesGeneration(BaseInterface):
     >>> from pymialsrtk.interfaces.postprocess import FilenamesGeneration
     >>> filenamesGen = FilenamesGeneration(
         p_sub_ses = 'sub-01',
-        p_sr_id = 3,crop_reference
+        p_sr_id = 3,
         p_run_type = "rec",
         p_use_manual_masks=False
         )
@@ -350,13 +350,6 @@ class FilenamesGeneration(BaseInterface):
 
         self.m_substitutions.append((self.m_sub_ses +
                                      '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
-                                     self.m_sub_ses + f'_{run_type}-SR' +
-                                     '_id-' + str(self.m_sr_id) +
-                                     '_mod-T2w_desc-brain_mask.nii.gz'))
-
-        self.m_substitutions.append(('SRTV_' + self.m_sub_ses +
-                                     '_' + str(len(self.inputs.stacks_order)) +
-                                     'V_rad1_srMask.nii.gz',
                                      self.m_sub_ses + f'_{run_type}-SR' +
                                      '_id-' + str(self.m_sr_id) +
                                      '_mod-T2w_desc-brain_mask.nii.gz'))
