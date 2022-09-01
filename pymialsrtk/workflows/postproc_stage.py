@@ -68,7 +68,10 @@ def create_postproc_stage(
 
     # Set up a node to define all inputs for the postprocessing workflow
 
-    input_fields = ['input_image', 'input_mask', 'input_sdi']
+    input_fields = ['input_image', 'input_mask']
+    if p_do_anat_orientation:
+        input_fields += ['input_sdi']
+
     output_fields = ['output_image', 'output_mask']
 
     if p_do_reconstruct_labels:
