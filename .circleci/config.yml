@@ -74,6 +74,13 @@ jobs:
             mkdir -p /tmp/cache
             docker save sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 sebastientourbier/mialsuperresolutiontoolkit \
             | pigz -8 -p 3 > /tmp/cache/docker.tar.gz
+      - run:
+          name: "Check what there is at /tmp/src"
+          command:
+            pwd
+            ls -la
+            echo "Checking /tmp/src"
+            ls -la /tmp/src
       - persist_to_workspace:
           root: /tmp
           paths:
@@ -135,6 +142,13 @@ jobs:
     resource_class: medium
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
+      - run:
+          name: "Check what there is at /tmp/src"
+          command:
+            pwd
+            ls -la
+            echo "Checking /tmp/src"
+            ls -la /tmp/src
       - checkout:
           path: /tmp/src/mialsuperresolutiontoolkit
       - run:
