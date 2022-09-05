@@ -68,8 +68,13 @@ def create_postproc_stage(
 
     # Set up a node to define all inputs for the postprocessing workflow
 
-    input_fields = ['input_image', 'input_mask', 'input_sdi']
+    input_fields = ['input_image', 'input_mask']
     output_fields = ['output_image', 'output_mask']
+
+    if p_do_anat_orientation:
+        input_fields += ['input_sdi']
+        output_fields += ['output_sdi']
+
 
     if p_do_reconstruct_labels:
         input_fields += ['input_labelmap']
@@ -123,6 +128,11 @@ def create_postproc_stage(
         align_image = pe.Node(
             interface=preprocess.ApplyAlignmentTransform(),
             name='align_image'
+        )
+
+        align_sdi = pe.Node(
+            interface=preprocess.ApplyAlignmentTransform(),
+            name='align_sdi'
         )
 
         if p_do_reconstruct_labels:
@@ -189,6 +199,20 @@ def create_postproc_stage(
                                outputnode, "output_image")
         postproc_stage.connect(align_image, "output_mask",
                                outputnode, "output_mask")
+
+        postproc_stage.connect(inputnode, "input_sdi",
+                               align_sdi, "input_image")
+        postproc_stage.connect(resample_t2w_template, "output_image",
+                               align_sdi, "input_template")
+
+        postproc_stage.connect(inputnode, "input_mask",
+                               align_sdi, "input_mask")
+
+        postproc_stage.connect(compute_alignment, "output_transform",
+                               align_sdi, "input_transform")
+
+        postproc_stage.connect(align_sdi, "output_image",
+                               outputnode, "output_sdi")
 
         if p_do_reconstruct_labels:
             postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",

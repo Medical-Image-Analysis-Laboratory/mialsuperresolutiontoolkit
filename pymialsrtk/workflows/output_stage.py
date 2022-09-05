@@ -19,6 +19,7 @@ def create_srr_output_stage(p_sub_ses,
                             p_use_manual_masks,
                             p_do_nlm_denoising=False,
                             p_do_reconstruct_labels=False,
+                            p_do_srr_assessment=False,
                             p_skip_stacks_ordering=False,
                             name="srr_output_stage"):
     """Create a output management workflow for the
@@ -38,6 +39,8 @@ def create_srr_output_stage(p_sub_ses,
         Enable non-local means denoising (default: False)
     p_do_reconstruct_labels: :obj:`bool`
         Enable the reconstruction of labelmaps
+    p_do_srr_assessment: :obj:`bool
+        Enables output of srr assessment stage
     p_skip_stacks_ordering :  :obj:`bool`
         Skip stacks ordering (default: False)
         If disabled, `report_image` and `motion_tsv` are not generated
@@ -99,6 +102,9 @@ def create_srr_output_stage(p_sub_ses,
     if p_do_nlm_denoising:
         input_fields += ['input_images_nlm']
 
+    if p_do_srr_assessment:
+        input_fields += ["input_metrics", "input_metrics_labels"]
+
     if p_do_reconstruct_labels:
         input_fields += ['input_labelmap']
 
@@ -143,6 +149,13 @@ def create_srr_output_stage(p_sub_ses,
                              datasink, 'figures.@SRpng')
     srr_output_stage.connect(inputnode, "input_hr_mask",
                              datasink, 'anat.@SRmask')
+
+    if p_do_srr_assessment:
+        srr_output_stage.connect(inputnode, "input_metrics",
+                                 datasink, 'anat.@SRmetrics')
+        srr_output_stage.connect(inputnode, "input_metrics_labels",
+                                 datasink, 'anat.@SRmetricsLabels')
+
 
     if p_do_nlm_denoising:
         srr_output_stage.connect(inputnode, "input_images_nlm",

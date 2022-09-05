@@ -97,10 +97,6 @@ class AbstractAnatomicalPipeline:
     m_session = None
     m_stacks = None
 
-    # Custom interfaces options
-    m_do_nlm_denoising = None
-    m_skip_stacks_ordering = None
-
     m_masks_derivatives_dir = None
     m_use_manual_masks = False
     m_masks_desc = None
@@ -151,24 +147,6 @@ class AbstractAnatomicalPipeline:
         self.m_use_manual_masks = True \
             if self.m_masks_derivatives_dir is not None else False
         self.m_masks_desc = p_masks_desc if self.m_use_manual_masks else None
-
-        # Custom interfaces and default values.
-        if p_dict_custom_interfaces is not None:
-            self.m_do_nlm_denoising = \
-                p_dict_custom_interfaces['do_nlm_denoising'] \
-                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
-                else False
-
-            self.m_skip_stacks_ordering =\
-                p_dict_custom_interfaces['skip_stacks_ordering']\
-                if ((self.m_stacks is not None) and
-                    ('skip_stacks_ordering' in
-                     p_dict_custom_interfaces.keys())) \
-                else False
-
-        else:
-            self.m_do_nlm_denoising = False
-            self.m_skip_stacks_ordering = False
 
         self.m_sub_ses = self.m_subject
         self.m_sub_path = self.m_subject

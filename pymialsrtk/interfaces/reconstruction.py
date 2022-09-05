@@ -237,6 +237,9 @@ class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
     output_sr_png = File(desc='Output super-resolution PNG image file for quality assessment')
     output_json_path = File(desc='Output json file where super-resolution reconstruction parameters '
                                  'are summarized')
+    output_TV_parameters = traits.Dict(
+        desc='Dictionary of all TV parameters used'
+    )
 
 
 class MialsrtkTVSuperResolution(BaseInterface):
@@ -283,6 +286,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
     m_out_files = ''
     m_output_dict = {}
+
+    m_TV_parameters = {}
 
     def _gen_filename(self, name):
         if name == 'output_sr':
@@ -331,6 +336,25 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
         if self.inputs.deblurring:
             cmd += ['--debluring']
+
+        self.m_TV_parameters["in_loop"] = \
+            str(self.inputs.in_loop)
+        self.m_TV_parameters["in_deltat"] = \
+            str(self.inputs.in_deltat)
+        self.m_TV_parameters["in_lambda"] = \
+            str(self.inputs.in_lambda)
+        self.m_TV_parameters["in_bregman_loop"] = \
+            str(self.inputs.in_bregman_loop)
+        self.m_TV_parameters["in_iter"] = \
+            str(self.inputs.in_iter)
+        self.m_TV_parameters["in_step_scale"] = \
+            str(self.inputs.in_step_scale)
+        self.m_TV_parameters["in_gamma"] = \
+            str(self.inputs.in_gamma)
+        self.m_TV_parameters["in_inner_thresh"] = \
+            str(self.inputs.in_inner_thresh)
+        self.m_TV_parameters["in_outer_thresh"] = \
+            str(self.inputs.in_outer_thresh)
 
         cmd += ['--loop', str(self.inputs.in_loop)]
         cmd += ['--deltat', str(self.inputs.in_deltat)]
@@ -449,6 +473,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         outputs['output_sr'] = self._gen_filename('output_sr')
         outputs['output_sr_png'] = self._gen_filename('output_sr_png')
         outputs['output_json_path'] = self._gen_filename('output_json_path')
+        outputs['output_TV_parameters'] = self.m_TV_parameters
         return outputs
 
 
@@ -482,7 +507,7 @@ class MialsrtkSDIComputationOutputSpec(TraitedSpec):
     """Class used to represent outputs of the
     MialsrtkSDIComputation interface."""
 
-    output_hr = File(desc='Output scattered data interpolation image file')
+    output_sdi = File(desc='Output scattered data interpolation image file')
 
 
 class MialsrtkSDIComputation(BaseInterface):
@@ -496,7 +521,7 @@ class MialsrtkSDIComputation(BaseInterface):
     output_spec = MialsrtkSDIComputationOutputSpec
 
     def _gen_filename(self, name):
-        if name == 'output_hr':
+        if name == 'output_sdi':
             if self.inputs.label_id != -1:
                 output = ''.join([
                     self.inputs.sub_ses,
@@ -507,12 +532,7 @@ class MialsrtkSDIComputation(BaseInterface):
                     '.nii.gz'
                 ])
             else:
-                output = ''.join([
-                    self.inputs.sub_ses,
-                    '_',
-                    'HR',
-                    '.nii.gz'
-                ])
+                output = self.inputs.input_reference
             return os.path.abspath(output)
 
         return None
@@ -576,7 +596,7 @@ class MialsrtkSDIComputation(BaseInterface):
             params.append("-t")
             params.append(in_transform)
 
-        out_file = self._gen_filename('output_hr')
+        out_file = self._gen_filename('output_sdi')
         params.append("-o")
         params.append(out_file)
 
@@ -594,5 +614,5 @@ class MialsrtkSDIComputation(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['output_hr'] = self._gen_filename('output_hr')
+        outputs['output_sdi'] = self._gen_filename('output_sdi')
         return outputs
