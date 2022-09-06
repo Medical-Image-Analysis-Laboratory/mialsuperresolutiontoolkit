@@ -9,7 +9,6 @@ reconstruction pipeline.
 """
 
 from traits.api import *
-
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.preprocess as preprocess
@@ -26,18 +25,30 @@ def create_preproc_stage(
     """Create a SR preprocessing workflow
     Parameters
     ----------
-        p_do_nlm_denoising : weither to proceed to non-local mean denoising
+        p_do_nlm_denoising :
+            Whether to proceed to non-local mean denoising
         p_do_reconstruct_labels :
-        p_verbose:
-        name : name of workflow (default: preproc_stage)
-    Inputs::
-        inputnode.input_images : Input T2w images (list of filenames)
-        inputnode.input_masks : Input mask images (list of filenames)
-    Outputs::
-        outputnode.output_images : Processed images (list of filenames)
-        outputnode.output_masks : Processed images (list of filenames)
-        outputnode.output_images_nlm : Processed images with NLM denoising,
-        if p_do_nlm_denoising was set (list of filenames)
+            Whether we are also reconstruction label maps.
+            (default False)
+        p_verbose :
+            Whether verbosity should be enabled (default False)
+        name :
+            name of workflow (default: preproc_stage)
+    Inputs
+    ------
+        input_images :
+            Input T2w images (list of filenames)
+        input_masks :
+            Input mask images (list of filenames)
+    Outputs
+    -------
+        output_images :
+            Processed images (list of filenames)
+        output_masks :
+            Processed images (list of filenames)
+        output_images_nlm :
+            Processed images with NLM denoising,
+            if p_do_nlm_denoising was set (list of filenames)
 
     Example
     -------
