@@ -24,6 +24,7 @@ import SimpleITK as sitk
 import SimpleITK as sitk
 import skimage.metrics
 import pandas as pd
+from pymialsrtk.utils import EXEC_PATH
 
 #######################
 #  Refinement HR mask
@@ -93,7 +94,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        cmd = ['mialsrtkRefineHRMaskByIntersection']
+        cmd = [f'{EXEC_PATH}mialsrtkRefineHRMaskByIntersection']
 
         cmd += ['--radius-dilation', str(self.inputs.input_rad_dilatation)]
 
@@ -191,7 +192,7 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
         out_corr = self._gen_filename('output_image')
         out_fld = self._gen_filename('output_field')
 
-        cmd = ['mialsrtkN4BiasFieldCorrection', self.inputs.input_image,
+        cmd = [f'{EXEC_PATH}mialsrtkN4BiasFieldCorrection', self.inputs.input_image,
                self.inputs.input_mask, out_corr, out_fld]
 
         if self.inputs.verbose:
