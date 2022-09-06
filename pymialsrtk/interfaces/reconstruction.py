@@ -406,7 +406,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
         # Get middle cut
         cuts = [s // 2 for s in shapes]
         if self.inputs.verbose:
-            print(f'    Image properties: Zooms={zooms}/ Shape={shapes}/ FOV={fovs}/ middle cut={cuts}')
+            print(f'    Image properties: Zooms={zooms}/ Shape={shapes}/ '
+                  f'FOV={fovs}/ middle cut={cuts}')
 
         # Crop the image if the FOV exceeds a certain value
         def compute_axis_crop_indices(cut, fov, max_fov=120):
@@ -439,9 +440,9 @@ class MialsrtkTVSuperResolution(BaseInterface):
         crop_start_z, crop_end_z = compute_axis_crop_indices(cuts[2], fovs[2], max_fov=120)
         if self.inputs.verbose:
             print(f'  > Crop SR image at '
-                f'({crop_start_x}:{crop_end_x}, '
-                f'{crop_start_y}:{crop_end_y}, '
-                f'{crop_start_z}:{crop_end_z})...')
+                  f'({crop_start_x}:{crop_end_x}, '
+                  f'{crop_start_y}:{crop_end_y}, '
+                  f'{crop_start_z}:{crop_end_z})...')
         cropped_img = img.slicer[
             crop_start_x:crop_end_x,
             crop_start_y:crop_end_y,

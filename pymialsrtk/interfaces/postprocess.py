@@ -697,7 +697,7 @@ class ConcatenateImageMetrics(BaseInterface):
 
     def _run_interface(self, runtime):
         frames = [pd.read_csv(s, index_col=False)
-                    for s in self.inputs.input_metrics]
+                  for s in self.inputs.input_metrics]
 
         res = pd.concat(frames)
         res.to_csv(
@@ -708,7 +708,7 @@ class ConcatenateImageMetrics(BaseInterface):
         )
 
         frames_labels = [pd.read_csv(s, index_col=False)
-                            for s in self.inputs.input_metrics_labels]
+                         for s in self.inputs.input_metrics_labels]
 
         res_labels = pd.concat(frames_labels)
         res_labels.to_csv(

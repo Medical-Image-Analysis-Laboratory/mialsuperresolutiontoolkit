@@ -141,10 +141,6 @@ def create_recon_stage(p_paramTV,
     srtkTVSuperResolution.inputs.sub_ses = p_sub_ses
     srtkTVSuperResolution.inputs.use_manual_masks = p_use_manual_masks
     srtkTVSuperResolution.inputs.in_iter = num_iterations
-    #srtkTVSuperResolution.inputs.in_loop = num_primal_dual_loops
-    #srtkTVSuperResolution.inputs.in_bregman_loop = num_bregman_loops
-    #srtkTVSuperResolution.inputs.in_step_scale = step_scale
-    #srtkTVSuperResolution.inputs.in_gamma = gamma
     srtkTVSuperResolution.inputs.verbose = p_verbose
 
     if p_do_multi_parameters:
@@ -188,7 +184,6 @@ def create_recon_stage(p_paramTV,
         srtkTVSuperResolution.inputs.in_bregman_loop = num_bregman_loops
         srtkTVSuperResolution.inputs.in_step_scale = step_scale
         srtkTVSuperResolution.inputs.in_gamma = gamma
-
 
     if p_do_refine_hr_mask:
         srtkHRMask = pe.Node(

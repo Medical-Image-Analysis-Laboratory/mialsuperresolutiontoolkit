@@ -20,6 +20,7 @@ import pymialsrtk.workflows.postproc_stage as postproc_stage
 import nipype
 import logging
 
+
 def create_srr_assessment_stage(
         p_do_multi_parameters=False,
         p_do_reconstruct_labels=False,
@@ -113,7 +114,7 @@ def create_srr_assessment_stage(
     registration_quick.inputs.transform_type = 'r'
     registration_quick.environ = {'PATH': '/opt/conda/bin'}
     registration_quick.terminal_output = 'file_stderr'
-    
+
     apply_transform = pe.Node(
         interface=ApplyTransforms(),
         name='apply_transform'
