@@ -1800,8 +1800,9 @@ class ResampleImage(BaseInterface):
 
         image_resampled_path = self._gen_filename('output_image')
 
-        cmd = f'ResampleImageBySpacing 3 {p_image_path} {image_resampled_path} '\
-              f'{str(p_resolution)} {str(p_resolution)} {str(p_resolution)}'
+        cmd = f'ResampleImageBySpacing 3 {p_image_path} ' \
+              f'{image_resampled_path} {str(p_resolution)} ' \
+              f'{str(p_resolution)} {str(p_resolution)}'
         if self.m_verbose:
             print()
             print()
@@ -1811,7 +1812,8 @@ class ResampleImage(BaseInterface):
         run(cmd, env={'PATH': ants_path})
 
         cmd = f'antsApplyTransforms -d 3 -i {p_image_path} '\
-              f'-r {image_resampled_path} -o {image_resampled_path} -t [identity]'
+              f'-r {image_resampled_path} -o {image_resampled_path} ' \
+              f'-t [identity]'
         run(cmd, env={'PATH': ants_path})
         if self.m_verbose:
             print('Reference STA was resampled.')
