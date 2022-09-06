@@ -132,8 +132,9 @@ void NLMTool<T>::SetPaddingValue(float padding)
       count++;
     }
   }
-  std::cout<<"Percentage of points to be processed : "<<(int)(count / m_maskImage->GetLargestPossibleRegion().GetNumberOfPixels() * 100.0) <<std::endl;
-
+  if (this -> GetVerbose()){  
+    std::cout<<"Percentage of points to be processed : "<<(int)(count / m_maskImage->GetLargestPossibleRegion().GetNumberOfPixels() * 100.0) <<std::endl;
+  }
 }
 
 template <typename T>
@@ -464,12 +465,13 @@ NLMTool<T>::GetOutput()
 template <typename T>
 void NLMTool<T>::ComputeOutput()
 {
-  std::cout<<"Compute the denoised image using NLM algorithm"<<std::endl;
-  if(m_useTheReferenceImage == true)
-  {
-    std::cout<<"Use of a reference image"<<std::endl;
+  if (this -> GetVerbose()){ 
+    std::cout<<"Compute the denoised image using NLM algorithm"<<std::endl;
+    if(m_useTheReferenceImage == true)
+    {
+      std::cout<<"Use of a reference image"<<std::endl;
+    }
   }
-
   itkTPointer denoisedImage = itkTImage::New();
   typename itkTDuplicator::Pointer duplicator = itkTDuplicator::New();
   duplicator->SetInputImage( m_inputImage );

@@ -1674,12 +1674,7 @@ class SplitLabelMaps(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        try:
-            self._extractlabelimage(self.inputs.in_labelmap)
-        except Exception as e:
-            print('Failed splitting labelmaps')
-            print(e)
-            raise
+        self._extractlabelimage(self.inputs.in_labelmap)
         return runtime
 
     def _list_outputs(self):
@@ -1716,22 +1711,17 @@ class ListsMerger(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-        try:
-            self.m_list_of_files = []
-            for list_of_one_stack in self.inputs.inputs:
-                if isinstance(list_of_one_stack, list) or \
-                        isinstance(list_of_one_stack, InputMultiPath):
-                    for file in list_of_one_stack:
-                        self.m_list_of_files.append(file)
-                else:
-                    self.m_list_of_files.append(list_of_one_stack)
+        self.m_list_of_files = []
+        for list_of_one_stack in self.inputs.inputs:
+            if isinstance(list_of_one_stack, list) or \
+                    isinstance(list_of_one_stack, InputMultiPath):
+                for file in list_of_one_stack:
+                    self.m_list_of_files.append(file)
+            else:
+                self.m_list_of_files.append(list_of_one_stack)
 
-            self.m_list_of_files = list(set(self.m_list_of_files))
+        self.m_list_of_files = list(set(self.m_list_of_files))
 
-        except Exception as e:
-            print('Failed')
-            print(e)
-            raise
         return runtime
 
     def _list_outputs(self):

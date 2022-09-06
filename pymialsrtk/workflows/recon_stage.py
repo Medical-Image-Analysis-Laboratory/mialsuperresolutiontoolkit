@@ -201,7 +201,9 @@ def create_recon_stage(p_paramTV,
 
     if p_do_reconstruct_labels:
         recon_labels_stage = recon_labelmap_stage.create_recon_labelmap_stage(
-            sub_ses=p_sub_ses)
+            p_sub_ses=p_sub_ses,
+            p_verbose=p_verbose
+            )
 
     recon_stage.connect(inputnode,
                         ("input_masks", utils.sort_ascending),

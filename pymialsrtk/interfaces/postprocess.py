@@ -638,22 +638,17 @@ class ImageMetrics(BaseInterface):
         )
 
     def _run_interface(self, runtime):
-        try:
-            self._reset_class_members()
-            self._load_image_arrays()
-            self._compute_metrics()
-            self._generate_csv()
-            print('Computed and saved overall metrics!')
+        self._reset_class_members()
+        self._load_image_arrays()
+        self._compute_metrics()
+        self._generate_csv()
+        print('Computed and saved overall metrics!')
 
-            if self.inputs.input_ref_labelmap:
-                self._compute_metrics_labels()
-                self._generate_csv_labels()
-                print('Computed and saved per label metrics!')
+        if self.inputs.input_ref_labelmap:
+            self._compute_metrics_labels()
+            self._generate_csv_labels()
+            print('Computed and saved per label metrics!')
 
-        except Exception as e:
-            print('Failed')
-            print(e)
-            raise
         return runtime
 
     def _list_outputs(self):
@@ -701,32 +696,27 @@ class ConcatenateImageMetrics(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-        try:
-            frames = [pd.read_csv(s, index_col=False)
-                      for s in self.inputs.input_metrics]
+        frames = [pd.read_csv(s, index_col=False)
+                    for s in self.inputs.input_metrics]
 
-            res = pd.concat(frames)
-            res.to_csv(
-                self._gen_filename('output_csv'),
-                index=False,
-                header=True,
-                sep=','
-            )
+        res = pd.concat(frames)
+        res.to_csv(
+            self._gen_filename('output_csv'),
+            index=False,
+            header=True,
+            sep=','
+        )
 
-            frames_labels = [pd.read_csv(s, index_col=False)
-                             for s in self.inputs.input_metrics_labels]
+        frames_labels = [pd.read_csv(s, index_col=False)
+                            for s in self.inputs.input_metrics_labels]
 
-            res_labels = pd.concat(frames_labels)
-            res_labels.to_csv(
-                self._gen_filename('output_csv_labels'),
-                index=False,
-                header=True,
-                sep=','
-            )
-
-        except Exception as e:
-            print('Fail in ConcatenateQualityMetrics()')
-            print(e)
+        res_labels = pd.concat(frames_labels)
+        res_labels.to_csv(
+            self._gen_filename('output_csv_labels'),
+            index=False,
+            header=True,
+            sep=','
+        )
         return runtime
 
     def _list_outputs(self):
@@ -791,11 +781,8 @@ class MergeMajorityVote(BaseInterface):
         writer.Execute(sitk.Cast(maps_sitk, sitk.sitkUInt8))
 
     def _run_interface(self, runtime):
-        try:
-            self._merge_maps(self.inputs.input_images)
-        except Exception as e:
-            print('Failed merging label maps')
-            print(e)
+        self._merge_maps(self.inputs.input_images)
+
         return runtime
 
     def _list_outputs(self):

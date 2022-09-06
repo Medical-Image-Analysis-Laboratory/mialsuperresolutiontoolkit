@@ -186,20 +186,21 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
         # Update nypipe logging with config
         nipype_logging.update_logging(config)
         # config.enable_provenance()
-
         input_stage = create_input_stage(
-            self.m_bids_dir,
-            self.m_subject,
-            self.m_session,
-            self.m_use_manual_masks,
-            self.m_masks_desc,
-            self.m_masks_derivatives_dir,
-            None,  # p_labels_derivatives_dir
-            self.m_skip_stacks_ordering,
-            False,  # p_do_reconstruct_labels
-            self.m_stacks,
-            self.m_verbose
-        )
+                p_bids_dir=self.m_bids_dir,
+                p_subject=self.m_subject,
+                p_session=self.m_session,
+                p_use_manual_masks=self.m_use_manual_masks,
+                p_masks_desc=self.m_masks_desc,
+                p_masks_derivatives_dir=self.m_masks_derivatives_dir,
+                p_labels_derivatives_dir=None,
+                p_skip_stacks_ordering=self.m_skip_stacks_ordering,
+                p_do_reconstruct_labels=False,
+                p_stacks=self.m_stacks,
+                p_do_srr_assessment=False,
+                p_verbose=self.m_verbose,
+                name='input_mgmt_stage'
+                )
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,

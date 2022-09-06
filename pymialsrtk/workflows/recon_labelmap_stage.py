@@ -22,7 +22,10 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
 
 
-def create_recon_labelmap_stage(sub_ses, name="recon_labels_stage"):
+def create_recon_labelmap_stage(
+        p_sub_ses,
+        p_verbose,
+        name="recon_labels_stage"):
     """Create a SR reconstruction workflow
     for tissue label maps.
     Parameters
@@ -91,7 +94,8 @@ def create_recon_labelmap_stage(sub_ses, name="recon_labels_stage"):
         iterfield=['label_id'],
         name='labels_reconstruct_hr_maps'
     )
-    labels_reconstruct_hr_maps.inputs.sub_ses = sub_ses
+    labels_reconstruct_hr_maps.inputs.sub_ses = p_sub_ses
+    labels_reconstruct_hr_maps.inputs.verbose = p_verbose
 
     labels_merge_hr_maps = pe.Node(
         interface=preprocess.ListsMerger(),
