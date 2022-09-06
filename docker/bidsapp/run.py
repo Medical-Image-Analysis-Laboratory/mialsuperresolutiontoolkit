@@ -165,7 +165,7 @@ def check_participants_params(participants_params):
         "do_nlm_denoising",
         "skip_stacks_ordering",
         "do_reconstruct_labels",
-        "do_anat_orientation"
+        "do_anat_orientation",
         "do_multi_parameters",
         "do_srr_assessment"
         ]
@@ -400,7 +400,7 @@ if __name__ == "__main__":
                         openmp_number_of_cores=openmp_nb_of_cores,
                         memory=args.memory
                         )
-                    out = f"Subject {sub} with parameters {sr_params}" \
+                    out = f"Subject {sub} with parameters {sr_params} " \
                           f"succeeded."
                     success_dict[sub] += [out]
                 except Exception as e:

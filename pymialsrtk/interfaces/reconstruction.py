@@ -202,6 +202,30 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
                      mandatory=True)
     stacks_order = traits.List(mandatory=False,
                                desc='List of stack run-id that specify the order of the stacks')
+    in_loop = traits.Int(mandatory=True,
+                         desc='Number of loops (SR/denoising)')
+    in_deltat = traits.Float(mandatory=True,
+                             desc='Parameter deltat of TV optimizer')
+    in_lambda = traits.Float(mandatory=True,
+                             desc='TV regularization factor which weights the data fidelity term in TV optimizer')
+    in_bregman_loop = traits.Int(3,
+                                 desc='Number of Bregman loops',
+                                 usedefault=True)
+    in_iter = traits.Int(50,
+                         desc='Number of inner iterations',
+                         usedefault=True)
+    in_step_scale = traits.Int(10,
+                               desc='Parameter step scale',
+                               usedefault=True)
+    in_gamma = traits.Int(10,
+                          desc='Parameter gamma',
+                          usedefault=True)
+    in_inner_thresh = traits.Float(0.00001,
+                                   desc='Inner loop convergence threshold',
+                                   usedefault=True)
+    in_outer_thresh = traits.Float(0.000001,
+                                   desc='Outer loop convergence threshold',
+                                   usedefault=True)
 
 
 class MialsrtkTVSuperResolutionOutputSpec(TraitedSpec):
@@ -236,24 +260,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
             Subject and session BIDS identifier to construct output filename
         m_use_manual_masks :
             Use masks of input files
-        m_in_deltat :
-            Parameter deltat of TV optimizer
-        m_in_lambda :
-            TV regularization factor which weights the data fidelity term in TV optimizer      
-        m_in_iter :
-            Number of inner iterations
-        m_in_loop :
-            Number of loops (SR/denoising)
-        m_in_bregman_loop :
-            Number of Bregman loops
-        m_in_step_scale :
-            Parameter step scale (default 10)
-        m_in_gamma :
-            Parameter gamma (default 10)
-        m_in_inner_thresh :
-            Inner loop convergence threshold (default 1e-5)
-        m_in_outer_thresh :
-            Outer loop convergence threshold (default 1e-6)
         m_input_rad_dilatation :
             Radius dilatation used in prior step to construct output filename
         m_deblurring :
@@ -298,15 +304,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
     m_TV_parameters = {}
     m_sub_ses = None
     m_use_manual_masks = None
-    m_in_iter = None
-    m_in_loop = None
-    m_in_bregman_loop = None
-    m_in_step_scale = None
-    m_in_gamma = None
-    m_in_inner_thresh = None
-    m_in_outer_thresh = None
-    m_in_deltat = None
-    m_in_lambda = None
     m_input_rad_dilatation = None
     m_deblurring = None
     m_out_prefix = None
@@ -316,15 +313,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
             self,
             p_sub_ses,
             p_use_manual_masks,
-            p_deltatTV,
-            p_lambdaTV,
-            p_num_iterations,
-            p_num_primal_dual_loops,
-            p_num_bregman_loops=3,
-            p_step_scale=10,
-            p_gamma=10,
-            p_in_inner_thresh=0.00001,
-            p_in_outer_thresh=0.000001,
             p_input_rad_dilatation=1.0,
             p_deblurring=False,
             p_out_prefix="SRTV_",
@@ -333,15 +321,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
         super().__init__()
         self.m_sub_ses = p_sub_ses
         self.m_use_manual_masks = p_use_manual_masks
-        self.m_in_deltat = p_deltatTV
-        self.m_in_lambda = p_lambdaTV
-        self.m_in_iter = p_num_iterations
-        self.m_in_loop = p_num_primal_dual_loops
-        self.m_in_bregman_loop = p_num_bregman_loops
-        self.m_in_step_scale = p_step_scale
-        self.m_in_gamma = p_gamma
-        self.m_in_inner_thresh = p_in_inner_thresh
-        self.m_in_outer_thresh = p_in_outer_thresh
         self.m_input_rad_dilatation = p_input_rad_dilatation
         self.m_deblurring = p_deblurring
         self.m_out_prefix = p_out_prefix
@@ -396,33 +375,33 @@ class MialsrtkTVSuperResolution(BaseInterface):
             cmd += ['--debluring']
 
         self.m_TV_parameters["in_loop"] = \
-            str(self.m_in_loop)
+            str(self.inputs.in_loop)
         self.m_TV_parameters["in_deltat"] = \
-            str(self.m_in_deltat)
+            str(self.inputs.in_deltat)
         self.m_TV_parameters["in_lambda"] = \
-            str(self.m_in_lambda)
+            str(self.inputs.in_lambda)
         self.m_TV_parameters["in_bregman_loop"] = \
-            str(self.m_in_bregman_loop)
+            str(self.inputs.in_bregman_loop)
         self.m_TV_parameters["in_iter"] = \
-            str(self.m_in_iter)
+            str(self.inputs.in_iter)
         self.m_TV_parameters["in_step_scale"] = \
-            str(self.m_in_step_scale)
+            str(self.inputs.in_step_scale)
         self.m_TV_parameters["in_gamma"] = \
-            str(self.m_in_gamma)
+            str(self.inputs.in_gamma)
         self.m_TV_parameters["in_inner_thresh"] = \
-            str(self.m_in_inner_thresh)
+            str(self.inputs.in_inner_thresh)
         self.m_TV_parameters["in_outer_thresh"] = \
-            str(self.m_in_outer_thresh)
+            str(self.inputs.in_outer_thresh)
 
-        cmd += ['--loop', str(self.m_in_loop)]
-        cmd += ['--deltat', str(self.m_in_deltat)]
-        cmd += ['--lambda', str(self.m_in_lambda)]
-        cmd += ['--bregman-loop', str(self.m_in_bregman_loop)]
-        cmd += ['--iter', str(self.m_in_iter)]
-        cmd += ['--step-scale', str(self.m_in_step_scale)]
-        cmd += ['--gamma', str(self.m_in_gamma)]
-        cmd += ['--inner-thresh', str(self.m_in_inner_thresh)]
-        cmd += ['--outer-thresh', str(self.m_in_outer_thresh)]
+        cmd += ['--loop', str(self.inputs.in_loop)]
+        cmd += ['--deltat', str(self.inputs.in_deltat)]
+        cmd += ['--lambda', str(self.inputs.in_lambda)]
+        cmd += ['--bregman-loop', str(self.inputs.in_bregman_loop)]
+        cmd += ['--iter', str(self.inputs.in_iter)]
+        cmd += ['--step-scale', str(self.inputs.in_step_scale)]
+        cmd += ['--gamma', str(self.inputs.in_gamma)]
+        cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
+        cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
         if self.m_verbose:
             cmd += ["--verbose"]
         cmd = ' '.join(cmd)
@@ -441,9 +420,11 @@ class MialsrtkTVSuperResolution(BaseInterface):
             str(len(self.inputs.stacks_order))
         self.m_output_dict["CustomMetaData"]["masks_used"] = 'Manual' \
             if self.m_use_manual_masks else 'Automatic'
-        self.m_output_dict["CustomMetaData"]["in_lambda"] = self.m_in_lambda
-        self.m_output_dict["CustomMetaData"]["in_deltat"] = self.m_in_deltat
-        self.m_output_dict["CustomMetaData"]["in_loop"] = self.m_in_loop
+        self.m_output_dict["CustomMetaData"]["in_lambda"] = \
+            self.inputs.in_lambda
+        self.m_output_dict["CustomMetaData"]["in_deltat"] = \
+            self.inputs.in_deltat
+        self.m_output_dict["CustomMetaData"]["in_loop"] = self.inputs.in_loop
 
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:

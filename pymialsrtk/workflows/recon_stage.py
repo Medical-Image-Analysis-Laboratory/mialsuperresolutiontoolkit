@@ -168,20 +168,9 @@ def create_recon_stage(p_paramTV,
         interface=reconstruction.MialsrtkTVSuperResolution(
             p_sub_ses,
             p_use_manual_masks,
-            deltatTV,
-            lambdaTV,
-            num_iterations,
-            num_primal_dual_loops,
-            num_bregman_loops,
-            step_scale,
-            gamma,
             p_verbose=p_verbose
         ),
         name='srtkTVSuperResolution')
-    srtkTVSuperResolution.inputs.sub_ses = p_sub_ses
-    srtkTVSuperResolution.inputs.use_manual_masks = p_use_manual_masks
-    srtkTVSuperResolution.inputs.in_iter = num_iterations
-    srtkTVSuperResolution.inputs.verbose = p_verbose
 
     if p_do_multi_parameters:
         deltatTV = [deltatTV] \
