@@ -17,14 +17,16 @@ import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
 
 import pymialsrtk.workflows.postproc_stage as postproc_stage
+import nipype
+import logging
 
-
-def create_sr_assessment_stage(
+def create_srr_assessment_stage(
         p_do_multi_parameters=False,
         p_do_reconstruct_labels=False,
         p_input_srtv_node=None,
+        p_verbose=False,
         p_openmp_number_of_cores=1,
-        name='sr_assessment_stage'
+        name='srr_assessment_stage'
 ):
     """Create an assessment workflow to compare
     a SR-reconstructed image and a reference target.
@@ -56,7 +58,12 @@ def create_sr_assessment_stage(
     -------
     """
 
-    sr_assessment_stage = pe.Workflow(name=name)
+    srr_assessment_stage = pe.Workflow(name=name)
+
+    if not p_verbose:
+        # Removing verbose by removing the output altogether as we
+        # cannot control the verbosity level in the ANTs call
+        logging.getLogger(f'nipype.workflow.{name}').setLevel(0)
 
     # Set up a node to define all inputs required for the
     # preprocessing workflow
@@ -89,6 +96,7 @@ def create_sr_assessment_stage(
         p_ga=None,
         p_do_anat_orientation=False,
         p_do_reconstruct_labels=False,
+        p_verbose=p_verbose,
         name='proc_reference'
     )
 
@@ -105,7 +113,7 @@ def create_sr_assessment_stage(
     registration_quick.inputs.transform_type = 'r'
     registration_quick.environ = {'PATH': '/opt/conda/bin'}
     registration_quick.terminal_output = 'file_stderr'
-
+    
     apply_transform = pe.Node(
         interface=ApplyTransforms(),
         name='apply_transform'
@@ -142,70 +150,70 @@ def create_sr_assessment_stage(
             name='concat_sr_image_metrics'
         )
 
-    sr_assessment_stage.connect(inputnode, 'input_ref_image',
+    srr_assessment_stage.connect(inputnode, 'input_ref_image',
                                 proc_reference, 'inputnode.input_image')
-    sr_assessment_stage.connect(inputnode, 'input_ref_mask',
+    srr_assessment_stage.connect(inputnode, 'input_ref_mask',
                                 proc_reference, 'inputnode.input_mask')
 
-    sr_assessment_stage.connect(proc_reference, 'outputnode.output_image',
+    srr_assessment_stage.connect(proc_reference, 'outputnode.output_image',
                                 crop_reference, 'input_image')
-    sr_assessment_stage.connect(proc_reference, 'outputnode.output_mask',
+    srr_assessment_stage.connect(proc_reference, 'outputnode.output_mask',
                                 crop_reference, 'input_mask')
-    sr_assessment_stage.connect(inputnode, 'input_ref_labelmap',
+    srr_assessment_stage.connect(inputnode, 'input_ref_labelmap',
                                 crop_reference, "input_label")
 
-    sr_assessment_stage.connect(inputnode, 'input_sdi_image',
+    srr_assessment_stage.connect(inputnode, 'input_sdi_image',
                                 registration_quick, 'moving_image')
-    sr_assessment_stage.connect(crop_reference, 'output_image',
+    srr_assessment_stage.connect(crop_reference, 'output_image',
                                 registration_quick, 'fixed_image')
 
-    sr_assessment_stage.connect(inputnode, 'input_sr_image',
+    srr_assessment_stage.connect(inputnode, 'input_sr_image',
                                 apply_transform, 'input_image')
-    sr_assessment_stage.connect(crop_reference, 'output_image',
+    srr_assessment_stage.connect(crop_reference, 'output_image',
                                 apply_transform, 'reference_image')
-    sr_assessment_stage.connect(registration_quick, 'out_matrix',
+    srr_assessment_stage.connect(registration_quick, 'out_matrix',
                                 apply_transform, 'transforms')
 
     if p_do_reconstruct_labels:
-        sr_assessment_stage.connect(inputnode, 'input_sr_labelmap',
+        srr_assessment_stage.connect(inputnode, 'input_sr_labelmap',
                                     apply_transform_labels, 'input_image')
-        sr_assessment_stage.connect(crop_reference, 'output_image',
+        srr_assessment_stage.connect(crop_reference, 'output_image',
                                     apply_transform_labels, 'reference_image')
-        sr_assessment_stage.connect(registration_quick, 'out_matrix',
+        srr_assessment_stage.connect(registration_quick, 'out_matrix',
                                     apply_transform_labels, 'transforms')
 
-    sr_assessment_stage.connect(apply_transform, 'output_image',
+    srr_assessment_stage.connect(apply_transform, 'output_image',
                                 mask_sr, 'in_file')
-    sr_assessment_stage.connect(crop_reference, 'output_mask',
+    srr_assessment_stage.connect(crop_reference, 'output_mask',
                                 mask_sr, 'in_mask')
 
-    sr_assessment_stage.connect(mask_sr, 'out_im_file',
+    srr_assessment_stage.connect(mask_sr, 'out_im_file',
                                 sr_image_metrics, 'input_image')
-    sr_assessment_stage.connect(crop_reference, 'output_image',
+    srr_assessment_stage.connect(crop_reference, 'output_image',
                                 sr_image_metrics, 'input_ref_image')
-    sr_assessment_stage.connect(crop_reference, 'output_label',
+    srr_assessment_stage.connect(crop_reference, 'output_label',
                                 sr_image_metrics, 'input_ref_labelmap')
-    sr_assessment_stage.connect(inputnode, 'input_TV_parameters',
+    srr_assessment_stage.connect(inputnode, 'input_TV_parameters',
                                 sr_image_metrics, 'input_TV_parameters')
 
     if p_do_multi_parameters:
-        sr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
+        srr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
                                     concat_sr_image_metrics, 'input_metrics')
-        sr_assessment_stage.connect(sr_image_metrics, 'output_metrics_labels',
+        srr_assessment_stage.connect(sr_image_metrics, 'output_metrics_labels',
                                     concat_sr_image_metrics,
                                     'input_metrics_labels')
 
-        sr_assessment_stage.connect(concat_sr_image_metrics, 'output_csv',
+        srr_assessment_stage.connect(concat_sr_image_metrics, 'output_csv',
                                     outputnode, 'output_metrics')
-        sr_assessment_stage.connect(concat_sr_image_metrics,
+        srr_assessment_stage.connect(concat_sr_image_metrics,
                                     'output_csv_labels',
                                     outputnode, 'output_metrics_labels')
 
     else:
-        sr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
+        srr_assessment_stage.connect(sr_image_metrics, 'output_metrics',
                                     outputnode, 'output_metrics')
 
-        sr_assessment_stage.connect(sr_image_metrics, 'output_metrics_labels',
+        srr_assessment_stage.connect(sr_image_metrics, 'output_metrics_labels',
                                     outputnode, 'output_metrics_labels')
 
-    return sr_assessment_stage
+    return srr_assessment_stage

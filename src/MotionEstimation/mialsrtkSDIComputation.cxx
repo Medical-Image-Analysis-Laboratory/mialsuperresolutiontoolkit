@@ -220,8 +220,9 @@ int main( int argc, char *argv[] )
 
   ImagePointer hrImage;
   ImagePointer hrRefImage;
-
-  std::cout<<"Reading the reference image : "<<refImage<<"\n";
+  if (verbose){
+    std::cout<<"Reading the reference image : "<<refImage<<"\n";
+  }
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader -> SetFileName( refImage );
   imageReader -> Update();
@@ -274,11 +275,10 @@ int main( int argc, char *argv[] )
 
 
 
-
-  std::cout << std::endl; std::cout.flush();
-
-  // Inject images
   if (verbose){
+    std::cout << std::endl; std::cout.flush();
+
+    // Inject images
     std::cout << "Injecting images ... "; std::cout.flush();
   }
 
@@ -303,8 +303,9 @@ int main( int argc, char *argv[] )
 
 
   hrImage = resampler -> GetOutput();
-
-  std::cout << "done. " << std::endl; std::cout.flush();
+  if (verbose){
+    std::cout << "done. " << std::endl; std::cout.flush();
+  }
 
 
   // Write HR image

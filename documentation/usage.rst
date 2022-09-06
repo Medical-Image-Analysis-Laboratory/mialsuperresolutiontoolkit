@@ -87,7 +87,13 @@ where:
         If True, path to a directory containing STA atlas (Gholipour et al., 2017 [1]_, [2]_) must be mounted to `/sta`.
 
         * ``"preproc_do_registration"`` (optional) indicates whether the Slice-to-Volume Registration should be computed in the ``"preprocessing"`` run (default is False).
+
+        * ``"do_multi_parameters"`` (optional) enables running the super-resolution reconstruction with lists of parameters. The algorithm will
+        then run a grid search over all combinations of parameters. (default is False)
         
+        * ``"do_srr_assessment"`` (optional) enables comparing the quality of the super-resolution reconstruction with a reference image. (default is False)
+        If True, it will require a reference isotropic T2w image, mask and labels located in the data folder.
+                
 References
 ----------
 .. [1] Gholipour et al.; A normative spatiotemporal MRI atlas of the fetal brain for automatic segmentation and analysis of early brain growth, Scientific Reports 7, Article number: 476 (2017). `(link to article)<http://www.nature.com/articles/s41598-017-00525-w>`_ .

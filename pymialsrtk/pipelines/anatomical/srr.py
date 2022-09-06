@@ -22,7 +22,7 @@ from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
-import pymialsrtk.workflows.sr_assessment_stage as sr_assessment_stage
+from pymialsrtk.workflows.srr_assessment_stage import create_srr_assessment_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.output_stage as output_stage
 import pymialsrtk.workflows.input_stage as input_stage
@@ -355,9 +355,10 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         if self.m_do_srr_assessment:
             srr_assessment_stage = \
-                sr_assessment_stage.create_sr_assessment_stage(
+                create_srr_assessment_stage(
                     p_do_multi_parameters=self.m_do_multi_parameters,
                     p_input_srtv_node=srtv_node_name,
+                    p_verbose=self.m_verbose,
                     p_openmp_number_of_cores=self.m_openmp_number_of_cores,
                     name='srr_assessment_stage'
                 )
