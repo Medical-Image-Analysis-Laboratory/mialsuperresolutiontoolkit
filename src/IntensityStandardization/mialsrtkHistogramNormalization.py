@@ -18,9 +18,11 @@ import copy
 
 import pdb
 
+
 def path_leaf(path):
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
+
 
 def percentile_nonzero(image, percentile_nonzero):
         #pdb.set_trace()
@@ -36,10 +38,12 @@ def percentile_nonzero(image, percentile_nonzero):
         value = image_nonzero[element_idx]
     return value
 
+
 def mean_nonzero(image):
     image_nonzero=image[image!=0]
     mean=np.sum(image_nonzero)/len(image_nonzero)
     return mean
+
 
 def intensityNormalization(image,landmarks):
     print('min ='+str(landmarks['p1']))
@@ -47,6 +51,7 @@ def intensityNormalization(image,landmarks):
         #print 'mean ='+str(landmarks['mean'])
     print('quartiles [25%,50%,75%] ='+str(landmarks['quartiles']))
     return 1
+
 
 def displayHistogram(image,image_name,loffset,roffset):
     bins = np.round(np.arange(loffset,np.max(image)-roffset,40))
@@ -57,6 +62,7 @@ def displayHistogram(image,image_name,loffset,roffset):
     ##pyplot.hist(image,bins,histtype='step',alpha=0.5,label=image_name)
     return 1
 
+
 def extractImageLandmarks(image):
     landmarks={}
     landmarks['p1']=percentile_nonzero(image,0)
@@ -66,6 +72,7 @@ def extractImageLandmarks(image):
     #landmarks['quartiles']=[percentile_nonzero(image,10),percentile_nonzero(image,20),percentile_nonzero(image,30),percentile_nonzero(image,40),percentile_nonzero(image,50),percentile_nonzero(image,60),percentile_nonzero(image,70),percentile_nonzero(image,80),percentile_nonzero(image,90)]
     #pdb.set_trace()
     return landmarks
+
 
 def trainImageLandmarks(list_landmarks, verbose=False):
     mup_l=[]
@@ -91,32 +98,45 @@ def trainImageLandmarks(list_landmarks, verbose=False):
     ymax_index=maxLR.index(max(maxLR))
     dS = float(ymax*(mup_L[ymax_index]+mup_R[ymax_index]))
     if verbose:
-        print('Ymax  =  ', str(ymax)+'  at position '+str(ymax_index)+'  ,  dS = '+str(dS)+' (=s2 when s1=0)')
-    return list_landmarks,dS
+        print('Ymax  =  ', str(ymax)+'  at position '+str(ymax_index) +
+              '  ,  dS = '+str(dS)+' (=s2 when s1=0)')
+    return list_landmarks, dS
 
-def mapImageLandmarks(list_landmarks,s1,s2, verbose=False):
+def mapImageLandmarks(list_landmarks, s1, s2, verbose=False):
     list_landmarks_mapped = copy.deepcopy(list_landmarks)
-    index=0
-    while index<len(list_landmarks):
-        land_index=0
+    index = 0
+    while index < len(list_landmarks):
+        land_index = 0
         if verbose:
             print('Image index:', str(index))
-        while land_index<len(list_landmarks[index]['quartiles']):
+        while land_index < len(list_landmarks[index]['quartiles']):
             if verbose:
-                print('old landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
-            list_landmarks_mapped[index]['quartiles'][land_index]=s1+float((list_landmarks_mapped[index]['quartiles'][land_index]-list_landmarks_mapped[index]['p1'])/float(list_landmarks_mapped[index]['p2']-list_landmarks_mapped[index]['p1']))*float((s2-s1))
+                print('old landmark:',
+                      str(list_landmarks_mapped[index]['quartiles'][land_index]
+                          )
+                      )
+            list_landmarks_mapped[index]['quartiles'][land_index] = s1 + \
+                float((list_landmarks_mapped[index]['quartiles'][land_index] -
+                       list_landmarks_mapped[index]['p1']) /
+                      float(list_landmarks_mapped[index]['p2'] -
+                            list_landmarks_mapped[index]['p1']))*float((s2-s1))
             if verbose:
-                print('new landmark:', str(list_landmarks_mapped[index]['quartiles'][land_index]))
-            land_index+=1
+                print('new landmark:',
+                      str(list_landmarks_mapped[index]['quartiles'][land_index]
+                          )
+                      )
+            land_index += 1
         if verbose:
-            print('p1, p2 = ', str(list_landmarks_mapped[index]['p1']), ',', str(list_landmarks_mapped[index]['p2']))
-        index+=1
+            print('p1, p2 = ', str(list_landmarks_mapped[index]['p1']),
+                  ',', str(list_landmarks_mapped[index]['p2']))
+        index += 1
     return list_landmarks_mapped
 
-def verifyOne2OneMapping(s1,s2,list_landmarks,lmap_mean):
-    landmarks=list_landmarks['quartiles']
-    mup_L=np.max(landmarks-list_landmarks['p1'])
-    mup_R=np.max(list_landmarks['p2']-landmarks)
+
+def verifyOne2OneMapping(s1, s2, list_landmarks, lmap_mean):
+    landmarks = list_landmarks['quartiles']
+    mup_L = np.max(landmarks-list_landmarks['p1'])
+    mup_R = np.max(list_landmarks['p2']-landmarks)
     #print 'mup_L  =  '+str(mup_L)
     #print 'mup_R  =  '+str(mup_R)
 
@@ -129,6 +149,7 @@ def verifyOne2OneMapping(s1,s2,list_landmarks,lmap_mean):
             cond=0;
         land_index+=1
     return cond
+
 
 def mapImage(image,lmap_mean,list_landmarks,s1,s2,p1,p2):
     image_out=image.copy().astype('float')
@@ -162,6 +183,7 @@ def mapImage(image,lmap_mean,list_landmarks,s1,s2,p1,p2):
         index+=1
     ##pyplot.show()
     return image_out
+
 
 def computeMeanMapImageLandmarks(list_landmarks, verbose):
     mean_landmarks={}
@@ -247,7 +269,8 @@ def main(images, masks, outputs, verbose=False):
 
     list_landmarks_mapped = mapImageLandmarks(list_landmarks, s1, s2, verbose)
 
-    mean_landmarks = computeMeanMapImageLandmarks(list_landmarks_mapped, verbose)
+    mean_landmarks = computeMeanMapImageLandmarks(list_landmarks_mapped,
+                                                  verbose)
 
     index = 0
     #pyplot.figure(1)
@@ -281,8 +304,8 @@ def main(images, masks, outputs, verbose=False):
                                     header=image.header)
         if verbose:
             print('Save normalized image', str(image_name),
-                'as', str(output_paths[index]),
-                '(one 2 one mapping :', str(o2o), ')')
+                  'as', str(output_paths[index]),
+                  '(one 2 one mapping :', str(o2o), ')')
         nib.save(new_image, output_paths[index])
         index += 1
     # pyplot.legend()
@@ -308,7 +331,7 @@ parser.add_argument('-o', '--output', required=True,
 parser.add_argument('-v', '--verbose', default=False,
                     action='store_true', help='Enable verbosity')
 
-#TODO: add parser for verbose
+# TODO: add parser for verbose
 args = parser.parse_args()
 
 verbose = args.verbose

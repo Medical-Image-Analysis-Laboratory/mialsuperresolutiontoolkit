@@ -157,6 +157,7 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
 
     return openmp_nb_of_cores, nipype_nb_of_cores
 
+
 def check_participants_params(participants_params):
     allowed_keys = [
         "skip_svr",
@@ -380,23 +381,25 @@ if __name__ == "__main__":
                     print(e)
                     continue
                 try:
-                    res = main(bids_dir=args.bids_dir,
-                               output_dir=args.output_dir,
-                               subject=sub,
-                               session=ses,
-                               run_type=args.run_type,
-                               p_ga=ga,
-                               p_stacks=stacks,
-                               param_TV=param_TV,
-                               sr_id=sr_id,
-                               masks_derivatives_dir=args.masks_derivatives_dir,
-                               labels_derivatives_dir=args.labels_derivatives_dir,
-                               masks_desc=masks_desc,
-                               dict_custom_interfaces=dict_custom_interfaces,
-                               verbose=args.verbose,
-                               nipype_number_of_cores=nipype_nb_of_cores,
-                               openmp_number_of_cores=openmp_nb_of_cores,
-                               memory=args.memory)
+                    res = main(
+                        bids_dir=args.bids_dir,
+                        output_dir=args.output_dir,
+                        subject=sub,
+                        session=ses,
+                        run_type=args.run_type,
+                        p_ga=ga,
+                        p_stacks=stacks,
+                        param_TV=param_TV,
+                        sr_id=sr_id,
+                        masks_derivatives_dir=args.masks_derivatives_dir,
+                        labels_derivatives_dir=args.labels_derivatives_dir,
+                        masks_desc=masks_desc,
+                        dict_custom_interfaces=dict_custom_interfaces,
+                        verbose=args.verbose,
+                        nipype_number_of_cores=nipype_nb_of_cores,
+                        openmp_number_of_cores=openmp_nb_of_cores,
+                        memory=args.memory
+                        )
                     out = f"Subject {sub} with parameters {sr_params}" \
                           f"succeeded."
                     success_dict[sub] += [out]

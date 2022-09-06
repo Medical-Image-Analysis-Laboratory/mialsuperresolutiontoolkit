@@ -568,7 +568,10 @@ class FilteringByRunid(BaseInterface):
     m_output_files = []
 
     def _run_interface(self, runtime):
-        self.m_output_files = self._filter_by_runid(self.inputs.input_files, self.inputs.stacks_id)
+        self.m_output_files = self._filter_by_runid(
+            self.inputs.input_files,
+            self.inputs.stacks_id
+            )
 
         return runtime
 
@@ -965,7 +968,7 @@ class BrainExtractionInputSpec(BaseInterfaceInputSpec):
     in_ckpt_seg = File(desc='Network_checkpoint for segmentation', mandatory=True)
     threshold_seg = traits.Float(0.5, desc='Threshold for cutoff probability (0.5 by default)')
     out_postfix = traits.Str("_brainMask", desc='Suffix of the automatically generated mask', usedefault=True)
-    
+
 class BrainExtractionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the BrainExtraction interface."""
 
@@ -1010,10 +1013,10 @@ class BrainExtraction(BaseInterface):
     def _run_interface(self, runtime):
 
         self._extractBrain(self.inputs.in_file,
-                            self.inputs.in_ckpt_loc,
-                            self.inputs.threshold_loc,
-                            self.inputs.in_ckpt_seg,
-                            self.inputs.threshold_seg)
+                           self.inputs.in_ckpt_loc,
+                           self.inputs.threshold_loc,
+                           self.inputs.in_ckpt_seg,
+                           self.inputs.threshold_seg)
 
         return runtime
 
@@ -1596,7 +1599,6 @@ class ReduceFieldOfView(BaseInterface):
             writer.Execute(label_cropped)
 
     def _run_interface(self, runtime):
-
 
         self._crop_image_and_mask(
             self.inputs.input_image,
