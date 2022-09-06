@@ -201,7 +201,8 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
                           'Typically the output of MialsrtkImageReconstruction is used',
                      mandatory=True)
     stacks_order = traits.List(mandatory=False,
-                               desc='List of stack run-id that specify the order of the stacks')
+                               desc='List of stack run-id that specify the '
+                                    'order of the stacks')
     in_loop = traits.Int(mandatory=True,
                          desc='Number of loops (SR/denoising)')
     in_deltat = traits.Float(mandatory=True,

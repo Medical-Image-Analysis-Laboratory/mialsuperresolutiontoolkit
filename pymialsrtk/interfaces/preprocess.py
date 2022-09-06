@@ -1759,7 +1759,7 @@ class ResampleImage(BaseInterface):
 
     def __init__(self, p_verbose):
         super().__init__()
-        self.m_verbose=p_verbose
+        self.m_verbose = p_verbose
 
     def _gen_filename(self, name):
         if name == 'output_image':
