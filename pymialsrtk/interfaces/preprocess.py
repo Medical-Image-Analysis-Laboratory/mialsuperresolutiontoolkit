@@ -46,7 +46,7 @@ from nipype.interfaces.base import traits, \
     TraitedSpec, File, InputMultiPath, OutputMultiPath, BaseInterface, BaseInterfaceInputSpec
 
 from pymialsrtk.interfaces.utils import run
-
+from pymialsrtk.utils import EXEC_PATH
 
 ###############
 # NLM denoising
@@ -106,9 +106,12 @@ class BtkNLMDenoising(BaseInterface):
         out_file = self._gen_filename('out_file')
 
         if self.inputs.in_mask:
-            cmd = 'btkNLMDenoising -i "{}" -m "{}" -o "{}" -b {}'.format(self.inputs.in_file, self.inputs.in_mask, out_file, self.inputs.weight)
+            cmd = f'{EXEC_PATH}btkNLMDenoising -i "{self.inputs.in_file}" '\
+                  f'-m "{self.inputs.in_mask}" -o "{out_file}" '\
+                  f'-b {self.inputs.weight}'
         else:
-            cmd = 'btkNLMDenoising -i "{}" -o "{}" -b {}'.format(self.inputs.in_file, out_file, self.inputs.weight)
+            cmd = f'{EXEC_PATH}btkNLMDenoising -i "{self.inputs.in_file}" '\
+                  f'-o "{out_file}" -b {self.inputs.weight}'
         if self.inputs.verbose:
             cmd += ' --verbose'
             print('... cmd: {}'.format(cmd))
@@ -169,7 +172,8 @@ class MialsrtkCorrectSliceIntensity(BaseInterface):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_file = self._gen_filename('out_file')
 
-        cmd = 'mialsrtkCorrectSliceIntensity "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_file)
+        cmd = f'{EXEC_PATH}mialsrtkCorrectSliceIntensity '\
+              f'"{self.inputs.in_file}" "{self.inputs.in_mask}" "{out_file}"'
         if self.inputs.verbose:
             cmd += " verbose"
             print('... cmd: {}'.format(cmd))
@@ -248,9 +252,9 @@ class MialsrtkSliceBySliceN4BiasFieldCorrection(BaseInterface):
         out_im_file = self._gen_filename('out_im_file')
         out_fld_file = self._gen_filename('out_fld_file')
 
-        cmd = 'mialsrtkSliceBySliceN4BiasFieldCorrection "{}" "{}" "{}" "{}"'.format(self.inputs.in_file,
-                                                                                     self.inputs.in_mask,
-                                                                                     out_im_file, out_fld_file)
+        cmd = f'{EXEC_PATH}mialsrtkSliceBySliceN4BiasFieldCorrection '\
+              f'"{self.inputs.in_file}" "{self.inputs.in_mask}" '\
+              f'"{out_im_file}" "{out_fld_file}"'
         if self.inputs.verbose:
             cmd += ' verbose'
             print('... cmd: {}'.format(cmd))
@@ -314,7 +318,9 @@ class MialsrtkSliceBySliceCorrectBiasField(BaseInterface):
         _, name, ext = split_filename(os.path.abspath(self.inputs.in_file))
         out_im_file = self._gen_filename('out_im_file')
 
-        cmd = 'mialsrtkSliceBySliceCorrectBiasField "{}" "{}" "{}" "{}"'.format(self.inputs.in_file, self.inputs.in_mask, self.inputs.in_field, out_im_file)
+        cmd = f'{EXEC_PATH}mialsrtkSliceBySliceCorrectBiasField '\
+              f'"{self.inputs.in_file}" "{self.inputs.in_mask}" '\
+              f'"{self.inputs.in_field}" "{out_im_file}"'
         if self.inputs.verbose:
             cmd += ' verbose'
             print('... cmd: {}'.format(cmd))
@@ -373,7 +379,7 @@ class MialsrtkIntensityStandardization(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        cmd = 'mialsrtkIntensityStandardization'
+        cmd = f'{EXEC_PATH}mialsrtkIntensityStandardization'
         for input_image in self.inputs.input_images:
             out_file = self._gen_filename(input_image, 'output_images')
             cmd = cmd + ' --input "{}" --output "{}"'.format(input_image, out_file)
@@ -512,7 +518,8 @@ class MialsrtkMaskImage(BaseInterface):
     def _run_interface(self, runtime):
         out_im_file = self._gen_filename('out_im_file')
 
-        cmd = 'mialsrtkMaskImage -i "{}" -m "{}" -o "{}"'.format(self.inputs.in_file, self.inputs.in_mask, out_im_file)
+        cmd = f'{EXEC_PATH}mialsrtkMaskImage -i "{self.inputs.in_file}" '\
+              f'-m "{self.inputs.in_mask}" -o "{out_im_file}"'
         if self.inputs.verbose:
             cmd += ' --verbose'
             print('... cmd: {}'.format(cmd))
@@ -1793,36 +1800,18 @@ class ResampleImage(BaseInterface):
 
         image_resampled_path = self._gen_filename('output_image')
 
-        cmd = []
-        cmd.append('ResampleImageBySpacing')
-        cmd.append('3')
-        cmd.append(p_image_path)
-        cmd.append(image_resampled_path)
-        cmd.append(str(p_resolution))
-        cmd.append(str(p_resolution))
-        cmd.append(str(p_resolution))
-
+        cmd = f'ResampleImageBySpacing 3 {p_image_path} {image_resampled_path} '\
+              f'{str(p_resolution)} {str(p_resolution)} {str(p_resolution)}'
         if self.m_verbose:
             print()
             print()
             print(cmd)
             print()
             print()
-        cmd = ' '.join(cmd)
         run(cmd, env={'PATH': ants_path})
 
-        cmd = []
-        cmd.append('antsApplyTransforms')
-        cmd.append('-d 3')
-        cmd.append('-i')
-        cmd.append(p_image_path)
-        cmd.append('-r')
-        cmd.append(image_resampled_path)
-        cmd.append('-o')
-        cmd.append(image_resampled_path)
-        cmd.append('-t [identity]')
-
-        cmd = ' '.join(cmd)
+        cmd = f'antsApplyTransforms -d 3 -i {p_image_path} '\
+              f'-r {image_resampled_path} -o {image_resampled_path} -t [identity]'
         run(cmd, env={'PATH': ants_path})
         if self.m_verbose:
             print('Reference STA was resampled.')

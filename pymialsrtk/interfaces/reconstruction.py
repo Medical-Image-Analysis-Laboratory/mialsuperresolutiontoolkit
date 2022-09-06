@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 from nilearn.plotting import plot_anat
 
 from pymialsrtk.interfaces.utils import run, reorder_by_run_ids
-
+from pymialsrtk.utils import EXEC_PATH
 
 ########################
 # Image Reconstruction
@@ -356,7 +356,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        cmd = ['mialsrtkTVSuperResolution']
+        cmd = [f'{EXEC_PATH}mialsrtkTVSuperResolution']
 
         input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
         input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
@@ -662,7 +662,7 @@ class MialsrtkSDIComputation(BaseInterface):
         params.append("-o")
         params.append(out_file)
 
-        cmd = ["mialsrtkSDIComputation"]
+        cmd = [f"{EXEC_PATH}mialsrtkSDIComputation"]
         cmd += params
         if self.m_verbose:
             cmd += ["--verbose"]
