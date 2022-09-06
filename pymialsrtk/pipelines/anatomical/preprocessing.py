@@ -152,6 +152,17 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
             self.m_skip_svr = False
 
     def check_parameters_integrity(self, p_dict_custom_interfaces):
+        """Check whether the custom interfaces dictionary
+        contains only keys that are used in preprocessing,
+        and raises an exception if it doesn't.
+
+        Parameters
+        ----------
+        p_dict_custom_interfaces : dict
+            dictionary of custom inferfaces for a given
+            subject that is to be processed.
+        """
+
         forbidden_keys = [
                 "do_refine_hr_mask",
                 "do_reconstruct_labels",

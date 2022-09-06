@@ -159,6 +159,15 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
 
 
 def check_participants_params(participants_params):
+    """Check the participants_params input json to see
+    if the custom_interfaces have only allowed keys, i.e.
+    keys that are used somewhere in mialsrtk.
+
+    Parameters
+    ----------
+    pariticipants_params: dict
+        A dictionary corresponding to the json config file.
+    """
     allowed_keys = [
         "skip_svr",
         "do_refine_hr_mask",

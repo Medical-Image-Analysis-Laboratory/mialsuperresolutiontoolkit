@@ -17,7 +17,6 @@ import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
 
 import pymialsrtk.workflows.postproc_stage as postproc_stage
-import nipype
 import logging
 
 
