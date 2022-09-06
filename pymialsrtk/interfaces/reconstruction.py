@@ -166,7 +166,7 @@ class MialsrtkImageReconstruction(BaseInterface):
         if self.m_verbose:
             params.append("--verbose")
 
-        cmd = ["mialsrtkImageReconstruction"]
+        cmd = [f"{EXEC_PATH}mialsrtkImageReconstruction"]
         cmd += params
 
         if self.m_verbose:
