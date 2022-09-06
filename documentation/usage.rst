@@ -70,7 +70,9 @@ where:
     * ``"session"`` (optional) It MUST be specified if you have a BIDS dataset composed of multiple sessions with the *sub-XX/ses-YY* structure.
 
     * ``"ga"`` (optional but mandatory when ``do_anat_orientation`` is true) subject's gestational age in weeks.
-
+    
+    * ``"run_type"`` (optional): defines the type of run that should be done. It can be set between `sr` (super-resolution) and `preprocessing` (preprocessing-only). (default is ``"sr"``)
+    
     * ``"custom_interfaces"`` (optional): indicates weither optional interfaces of the pipeline should be performed.
 
         * ``"skip_svr"`` (optional) the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
