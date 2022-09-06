@@ -20,11 +20,13 @@ from nipype.pipeline import engine as pe
 
 # Import the implemented interface from pymialsrtk
 import pymialsrtk.interfaces.reconstruction as reconstruction
-from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
+import pymialsrtk.workflows.sr_assessment_stage as sr_assessment_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.output_stage as output_stage
+import pymialsrtk.workflows.input_stage as input_stage
+
 from .abstract import AbstractAnatomicalPipeline
 
 # Get pymialsrtk version
@@ -129,11 +131,16 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
     m_pipeline_name = "srr_pipeline"
     m_paramTV = None
     m_labels_derivatives_dir = None
+    m_paramTV = None
 
     # Custom interfaces options
+    m_do_nlm_denoising = None
+    m_skip_stacks_ordering = None
     m_skip_svr = None
     m_do_refine_hr_mask = None
     m_do_anat_orientation = None
+    m_do_multi_parameters = None
+    m_do_srr_assessment = None
 
     def __init__(
         self,
@@ -170,6 +177,17 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
+            self.m_do_nlm_denoising = \
+                p_dict_custom_interfaces['do_nlm_denoising'] \
+                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
+                else False
+
+            self.m_skip_stacks_ordering =\
+                p_dict_custom_interfaces['skip_stacks_ordering']\
+                if ((self.m_stacks is not None) and
+                    ('skip_stacks_ordering' in
+                     p_dict_custom_interfaces.keys())) \
+                else False
 
             self.m_skip_svr = \
                 p_dict_custom_interfaces['skip_svr'] \
@@ -181,31 +199,48 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                 if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() \
                 else False
 
-            self.m_do_reconstruct_labels = \
-                p_dict_custom_interfaces['do_reconstruct_labels'] \
-                if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() \
-                else False
-
             self.m_do_anat_orientation = \
                 p_dict_custom_interfaces['do_anat_orientation'] \
                 if 'do_anat_orientation' in p_dict_custom_interfaces.keys() \
                 else False
 
+            self.m_do_reconstruct_labels = \
+                p_dict_custom_interfaces['do_reconstruct_labels'] \
+                if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() \
+                else False
+
+            self.m_do_multi_parameters = \
+                p_dict_custom_interfaces['do_multi_parameters'] \
+                if 'do_multi_parameters' in p_dict_custom_interfaces.keys() \
+                else False
+
+            self.m_do_srr_assessment = \
+                p_dict_custom_interfaces['do_srr_assessment'] \
+                if 'do_srr_assessment' in p_dict_custom_interfaces.keys() \
+                else False
+
         else:
+
+            self.m_do_nlm_denoising = False
+            self.m_skip_stacks_ordering = False
             self.m_skip_svr = False
             self.m_do_refine_hr_mask = False
             self.m_do_reconstruct_labels = False
             self.m_do_anat_orientation = False
+            self.m_do_multi_parameters = False
+            self.m_do_srr_assessment = False
 
         if self.m_do_anat_orientation:
             if not os.path.isdir('/sta'):
-                print('A template directory must '
-                      'be specified to perform alignement.')
-                self.m_do_anat_orientation = False
+                raise OSError(
+                    'A template directory must be specified '
+                    'with interface \'do_anat_orientation\'.'
+                )
             if self.m_ga is None:
-                print('A gestational age must '
-                      'be specified to perform alignement.')
-                self.m_do_anat_orientation = False
+                raise OSError(
+                    'A gestational age must be specified '
+                    'with interface \'do_anat_orientation\'.'
+                )
 
         if self.m_do_reconstruct_labels:
             if not self.m_labels_derivatives_dir:
@@ -222,6 +257,27 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                     'An existing derivatives directory of LR labelmaps must'
                     'be specified to perform labelmap reconstruction.'
                     )
+
+        if self.m_do_multi_parameters:
+            # if any of the TV parameters is a list of more than one item,
+            # we are in a multi_parameters running mode
+            num_parameters_multi = [value
+                                    for value in list(self.m_paramTV.values())
+                                    if (isinstance(value, list)
+                                        and len(value) > 1)]
+            if not num_parameters_multi:
+                raise RuntimeError(
+                    'With do_multi_parameters interface,'
+                    'at least one entry of \'paramsTV\' should'
+                    'be defined as a list of more than one item.'
+                )
+
+        if self.m_do_anat_orientation and self.m_do_srr_assessment:
+            raise RuntimeError(
+                'At the moment, srr pipeline with custom interfaces '
+                'do_anat_orientation and do_srr_assessment '
+                'is not available.'
+            )
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -256,18 +312,21 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         nipype_logging.update_logging(config)
         # config.enable_provenance()
 
-        input_stage = create_input_stage(
-                        self.m_bids_dir,
-                        self.m_subject,
-                        self.m_session,
-                        self.m_use_manual_masks,
-                        self.m_masks_desc,
-                        self.m_masks_derivatives_dir,
-                        self.m_labels_derivatives_dir,
-                        self.m_skip_stacks_ordering,
-                        self.m_do_reconstruct_labels,
-                        self.m_stacks,
-                        self.m_verbose)
+        input_mgmt_stage = input_stage.create_input_stage(
+                p_bids_dir=self.m_bids_dir,
+                p_subject=self.m_subject,
+                p_session=self.m_session,
+                p_use_manual_masks=self.m_use_manual_masks,
+                p_masks_desc=self.m_masks_desc,
+                p_masks_derivatives_dir=self.m_masks_derivatives_dir,
+                p_labels_derivatives_dir=self.m_labels_derivatives_dir,
+                p_skip_stacks_ordering=self.m_skip_stacks_ordering,
+                p_do_reconstruct_labels=self.m_do_reconstruct_labels,
+                p_stacks=self.m_stacks,
+                p_do_srr_assessment=self.m_do_srr_assessment,
+                p_verbose=self.m_verbose,
+                name='input_mgmt_stage'
+                )
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
@@ -275,15 +334,17 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             p_verbose=self.m_verbose
             )
 
-        reconstruction_stage = recon_stage.create_recon_stage(
+        reconstruction_stage, srtv_node_name = recon_stage.create_recon_stage(
             p_paramTV=self.m_paramTV,
             p_use_manual_masks=self.m_use_manual_masks,
+            p_do_multi_parameters=self.m_do_multi_parameters,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
             p_sub_ses=self.m_sub_ses,
             p_verbose=self.m_verbose)
+
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
             p_ga=self.m_ga,
@@ -292,43 +353,49 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             p_verbose=self.m_verbose,
             name='postprocessing_stage')
 
+        if self.m_do_srr_assessment:
+            srr_assessment_stage = \
+                sr_assessment_stage.create_sr_assessment_stage(
+                    p_do_multi_parameters=self.m_do_multi_parameters,
+                    p_input_srtv_node=srtv_node_name,
+                    p_openmp_number_of_cores=self.m_openmp_number_of_cores,
+                    name='srr_assessment_stage'
+                )
+
         output_mgmt_stage = output_stage.create_srr_output_stage(
-            self.m_sub_ses,
-            self.m_sr_id,
-            self.m_run_type,
-            self.m_use_manual_masks,
+            p_sub_ses=self.m_sub_ses,
+            p_sr_id=self.m_sr_id,
+            p_run_type=self.m_run_type,
+            p_use_manual_masks=self.m_use_manual_masks,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_skip_stacks_ordering=self.m_skip_stacks_ordering,
+            p_do_srr_assessment=self.m_do_srr_assessment,
             name='output_mgmt_stage'
         )
-
         output_mgmt_stage.inputs.inputnode.final_res_dir = self.m_final_res_dir
 
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
-        self.m_wf.connect(input_stage, "outputnode.t2ws_filtered",
+        self.m_wf.connect(input_mgmt_stage, "outputnode.t2ws_filtered",
                           preprocessing_stage, "inputnode.input_images")
 
-        self.m_wf.connect(input_stage, "outputnode.masks_filtered",
+        self.m_wf.connect(input_mgmt_stage, "outputnode.masks_filtered",
                           preprocessing_stage, "inputnode.input_masks")
 
         if self.m_do_nlm_denoising:
             self.m_wf.connect(preprocessing_stage,
-                              ("outputnode.output_images_nlm",
-                               utils.sort_ascending),
+                              "outputnode.output_images_nlm",
                               reconstruction_stage,
                               "inputnode.input_images_nlm")
 
-        self.m_wf.connect(preprocessing_stage,
-                          ("outputnode.output_images", utils.sort_ascending),
+        self.m_wf.connect(preprocessing_stage, "outputnode.output_images",
                           reconstruction_stage, "inputnode.input_images")
 
-        self.m_wf.connect(preprocessing_stage,
-                          ("outputnode.output_masks", utils.sort_ascending),
+        self.m_wf.connect(preprocessing_stage, "outputnode.output_masks",
                           reconstruction_stage, "inputnode.input_masks")
 
-        self.m_wf.connect(input_stage, "outputnode.stacks_order",
+        self.m_wf.connect(input_mgmt_stage, "outputnode.stacks_order",
                           reconstruction_stage, "inputnode.stacks_order")
 
         self.m_wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
@@ -338,7 +405,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                           postprocessing_stage, "inputnode.input_image")
 
         if self.m_do_reconstruct_labels:
-            self.m_wf.connect(input_stage, "outputnode.labels_filtered",
+            self.m_wf.connect(input_mgmt_stage, "outputnode.labels_filtered",
                               preprocessing_stage, "inputnode.input_labels")
 
             self.m_wf.connect(preprocessing_stage, "outputnode.output_labels",
@@ -354,10 +421,58 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                               output_mgmt_stage,
                               "inputnode.input_labelmap")
 
-        self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
-                          postprocessing_stage, "inputnode.input_sdi")
+        if self.m_do_anat_orientation:
+            self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                              postprocessing_stage, "inputnode.input_sdi")
 
-        self.m_wf.connect(input_stage, "outputnode.stacks_order",
+        if self.m_do_srr_assessment:
+            self.m_wf.connect(reconstruction_stage,
+                              "outputnode.output_TV_parameters",
+                              srr_assessment_stage,
+                              "inputnode.input_TV_parameters")
+
+            if self.m_do_anat_orientation:
+                self.m_wf.connect(postprocessing_stage,
+                                  "outputnode.output_sdi",
+                                  srr_assessment_stage,
+                                  "inputnode.input_sdi_image")
+            else:
+                self.m_wf.connect(reconstruction_stage,
+                                  "outputnode.output_sdi",
+                                  srr_assessment_stage,
+                                  "inputnode.input_sdi_image")
+
+            self.m_wf.connect(postprocessing_stage,
+                              "outputnode.output_image",
+                              srr_assessment_stage,
+                              "inputnode.input_sr_image")
+
+            self.m_wf.connect(input_mgmt_stage,
+                              "outputnode.hr_reference_image",
+                              srr_assessment_stage,
+                              "inputnode.input_ref_image")
+
+            self.m_wf.connect(input_mgmt_stage,
+                              "outputnode.hr_reference_mask",
+                              srr_assessment_stage,
+                              "inputnode.input_ref_mask")
+
+            self.m_wf.connect(input_mgmt_stage,
+                              "outputnode.hr_reference_labels",
+                              srr_assessment_stage,
+                              "inputnode.input_ref_labelmap")
+
+            self.m_wf.connect(srr_assessment_stage,
+                              "outputnode.output_metrics",
+                              output_mgmt_stage,
+                              "inputnode.input_metrics")
+
+            self.m_wf.connect(srr_assessment_stage,
+                              "outputnode.output_metrics_labels",
+                              output_mgmt_stage,
+                              "inputnode.input_metrics_labels")
+
+        self.m_wf.connect(input_mgmt_stage, "outputnode.stacks_order",
                           output_mgmt_stage, "inputnode.stacks_order")
 
         self.m_wf.connect(preprocessing_stage, "outputnode.output_masks",
@@ -384,17 +499,19 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                               output_mgmt_stage, "inputnode.input_images_nlm")
 
         if not self.m_skip_stacks_ordering:
-            self.m_wf.connect(input_stage, "outputnode.report_image",
+            self.m_wf.connect(input_mgmt_stage, "outputnode.report_image",
                               output_mgmt_stage, "inputnode.report_image")
-            self.m_wf.connect(input_stage, "outputnode.motion_tsv",
+            self.m_wf.connect(input_mgmt_stage, "outputnode.motion_tsv",
                               output_mgmt_stage, "inputnode.motion_tsv")
 
     def run(self, memory=None):
         iflogger = nipype_logging.getLogger('nipype.interface')
         res = super().run(memory, iflogger)
 
-        iflogger.info("**** Super-resolution HTML report creation ****")
-        self.create_subject_report()
+        if not self.m_do_multi_parameters:
+            iflogger.info("**** Super-resolution HTML report creation ****")
+            self.create_subject_report()
+
         return res
 
     def create_subject_report(self):

@@ -11,9 +11,7 @@ import os
 import pkg_resources
 
 from traits.api import *
-from nipype.interfaces.base import (TraitedSpec, File, InputMultiPath,
-                                    OutputMultiPath, BaseInterface,
-                                    BaseInterfaceInputSpec)
+
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
 from nipype.interfaces.io import DataGrabber
@@ -31,6 +29,7 @@ def create_input_stage(p_bids_dir,
                        p_skip_stacks_ordering,
                        p_do_reconstruct_labels,
                        p_stacks,
+                       p_do_srr_assessment,
                        p_verbose,
                        name="input_stage"
                        ):
@@ -40,10 +39,25 @@ def create_input_stage(p_bids_dir,
     ----------
     ::
         name : name of workflow (default: input_stage)
+        p_bids_dir
+        p_subject
+        p_session
+        p_use_manual_masks
+        p_masks_desc
+        p_masks_derivatives_dir
+        p_skip_stacks_ordering
+        p_stacks
+        p_do_srr_assessment
+
     Inputs::
 
     Outputs::
-
+        outputnode.t2ws_filtered
+        outputnode.masks_filtered
+        outputnode.stacks_order
+        outputnode.report_image
+        outputnode.motion_tsv
+        outputnode.ground_truth (optional, if p_do_srr_assessment=True)
     Example
     -------
     >>>
@@ -62,6 +76,11 @@ def create_input_stage(p_bids_dir,
     if not p_skip_stacks_ordering:
         output_fields += ['report_image', 'motion_tsv']
 
+    if p_do_srr_assessment:
+        output_fields += ['hr_reference_image',
+                          'hr_reference_mask',
+                          'hr_reference_labels']
+
     if p_do_reconstruct_labels:
         output_fields += ['labels_filtered']
 
@@ -71,6 +90,7 @@ def create_input_stage(p_bids_dir,
         ),
         name='outputnode'
     )
+
     if p_use_manual_masks:
         dg_fields = ['T2ws', 'masks']
         if p_do_reconstruct_labels:
@@ -194,6 +214,44 @@ def create_input_stage(p_bids_dir,
         stacksOrdering.inputs.stacks_order = p_stacks
         stacksOrdering.inputs.verbose = p_verbose
 
+    if p_do_srr_assessment:
+
+        rg = pe.Node(
+            interface=DataGrabber(
+                outfields=['T2w', 'mask', 'labels']
+            ),
+            name='reference_grabber'
+        )
+
+        rg.inputs.base_directory = p_bids_dir
+        rg.inputs.template = '*'
+        rg.inputs.raise_on_empty = False
+        rg.inputs.sort_filelist = True
+
+        t2w_template = os.path.join(
+            sub_path,
+            'anat',
+            sub_ses + '_desc-iso_T2w.nii.gz'
+        )
+
+        mask_template = os.path.join(
+            sub_path,
+            'anat',
+            sub_ses + '_desc-iso_mask.nii.gz'
+        )
+        labels_template = os.path.join(
+            sub_path,
+            'anat',
+            sub_ses + '_desc-iso_labels.nii.gz'
+        )
+
+        rg.inputs.field_template = dict(
+            T2w=t2w_template,
+            mask=mask_template,
+            labels=labels_template
+        )
+
+
     if p_use_manual_masks:
         if p_stacks is not None:
             input_stage.connect(dg, "masks", custom_masks_filter,
@@ -245,5 +303,13 @@ def create_input_stage(p_bids_dir,
                             outputnode, "report_image")
         input_stage.connect(stacksOrdering, "motion_tsv",
                             outputnode, "motion_tsv")
+
+    if p_do_srr_assessment:
+        input_stage.connect(rg, "T2w",
+                            outputnode, "hr_reference_image")
+        input_stage.connect(rg, "mask",
+                            outputnode, "hr_reference_mask")
+        input_stage.connect(rg, "labels",
+                            outputnode, "hr_reference_labels")
 
     return input_stage

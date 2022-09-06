@@ -93,6 +93,8 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
     m_pipeline_name = "preproc_pipeline"
 
     # Custom interfaces options
+    m_do_nlm_denoising = None
+    m_skip_stacks_ordering = None
     m_do_registration = None
     m_skip_svr = None
 
@@ -121,18 +123,34 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
                          )
 
         if p_dict_custom_interfaces is not None:
+            self.m_do_nlm_denoising = \
+                p_dict_custom_interfaces['do_nlm_denoising'] \
+                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
+                else False
+
+            self.m_skip_stacks_ordering =\
+                p_dict_custom_interfaces['skip_stacks_ordering']\
+                if ((self.m_stacks is not None) and
+                    ('skip_stacks_ordering' in
+                     p_dict_custom_interfaces.keys())) \
+                else False
+
             self.m_do_registration = \
                 p_dict_custom_interfaces['preproc_do_registration'] \
                 if 'preproc_do_registration' in p_dict_custom_interfaces.keys()\
                 else False
+
             self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
                 if 'skip_svr' in p_dict_custom_interfaces.keys() \
                 else False
+
             if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() and \
                p_dict_custom_interfaces['do_reconstruct_labels']:
                 raise RuntimeError("do_reconstruct_labels should not be "
                                    "enabled when run_type=preprocessing.")
         else:
+            self.m_do_nlm_denoising = False
+            self.m_skip_stacks_ordering = False
             self.m_do_registration = False
             self.m_skip_svr = False
 
