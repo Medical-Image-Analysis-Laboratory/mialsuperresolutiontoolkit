@@ -149,21 +149,34 @@ def create_recon_stage(p_paramTV,
 
 
     srtkImageReconstruction = pe.Node(
-        interface=reconstruction.MialsrtkImageReconstruction(),
+        interface=reconstruction.MialsrtkImageReconstruction(
+            p_sub_ses,
+            p_skip_svr,
+            p_verbose
+        ),
         name='srtkImageReconstruction')
-    srtkImageReconstruction.inputs.sub_ses = p_sub_ses
-    srtkImageReconstruction.inputs.no_reg = p_skip_svr
-    srtkImageReconstruction.inputs.verbose = p_verbose
 
     if p_do_nlm_denoising:
         sdiComputation = pe.Node(
-            interface=reconstruction.MialsrtkSDIComputation(),
+            interface=reconstruction.MialsrtkSDIComputation(
+                p_sub_ses,
+                p_verbose
+            ),
             name='sdiComputation')
-        sdiComputation.inputs.sub_ses = p_sub_ses
-        sdiComputation.inputs.verbose = p_verbose
 
     srtkTVSuperResolution = pe.Node(
-        interface=reconstruction.MialsrtkTVSuperResolution(),
+        interface=reconstruction.MialsrtkTVSuperResolution(
+            p_sub_ses,
+            p_use_manual_masks,
+            deltatTV,
+            lambdaTV,
+            num_iterations,
+            num_primal_dual_loops,
+            num_bregman_loops,
+            step_scale,
+            gamma,
+            p_verbose=p_verbose
+        ),
         name='srtkTVSuperResolution')
     srtkTVSuperResolution.inputs.sub_ses = p_sub_ses
     srtkTVSuperResolution.inputs.use_manual_masks = p_use_manual_masks

@@ -1755,6 +1755,12 @@ class ResampleImage(BaseInterface):
     input_spec = ResampleImageInputSpec
     output_spec = ResampleImageOutputSpec
 
+    m_verbose = None
+
+    def __init__(self, p_verbose):
+        super().__init__()
+        self.m_verbose=p_verbose
+
     def _gen_filename(self, name):
         if name == 'output_image':
             return os.path.abspath(os.path.basename(self.inputs.input_image))
@@ -1777,7 +1783,8 @@ class ResampleImage(BaseInterface):
 
         spacings = list(sub_image.GetSpacing())
         spacings.sort()
-        print('Target isotropic spacing:', spacings[0])
+        if self.m_verbose:
+            print('Target isotropic spacing:', spacings[0])
         return spacings[0]
 
     def _resample_image(self, p_image_path, p_resolution):
@@ -1795,11 +1802,12 @@ class ResampleImage(BaseInterface):
         cmd.append(str(p_resolution))
         cmd.append(str(p_resolution))
 
-        print()
-        print()
-        print(cmd)
-        print()
-        print()
+        if self.m_verbose:
+            print()
+            print()
+            print(cmd)
+            print()
+            print()
         cmd = ' '.join(cmd)
         run(cmd, env={'PATH': ants_path})
 
@@ -1816,8 +1824,8 @@ class ResampleImage(BaseInterface):
 
         cmd = ' '.join(cmd)
         run(cmd, env={'PATH': ants_path})
-
-        print('Reference STA was resampled.')
+        if self.m_verbose:
+            print('Reference STA was resampled.')
 
         return image_resampled_path
 

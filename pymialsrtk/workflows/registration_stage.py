@@ -82,18 +82,20 @@ def create_registration_stage(p_do_nlm_denoising=False,
         )
 
     srtkImageReconstruction = pe.Node(
-        interface=reconstruction.MialsrtkImageReconstruction(),
+        interface=reconstruction.MialsrtkImageReconstruction(
+            p_sub_ses,
+            p_skip_svr,
+            p_verbose
+        ),
         name='srtkImageReconstruction')
-    srtkImageReconstruction.inputs.sub_ses = p_sub_ses
-    srtkImageReconstruction.inputs.no_reg = p_skip_svr
-    srtkImageReconstruction.inputs.verbose = p_verbose
 
     if p_do_nlm_denoising:
         sdiComputation = pe.Node(
-            interface=reconstruction.MialsrtkSDIComputation(),
+            interface=reconstruction.MialsrtkSDIComputation(
+                p_sub_ses,
+                p_verbose
+            ),
             name='sdiComputation')
-        sdiComputation.inputs.sub_ses = p_sub_ses
-        sdiComputation.inputs.verbose = p_verbose
 
     registration_stage.connect(inputnode, "input_masks",
                                srtkImageReconstruction, "input_masks")

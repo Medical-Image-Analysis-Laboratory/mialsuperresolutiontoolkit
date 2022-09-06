@@ -25,27 +25,34 @@ from nipype.interfaces import utility as util
 def create_recon_labelmap_stage(
         p_sub_ses,
         p_verbose,
-        name="recon_labels_stage"):
+        name="recon_labels_stage"
+        ):
     """Create a SR reconstruction workflow
     for tissue label maps.
     Parameters
     ----------
-    ::
+        p_sub_ses:
+        p_verbose:
         name : name of workflow (default: recon_labels_stage)
-    Inputs::
-        inputnode.input_labels : Input LR label maps (list of filenames)
-        inputnode.input_masks : Input mask images (list of filenames)
-        inputnode.input_transforms : Input tranforms (list of filenames)
-        inputnode.input_reference : Input HR reference image (filename)
-        inputnode.label_ids : Label IDs to reconstruct (list of integer)
-        inputnode.stacks_order : Order of stacks in
-                                the reconstruction (list of integer)
-    Outputs::
-        outputnode.output_labelmap : HR labelmap (filename)
-    Example
+    Inputs
+    ------
+        input_labels :
+            Input LR label maps (list of filenames)
+        input_masks :
+            Input mask images (list of filenames)
+        input_transforms :
+            Input tranforms (list of filenames)
+        input_reference :
+            Input HR reference image (filename)
+        label_ids :
+            Label IDs to reconstruct (list of integer)
+        stacks_order :
+            Order of stacks in the reconstruction
+            (list of integer)
+    Outputs
     -------
-    >>>
-    >>>
+        output_labelmap :
+            HR labelmap (filename)
     """
 
     recon_labels_stage = pe.Workflow(name=name)
@@ -90,12 +97,13 @@ def create_recon_labelmap_stage(
     )
 
     labels_reconstruct_hr_maps = pe.MapNode(
-        interface=reconstruction.MialsrtkSDIComputation(),
+        interface=reconstruction.MialsrtkSDIComputation(
+            p_sub_ses,
+            p_verbose=p_verbose,
+        ),
         iterfield=['label_id'],
         name='labels_reconstruct_hr_maps'
     )
-    labels_reconstruct_hr_maps.inputs.sub_ses = p_sub_ses
-    labels_reconstruct_hr_maps.inputs.verbose = p_verbose
 
     labels_merge_hr_maps = pe.Node(
         interface=preprocess.ListsMerger(),

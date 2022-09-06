@@ -121,7 +121,8 @@ def create_postproc_stage(
             dict(atlas='STA'+ga_str+'.nii.gz')
 
         resample_t2w_template = pe.Node(
-            interface=preprocess.ResampleImage(),
+            interface=preprocess.ResampleImage(
+                p_verbose),
             name='resample_t2w_template'
         )
 
