@@ -143,16 +143,28 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
             self.m_skip_svr = p_dict_custom_interfaces['skip_svr'] \
                 if 'skip_svr' in p_dict_custom_interfaces.keys() \
                 else False
+            self.check_parameters_integrity(p_dict_custom_interfaces)
 
-            if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() and \
-               p_dict_custom_interfaces['do_reconstruct_labels']:
-                raise RuntimeError("do_reconstruct_labels should not be "
-                                   "enabled when run_type=preprocessing.")
         else:
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
             self.m_do_registration = False
             self.m_skip_svr = False
+
+    def check_parameters_integrity(self, p_dict_custom_interfaces):
+        forbidden_keys = [
+                "do_refine_hr_mask",
+                "do_reconstruct_labels",
+                "do_anat_orientation"
+                "do_multi_parameters",
+                "do_srr_assessment"
+                ]
+
+        for k in forbidden_keys:
+            if k in p_dict_custom_interfaces.keys() and \
+              p_dict_custom_interfaces[k]:
+                raise RuntimeError(f"{k} should not be enabled "
+                                   f"when run_type=preprocessing.")
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.

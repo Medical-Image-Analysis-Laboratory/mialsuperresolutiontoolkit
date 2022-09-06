@@ -157,6 +157,28 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
 
     return openmp_nb_of_cores, nipype_nb_of_cores
 
+def check_participants_params(participants_params):
+    allowed_keys = [
+        "skip_svr",
+        "do_refine_hr_mask",
+        "do_nlm_denoising",
+        "skip_stacks_ordering",
+        "do_reconstruct_labels",
+        "do_anat_orientation"
+        "do_multi_parameters",
+        "do_srr_assessment"
+        ]
+    for sub, sub_list in participants_params.items():
+        for config in sub_list:
+            if "custom_interfaces" in config.keys():
+                for k in config["custom_interfaces"].keys():
+                    if k not in allowed_keys:
+                        raise RuntimeError(
+                            f"Invalid custom interface key {k} for subject "
+                            f"{sub}. Valid keys are \n" +
+                            ", ".join(allowed_keys)
+                            )
+
 
 def main(bids_dir, output_dir,
          subject,
@@ -311,7 +333,7 @@ if __name__ == "__main__":
 
     with open(args.param_file, 'r') as f:
         participants_params = json.load(f)
-
+    check_participants_params(participants_params)
     subjects_to_analyze = []
     # only for a subset of subjects
     if args.participant_label:
@@ -319,15 +341,19 @@ if __name__ == "__main__":
     # for all subjects
     else:
         subject_dirs = glob(os.path.join(args.bids_dir, "sub-*"))
-        subjects_to_analyze = [
+        subjects_to_analyze = sorted([
             subject_dir.split("-")[-1] for subject_dir in subject_dirs
-        ]
+        ])
+    success_dict = {}
     failed_dict = {}
+
     for sub in subjects_to_analyze:
+        success_dict[sub] = []
         failed_dict[sub] = []
         if sub in participants_params.keys():
 
             sr_list = participants_params[sub]
+            print(f"Processing subject {sub}.")
             print(sr_list)
 
             for sr_params in sr_list:
@@ -371,18 +397,30 @@ if __name__ == "__main__":
                                nipype_number_of_cores=nipype_nb_of_cores,
                                openmp_number_of_cores=openmp_nb_of_cores,
                                memory=args.memory)
+                    out = f"Subject {sub} with parameters {sr_params}" \
+                          f"succeeded."
+                    success_dict[sub] += [out]
                 except Exception as e:
                     e = f"Subject {sub} with parameters {sr_params} failed "\
                         f"with message \n\t {e}"
                     failed_dict[sub] += [e]
                     print(e)
         else:
-            e = f"Subject {sub} was not processed because of missing configuration."
+            e = f"Subject {sub} was not processed because of missing "\
+                f"configuration."
             failed_dict[sub] += [e]
             print(e)
 
-    if not all([v==[] for v in failed_dict.values()]):
-        print(f"WARNING: Some runs failed.")
+    if not all(v == [] for v in success_dict.values()):
+        print("\n" + "-"*15 + "\nSUCCESSFUL RUNS\n" +
+              "-"*15)
+        for sub, v in success_dict.items():
+            for out in v:
+                print("-> ", out)
+
+    if not all(v == [] for v in failed_dict.values()):
+        print("\n" + "-"*24 + "\nWARNING: SOME RUN FAILED\n" +
+              "-"*24)
         for sub, v in failed_dict.items():
             for error in v:
                 print("-> ", error)

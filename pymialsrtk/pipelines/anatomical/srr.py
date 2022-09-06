@@ -267,8 +267,19 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                                         and len(value) > 1)]
             if not num_parameters_multi:
                 raise RuntimeError(
-                    'With do_multi_parameters interface,'
-                    'at least one entry of \'paramsTV\' should'
+                    'With do_multi_parameters interface, '
+                    'at least one entry of \'paramsTV\' should '
+                    'be defined as a list of more than one item.'
+                )
+        else:
+            num_parameters_multi = [value
+                                    for value in list(self.m_paramTV.values())
+                                    if (isinstance(value, list)
+                                        and len(value) > 1)]
+            if num_parameters_multi:
+                raise RuntimeError(
+                    'With do_multi_parameters=False, '
+                    'no entry of \'paramsTV\' should '
                     'be defined as a list of more than one item.'
                 )
 

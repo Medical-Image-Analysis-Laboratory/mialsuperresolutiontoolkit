@@ -279,14 +279,14 @@ class FilenamesGeneration(BaseInterface):
 
     def _run_interface(self, runtime):
         run_type = self.m_run_type
-
+        max_stacks = max(self.inputs.stacks_order)
         self.m_substitutions.append(('_T2w_nlm_uni_bcorr_histnorm.nii.gz',
                                      '_id-' + str(self.m_sr_id) +
                                      '_desc-preprocSDI_T2w.nii.gz'))
 
         if not self.m_use_manual_masks:
             self.m_substitutions += [(f'_brainExtraction{n}/', '')
-                                     for n in range(10)]
+                                     for n in range(max_stacks)]
 
             self.m_substitutions.append(('_T2w_brainMask.nii.gz',
                                          '_id-' + str(self.m_sr_id) +
@@ -298,13 +298,13 @@ class FilenamesGeneration(BaseInterface):
 
         self.m_substitutions.append(('_T2w_desc-brain_', '_desc-brain_'))
         self.m_substitutions += [(f'_srtkMaskImage01{n}/', '')
-                                 for n in range(10)]
+                                 for n in range(max_stacks)]
 
         self.m_substitutions += [(f'_srtkMaskImage01_nlm{n}/', '')
-                                 for n in range(10)]
+                                 for n in range(max_stacks)]
 
         self.m_substitutions += [(f'_reduceFOV{n}/', '')
-                                 for n in range(10)]
+                                 for n in range(max_stacks)]
 
         self.m_substitutions.append(('_T2w_uni_bcorr_histnorm.nii.gz',
                                      '_id-' + str(self.m_sr_id) +
