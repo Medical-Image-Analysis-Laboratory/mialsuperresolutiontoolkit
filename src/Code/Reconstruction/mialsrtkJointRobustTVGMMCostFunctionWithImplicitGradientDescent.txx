@@ -226,6 +226,8 @@ void
 JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::update()
 {
 
+    // Get verbosity level
+    bool verbose = this -> GetVerbose();
     //std::cout<<std::endl<<"Inner loop update :"<<std::endl;
     //std::cout<<"old x:"<<X.sum()<<" ("<<&X<<")"<<std::endl;
 
@@ -311,9 +313,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::update()
         stdE = sqrt(varE);
         //Biased estimation of the variance
         //varE = varE / (float)(cnt);
-
-        std::cout << "Squared difference mean: " << meanE << " , std: " << stdE << " , var: " << varE << " , min : " << minE << " , max: " << maxE << std::endl;
-
+        if (verbose){
+            std::cout << "Squared difference mean: " << meanE << " , std: " << stdE << " , var: " << varE << " , min : " << minE << " , max: " << maxE << std::endl;
+        }
         e = ((e-minE) / stdE) + 1e-6;
 
         //Contruct vector containing only brain relevant voxels
@@ -328,17 +330,19 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::update()
                 cnt++;
             }
         }
-        std::cout << "After correction" << std::endl;
-        std::cout << "Squared difference mean: " << eInMask.mean() << " , std: " << sqrt(element_product(eInMask-eInMask.mean(),eInMask-eInMask.mean()).mean()) << " , var: " <<element_product(eInMask-eInMask.mean(),eInMask-eInMask.mean()).mean() << " , min : " << eInMask.min_value() << " , max: " << eInMask.max_value()   << std::endl;
+        if (verbose){
+            std::cout << "After correction" << std::endl;
+            std::cout << "Squared difference mean: " << eInMask.mean() << " , std: " << sqrt(element_product(eInMask-eInMask.mean(),eInMask-eInMask.mean()).mean()) << " , var: " <<element_product(eInMask-eInMask.mean(),eInMask-eInMask.mean()).mean() << " , min : " << eInMask.min_value() << " , max: " << eInMask.max_value()   << std::endl;
 
-        std::cout << "Rho1 : " << rho1 << std::endl;
-        std::cout << "Rho2 : " << rho2 << std::endl;
-
+            std::cout << "Rho1 : " << rho1 << std::endl;
+            std::cout << "Rho2 : " << rho2 << std::endl;
+        }
         float value = 0.0;
         float svalue = 0.0;
 
-        std::cout << "# slices : " << (sliceIds.max_value()+1) << std::endl;
-
+        if (verbose){
+         std::cout << "# slices : " << (sliceIds.max_value()+1) << std::endl;
+        }
         vnl_vector<float> sliceWeights;
         sliceWeights.set_size((sliceIds.max_value()+1));
         sliceWeights.fill(0.0);
@@ -399,20 +403,22 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::update()
         indexESort.vector_sort(eInMaskZeroMean, sortedEVals, sortEIndices);
         rho1 = medianE +  m_HuberCriterion * 1.4826 * sortedEVals[indMedian];
 
+        if (verbose){
+            std::cout << "Rho 1 (voxel Huber threshold)  = " << rho1 << std::endl;
 
-        std::cout << "Rho 1 (voxel Huber threshold)  = " << rho1 << std::endl;
 
+            std::cout << "Error max : " << e.max_value() << " , id : " << e.arg_max() << std::endl;
+            std::cout << "Error min : " << e.min_value() << " , id : " << e.arg_min() << std::endl;
 
-        std::cout << "Error max : " << e.max_value() << " , id : " << e.arg_max() << std::endl;
-        std::cout << "Error min : " << e.min_value() << " , id : " << e.arg_min() << std::endl;
-
-        std::cout << "Slice weight min : " << sliceWeights.min_value() << " , max : " << sliceWeights.max_value() << std::endl;
-        std::cout << "Slice numel min : " << sliceNumElements.min_value() << " , max : " << sliceNumElements.max_value() << std::endl;
-
+            std::cout << "Slice weight min : " << sliceWeights.min_value() << " , max : " << sliceWeights.max_value() << std::endl;
+            std::cout << "Slice numel min : " << sliceNumElements.min_value() << " , max : " << sliceNumElements.max_value() << std::endl;
+        }
         sliceWeights = element_quotient(sliceWeights,sliceNumElements);
         sliceWeights /= sqrt(element_product(sliceWeights-sliceWeights.mean(),sliceWeights-sliceWeights.mean()).mean());
 
-        std::cout <<"slice weights" << std::endl;
+        if (verbose){
+            std::cout <<"slice weights" << std::endl;
+        }
         floatIter itSliceW;
         for(itSliceW=sliceWeights.begin();itSliceW!=sliceWeights.end();++itSliceW)
         {
@@ -459,9 +465,10 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::update()
 
         //sliceWeights = (sliceWeights - sliceWeights.mean()) / sqrt(nsW.mean());
 
-        std::cout << "Slice weight min : " << sliceWeights.min_value() << " , max : " << sliceWeights.max_value() << std::endl;
-        std::cout << "Slice weight mean : " << sliceWeights.mean() <<   " , std : " << sqrt(element_product(sliceWeights-sliceWeights.mean(),sliceWeights-sliceWeights.mean()).mean()) << std::endl;
-
+        if (verbose){
+            std::cout << "Slice weight min : " << sliceWeights.min_value() << " , max : " << sliceWeights.max_value() << std::endl;
+            std::cout << "Slice weight mean : " << sliceWeights.mean() <<   " , std : " << sqrt(element_product(sliceWeights-sliceWeights.mean(),sliceWeights-sliceWeights.mean()).mean()) << std::endl;
+        }
 
         bool bCSV=true;
         const char * csvFileName="";
@@ -490,11 +497,15 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::update()
                 if(csvLength == 0)
                 {
                     writeHeaders = true;
-                    std::cout << "Write headers in CSV" << std::endl;
+                    if (verbose){
+                        std::cout << "Write headers in CSV" << std::endl;
+                    }
                 }
                 else
                 {
-                    std::cout << "CSV empty ( length : " << csvLength << std::endl;
+                    if (verbose){
+                        std::cout << "CSV empty ( length : " << csvLength << std::endl;
+                    }
                 }
 
 
@@ -565,11 +576,10 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::update()
 
             fout.close();
 
-            std::cout << "Weights saved in CSV" << std::endl;
-
-
-            std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-
+            if (verbose){
+                std::cout << "Weights saved in CSV" << std::endl;
+                std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+            }
             //
         }
     }
@@ -594,10 +604,11 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::update()
         }
     }
 
-    std::cout << "sum(weights) : " << e.sum() << std::endl;
-    std::cout << "min Om : " << e.min_value() << " , id : " << e.arg_min() << std::endl;
-    std::cout << "max Om : " << e.max_value() << " , id : " << e.arg_max() << std::endl;
-
+    if (verbose){
+        std::cout << "sum(weights) : " << e.sum() << std::endl;
+        std::cout << "min Om : " << e.min_value() << " , id : " << e.arg_min() << std::endl;
+        std::cout << "max Om : " << e.max_value() << " , id : " << e.arg_max() << std::endl;
+    }
      //std::cout << "Sum fidelity term = " << sum_fidelity << std::endl;
 
      //double XdotDivP = dot_product(X,DivP) / X.size(); //TV contribution
@@ -642,11 +653,11 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::update()
 
     //float gammaReg = 1e-2;
 
-
-    std::cout << "Sum fidelity term = " << sum_fidelity << std::endl;
-    std::cout << "TV term = " << XdotDivP << std::endl;
-    std::cout << "GammaReg = " << gammaReg << std::endl;
-
+    if (verbose){
+        std::cout << "Sum fidelity term = " << sum_fidelity << std::endl;
+        std::cout << "TV term = " << XdotDivP << std::endl;
+        std::cout << "GammaReg = " << gammaReg << std::endl;
+    }
    // lambda = (sum_regularization) / ((1/gammaReg) - sum_fidelity);
 
     std::cout << "Lambda = " << lambda << std::endl;
@@ -1036,15 +1047,17 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     bool ratioXisEven = true;
     bool ratioYisEven = true;
     bool ratioZisEven = true;
-
+    bool verbose = this -> GetVerbose();
+    
     if((((int)round(ratioLRHRX)) % 2)) ratioXisEven = false;
     if((int)round(ratioLRHRY) % 2) ratioYisEven = false;
     if((int)round(ratioLRHRZ) % 2) ratioZisEven = false;
 
-    std::cout << "ratioXisEven : " << ratioXisEven << std::endl;
-    std::cout << "ratioYisEven : " << ratioYisEven << std::endl;
-    std::cout << "ratioZisEven : " << ratioZisEven << std::endl;
-
+    if (verbose){
+        std::cout << "ratioXisEven : " << ratioXisEven << std::endl;
+        std::cout << "ratioYisEven : " << ratioYisEven << std::endl;
+        std::cout << "ratioZisEven : " << ratioZisEven << std::endl;
+    }
     float factorPSF=1.0;
     int npointsX = 0;
     float initpointX = 0.0;
@@ -1052,14 +1065,18 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     {
         int k = floor(0.5 * ((factorPSF-ratioHRLRX)/ratioHRLRX));
         npointsX = 2 * (k+1);
-        std::cout << "npointx 1: " << npointsX << std::endl;
+        if (verbose){
+            std::cout << "npointx 1: " << npointsX << std::endl;
+        }
         initpointX = - (float)(0.5+k) * ratioHRLRX;
     }
     else
     {
         int k = floor(factorPSF*0.5 /ratioHRLRX);
         npointsX = 2*k + 1;
-        std::cout << "npointx 2: " << npointsX << std::endl;
+        if (verbose){
+            std::cout << "npointx 2: " << npointsX << std::endl;
+        }
         initpointX = - (float)(k) * ratioHRLRX;
     }
 
@@ -1069,14 +1086,18 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     {
         int k = floor(0.5 * ((factorPSF-ratioHRLRY)/ratioHRLRY));
         npointsY = 2 * (k+1);
-        std::cout << "npointy 1: " << npointsY << std::endl;
+        if (verbose){
+            std::cout << "npointy 1: " << npointsY << std::endl;
+        }
         initpointY = - (float)(0.5+k) * ratioHRLRY;
     }
     else
     {
         int k = floor(factorPSF*0.5 /ratioHRLRY);
         npointsY = 2*k + 1;
-        std::cout << "npointy 2: " << npointsY << std::endl;
+        if (verbose){
+            std::cout << "npointy 2: " << npointsY << std::endl;
+        }
         initpointY = - (float)(k) * ratioHRLRY;
     }
 
@@ -1086,25 +1107,29 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     {
         int k = floor(0.5 * ((factorPSF-ratioHRLRZ)/ratioHRLRZ));
         npointsZ = 2 * (k+1);
-        std::cout << "npointz 1: " << npointsZ << std::endl;
+        if (verbose){
+            std::cout << "npointz 1: " << npointsZ << std::endl;
+        }
         initpointZ = - (float)(0.5+k) * ratioHRLRZ;
     }
     else
     {
         int k = floor(factorPSF*0.5 /ratioHRLRZ);
         npointsZ = 2*k + 1;
-        std::cout << "npointz 2: " << npointsZ << std::endl;
+        if (verbose){
+            std::cout << "npointz 2: " << npointsZ << std::endl;
+        }
         initpointZ = - (float)(k) * ratioHRLRZ;
     }
+    if (verbose){
+        std::cout << "Spacing LR X: " << spacing_lr[0] << " / Spacing HR X: " << spacing_hr[0]<< std::endl;
+        std::cout << "Spacing LR Y: " << spacing_lr[1] << " / Spacing HR Y: " << spacing_hr[1]<< std::endl;
+        std::cout << "Spacing LR Z: " << spacing_lr[2] << " / Spacing HR Z: " << spacing_hr[2]<< std::endl;
 
-    std::cout << "Spacing LR X: " << spacing_lr[0] << " / Spacing HR X: " << spacing_hr[0]<< std::endl;
-    std::cout << "Spacing LR Y: " << spacing_lr[1] << " / Spacing HR Y: " << spacing_hr[1]<< std::endl;
-    std::cout << "Spacing LR Z: " << spacing_lr[2] << " / Spacing HR Z: " << spacing_hr[2]<< std::endl;
-
-    std::cout << " , 1/2 * LR/HR X:" << 0.5 * ratioLRHRX << " , NPointsX : " << npointsX << std::endl;
-    std::cout << " , 1/2 * LR/HR Y:" << 0.5 * ratioLRHRY << " , NPointsY : " << npointsY << std::endl;
-    std::cout << " , 1/2 * LR/HR Z:" << 0.5 * ratioLRHRZ << " , NPointsZ : " << npointsZ << std::endl;
-
+        std::cout << " , 1/2 * LR/HR X:" << 0.5 * ratioLRHRX << " , NPointsX : " << npointsX << std::endl;
+        std::cout << " , 1/2 * LR/HR Y:" << 0.5 * ratioLRHRY << " , NPointsY : " << npointsY << std::endl;
+        std::cout << " , 1/2 * LR/HR Z:" << 0.5 * ratioLRHRZ << " , NPointsZ : " << npointsZ << std::endl;
+    }
 
     ContinuousIndexType delta;
     delta[0] = 0;
@@ -1122,9 +1147,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
                 delta[2] = initpointZ + (float)k * ratioHRLRZ;
 
                 deltaIndexes.push_back(delta);
-                std::cout << " delta : " << delta[0] << " , " << delta[1] << " , " << delta[2] << std::endl;
-
-
+                if (verbose){
+                    std::cout << " delta : " << delta[0] << " , " << delta[1] << " , " << delta[2] << std::endl;
+                }
             }
         }
     }
@@ -1169,7 +1194,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
     if(m_ComputeH)
     {
-        std::cout << "Initialize H and Z ..." << std::endl;
+        if (verbose){
+            std::cout << "Initialize H and Z ..." << std::endl;
+        }
         H.set_size(nrows, ncols);
         Z.set_size(nrows);
         Z.fill(0.0);
@@ -1187,9 +1214,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
     sliceIds.set_size(nrows);
     sliceIds.fill(-1000.0);
-
-    std::cout << "Size of H :  #rows = " << H.rows() << ", #cols = "<<H.cols() << std::endl;
-
+    if (verbose){
+        std::cout << "Size of H :  #rows = " << H.rows() << ", #cols = "<<H.cols() << std::endl;
+    }
     /*
   Xold.set_size(ncols);
   Xold = vnl_matops::d2f(x_init);
@@ -1242,12 +1269,13 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
         inputSpacing2[0] = inputSpacing2[0] ;
         inputSpacing2[1] = inputSpacing2[1] ;
         inputSpacing2[2] = inputSpacing2[2];
-
-        std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
-
+        if (verbose){
+            std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
+        }
 
         // PSF definition
         typename FunctionType::Pointer function = FunctionType::New();
+        function -> SetVerbose(this -> GetVerbose());
         function -> SetPSF(  FunctionType::GAUSSIAN );
         function -> SetRES(FunctionType::ANISOTROPIC );
         function -> SetDirection( m_Images[im] -> GetDirection() );
@@ -1260,6 +1288,7 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
         // PSF HR definition
         typename FunctionType::Pointer functionHR = FunctionType::New();
+        functionHR -> SetVerbose(this -> GetVerbose());
         functionHR -> SetPSF(  FunctionType::GAUSSIAN );
         functionHR -> SetRES( FunctionType::ISOTROPIC );
         functionHR -> SetDirection( m_ReferenceImage -> GetDirection() );
@@ -1617,8 +1646,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
     if(m_ComputeH)
     {
-
-        std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+        if (verbose){
+            std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+        }
         // Normalize H
         /*
         vnl_sparse_matrix<float> Ht = H.transpose();
@@ -1649,8 +1679,10 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
     }
     else
-    {
-        std::cout << "Initialization of H with old value" << std::endl << std::endl;
+    {   
+        if (verbose){
+            std::cout << "Initialization of H with old value" << std::endl << std::endl;
+        }
     }
 
     //vnl_vector<float> DivP;
@@ -1668,10 +1700,11 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
 
     A = deltat * lambda * tau * HtH;
     */
-
-    std::cout << "Update P :" << std::endl;
-    std::cout << "Old values : ";
-    std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    if (verbose){
+        std::cout << "Update P :" << std::endl;
+        std::cout << "Old values : ";
+        std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    }
     //vsl_print_summary(vcl_cout,A);
     // Converts and writes output image
     typename itk::ImageDuplicator<ImageType>::Pointer duplicator2 = itk::ImageDuplicator<ImageType>::New();
@@ -1804,10 +1837,11 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::Initialize()
     DbxPx.clear();
     DbyPy.clear();
     DbzPz.clear();
-
-    std::cout << "New values : ";
-    std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
-    //vsl_print_summary(vcl_cout,A);
+    if (verbose){
+        std::cout << "New values : ";
+        std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+        //vsl_print_summary(vcl_cout,A);
+    }
     HtY.clear();
     //DivP.clear();
 
@@ -1830,6 +1864,9 @@ template <class TImage>
 void
 JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatrix()
 {
+    // Get verbosity level
+    bool verbose = this -> GetVerbose();
+
     //We use linear interpolation for the estimation of point influence in matrix H
     typedef itk::BSplineInterpolationWeightFunction<double, 3, 1> itkBSplineFunction;
 
@@ -1868,9 +1905,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatri
         delta[2] = ((double) i  * spacing_hr[2]) / spacing_lr[2];// - 0.3 /spacing_lr[2]; // Space of 1 between Index in the LR image corresponds to the slice thickness (3mm for instance).
         deltaIndexes.push_back(delta);
     }
-
-    std::cout << "DeltaIndexes : " << deltaIndexes[0] << deltaIndexes[1] << deltaIndexes[2] << std::endl;
-
+    if (verbose){
+        std::cout << "DeltaIndexes : " << deltaIndexes[0] << deltaIndexes[1] << deltaIndexes[2] << std::endl;
+    }
     // Set size of matrices
     unsigned int ncols = m_OutputImageRegion.GetNumberOfPixels();
 
@@ -1880,7 +1917,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatri
 
     if(m_ComputeH)
     {
-        std::cout << "Initialize H and Z ..." << std::endl;
+        if (verbose){
+            std::cout << "Initialize H and Z ..." << std::endl;
+        }
         H.set_size(nrows, ncols);
         Z.set_size(nrows);
         Z.fill(0.0);
@@ -1892,9 +1931,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatri
 
     Y.set_size(nrows);
     Y.fill(0.0);
-
-    std::cout << "Size of H :  #rows = " << H.rows() << ", #cols = "<<H.cols() << std::endl;
-
+    if (verbose){
+        std::cout << "Size of H :  #rows = " << H.rows() << ", #cols = "<<H.cols() << std::endl;
+    }
     int counterDebug = 0;
     unsigned int im;
     //#pragma omp parallel for private(im) schedule(dynamic)
@@ -1910,20 +1949,22 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatri
         inputSpacing2[0] = inputSpacing2[0] ;
         inputSpacing2[1] = inputSpacing2[1] ;
         inputSpacing2[2] = inputSpacing2[2] ;
-
-        std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
-
+        if (verbose){
+            std::cout << "input spacing 2 : " << inputSpacing2 << std::endl;
+        }
         // PSF definition
         typename FunctionType::Pointer function = FunctionType::New();
+        function -> SetVerbose(this -> GetVerbose());
         function -> SetPSF(  FunctionType::GAUSSIAN );
         function -> SetDirection( m_Images[im] -> GetDirection() );
         function -> SetSpacing( inputSpacing2 );
         //function -> Print(std::cout);
 
-        std::cout << "Image # "<< im << " sizes : " << m_Images[im]->GetLargestPossibleRegion().GetSize() << std::endl;
-        std::cout << "Image # "<< im << " direction : " << m_Images[im]->GetDirection() << std::endl;
-        std::cout << "Image # "<< im << " spacing : " << inputSpacing2 << std::endl;
-
+        if (verbose){
+            std::cout << "Image # "<< im << " sizes : " << m_Images[im]->GetLargestPossibleRegion().GetSize() << std::endl;
+            std::cout << "Image # "<< im << " direction : " << m_Images[im]->GetDirection() << std::endl;
+            std::cout << "Image # "<< im << " spacing : " << inputSpacing2 << std::endl;
+        }
         //Define the ROI of the current LR image
         IndexType inputIndex = m_Regions[im].GetIndex();
         SizeType  inputSize  = m_Regions[im].GetSize();
@@ -2075,8 +2116,9 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatri
 
     if(m_ComputeH)
     {
-
-        std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+        if (verbose){
+            std::cout << "H was computed and normalized ..." << std::endl << std::endl;
+        }
         // Normalize H
         for (unsigned int i = 0; i < H.rows(); i++)
         {
@@ -2091,8 +2133,10 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeSRHMatri
 
     }
     else
-    {
-        std::cout << "Initialization of H with old value" << std::endl << std::endl;
+    {   
+        if (verbose){
+            std::cout << "Initialization of H with old value" << std::endl << std::endl;
+        }
     }
 }
 
@@ -2100,6 +2144,9 @@ template <class TImage>
 void
 JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeTotalVariationTerms()
 {
+    // Get verbosity level
+    bool verbose = this -> GetVerbose();
+
     int ncols = H.cols();
 
     //vnl_vector<float> DivP;
@@ -2117,10 +2164,11 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeTotalVar
 
     A = deltat * lambda * tau * HtH;
     */
-
-    std::cout << "Update P :" << std::endl;
-    std::cout << "Old values : ";
-    std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    if (verbose){
+        std::cout << "Update P :" << std::endl;
+        std::cout << "Old values : ";
+        std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    }
     //vsl_print_summary(vcl_cout,A);
     // Converts and writes output image
     typename itk::ImageDuplicator<ImageType>::Pointer duplicator2 = itk::ImageDuplicator<ImageType>::New();
@@ -2250,9 +2298,10 @@ JointRobustTVGMMCostFunctionWithImplicitGradientDescent<TImage>::ComputeTotalVar
     DbxPx.clear();
     DbyPy.clear();
     DbzPz.clear();
-
-    std::cout << "New values : ";
-    std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    if (verbose){
+        std::cout << "New values : ";
+        std::cout<<"Px="<<Px.sum()<<" , Py="<<Py.sum()<<" , Pz="<<Pz.sum()<<" , Xest="<<Xest.sum()<<" , Xold="<<Xold.sum()<<", DivP="<<DivP.sum()<<" , b="<<b.sum()<<std::endl<<std::endl;
+    }
     //vsl_print_summary(vcl_cout,A);
     HtY.clear();
     //DivP.clear();

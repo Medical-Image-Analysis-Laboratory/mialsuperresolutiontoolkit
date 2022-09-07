@@ -31,6 +31,7 @@ def create_postproc_stage(
         p_ga,
         p_do_anat_orientation=False,
         p_do_reconstruct_labels=False,
+        p_verbose=False,
         name="postproc_stage"
 ):
     """Create a SR preprocessing workflow
@@ -39,11 +40,13 @@ def create_postproc_stage(
         name : :str:
             name of workflow (default: preproc_stage)
         p_ga: :int:
-            subject's gestational age in weeks
+            Subject's gestational age in weeks
         p_do_anat_orientation: :bool:
-            weither the alignement to template should be performed
+            Whether the alignement to template should be performed
         p_do_reconstruct_labels: :bool:
-            weither the reconstruction of LR labelmaps should be performed
+            Whether the reconstruction of LR labelmaps should be performed
+        p_verbose: :bool:
+            Whether verbosity is enabled.
     Inputs
     ------
         input_sdi:
@@ -94,10 +97,12 @@ def create_postproc_stage(
     srtkN4BiasFieldCorrection = pe.Node(
         interface=postprocess.MialsrtkN4BiasFieldCorrection(),
         name='srtkN4BiasFieldCorrection')
+    srtkN4BiasFieldCorrection.inputs.verbose = p_verbose
 
     srtkMaskImage02 = pe.Node(
         interface=preprocess.MialsrtkMaskImage(),
         name='srtkMaskImage02')
+    srtkMaskImage02.inputs.verbose = p_verbose
 
     if p_do_anat_orientation and p_ga is not None:
 
@@ -116,7 +121,8 @@ def create_postproc_stage(
             dict(atlas='STA'+ga_str+'.nii.gz')
 
         resample_t2w_template = pe.Node(
-            interface=preprocess.ResampleImage(),
+            interface=preprocess.ResampleImage(
+                p_verbose),
             name='resample_t2w_template'
         )
 

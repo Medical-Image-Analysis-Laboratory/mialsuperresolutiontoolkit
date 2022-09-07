@@ -49,6 +49,7 @@ int main( int argc, char *argv[] )
 
         // Ouput HR image
         TCLAP::ValueArg<std::string> outputArg  ("o","output","Output masked image",true,"","string",cmd);
+        TCLAP::SwitchArg  verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
 
         // Parse the argv array.
         cmd.parse( argc, argv );
@@ -56,6 +57,7 @@ int main( int argc, char *argv[] )
         input = inputArg.getValue();
         mask = maskArg.getValue();
         output = outputArg.getValue();
+        bool verbose = verboseArg.getValue();
 
          // typedefs
         const   unsigned int    Dimension = 3;
@@ -68,15 +70,17 @@ int main( int argc, char *argv[] )
 
         typedef itk::Image< MaskPixelType, Dimension >  ImageMaskType;
         typedef itk::ImageFileReader< ImageMaskType > MaskReaderType;
-
-        std::cout<<"Reading image : "<<input.c_str()<<std::endl;
+        if (verbose){
+          std::cout<<"Reading image : "<<input.c_str()<<std::endl;
+        }
         ImageReaderType::Pointer imageReader = ImageReaderType::New();
         imageReader -> SetFileName( input.c_str() );
         imageReader->Update();
 
         ImageType::Pointer im = imageReader->GetOutput();
-
-        std::cout<<"Reading mask image : "<<mask.c_str()<<std::endl;
+        if (verbose){
+          std::cout<<"Reading mask image : "<<mask.c_str()<<std::endl;
+        }
         MaskReaderType::Pointer maskReader = MaskReaderType::New();
         maskReader -> SetFileName( mask.c_str() );
         maskReader->Update();
@@ -106,7 +110,9 @@ int main( int argc, char *argv[] )
         filter -> SetInput1(imageReader -> GetOutput());
         filter -> SetInput2(maskUpsampler -> GetOutput());
 
-        std::cout<<"Writing masked image : "<<output.c_str()<<std::endl;
+        if (verbose){
+          std::cout<<"Writing masked image : "<<output.c_str()<<std::endl;
+        }
         ImageWriterType::Pointer writer =  ImageWriterType::New();
         writer -> SetFileName( output.c_str() );
         writer -> SetInput( filter->GetOutput() );

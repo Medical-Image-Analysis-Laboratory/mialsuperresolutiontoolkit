@@ -22,7 +22,7 @@ from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
-import pymialsrtk.workflows.sr_assessment_stage as sr_assessment_stage
+import pymialsrtk.workflows.srr_assessment_stage as srr_assment_stage
 import pymialsrtk.workflows.recon_stage as recon_stage
 import pymialsrtk.workflows.output_stage as output_stage
 import pymialsrtk.workflows.input_stage as input_stage
@@ -129,8 +129,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
     """
     m_pipeline_name = "srr_pipeline"
+    m_paramTV = None
     m_labels_derivatives_dir = None
-
     m_paramTV = None
 
     # Custom interfaces options
@@ -149,25 +149,25 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         p_subject,
         p_ga=None,
         p_stacks=None,
-        sr_id=1,
+        p_sr_id=1,
         p_session=None,
         p_paramTV=None,
         p_masks_derivatives_dir=None,
         p_labels_derivatives_dir=None,
         p_masks_desc=None,
         p_dict_custom_interfaces=None,
+        p_verbose=None,
         p_openmp_number_of_cores=None,
         p_nipype_number_of_cores=None
     ):
         """Constructor of SRReconPipeline class instance."""
 
         super().__init__(p_bids_dir, p_output_dir, p_subject, p_ga, p_stacks,
-                         sr_id, p_session, p_masks_derivatives_dir,
-                         p_masks_desc, p_dict_custom_interfaces,
+                         p_sr_id, p_session, p_masks_derivatives_dir,
+                         p_masks_desc, p_dict_custom_interfaces, p_verbose,
                          p_openmp_number_of_cores, p_nipype_number_of_cores,
                          "rec"
                          )
-
         # (default) sr tv parameters
         if p_paramTV is None:
             p_paramTV = dict()
@@ -232,15 +232,14 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         if self.m_do_anat_orientation:
             if not os.path.isdir('/sta'):
-                raise OSError(
-                    'A template directory must be specified '
-                    'with interface \'do_anat_orientation\'.'
-                )
+                raise RuntimeError(
+                    'A template directory must be specified to '
+                    'perform alignement.')
             if self.m_ga is None:
-                raise OSError(
-                    'A gestational age must be specified '
-                    'with interface \'do_anat_orientation\'.'
-                )
+                raise RuntimeError(
+                    'A gestational age must be specified to '
+                    'perform alignement.'
+                      )
 
         if self.m_do_reconstruct_labels:
             if not self.m_labels_derivatives_dir:
@@ -267,8 +266,19 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                                         and len(value) > 1)]
             if not num_parameters_multi:
                 raise RuntimeError(
-                    'With do_multi_parameters interface,'
-                    'at least one entry of \'paramsTV\' should'
+                    'With do_multi_parameters interface, '
+                    'at least one entry of \'paramsTV\' should '
+                    'be defined as a list of more than one item.'
+                )
+        else:
+            num_parameters_multi = [value
+                                    for value in list(self.m_paramTV.values())
+                                    if (isinstance(value, list)
+                                        and len(value) > 1)]
+            if num_parameters_multi:
+                raise RuntimeError(
+                    'With do_multi_parameters=False, '
+                    'no entry of \'paramsTV\' should '
                     'be defined as a list of more than one item.'
                 )
 
@@ -313,25 +323,26 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         # config.enable_provenance()
 
         input_mgmt_stage = input_stage.create_input_stage(
-            p_bids_dir=self.m_bids_dir,
-            p_subject=self.m_subject,
-            p_session=self.m_session,
-            p_use_manual_masks=self.m_use_manual_masks,
-            p_masks_desc=self.m_masks_desc,
-            p_masks_derivatives_dir=self.m_masks_derivatives_dir,
-            p_labels_derivatives_dir=self.m_labels_derivatives_dir,
-            p_skip_stacks_ordering=self.m_skip_stacks_ordering,
-            p_do_reconstruct_labels=self.m_do_reconstruct_labels,
-            p_stacks=self.m_stacks,
-            p_do_srr_assessment=self.m_do_srr_assessment,
-            name='input_mgmt_stage'
-
-        )
+                p_bids_dir=self.m_bids_dir,
+                p_subject=self.m_subject,
+                p_session=self.m_session,
+                p_use_manual_masks=self.m_use_manual_masks,
+                p_masks_desc=self.m_masks_desc,
+                p_masks_derivatives_dir=self.m_masks_derivatives_dir,
+                p_labels_derivatives_dir=self.m_labels_derivatives_dir,
+                p_skip_stacks_ordering=self.m_skip_stacks_ordering,
+                p_do_reconstruct_labels=self.m_do_reconstruct_labels,
+                p_stacks=self.m_stacks,
+                p_do_srr_assessment=self.m_do_srr_assessment,
+                p_verbose=self.m_verbose,
+                name='input_mgmt_stage'
+                )
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
-            p_do_reconstruct_labels=self.m_do_reconstruct_labels
-        )
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels,
+            p_verbose=self.m_verbose
+            )
 
         reconstruction_stage, srtv_node_name = recon_stage.create_recon_stage(
             p_paramTV=self.m_paramTV,
@@ -341,21 +352,23 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
-            p_sub_ses=self.m_sub_ses)
+            p_sub_ses=self.m_sub_ses,
+            p_verbose=self.m_verbose)
 
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
             p_ga=self.m_ga,
             p_do_anat_orientation=self.m_do_anat_orientation,
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
-            name='postprocessing_stage'
-        )
+            p_verbose=self.m_verbose,
+            name='postprocessing_stage')
 
         if self.m_do_srr_assessment:
             srr_assessment_stage = \
-                sr_assessment_stage.create_sr_assessment_stage(
+                srr_assment_stage.create_srr_assessment_stage(
                     p_do_multi_parameters=self.m_do_multi_parameters,
                     p_input_srtv_node=srtv_node_name,
+                    p_verbose=self.m_verbose,
                     p_openmp_number_of_cores=self.m_openmp_number_of_cores,
                     name='srr_assessment_stage'
                 )

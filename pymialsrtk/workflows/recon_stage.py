@@ -18,6 +18,7 @@ import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.utils as utils
 
+
 def create_recon_stage(p_paramTV,
                        p_use_manual_masks,
                        p_do_multi_parameters=False,
@@ -26,38 +27,66 @@ def create_recon_stage(p_paramTV,
                        p_do_refine_hr_mask=False,
                        p_skip_svr=False,
                        p_sub_ses='',
+                       p_verbose=False,
                        name="recon_stage"):
     """Create a super-resolution reconstruction workflow
     Parameters
     ----------
-    ::
-        name : name of workflow (default: recon_stage)
+        p_paramTV : `obj`:dict:
+            Dictionary of TV parameters
         p_use_manual_masks :
-        p_do_nlm_denoising : weither to proceed to non-local mean denoising
+            Whether masks were done manually.
+        p_do_nlm_denoising :
+            Whether to proceed to non-local mean denoising.
+            (default False)
         p_do_multi_parameters :
         p_do_reconstruct_labels :
+            Whether we are also reconstruction label maps.
+            (default False)
         p_do_refine_hr_mask :
+            Whether to do high-resolution mask refinement.
+            (default False)
         p_skip_svr :
+            Whether slice-to-volume registration (SVR) should
+            be skipped. (default False)
         p_sub_ses :
-    Inputs::
-        inputnode.input_images : Input T2w images (list of filenames)
-        inputnode.input_images_nlm : Input T2w images (list of filenames),
+            String describing subject-session information
+            (default '')
+        p_verbose :
+            Whether verbosity should be enabled (default False)
+        name : name of workflow (default: recon_stage)
+    Inputs
+    ----------
+        input_images :
+            Input T2w images (list of filenames)
+        input_images_nlm :
+            Input T2w images (list of filenames),
             if p_do_nlm_denoising was set (list of filenames)
-        inputnode.input_masks : Input mask images (list of filenames)
-        inputnode.stacks_order : Order of stacks in the reconstruction
+        input_masks :
+            Input mask images (list of filenames)
+        stacks_order :
+            Order of stacks in the reconstruction
             (list of integer)
-    Outputs::
-        outputnode.output_sr : SR reconstructed image (filename)
-        outputnode.output_sdi : SDI image (filename)
-        outputnode.output_hr_mask : SRR mask (filename)
-        outputnode.output_tranforms : Transfmation estimated parameters
+    Outputs
+    ----------
+        output_sr :
+            SR reconstructed image (filename)
+        output_sdi :
+            SDI image (filename)
+        output_hr_mask :
+            SRR mask (filename)
+        output_tranforms :
+            Transfmation estimated parameters
             (list of filenames)
         outputnode.output_json_path
         outputnode.output_sr_png
         outputnode.output_TV_parameters
     Example
     -------
-    >>> recon_stage = create_preproc_stage(p_do_nlm_denoising=False)
+    >>> recon_stage = create_preproc_stage(
+            p_paramTV,
+            p_use_manual_masks,
+            p_do_nlm_denoising=False)
     >>> recon_stage.inputs.inputnode.input_images =
             ['sub-01_run-1_T2w.nii.gz', 'sub-01_run-2_T2w.nii.gz']
     >>> recon_stage.inputs.inputnode.input_masks =
@@ -120,28 +149,28 @@ def create_recon_stage(p_paramTV,
 
 
     srtkImageReconstruction = pe.Node(
-        interface=reconstruction.MialsrtkImageReconstruction(),
+        interface=reconstruction.MialsrtkImageReconstruction(
+            p_sub_ses,
+            p_skip_svr,
+            p_verbose
+        ),
         name='srtkImageReconstruction')
-    srtkImageReconstruction.inputs.sub_ses = p_sub_ses
-    srtkImageReconstruction.inputs.no_reg = p_skip_svr
 
     if p_do_nlm_denoising:
         sdiComputation = pe.Node(
-            interface=reconstruction.MialsrtkSDIComputation(),
+            interface=reconstruction.MialsrtkSDIComputation(
+                p_sub_ses,
+                p_verbose
+            ),
             name='sdiComputation')
-        sdiComputation.inputs.sub_ses = p_sub_ses
 
     srtkTVSuperResolution = pe.Node(
-        interface=reconstruction.MialsrtkTVSuperResolution(),
+        interface=reconstruction.MialsrtkTVSuperResolution(
+            p_sub_ses,
+            p_use_manual_masks,
+            p_verbose=p_verbose
+        ),
         name='srtkTVSuperResolution')
-    srtkTVSuperResolution.inputs.sub_ses = p_sub_ses
-    srtkTVSuperResolution.inputs.use_manual_masks = p_use_manual_masks
-
-    srtkTVSuperResolution.inputs.in_iter = num_iterations
-    srtkTVSuperResolution.inputs.in_loop = num_primal_dual_loops
-    srtkTVSuperResolution.inputs.in_bregman_loop = num_bregman_loops
-    srtkTVSuperResolution.inputs.in_step_scale = step_scale
-    srtkTVSuperResolution.inputs.in_gamma = gamma
 
     if p_do_multi_parameters:
         deltatTV = [deltatTV] \
@@ -185,18 +214,20 @@ def create_recon_stage(p_paramTV,
         srtkTVSuperResolution.inputs.in_step_scale = step_scale
         srtkTVSuperResolution.inputs.in_gamma = gamma
 
-
     if p_do_refine_hr_mask:
         srtkHRMask = pe.Node(
             interface=postprocess.MialsrtkRefineHRMaskByIntersection(),
             name='srtkHRMask')
+        srtkHRMask.inputs.verbose = p_verbose
     else:
         srtkHRMask = pe.Node(interface=postprocess.BinarizeImage(),
                              name='srtkHRMask')
 
     if p_do_reconstruct_labels:
         recon_labels_stage = recon_labelmap_stage.create_recon_labelmap_stage(
-            sub_ses=p_sub_ses)
+            p_sub_ses=p_sub_ses,
+            p_verbose=p_verbose
+            )
 
     recon_stage.connect(inputnode,
                         ("input_masks", utils.sort_ascending),

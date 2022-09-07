@@ -54,7 +54,9 @@ void NLMTool<T>::SetDefaultParameters()
 template <typename T>
 void NLMTool<T>::SetPatchSize(int h)
 {
-  std::cout<<"Computing patch size (taking into account possible image anisotropy)"<<std::endl;
+  if (this -> GetVerbose()){
+    std::cout<<"Computing patch size (taking into account possible image anisotropy)"<<std::endl;
+  }
   float minVoxSz = m_spacing[0];
 
   if(m_spacing[1] < minVoxSz)
@@ -70,8 +72,9 @@ void NLMTool<T>::SetPatchSize(int h)
   m_halfPatchSize[0] = (int)(0.5 + h * minVoxSz / m_spacing[0]);
   m_halfPatchSize[1] = (int)(0.5 + h * minVoxSz / m_spacing[1]);
   m_halfPatchSize[2] = (int)(0.5 + h * minVoxSz / m_spacing[2]);
-  std::cout<<"half patchSize : "<<m_halfPatchSize[0]<<" "<<m_halfPatchSize[1]<<" "<<m_halfPatchSize[2]<<std::endl;
-
+  if (this -> GetVerbose()){
+    std::cout<<"half patchSize : "<<m_halfPatchSize[0]<<" "<<m_halfPatchSize[1]<<" "<<m_halfPatchSize[2]<<std::endl;
+  }
   m_fullPatchSize[0] = 2 * m_halfPatchSize[0] + 1;
   m_fullPatchSize[1] = 2 * m_halfPatchSize[1] + 1;
   m_fullPatchSize[2] = 2 * m_halfPatchSize[2] + 1;
@@ -80,7 +83,9 @@ void NLMTool<T>::SetPatchSize(int h)
 template <typename T>
 void NLMTool<T>::SetSpatialBandwidth(int s)
 {
-  std::cout<<"Computing spatial bandwidth (taking into account possible image anisotropy)"<<std::endl;
+  if (this -> GetVerbose()){
+    std::cout<<"Computing spatial bandwidth (taking into account possible image anisotropy)"<<std::endl;
+  }
   float minVoxSz = m_spacing[0];
   if(m_spacing[1] < minVoxSz)
   {
@@ -94,8 +99,9 @@ void NLMTool<T>::SetSpatialBandwidth(int s)
   m_halfSpatialBandwidth[0] = (int)(0.5 + s * minVoxSz / m_spacing[0]);
   m_halfSpatialBandwidth[1] = (int)(0.5 + s * minVoxSz / m_spacing[1]);
   m_halfSpatialBandwidth[2] = (int)(0.5 + s * minVoxSz / m_spacing[2]);
-  std::cout<<"half spatialBandwidth : "<<m_halfSpatialBandwidth[0]<<" "<<m_halfSpatialBandwidth[1]<<" "<<m_halfSpatialBandwidth[2]<<std::endl;
-
+  if (this -> GetVerbose()){
+    std::cout<<"half spatialBandwidth : "<<m_halfSpatialBandwidth[0]<<" "<<m_halfSpatialBandwidth[1]<<" "<<m_halfSpatialBandwidth[2]<<std::endl;
+  }
   m_fullSpatialBandwidth[0] = 2 * m_halfSpatialBandwidth[0] + 1;
   m_fullSpatialBandwidth[1] = 2 * m_halfSpatialBandwidth[1] + 1;
   m_fullSpatialBandwidth[2] = 2 * m_halfSpatialBandwidth[2] + 1;
@@ -126,8 +132,9 @@ void NLMTool<T>::SetPaddingValue(float padding)
       count++;
     }
   }
-  std::cout<<"Percentage of points to be processed : "<<(int)(count / m_maskImage->GetLargestPossibleRegion().GetNumberOfPixels() * 100.0) <<std::endl;
-
+  if (this -> GetVerbose()){  
+    std::cout<<"Percentage of points to be processed : "<<(int)(count / m_maskImage->GetLargestPossibleRegion().GetNumberOfPixels() * 100.0) <<std::endl;
+  }
 }
 
 template <typename T>
@@ -189,7 +196,9 @@ void NLMTool<T>::SetOptimizationStrategy(int o)
 
     if(o==1)
     {
-        std::cout<<"Optimized mode. Computing Mean and Variance images"<<std::endl;
+        if (this -> GetVerbose()){ 
+          std::cout<<"Optimized mode. Computing Mean and Variance images"<<std::endl;
+        }
         m_meanImage = itkTImage::New();
         m_meanImage->SetRegions(m_inputImage->GetLargestPossibleRegion());
         m_meanImage->SetSpacing( m_inputImage->GetSpacing() );
@@ -313,7 +322,9 @@ float NLMTool<T>::MADEstimation(std::vector<float> & vecei, float & beta)
   //Estimation of sigma with MAD
   std::sort(vecei.begin(), vecei.end());
   float med = vecei[(int)(vecei.size()/2)];
-  std::cout<<"Median in MAD estimation : "<<med<<std::endl;
+  if (this -> GetVerbose()){ 
+    std::cout<<"Median in MAD estimation : "<<med<<std::endl;
+  }
   for(unsigned int i=0; i<vecei.size(); i++)
   {
     vecei[i] = fabs(vecei[i] - med);
@@ -321,7 +332,9 @@ float NLMTool<T>::MADEstimation(std::vector<float> & vecei, float & beta)
   std::sort(vecei.begin(), vecei.end());
 
   double sigma2 = 1.4826 * vecei[(int)(vecei.size()/2)];
-  std::cout<<"sigma : "<<sigma2<<std::endl;
+  if (this -> GetVerbose()){ 
+    std::cout<<"sigma : "<<sigma2<<std::endl;
+  }
   sigma2 = sigma2 * sigma2;
   float NLMsmooth = 2 * beta * sigma2 * (2*m_halfPatchSize[0]+1) * (2*m_halfPatchSize[1]+1) * (2*m_halfPatchSize[2]+1);
   return NLMsmooth;
@@ -331,7 +344,9 @@ template <typename T>
 void NLMTool<T>::SetSmoothing(float beta)
 {
     //this function should be rewritten using a convolution-based approach
-    std::cout<<"Computing the global range bandwidth (corresponding to the smoothing parameter for the NLM algorithm)."<<std::endl;
+    if (this -> GetVerbose()){ 
+      std::cout<<"Computing the global range bandwidth (corresponding to the smoothing parameter for the NLM algorithm)."<<std::endl;
+    }
     int x,y,z;
 
     std::vector<float> vecei;
@@ -363,7 +378,9 @@ void NLMTool<T>::SetSmoothing(float beta)
         }
     }
     float NLMsmooth = MADEstimation(vecei, beta);
-    std::cout<<"Global smoothing parameter h : "<<sqrt(NLMsmooth)<<std::endl;
+    if (this -> GetVerbose()){ 
+      std::cout<<"Global smoothing parameter h : "<<sqrt(NLMsmooth)<<std::endl;
+    }
     m_rangeBandwidthImage->FillBuffer(NLMsmooth);
 
 }
@@ -448,12 +465,13 @@ NLMTool<T>::GetOutput()
 template <typename T>
 void NLMTool<T>::ComputeOutput()
 {
-  std::cout<<"Compute the denoised image using NLM algorithm"<<std::endl;
-  if(m_useTheReferenceImage == true)
-  {
-    std::cout<<"Use of a reference image"<<std::endl;
+  if (this -> GetVerbose()){ 
+    std::cout<<"Compute the denoised image using NLM algorithm"<<std::endl;
+    if(m_useTheReferenceImage == true)
+    {
+      std::cout<<"Use of a reference image"<<std::endl;
+    }
   }
-
   itkTPointer denoisedImage = itkTImage::New();
   typename itkTDuplicator::Pointer duplicator = itkTDuplicator::New();
   duplicator->SetInputImage( m_inputImage );
@@ -476,7 +494,9 @@ void NLMTool<T>::ComputeOutput()
 
   if(m_blockwise == 0)
   {
-    std::cout<<"pointwise denoising"<<std::endl;
+    if (this -> GetVerbose()){ 
+      std::cout<<"pointwise denoising"<<std::endl;
+    }
     typename itkTImage::IndexType q;
     for(unsigned int i=0; i!= q.GetIndexDimension(); i++)
     {
@@ -525,7 +545,9 @@ void NLMTool<T>::ComputeOutput()
 
     if(m_blockwise == 1)
     {
-      std::cout<<"blockwise denoising"<<std::endl;
+      if (this -> GetVerbose()){ 
+        std::cout<<"blockwise denoising"<<std::endl;
+      }
       #pragma omp parallel for private(x,y,z) schedule(dynamic)
       for(z=0; z < (int)m_size[2]; z++)
       {
@@ -561,7 +583,9 @@ void NLMTool<T>::ComputeOutput()
     }
     if(m_blockwise == 2)
     {
-        std::cout<<"fast blockwise denoising"<<std::endl;
+        if (this -> GetVerbose()){ 
+          std::cout<<"fast blockwise denoising"<<std::endl;
+        }
         //TODO: Simplify this, there is to much for-if-for !
         #pragma omp parallel for private(x,y,z) schedule(dynamic)
         for(z=0; z < (int)m_size[2]; z++)

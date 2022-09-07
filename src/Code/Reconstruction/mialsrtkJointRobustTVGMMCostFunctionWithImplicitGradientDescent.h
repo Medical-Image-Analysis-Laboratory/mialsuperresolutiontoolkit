@@ -282,6 +282,15 @@ class JointRobustTVGMMCostFunctionWithImplicitGradientDescent
       rho2 = val;
   }
 
+  void SetVerbose( bool verbose )
+  {
+    m_verbose = verbose;
+  }
+
+  bool GetVerbose ()
+  {
+    return this -> m_verbose;
+  }
 
   private:
 
@@ -386,6 +395,7 @@ class JointRobustTVGMMCostFunctionWithImplicitGradientDescent
   float rho1, rho2;
 
   double m_SliceGap;
+  bool m_verbose;
 
 };
 

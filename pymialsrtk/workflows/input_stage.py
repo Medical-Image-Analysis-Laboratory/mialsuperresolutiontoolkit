@@ -30,6 +30,7 @@ def create_input_stage(p_bids_dir,
                        p_do_reconstruct_labels,
                        p_stacks,
                        p_do_srr_assessment,
+                       p_verbose,
                        name="input_stage"
                        ):
     """Create a input management workflow
@@ -209,7 +210,9 @@ def create_input_stage(p_bids_dir,
         stacksOrdering = pe.Node(
             interface=IdentityInterface(fields=['stacks_order']),
             name='stackOrdering')
+
         stacksOrdering.inputs.stacks_order = p_stacks
+        stacksOrdering.inputs.verbose = p_verbose
 
     if p_do_srr_assessment:
 

@@ -24,6 +24,7 @@ import SimpleITK as sitk
 import SimpleITK as sitk
 import skimage.metrics
 import pandas as pd
+from pymialsrtk.utils import EXEC_PATH
 
 #######################
 #  Refinement HR mask
@@ -45,7 +46,7 @@ class MialsrtkRefineHRMaskByIntersectionInputSpec(BaseInterfaceInputSpec):
     out_srmask_postfix = traits.Str("_srMask",
                                     desc='Suffix to be added to the SR reconstruction filename to construct output SR mask filename',
                                     usedefault=True)
-
+    verbose = traits.Bool(desc="Enable verbosity")
 
 class MialsrtkRefineHRMaskByIntersectionOutputSpec(TraitedSpec):
     """Class used to represent outputs of the MialsrtkRefineHRMaskByIntersection interface."""
@@ -93,7 +94,7 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        cmd = ['mialsrtkRefineHRMaskByIntersection']
+        cmd = [f'{EXEC_PATH}mialsrtkRefineHRMaskByIntersection']
 
         cmd += ['--radius-dilation', str(self.inputs.input_rad_dilatation)]
 
@@ -114,14 +115,11 @@ class MialsrtkRefineHRMaskByIntersection(BaseInterface):
 
         cmd += ['-r', self.inputs.input_sr]
         cmd += ['-o', out_file]
-
-        try:
+        if self.inputs.verbose:
+            cmd += ['--verbose']
             print('... cmd: {}'.format(cmd))
-            cmd = ' '.join(cmd)
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
+        cmd = ' '.join(cmd)
+        run(cmd, env={})
 
         return runtime
 
@@ -144,6 +142,7 @@ class MialsrtkN4BiasFieldCorrectionInputSpec(BaseInterfaceInputSpec):
 
     out_im_postfix = traits.Str("_gbcorr", usedefault=True)
     out_fld_postfix = traits.Str("_gbcorrfield", usedefault=True)
+    verbose = traits.Bool(desc="Enable verbosity")
 
 
 class MialsrtkN4BiasFieldCorrectionOutputSpec(TraitedSpec):
@@ -193,16 +192,14 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
         out_corr = self._gen_filename('output_image')
         out_fld = self._gen_filename('output_field')
 
-        cmd = ['mialsrtkN4BiasFieldCorrection', self.inputs.input_image, self.inputs.input_mask, out_corr, out_fld]
+        cmd = [f'{EXEC_PATH}mialsrtkN4BiasFieldCorrection', self.inputs.input_image,
+               self.inputs.input_mask, out_corr, out_fld]
 
-        try:
+        if self.inputs.verbose:
+            cmd += [' verbose']
             print('... cmd: {}'.format(cmd))
-            cmd = ' '.join(cmd)
-            run(cmd, env={})
-        except Exception as e:
-            print('Failed')
-            print(e)
-
+        cmd = ' '.join(cmd)
+        run(cmd, env={})
         return runtime
 
     def _list_outputs(self):
@@ -283,14 +280,14 @@ class FilenamesGeneration(BaseInterface):
 
     def _run_interface(self, runtime):
         run_type = self.m_run_type
-
+        max_stacks = max(self.inputs.stacks_order)
         self.m_substitutions.append(('_T2w_nlm_uni_bcorr_histnorm.nii.gz',
                                      '_id-' + str(self.m_sr_id) +
                                      '_desc-preprocSDI_T2w.nii.gz'))
 
         if not self.m_use_manual_masks:
             self.m_substitutions += [(f'_brainExtraction{n}/', '')
-                                     for n in range(10)]
+                                     for n in range(max_stacks)]
 
             self.m_substitutions.append(('_T2w_brainMask.nii.gz',
                                          '_id-' + str(self.m_sr_id) +
@@ -302,13 +299,13 @@ class FilenamesGeneration(BaseInterface):
 
         self.m_substitutions.append(('_T2w_desc-brain_', '_desc-brain_'))
         self.m_substitutions += [(f'_srtkMaskImage01{n}/', '')
-                                 for n in range(10)]
+                                 for n in range(max_stacks)]
 
         self.m_substitutions += [(f'_srtkMaskImage01_nlm{n}/', '')
-                                 for n in range(10)]
+                                 for n in range(max_stacks)]
 
         self.m_substitutions += [(f'_reduceFOV{n}/', '')
-                                 for n in range(10)]
+                                 for n in range(max_stacks)]
 
         self.m_substitutions.append(('_T2w_uni_bcorr_histnorm.nii.gz',
                                      '_id-' + str(self.m_sr_id) +
@@ -454,11 +451,7 @@ class BinarizeImage(BaseInterface):
         return
 
     def _run_interface(self, runtime):
-        try:
-            self._binarize_image(self.inputs.input_image)
-        except Exception as e:
-            print('Failed')
-            print(e)
+        self._binarize_image(self.inputs.input_image)
         return runtime
 
     def _list_outputs(self):
@@ -646,22 +639,17 @@ class ImageMetrics(BaseInterface):
         )
 
     def _run_interface(self, runtime):
-        try:
-            self._reset_class_members()
-            self._load_image_arrays()
-            self._compute_metrics()
-            self._generate_csv()
-            print('Computed and saved overall metrics!')
+        self._reset_class_members()
+        self._load_image_arrays()
+        self._compute_metrics()
+        self._generate_csv()
+        print('Computed and saved overall metrics!')
 
-            if self.inputs.input_ref_labelmap:
-                self._compute_metrics_labels()
-                self._generate_csv_labels()
-                print('Computed and saved per label metrics!')
+        if self.inputs.input_ref_labelmap:
+            self._compute_metrics_labels()
+            self._generate_csv_labels()
+            print('Computed and saved per label metrics!')
 
-        except Exception as e:
-            print('Failed')
-            print(e)
-            raise
         return runtime
 
     def _list_outputs(self):
@@ -709,32 +697,27 @@ class ConcatenateImageMetrics(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-        try:
-            frames = [pd.read_csv(s, index_col=False)
-                      for s in self.inputs.input_metrics]
+        frames = [pd.read_csv(s, index_col=False)
+                  for s in self.inputs.input_metrics]
 
-            res = pd.concat(frames)
-            res.to_csv(
-                self._gen_filename('output_csv'),
-                index=False,
-                header=True,
-                sep=','
-            )
+        res = pd.concat(frames)
+        res.to_csv(
+            self._gen_filename('output_csv'),
+            index=False,
+            header=True,
+            sep=','
+        )
 
-            frames_labels = [pd.read_csv(s, index_col=False)
-                             for s in self.inputs.input_metrics_labels]
+        frames_labels = [pd.read_csv(s, index_col=False)
+                         for s in self.inputs.input_metrics_labels]
 
-            res_labels = pd.concat(frames_labels)
-            res_labels.to_csv(
-                self._gen_filename('output_csv_labels'),
-                index=False,
-                header=True,
-                sep=','
-            )
-
-        except Exception as e:
-            print('Fail in ConcatenateQualityMetrics()')
-            print(e)
+        res_labels = pd.concat(frames_labels)
+        res_labels.to_csv(
+            self._gen_filename('output_csv_labels'),
+            index=False,
+            header=True,
+            sep=','
+        )
         return runtime
 
     def _list_outputs(self):
@@ -799,11 +782,8 @@ class MergeMajorityVote(BaseInterface):
         writer.Execute(sitk.Cast(maps_sitk, sitk.sitkUInt8))
 
     def _run_interface(self, runtime):
-        try:
-            self._merge_maps(self.inputs.input_images)
-        except Exception as e:
-            print('Failed merging label maps')
-            print(e)
+        self._merge_maps(self.inputs.input_images)
+
         return runtime
 
     def _list_outputs(self):

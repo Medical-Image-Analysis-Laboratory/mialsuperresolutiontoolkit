@@ -102,7 +102,7 @@ int main( int argc, char *argv[] )
   TCLAP::ValueArg<std::string> outArg("o","output","High resolution image",true,
       "","string",cmd);
   TCLAP::ValueArg<std::string> refArg("r","reference","Reference Image",false, "","string",cmd);
-
+  TCLAP::SwitchArg  verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
 
   /*TCLAP::SwitchArg  boxSwitchArg("","box","Use intersections for roi calculation",false);
   TCLAP::SwitchArg  maskSwitchArg("","mask","Use masks for roi calculation",false);
@@ -125,7 +125,7 @@ int main( int argc, char *argv[] )
 
   refImage = refArg.getValue();
   outImage = outArg.getValue().c_str();
-
+  bool verbose = verboseArg.getValue();
   //roi = roiArg.getValue();
 
     // typedefs
@@ -220,8 +220,9 @@ int main( int argc, char *argv[] )
 
   ImagePointer hrImage;
   ImagePointer hrRefImage;
-
-  std::cout<<"Reading the reference image : "<<refImage<<"\n";
+  if (verbose){
+    std::cout<<"Reading the reference image : "<<refImage<<"\n";
+  }
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader -> SetFileName( refImage );
   imageReader -> Update();
@@ -230,15 +231,18 @@ int main( int argc, char *argv[] )
 
   for (unsigned int i=0; i<numberOfImages; i++)
   {
-    std::cout<<"Reading image : "<<input[i].c_str()<<"\n";
+    if (verbose){
+      std::cout<<"Reading image : "<<input[i].c_str()<<"\n";
+    }
     ImageReaderType::Pointer imageReader = ImageReaderType::New();
     imageReader -> SetFileName( input[i].c_str() );
     imageReader -> Update();
     images[i] = imageReader -> GetOutput();
 
 
-
-    std::cout<<"Reading masks:"<<mask[i]<<std::endl;
+    if (verbose){
+      std::cout<<"Reading masks:"<<mask[i]<<std::endl;
+    }
     MaskReaderType::Pointer maskReader = MaskReaderType::New();
     maskReader -> SetFileName( mask[i].c_str() );
     maskReader -> Update();
@@ -248,8 +252,9 @@ int main( int argc, char *argv[] )
     masks[i] -> SetImage( imageMasks[i] );
     rois[i] = masks[i] -> GetAxisAlignedBoundingBoxRegion();
 
-
-    std::cout<<"Reading transform:"<<transform[i]<<std::endl<<std::endl;
+    if (verbose){
+      std::cout<<"Reading transform:"<<transform[i]<<std::endl<<std::endl;
+    }
     TransformReaderType::Pointer transformReader = TransformReaderType::New();
     transformReader -> SetFileName( transform[i] );
     transformReader -> Update();
@@ -270,13 +275,12 @@ int main( int argc, char *argv[] )
 
 
 
+  if (verbose){
+    std::cout << std::endl; std::cout.flush();
 
-  std::cout << std::endl; std::cout.flush();
-
-  // Inject images
-
-  std::cout << "Injecting images ... "; std::cout.flush();
-
+    // Inject images
+    std::cout << "Injecting images ... "; std::cout.flush();
+  }
 
   ResamplerType::Pointer resampler = ResamplerType::New();
 
@@ -299,8 +303,9 @@ int main( int argc, char *argv[] )
 
 
   hrImage = resampler -> GetOutput();
-
-  std::cout << "done. " << std::endl; std::cout.flush();
+  if (verbose){
+    std::cout << "done. " << std::endl; std::cout.flush();
+  }
 
 
   // Write HR image

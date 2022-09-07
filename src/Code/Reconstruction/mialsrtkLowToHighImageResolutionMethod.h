@@ -223,7 +223,16 @@ public:
 
   /** Initialize by setting the interconnects between the components.*/
   void Initialize() throw (ExceptionObject);
+  
+  void SetVerbose( bool verbose )
+  {
+    m_verbose = verbose;
+  }
 
+  bool GetVerbose ()
+  {
+    return this -> m_verbose;
+  }
 
 protected:
   LowToHighImageResolutionMethod();
@@ -269,7 +278,7 @@ private:
   bool                             m_InitializeWithMask;
   bool                             m_UseReference;
   unsigned int                     m_Iterations;
-
+  bool                             m_verbose;
 };
 
 

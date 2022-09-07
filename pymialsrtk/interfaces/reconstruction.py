@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 from nilearn.plotting import plot_anat
 
 from pymialsrtk.interfaces.utils import run, reorder_by_run_ids
-
+from pymialsrtk.utils import EXEC_PATH
 
 ########################
 # Image Reconstruction
@@ -44,10 +44,6 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
                                               'prior step to construct '
                                               'output filename'),
                                         usedefault=True)
-    sub_ses = traits.Str("x",
-                         desc=('Subject and session BIDS identifier to '
-                               'construct output filename'),
-                         usedefault=True)
     out_sdi_prefix = traits.Str("SDI_",
                                 desc=('Suffix added to construct output'
                                       'scattered data interpolation filename'),
@@ -59,9 +55,6 @@ class MialsrtkImageReconstructionInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True,
                                desc=('List of stack run-id that specify the '
                                      'order of the stacks'))
-    no_reg = traits.Bool(default=False,
-                         desc=("Skip slice-to-volume registration.")
-                         )
 
 
 class MialsrtkImageReconstructionOutputSpec(TraitedSpec):
@@ -81,6 +74,12 @@ class MialsrtkImageReconstruction(BaseInterface):
     the last two iterations is lower than ``1e-6``.
 
     It is used to estimate slice motion prior to :class:`~pymialsrtk.reconstruction.MialsrtkTVSuperResolution`.
+
+    Attributes
+    ----------
+    m_sub_ses :
+    m_skip_svr :
+    m_verbose :
 
     References
     ------------
@@ -108,10 +107,25 @@ class MialsrtkImageReconstruction(BaseInterface):
     input_spec = MialsrtkImageReconstructionInputSpec
     output_spec = MialsrtkImageReconstructionOutputSpec
 
+    m_sub_ses = None
+    m_skip_svr = None
+    m_verbose = None
+
+    def __init__(
+            self,
+            p_sub_ses,
+            p_skip_svr,
+            p_verbose,
+            ):
+        super().__init__()
+        self.m_sub_ses = p_sub_ses
+        self.m_skip_svr = p_skip_svr
+        self.m_verbose = p_verbose
+
     def _gen_filename(self, orig, name):
         if name == 'output_sdi':
             _, _, ext = split_filename(orig)
-            output = ''.join([self.inputs.out_sdi_prefix, self.inputs.sub_ses, '_',
+            output = ''.join([self.inputs.out_sdi_prefix, self.m_sub_ses, '_',
                               str(len(self.inputs.stacks_order)), 'V_rad',
                               str(int(self.inputs.input_rad_dilatation)), ext])
             return os.path.abspath(output)
@@ -147,19 +161,18 @@ class MialsrtkImageReconstruction(BaseInterface):
         params.append("-o")
         params.append(out_file)
 
-        if self.inputs.no_reg:
+        if self.m_skip_svr:
             params.append("--noreg")
+        if self.m_verbose:
+            params.append("--verbose")
 
-        cmd = ["mialsrtkImageReconstruction"]
+        cmd = [f"{EXEC_PATH}mialsrtkImageReconstruction"]
         cmd += params
 
-        try:
+        if self.m_verbose:
             print('... cmd: {}'.format(cmd))
-            cmd = ' '.join(cmd)
-            run(cmd)
-        except Exception as e:
-            print('Failed')
-            print(e)
+        cmd = ' '.join(cmd)
+        run(cmd)
         return runtime
 
     def _list_outputs(self):
@@ -187,9 +200,9 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
     input_sdi = File(desc='Reconstructed image for initialization. '
                           'Typically the output of MialsrtkImageReconstruction is used',
                      mandatory=True)
-    deblurring = traits.Bool(False,
-                             desc='Flag to set deblurring PSF during SR (double the neighborhood)',
-                             usedefault=True)
+    stacks_order = traits.List(mandatory=False,
+                               desc='List of stack run-id that specify the '
+                                    'order of the stacks')
     in_loop = traits.Int(mandatory=True,
                          desc='Number of loops (SR/denoising)')
     in_deltat = traits.Float(mandatory=True,
@@ -213,20 +226,6 @@ class MialsrtkTVSuperResolutionInputSpec(BaseInterfaceInputSpec):
                                    usedefault=True)
     in_outer_thresh = traits.Float(0.000001,
                                    desc='Outer loop convergence threshold',
-                                   usedefault=True)
-    out_prefix = traits.Str("SRTV_",
-                            desc='Prefix added to construct output super-resolution filename',
-                            usedefault=True)
-    stacks_order = traits.List(mandatory=False,
-                               desc='List of stack run-id that specify the order of the stacks')
-    input_rad_dilatation = traits.Float(1.0,
-                                        desc='Radius dilatation used in prior step to construct output filename',
-                                        usedefault=True)
-    sub_ses = traits.Str("x",
-                         desc='Subject and session BIDS identifier to construct output filename',
-                         usedefault=True)
-    use_manual_masks = traits.Bool(False,
-                                   desc='Use masks of input files',
                                    usedefault=True)
 
 
@@ -256,6 +255,22 @@ class MialsrtkTVSuperResolution(BaseInterface):
     The weight of TV regularization is controlled by `in_lambda`. The lower it is, the lower
     will be the weight of the data fidelity and so the higher will the regularization.
     The optimization time step is controlled by `in_deltat` that defines the time step of the optimizer.
+    Attributes
+    ----------
+        m_sub_ses :
+            Subject and session BIDS identifier to construct output filename
+        m_use_manual_masks :
+            Use masks of input files
+        m_input_rad_dilatation :
+            Radius dilatation used in prior step to construct output filename
+        m_deblurring :
+            Flag to set deblurring PSF during SR (double the neighborhood)
+            (default False)
+        m_out_prefix :
+            Prefix added to construct output super-resolution filename
+            (default SRTV_)
+        m_verbose :
+            Enable verbosity
 
     References
     ------------
@@ -288,29 +303,52 @@ class MialsrtkTVSuperResolution(BaseInterface):
     m_output_dict = {}
 
     m_TV_parameters = {}
+    m_sub_ses = None
+    m_use_manual_masks = None
+    m_input_rad_dilatation = None
+    m_deblurring = None
+    m_out_prefix = None
+    m_verbose = None
+
+    def __init__(
+            self,
+            p_sub_ses,
+            p_use_manual_masks,
+            p_input_rad_dilatation=1.0,
+            p_deblurring=False,
+            p_out_prefix="SRTV_",
+            p_verbose=False,
+            ):
+        super().__init__()
+        self.m_sub_ses = p_sub_ses
+        self.m_use_manual_masks = p_use_manual_masks
+        self.m_input_rad_dilatation = p_input_rad_dilatation
+        self.m_deblurring = p_deblurring
+        self.m_out_prefix = p_out_prefix
+        self.m_verbose = p_verbose
 
     def _gen_filename(self, name):
         if name == 'output_sr':
             _, _, ext = split_filename(self.inputs.input_sdi)
-            output = ''.join([self.inputs.out_prefix,
-                              self.inputs.sub_ses, '_',
+            output = ''.join([self.m_out_prefix,
+                              self.m_sub_ses, '_',
                               str(len(self.inputs.stacks_order)), 'V_rad',
-                              str(int(self.inputs.input_rad_dilatation)), ext])
+                              str(int(self.m_input_rad_dilatation)), ext])
             return os.path.abspath(output)
 
         elif name == 'output_json_path':
-            output = ''.join([self.inputs.out_prefix,
-                              self.inputs.sub_ses, '_',
+            output = ''.join([self.m_out_prefix,
+                              self.m_sub_ses, '_',
                               str(len(self.inputs.stacks_order)), 'V_rad',
-                              str(int(self.inputs.input_rad_dilatation)), '.json'])
+                              str(int(self.m_input_rad_dilatation)), '.json'])
 
             return os.path.abspath(output)
 
         elif name == 'output_sr_png':
-            output = ''.join([self.inputs.out_prefix,
-                              self.inputs.sub_ses, '_',
+            output = ''.join([self.m_out_prefix,
+                              self.m_sub_ses, '_',
                               str(len(self.inputs.stacks_order)), 'V_rad',
-                              str(int(self.inputs.input_rad_dilatation)), '.png'])
+                              str(int(self.m_input_rad_dilatation)), '.png'])
 
             return os.path.abspath(output)
 
@@ -318,7 +356,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        cmd = ['mialsrtkTVSuperResolution']
+        cmd = [f'{EXEC_PATH}mialsrtkTVSuperResolution']
 
         input_images = reorder_by_run_ids(self.inputs.input_images, self.inputs.stacks_order)
         input_masks = reorder_by_run_ids(self.inputs.input_masks, self.inputs.stacks_order)
@@ -334,7 +372,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
         out_sr = self._gen_filename('output_sr')
         cmd += ['-o', out_sr]
 
-        if self.inputs.deblurring:
+        if self.m_deblurring:
             cmd += ['--debluring']
 
         self.m_TV_parameters["in_loop"] = \
@@ -365,31 +403,34 @@ class MialsrtkTVSuperResolution(BaseInterface):
         cmd += ['--gamma', str(self.inputs.in_gamma)]
         cmd += ['--inner-thresh', str(self.inputs.in_inner_thresh)]
         cmd += ['--outer-thresh', str(self.inputs.in_outer_thresh)]
-
-        try:
-            cmd = ' '.join(cmd)
-            run(cmd)
-
-        except Exception as e:
-            print('Failed')
-            print(e)
+        if self.m_verbose:
+            cmd += ["--verbose"]
+        cmd = ' '.join(cmd)
+        run(cmd)
 
         ################################################
         # Creation of JSON sidecar file of the SR image
         ################################################
-        self.m_output_dict["Description"] = "Isotropic high-resolution image reconstructed using the Total-Variation" \
-                                            " Super-Resolution algorithm provided by MIALSRTK"
-        self.m_output_dict["Input sources run order"] = self.inputs.stacks_order
+        self.m_output_dict["Description"] = \
+            "Isotropic high-resolution image reconstructed using the "\
+            "Total-Variation Super-Resolution algorithm provided by MIALSRTK"
+        self.m_output_dict["Input sources run order"] = \
+            self.inputs.stacks_order
         self.m_output_dict["CustomMetaData"] = {}
-        self.m_output_dict["CustomMetaData"]["Number of scans used"] = str(len(self.inputs.stacks_order))
-        self.m_output_dict["CustomMetaData"]["Masks used"] = 'Manual' if self.inputs.use_manual_masks else 'Automatic'
-        self.m_output_dict["CustomMetaData"]["TV regularization weight lambda"] = self.inputs.in_lambda
-        self.m_output_dict["CustomMetaData"]["Optimization time step"] = self.inputs.in_deltat
-        self.m_output_dict["CustomMetaData"]["Primal/dual loops"] = self.inputs.in_loop
+        self.m_output_dict["CustomMetaData"]["n_stacks"] = \
+            str(len(self.inputs.stacks_order))
+        self.m_output_dict["CustomMetaData"]["masks_used"] = 'Manual' \
+            if self.m_use_manual_masks else 'Automatic'
+        self.m_output_dict["CustomMetaData"]["in_lambda"] = \
+            self.inputs.in_lambda
+        self.m_output_dict["CustomMetaData"]["in_deltat"] = \
+            self.inputs.in_deltat
+        self.m_output_dict["CustomMetaData"]["in_loop"] = self.inputs.in_loop
 
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
-            print('  > Write JSON side-car...')
+            if self.m_verbose:
+                print('  > Write JSON side-car...')
             json.dump(self.m_output_dict, outfile, indent=4)
 
         #########################################################
@@ -398,7 +439,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
         out_sr_png = self._gen_filename('output_sr_png')
 
         # Load the super-resolution image
-        print(f'  > Load SR image {out_sr}...')
+        if self.m_verbose:
+            print(f'  > Load SR image {out_sr}...')
         img = nib.load(out_sr)
         # Get image properties
         zooms = img.header.get_zooms()  # zooms are the size of the voxels
@@ -406,7 +448,10 @@ class MialsrtkTVSuperResolution(BaseInterface):
         fovs = np.array(zooms) * np.array(shapes)
         # Get middle cut
         cuts = [s // 2 for s in shapes]
-        print(f'    Image properties: Zooms={zooms}/ Shape={shapes}/ FOV={fovs}/ middle cut={cuts}')
+
+        if self.m_verbose:
+            print(f'    Image properties: Zooms={zooms}/ Shape={shapes}/ '
+                  f'FOV={fovs}/ middle cut={cuts}')
 
         # Crop the image if the FOV exceeds a certain value
         def compute_axis_crop_indices(cut, fov, max_fov=120):
@@ -437,11 +482,11 @@ class MialsrtkTVSuperResolution(BaseInterface):
         crop_start_x, crop_end_x = compute_axis_crop_indices(cuts[0], fovs[0], max_fov=120)
         crop_start_y, crop_end_y = compute_axis_crop_indices(cuts[1], fovs[1], max_fov=120)
         crop_start_z, crop_end_z = compute_axis_crop_indices(cuts[2], fovs[2], max_fov=120)
-
-        print(f'  > Crop SR image at '
-              f'({crop_start_x}:{crop_end_x}, '
-              f'{crop_start_y}:{crop_end_y}, '
-              f'{crop_start_z}:{crop_end_z})...')
+        if self.m_verbose:
+            print(f'  > Crop SR image at '
+                  f'({crop_start_x}:{crop_end_x}, '
+                  f'{crop_start_y}:{crop_end_y}, '
+                  f'{crop_start_z}:{crop_end_z})...')
         cropped_img = img.slicer[
             crop_start_x:crop_end_x,
             crop_start_y:crop_end_y,
@@ -458,7 +503,8 @@ class MialsrtkTVSuperResolution(BaseInterface):
             dim='auto',
             display_mode='ortho',
         )
-        print(f'Save the PNG image cuts as {out_sr_png}')
+        if self.m_verbose:
+            print(f'Save the PNG image cuts as {out_sr_png}')
         plt.savefig(
             out_sr_png,
             dpi=100,
@@ -493,10 +539,6 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
                                       desc='Input transformation files',
                                       mandatory=True)
     input_reference = File(desc='Input reference image', mandatory=True)
-    sub_ses = traits.Str("x",
-                         desc=('Subject and session BIDS identifier to',
-                               'construct output filename'),
-                         usedefault=True)
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that '
                                     'specify the order of the stacks')
@@ -515,16 +557,33 @@ class MialsrtkSDIComputation(BaseInterface):
     from a set of low resolution images and
     their slice-by-slicemotion parameters.
 
+    Attributes
+    ----------
+    m_sub_ses :
+    m_verbose :
+
     """
 
     input_spec = MialsrtkSDIComputationInputSpec
     output_spec = MialsrtkSDIComputationOutputSpec
 
+    m_sub_ses = None
+    m_verbose = None
+
+    def __init__(
+            self,
+            p_sub_ses,
+            p_verbose,
+            ):
+        super().__init__()
+        self.m_sub_ses = p_sub_ses
+        self.m_verbose = p_verbose
+
     def _gen_filename(self, name):
         if name == 'output_sdi':
             if self.inputs.label_id != -1:
                 output = ''.join([
-                    self.inputs.sub_ses,
+                    self.m_sub_ses,
                     '_',
                     'HR',
                     '_',
@@ -532,7 +591,12 @@ class MialsrtkSDIComputation(BaseInterface):
                     '.nii.gz'
                 ])
             else:
-                output = self.inputs.input_reference
+                output = ''.join([
+                    self.m_sub_ses,
+                    '_',
+                    'HR',
+                    '.nii.gz'
+                ])
             return os.path.abspath(output)
 
         return None
@@ -579,8 +643,6 @@ class MialsrtkSDIComputation(BaseInterface):
         input_transforms = reorder_by_run_ids(self.inputs.input_transforms,
                                               self.inputs.stacks_order)
 
-
-
         params.append("-r")
         params.append(empty_ref_image)
 
@@ -600,16 +662,13 @@ class MialsrtkSDIComputation(BaseInterface):
         params.append("-o")
         params.append(out_file)
 
-        cmd = ["mialsrtkSDIComputation"]
+        cmd = [f"{EXEC_PATH}mialsrtkSDIComputation"]
         cmd += params
-
-        try:
+        if self.m_verbose:
+            cmd += ["--verbose"]
             print('... cmd: {}'.format(cmd))
-            cmd = ' '.join(cmd)
-            run(cmd)
-        except Exception as e:
-            print('Failed')
-            print(e)
+        cmd = ' '.join(cmd)
+        run(cmd)
         return runtime
 
     def _list_outputs(self):

@@ -130,6 +130,8 @@ int main( int argc, char *argv[] )
   TCLAP::SwitchArg  debluringArg("","debluring","Flag to set deblurring kernel for SDI (double the neighborhood)"
                                           " (by default it is disable.).",cmd,false);
 
+  TCLAP::SwitchArg  verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
+
   //TCLAP::SwitchArg  atlasInitSwitchArg("","atlasInit","Atlas image is used as as initial HR image for "
   //    "slice-to-volume registration , Assumed initial transform is result of global rigid stack registration", cmd, false);
 
@@ -160,9 +162,9 @@ int main( int argc, char *argv[] )
   bool rigid3D = rigid3DSwitchArg.getValue();
   bool noreg   = noregSwitchArg.getValue();
   //bool useatlas = atlasInitSwitchArg.getValue();
+  bool verbose = verboseArg.getValue();
 
   // typedefs
-
   const    unsigned int    Dimension = 3;
   typedef  float           PixelType;
 
@@ -243,6 +245,7 @@ int main( int argc, char *argv[] )
   ImagePointer hrImageIni;
   ImagePointer hrRefImage;
 
+  lowToHighResFilter -> SetVerbose(verbose);
   lowToHighResFilter -> SetNumberOfImages(numberOfImages);
   lowToHighResFilter -> SetTargetImage( 0 );
   lowToHighResFilter -> SetMargin( margin );
@@ -256,7 +259,9 @@ int main( int argc, char *argv[] )
 
   if(refImage != "")
   {
-      std::cout<<"Reading the reference image : "<<refImage<<"\n";
+      if (verbose){
+        std::cout<<"Reading the reference image : "<<refImage<<"\n";
+      }
       ImageReaderType::Pointer imageReader = ImageReaderType::New();
       imageReader -> SetFileName( refImage );
       imageReader -> Update();
@@ -267,7 +272,9 @@ int main( int argc, char *argv[] )
 
   for (unsigned int i=0; i<numberOfImages; i++)
   {
-    std::cout<<"Reading image : "<<input[i].c_str()<<"\n";
+    if (verbose){
+      std::cout<<"Reading image : "<<input[i].c_str()<<"\n";
+    }
     ImageReaderType::Pointer imageReader = ImageReaderType::New();
     imageReader -> SetFileName( input[i].c_str() );
     imageReader -> Update();
@@ -343,8 +350,9 @@ int main( int argc, char *argv[] )
 
         }
   }
-
+  
   std::cout<<"Start rigid registration on the desired target image (#0 by default)\n";
+  
   try
     {
 
@@ -366,7 +374,9 @@ int main( int argc, char *argv[] )
   {
     try
     {
-      std::cout << "Write image mask combination..." <<std::endl << lowToHighResFilter -> GetImageMaskCombination() << std::endl;
+      if (verbose){
+        std::cout << "Write image mask combination..." <<std::endl << lowToHighResFilter -> GetImageMaskCombination() << std::endl;
+      }
       MaskWriterType::Pointer maskWriter =  MaskWriterType::New();
       maskWriter -> SetFileName( combinedMask );
       maskWriter -> SetInput( lowToHighResFilter -> GetImageMaskCombination() );
@@ -393,7 +403,9 @@ int main( int argc, char *argv[] )
 
   if(computeRefImage)
   {
-    std::cout << "Get global rigid HR image" << std::endl;
+    if (verbose){
+      std::cout << "Get global rigid HR image" << std::endl;
+    }
     hrImageIni = lowToHighResFilter->GetHighResolutionImage();
     hrRefImage = lowToHighResFilter->GetHighResolutionImage();
   }
@@ -415,8 +427,9 @@ int main( int argc, char *argv[] )
 
   //Identify and exclude bad slices based on SNR
   /** Check all image slices and compute and store the SNR metric for all slices */
-
-  std::cout << "Checking image slice quality... " << std::endl;
+  if (verbose){
+    std::cout << "Checking image slice quality... " << std::endl;
+  }
   /** Stores the starting slice index of jth image in the image slice index vector */
   //m_ImageSliceIndex.push_back( m_sliceSNRmetric.size() );
 
@@ -453,15 +466,15 @@ int main( int argc, char *argv[] )
   for(unsigned int it=1; it <= itMax; it++)
   {
     std::cout << "Iteration " << it << std::endl; std::cout.flush();
-
     // Start registration
 
     #pragma omp parallel for private(im) schedule(dynamic)
 
     for (im=0; im<numberOfImages; im++)
     {
-      std::cout << "Registering image " << im << " ... "; std::cout.flush();
-
+      if (verbose){
+        std::cout << "Registering image " << im << " ... "; std::cout.flush();
+      }
       if (rigid3D)
       {
         rigid3DRegistration[im] = Rigid3DRegistrationType::New();
@@ -488,22 +501,29 @@ int main( int argc, char *argv[] )
       } else
         {
           registration[im] = RegistrationType::New();
+          registration[im] -> SetVerbose( verbose );
           registration[im] -> SetFixedImage( images[im] );
           registration[im] -> SetMovingImage( hrRefImage );
 
           if (it == 1)
           {
-            std::cout << "Iteration " << it << ":" << std::endl;
-            std::cout << "  - Use the initial reference image for slice-to-volume registration. " << std::endl;
+            if (verbose){
+              std::cout << "Iteration " << it << ":" << std::endl;
+              std::cout << "  - Use the initial reference image for slice-to-volume registration. " << std::endl;
+            }
             registration[im] -> SetMovingImage( hrRefImage );
           }
           else
           {
-            std::cout << "Iteration " << it << " > 1 :" << std::endl;
-            std::cout << "  - Update the reference image for slice-to-volume registration with reconstructed HR image of previous iteration. " << std::endl;
+            if (verbose){
+              std::cout << "Iteration " << it << " > 1 :" << std::endl;
+              std::cout << "  - Update the reference image for slice-to-volume registration with reconstructed HR image of previous iteration. " << std::endl;
+            }
             registration[im] -> SetMovingImage( hrImage );
           }
-          std::cout << "  - Use constant registration step lengths: [" << min_step << ";"<< max_step << "]" << std::endl << std::cout.flush();
+          if (verbose){
+            std::cout << "  - Use constant registration step lengths: [" << min_step << ";"<< max_step << "]" << std::endl << std::cout.flush();
+          }
           registration[im] -> SetMinStepLength(min_step);
           registration[im] -> SetMaxStepLength(max_step);
           registration[im] -> SetImageMask( imageMasks[im] );
@@ -525,20 +545,21 @@ int main( int argc, char *argv[] )
 
           transforms[im] = static_cast< TransformType* >(registration[im] -> GetTransform());
         }
-
-      std::cout << "done. "; std::cout.flush();
-
+      if (verbose){
+        std::cout << "done. "; std::cout.flush();
+      }
     }
 
-    std::cout << std::endl; std::cout.flush();
-
+    if (verbose){
+      std::cout << std::endl; std::cout.flush();
+    }
     // Inject images
-
-    std::cout << "Injecting images ... "; std::cout.flush();
-
+    if (verbose){
+      std::cout << "Injecting images ... "; std::cout.flush();
+    }
 
     ResamplerType::Pointer resampler = ResamplerType::New();
-
+    resampler -> SetVerbose(verbose);
     for (unsigned int i=0; i<numberOfImages; i++)
     {
       resampler -> AddInput( images[i] );
@@ -569,9 +590,9 @@ int main( int argc, char *argv[] )
       hrImageOld = hrImage;
 
     hrImage = resampler -> GetOutput();
-
-    std::cout << "done. " << std::endl; std::cout.flush();
-
+    if (verbose){
+      std::cout << "done. " << std::endl; std::cout.flush();
+    }
     // compute error
 
     typedef itk::Euler3DTransform< double > EulerTransformType;
@@ -597,7 +618,9 @@ int main( int argc, char *argv[] )
 
     previousMetric = currentMetric;
     currentMetric = - nc -> GetValue( identity -> GetParameters() );
-    std::cout<<"previousMetric: "<<previousMetric<<", currentMetric: "<<currentMetric<<"\n";
+    if (verbose){
+      std::cout<<"previousMetric: "<<previousMetric<<", currentMetric: "<<currentMetric<<"\n";
+    }
     double delta = 0.0;
 
     if (it >= 2)
@@ -642,9 +665,13 @@ int main( int argc, char *argv[] )
 
       try
       {
-        std::cout << "Writing " << transform[i].c_str() << " ... " ; std::cout.flush();
+        if (verbose){
+          std::cout << "Writing " << transform[i].c_str() << " ... " ; std::cout.flush();
+        }
         transformWriter -> Update();
-        std::cout << " done! " << std::endl;
+        if (verbose){
+          std::cout << " done! " << std::endl;
+        }
       }
       catch ( itk::ExceptionObject & excp )
       {

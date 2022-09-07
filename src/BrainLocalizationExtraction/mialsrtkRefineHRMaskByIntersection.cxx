@@ -159,7 +159,7 @@ int main( int argc, char *argv[] )
         TCLAP::ValueArg<int> radiusDilationArg  ("","radius-dilation","Radius of the structuring element (ball) used for binary morphological dilation.",true,0,"int",cmd);
 
         TCLAP::SwitchArg stapleArg ("","use-staple","Use STAPLE for voting (Majority voting is used by default)", cmd, false);
-
+        TCLAP::SwitchArg verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
         //TCLAP::ValueArg<std::string>debugDirArg("","debug","Directory where  SR reconstructed image at each outer loop of the reconstruction optimization is saved",false,"","string",cmd);
 
         // Parse the argv array.
@@ -173,7 +173,7 @@ int main( int argc, char *argv[] )
 
         refImage = refArg.getValue().c_str();
         transform = transArg.getValue();
-        
+        bool verbose = verboseArg.getValue();
         //TODO: check if mask.size() == transform.size()
 
         // typedefs
@@ -366,9 +366,9 @@ int main( int argc, char *argv[] )
         std::vector< std::vector< ImageMaskType::Pointer > > StacksOfMaskSlices(numberOfImages);
         std::vector< std::vector< itk::VersorRigid3DTransform<double>::Pointer > > transformsArray(numberOfImages);
         std::vector< std::vector< itk::Transform<double>::Pointer > > invTransformsArray(numberOfImages);
-
-        std::cout << "Extract the slices... ";
-
+        if (verbose){
+            std::cout << "Extract the slices... ";
+        }
         for(unsigned s=0; s<numberOfImages ; s++)
         {
             ImageMaskType::IndexType inputIndex = rois[s].GetIndex();
@@ -425,9 +425,9 @@ int main( int argc, char *argv[] )
                 invTransformsArray[s].push_back(sliceInvTransformPtr->GetInverseTransform());
             }
         }
-
-        std::cout << std::endl;
-
+        if (verbose){
+            std::cout << std::endl;
+        }
         //Strictly speaking, this is not an injection process, but it's faster to do it this way
         ImageMaskType::PointType outputPoint;      //physical point in HR output image
         ImageMaskType::IndexType outputIndex;      //index in HR output image
@@ -443,8 +443,9 @@ int main( int argc, char *argv[] )
         float deltaz = (2.0 / cst) * imageMasks[0]->GetSpacing()[2];
 
         int numberOfVoxels = outImageMask->GetLargestPossibleRegion().GetSize()[0]*outImageMask->GetLargestPossibleRegion().GetSize()[1]*outImageMask->GetLargestPossibleRegion().GetSize()[2];
+        if (verbose){
         std::cout << "Number of voxels: " << numberOfVoxels << std::endl;
-
+        }
         NNMaskInterpolatorType::Pointer nnInterpolator = NNMaskInterpolatorType::New();
 
         std::vector< ImageMaskType::Pointer > outImageMasks(numberOfImages);
@@ -560,6 +561,7 @@ int main( int argc, char *argv[] )
         typedef itk::Image< double , 4 > OutputSTAPLEImageType;
         typedef crl::MSTAPLEImageFilter<ImageMaskType, OutputSTAPLEImageType> MSTAPLEFilterType;
         MSTAPLEFilterType::Pointer staple = MSTAPLEFilterType::New();
+        staple->SetVerbose(verbose);
 
         ImageType::Pointer outStapleImage = ImageType::New();
         outStapleImage->SetRegions(referenceIm->GetLargestPossibleRegion());
@@ -571,8 +573,9 @@ int main( int argc, char *argv[] )
 
         if(stapleArg.isSet())
         {
-            std::cout << "Perform STAPLE..." << std::endl;
-
+            if (verbose){
+                std::cout << "Perform STAPLE..." << std::endl;
+            }
             //typedef itk::Image< double , 4 > OutputSTAPLEImageType;
             //typedef crl::MSTAPLEImageFilter<ImageMaskType, OutputSTAPLEImageType> MSTAPLEFilterType;
 
@@ -707,9 +710,9 @@ int main( int argc, char *argv[] )
         else //Perform majority voting to refine the HR brain mask
         {
             int mvThreshold = ceil(0.5 * numberOfImages);
-
-            std::cout << "Perform Majority Voting ,  thresh = " << mvThreshold << " ..." << std::endl;
-
+            if (verbose){
+                std::cout << "Perform Majority Voting ,  thresh = " << mvThreshold << " ..." << std::endl;
+            }
             MaskIteratorTypeWithIndex itOutImageMask(outImageMask,outImageMask->GetLargestPossibleRegion());
 
             for(itOutImageMask.GoToBegin(); !itOutImageMask.IsAtEnd(); ++itOutImageMask)
@@ -821,7 +824,9 @@ int main( int argc, char *argv[] )
         typedef itk::Statistics::DecisionRule::Pointer DecisionRuleBasePointer;
         typedef itk::Statistics::MinimumDecisionRule DecisionRuleType;
         DecisionRuleType::Pointer  myDecisionRule = DecisionRuleType::New();
-        std::cout << " site 3 " << std::endl;
+        if (verbose){
+            std::cout << " site 3 " << std::endl;
+        }
         //----------------------------------------------------------------------
         // Set the classifier to be used and assigne the parameters for the
         // supervised classifier algorithm except the input image which is
@@ -932,18 +937,18 @@ int main( int argc, char *argv[] )
         mrfFilter->SetMRFNeighborhoodWeight( weights );
 
         mrfFilter -> SetClassifier(myClassifier);
-
-        std::cout << "Run Markov Random Field Filtering... "; std::cout.flush();
-
+        if (verbose){
+            std::cout << "Run Markov Random Field Filtering... "; std::cout.flush();
+        }
         mrfFilter -> Update();
-
-        std::cout << "Number of Iterations : ";
-        std::cout << mrfFilter->GetNumberOfIterations() << std::endl;
-        std::cout << "Stop condition: " << std::endl;
-        std::cout << "  (1) Maximum number of iterations " << std::endl;
-        std::cout << "  (2) Error tolerance:  "  << std::endl;
-        std::cout << mrfFilter->GetStopCondition() << std::endl;
-
+        if (verbose){
+            std::cout << "Number of Iterations : ";
+            std::cout << mrfFilter->GetNumberOfIterations() << std::endl;
+            std::cout << "Stop condition: " << std::endl;
+            std::cout << "  (1) Maximum number of iterations " << std::endl;
+            std::cout << "  (2) Error tolerance:  "  << std::endl;
+            std::cout << mrfFilter->GetStopCondition() << std::endl;
+        }
         //Set up the vector to store the image  data
 
         typedef itk::ImageRegionIterator< ImageMaskType > ImageMaskIterator;
@@ -1045,8 +1050,9 @@ int main( int argc, char *argv[] )
         writerMRF -> Update();
 
 
-
-        std::cout << "done." << std::endl;
+        if (verbose){
+            std::cout << "done." << std::endl;
+        }
 
         //        //Fill in holes and gaps about the size of the structuring element
         //        typedef itk::BinaryBallStructuringElement<ImageMaskType::PixelType, ImageMaskType::ImageDimension> StructuringElementType;
@@ -1151,12 +1157,12 @@ int main( int argc, char *argv[] )
             outLRImageMasks[s]->SetOrigin(imageMasks[s]->GetOrigin());
             outLRImageMasks[s]->SetSpacing(imageMasks[s]->GetSpacing());
             outLRImageMasks[s]->SetDirection(imageMasks[s]->GetDirection());
-
-            std::cout << "Infos of Image LR # " << s << std::endl;
-            std::cout << "Origin : " << imageMasks[s]->GetOrigin() << std::endl;
-            std::cout << "Spacing : " << imageMasks[s]->GetSpacing() << std::endl;
-            std::cout << "Direction : " << imageMasks[s]->GetDirection() << std::endl;
-            
+            if (verbose){
+                std::cout << "Infos of Image LR # " << s << std::endl;
+                std::cout << "Origin : " << imageMasks[s]->GetOrigin() << std::endl;
+                std::cout << "Spacing : " << imageMasks[s]->GetSpacing() << std::endl;
+                std::cout << "Direction : " << imageMasks[s]->GetDirection() << std::endl;
+            }
             //unsigned int sizeX = m_ImageArray[0]->GetLargestPossibleRegion().GetSize()[0];
             //unsigned int sizeY = m_ImageArray[0]->GetLargestPossibleRegion().GetSize()[1];
 

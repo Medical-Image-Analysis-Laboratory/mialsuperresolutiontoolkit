@@ -101,6 +101,7 @@ class AbstractAnatomicalPipeline:
     m_use_manual_masks = False
     m_masks_desc = None
 
+    m_verbose = None
     m_openmp_number_of_cores = None
     m_nipype_number_of_cores = None
 
@@ -116,11 +117,12 @@ class AbstractAnatomicalPipeline:
         p_subject,
         p_ga=None,
         p_stacks=None,
-        sr_id=1,
+        p_sr_id=1,
         p_session=None,
         p_masks_derivatives_dir=None,
         p_masks_desc=None,
         p_dict_custom_interfaces=None,
+        p_verbose=None,
         p_openmp_number_of_cores=None,
         p_nipype_number_of_cores=None,
         p_run_type=None
@@ -132,11 +134,11 @@ class AbstractAnatomicalPipeline:
         self.m_output_dir = p_output_dir
         self.m_subject = p_subject
         self.m_ga = p_ga
-        self.m_sr_id = sr_id
+        self.m_sr_id = p_sr_id
         self.m_session = p_session
         self.m_stacks = p_stacks
         self.m_run_type = p_run_type
-
+        self.m_verbose = p_verbose
         self.m_openmp_number_of_cores = p_openmp_number_of_cores
         self.m_nipype_number_of_cores = p_nipype_number_of_cores
 

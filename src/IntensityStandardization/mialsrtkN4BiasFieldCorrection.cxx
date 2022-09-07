@@ -35,6 +35,19 @@ int main(int argc, char *argv[])
       std::cerr << argv[0] << " inputImageFile inputMaskFile outputImageFile outputBiasFile" << std::endl;
       return EXIT_FAILURE;
    }
+
+  // TODO: check if content of last argument is indeed verbose
+  bool verbose = false;
+  if (argc == 6){
+      if (argv[5] == std::string("verbose")){
+          verbose = true;
+      }
+      else{
+          throw std::invalid_argument("ERROR: Last parameter ought to be verbose \nUsage: " +
+                                      std::string(argv[0]) +
+                                      " inputImageFile inputMaskFile outputImageFile outputBiasFile *verbose* ");
+      }
+  }
  
   const unsigned int dimension = 3; 
   
@@ -52,16 +65,18 @@ int main(int argc, char *argv[])
 
 
 	//
-
-  std::cerr << "Read input image... " << std::endl;
+  if (verbose){
+    std::cerr << "Read input image... " << std::endl;
+  }
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(argv[1]);
   reader->Update();
   
   InputImageType::Pointer inputImage = reader->GetOutput();
 
-
-  std::cerr << "Read input mask... " << std::endl;
+  if (verbose){
+    std::cerr << "Read input mask... " << std::endl;
+  }
   MaskReaderType::Pointer maskReader = MaskReaderType::New();
   maskReader->SetFileName( argv[2] );
   maskReader->Update();
@@ -88,8 +103,9 @@ int main(int argc, char *argv[])
   MaskType::Pointer maskImage = maskUpsampler->GetOutput();
 
 	//
-
-  std::cerr << "Shrink input image... " << std::endl;
+  if (verbose){
+    std::cerr << "Shrink input image... " << std::endl;
+  }
   typedef itk::ShrinkImageFilter<InputImageType, InputImageType> ShrinkerType;
   ShrinkerType::Pointer shrinker = ShrinkerType::New();
   
@@ -98,8 +114,9 @@ int main(int argc, char *argv[])
   shrinker->Update();
   shrinker->UpdateLargestPossibleRegion();
 
-
-  std::cerr << "Shrink input mask... " << std::endl;
+  if (verbose){
+    std::cerr << "Shrink input mask... " << std::endl;
+  }
   typedef itk::ShrinkImageFilter<MaskType, MaskType> MaskShrinkerType;
   MaskShrinkerType::Pointer maskShrinker = MaskShrinkerType::New();
   
@@ -111,8 +128,9 @@ int main(int argc, char *argv[])
 
 
 	//
-  
-	std::cerr << "Run N4 Bias Field Correction... " << std::endl;
+  if (verbose){
+	  std::cerr << "Run N4 Bias Field Correction... " << std::endl;
+  }
   typedef itk::N4BiasFieldCorrectionImageFilter<InputImageType,MaskType,InputImageType> CorrecterType;
   CorrecterType::Pointer correcter = CorrecterType::New();
   
@@ -151,8 +169,9 @@ int main(int argc, char *argv[])
 
 
 	//
-
-  std::cerr << "Extract log field estimated... " << std::endl;
+  if (verbose){
+    std::cerr << "Extract log field estimated... " << std::endl;
+  }
   typedef CorrecterType::BiasFieldControlPointLatticeType PointType;
   typedef CorrecterType::ScalarImageType ScalarImageType;
 
@@ -184,8 +203,9 @@ int main(int argc, char *argv[])
 
 
 	//
-
-  std::cerr << "Compute the image corrected... " << std::endl;
+  if (verbose){
+    std::cerr << "Compute the image corrected... " << std::endl;
+  }
   typedef itk::ExpImageFilter<InputImageType, InputImageType>
   ExpFilterType;
   ExpFilterType::Pointer expFilter = ExpFilterType::New();
@@ -201,9 +221,9 @@ int main(int argc, char *argv[])
 
 
 	//
-
-  std::cerr << "Write ouput images ... " << std::endl;
-
+  if (verbose){
+    std::cerr << "Write ouput images ... " << std::endl;
+  }
 	WriterType::Pointer writer = WriterType::New();
   writer->SetFileName(argv[3]);
   writer->SetInput(divider->GetOutput());
@@ -213,8 +233,9 @@ int main(int argc, char *argv[])
   fieldWriter->SetFileName(argv[4]);
   fieldWriter->SetInput(logField);
 	fieldWriter->Update();
-
-  std::cerr << "Done! " << std::endl;
+  if (verbose){
+    std::cerr << "Done! " << std::endl;
+  }
   return 0;
 }
 

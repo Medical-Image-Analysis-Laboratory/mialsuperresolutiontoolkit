@@ -272,6 +272,16 @@ public:
   /** Add comment describing purpose of function. */
   double ExpertPerformanceTraceMean();
 
+  void SetVerbose(bool verbose)
+  {
+      this -> m_Verbose = verbose;
+  }
+
+  bool GetVerbose()
+  {
+      return this -> m_Verbose;
+  }
+
 protected:
   MSTAPLEImageFilter()
   {
@@ -322,6 +332,7 @@ private:
   double       m_MAPAlpha;
   double       m_MAPBeta;
   bool         m_StartAtEStep;
+  bool         m_Verbose;
 
   typename TInputImage::Pointer m_ROIImage;
   typename TOutputImage::Pointer m_LocalPriorImage;

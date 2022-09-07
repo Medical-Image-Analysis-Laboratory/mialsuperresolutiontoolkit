@@ -232,6 +232,16 @@ void SetScale(float&v)
   //Gets the vector of observations Y
   vnl_vector<float> GetObservationsY();
 
+void SetVerbose( bool verbose )
+{
+    m_verbose = verbose;
+}
+
+bool GetVerbose()
+{
+    return this -> m_verbose;
+}
+
   private:
 
   void set(float * array, int size, float value);
@@ -276,7 +286,6 @@ void SetScale(float&v)
   // 3D convolution : over the spectra
   void convol3dz(const vnl_vector<float>& image, vnl_vector<float>& image_conv,
       img_size & size, float * kernel, int ksize);
-
 
   vnl_sparse_matrix<float> H;
   vnl_sparse_matrix<float> HtH;
@@ -324,7 +333,7 @@ void SetScale(float&v)
   double m_SliceGap;
 
   bool m_UseDebluringPSF;
-
+  bool m_verbose;
 };
 
 } // namespace mialsrtk

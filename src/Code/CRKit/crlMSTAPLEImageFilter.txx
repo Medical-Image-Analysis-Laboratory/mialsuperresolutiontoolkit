@@ -830,7 +830,7 @@ std::cout << "MAP largest relative change in performance value is " <<
     typedef itk::ImageRegionIterator<TOutputImage> ProbabilityImageIteratorType;
 
     unsigned int i = 0;
-
+    bool verbose = this -> GetVerbose();
     // My understanding is that this will allocate the output.  The pipeline
     // has been adjusted so that this has the desired size.
     try {
@@ -1012,12 +1012,15 @@ std::cout << "MAP largest relative change in performance value is " <<
     }
 
     for (unsigned int i = 0; i < m_StationaryPrior.size(); i++) {
-      std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(15);
-      std::cout << "m_StationaryPrior["<<i<<"] " <<
-	m_StationaryPrior[i] << std::endl;
+      if (verbose){
+        std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(15);
+        std::cout << "m_StationaryPrior["<<i<<"] " << m_StationaryPrior[i] << std::endl;
+      }
     }
     // Print out the priors in a form that can be used with spreadsheets.
-    std::cout << "SPREADSHEET,Stationary Priors";
+    if (verbose){
+      std::cout << "SPREADSHEET,Stationary Priors";
+    }
     for (unsigned int i = 0; i < m_StationaryPrior.size(); i++) {
       std::cout << "," << m_StationaryPrior[i];
     }
@@ -1050,11 +1053,10 @@ std::cout << "MAP largest relative change in performance value is " <<
       prevmagrelerror = magrelerror;
       assert(tracesum > 0);
       magrelerror = fabs( (tracesum - tracesumprev) / tracesum );
-
-      std::cout << "Trace of expert parameters at iteration " <<
-	itncount << " is " << tracesum << std::endl;
-      std::cout << "Relative error magnitude is " << magrelerror <<
-	std::endl;
+      if (verbose){ 
+        std::cout << "Trace of expert parameters at iteration " << itncount << " is " << tracesum << std::endl;
+        std::cout << "Relative error magnitude is " << magrelerror << std::endl;
+      }
 
 
       this->InvokeEvent( itk::IterationEvent() );
@@ -1074,16 +1076,17 @@ std::cout << "MAP largest relative change in performance value is " <<
     // Copy p's, q's, etc. to member variables
 
     m_ElapsedIterations = itncount;
+    if (verbose){
+      std::cout << "Expert performance parameters:" << std::endl;
+      PrintExpertPerformance();
 
-    std::cout << "Expert performance parameters:" << std::endl;
-    PrintExpertPerformance();
+      std::cout << "Summary of expert performance" << std::endl;
+      PrintExpertPerformanceSummary();
 
-    std::cout << "Summary of expert performance" << std::endl;
-    PrintExpertPerformanceSummary();
-
-    std::cout << "Posterior probabilities indicate expert performance" <<
-      std::endl;
-    PrintExpertPosteriors();
+      std::cout << "Posterior probabilities indicate expert performance" <<
+        std::endl;
+      PrintExpertPosteriors();
+    }
   }
 
   template< typename TInputImage, typename TOutputImage >
