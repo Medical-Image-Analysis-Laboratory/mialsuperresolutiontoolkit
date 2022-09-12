@@ -91,23 +91,34 @@ def create_input_stage(p_bids_dir,
         name='outputnode'
     )
 
+    dg_fields = ['T2ws']
     if p_use_manual_masks:
-        dg_fields = ['T2ws', 'masks']
-        if p_do_reconstruct_labels:
-            dg_fields += ['labels']
-        dg = pe.Node(
-            interface=DataGrabber(outfields=dg_fields),
-            name='data_grabber'
-        )
-        dg.inputs.base_directory = p_bids_dir
-        dg.inputs.template = '*'
-        dg.inputs.raise_on_empty = True
-        dg.inputs.sort_filelist = True
+        dg_fields += ['masks']
+    if p_do_reconstruct_labels:
+        dg_fields += ['labels']
 
-        t2ws_template = os.path.join(sub_path,
-                                     'anat',
-                                     sub_ses + '*_run-*_T2w.nii.gz'
-                                     )
+    dg = pe.Node(
+        interface=DataGrabber(
+            outfields=dg_fields
+        ),
+        name='data_grabber'
+    )
+
+    dg.inputs.base_directory = p_bids_dir
+    dg.inputs.template = '*'
+    dg.inputs.raise_on_empty = True
+    dg.inputs.sort_filelist = True
+
+    dict_templates = {}
+
+    t2ws_template = os.path.join(
+        sub_path,
+        'anat',
+        sub_ses + '*_run-*_T2w.nii.gz'
+    )
+    dict_templates['T2ws'] = t2ws_template
+
+    if p_use_manual_masks:
         if p_masks_desc is not None:
             masks_template = os.path.join(
                 'derivatives',
@@ -124,6 +135,8 @@ def create_input_stage(p_bids_dir,
                 '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
             )
 
+        dict_templates['masks'] = masks_template
+
         if p_do_reconstruct_labels:
             labels_template = os.path.join(
                 'derivatives',
@@ -132,16 +145,11 @@ def create_input_stage(p_bids_dir,
                 'anat',
                 '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
             )
+            dict_templates['labels'] = labels_template
 
-        if p_do_reconstruct_labels:
-            dg.inputs.field_template = dict(T2ws=t2ws_template,
-                                            masks=masks_template,
-                                            labels=labels_template)
-        else:
-            dg.inputs.field_template = dict(T2ws=t2ws_template,
-                                            masks=masks_template)
+    dg.inputs.field_template = dict_templates
 
-
+    if p_use_manual_masks:
         brainMask = pe.MapNode(
             interface=IdentityInterface(fields=['out_file']),
             name='brain_masks_bypass',
@@ -155,17 +163,6 @@ def create_input_stage(p_bids_dir,
             custom_masks_filter.inputs.stacks_id = p_stacks
 
     else:
-        dg = pe.Node(interface=DataGrabber(outfields=['T2ws']),
-                     name='data_grabber')
-
-        dg.inputs.base_directory = p_bids_dir
-        dg.inputs.template = '*'
-        dg.inputs.raise_on_empty = True
-        dg.inputs.sort_filelist = True
-
-        dg.inputs.field_template = dict(
-            T2ws=os.path.join(sub_path, 'anat',
-                              sub_ses+'*_run-*_T2w.nii.gz'))
 
         if p_stacks is not None:
             t2ws_filter_prior_masks = pe.Node(
