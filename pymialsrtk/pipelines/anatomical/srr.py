@@ -289,6 +289,12 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                 'is not available.'
             )
 
+        if not self.m_use_manual_masks and self.m_do_srr_assessment:
+            raise RuntimeError(
+                'do_srr_assessment interface requires'
+                'to provide low-resolution binary masks.'
+            )
+
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
 
