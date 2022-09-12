@@ -189,22 +189,22 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
                                 base_dir=self.m_wf_base_dir
                                 )
 
-        config.update_config(
-            {
-                'logging': {
-                      'log_directory': os.path.join(self.m_wf_base_dir),
-                      'log_to_file': True
-                },
-                'execution': {
-                    'remove_unnecessary_outputs': False,
-                    'stop_on_first_crash': True,
-                    'stop_on_first_rerun': False,
-                    'crashfile_format': "txt",
-                    'use_relative_paths': True,
-                    'write_provenance': False
-                }
-            }
-        )
+        self.m_wf.config['logging'] = {
+            'log_directory': os.path.join(self.m_wf_base_dir),
+            'log_to_file': True
+        }
+
+        self.m_wf.config['execution'] = {
+            'remove_unnecessary_outputs': False,
+            'stop_on_first_crash': True,
+            'stop_on_first_rerun': True,
+            'crashfile_format': "txt",
+            'use_relative_paths': True,
+            'write_provenance': False
+        }
+
+        # Update nypipe logging with config
+        nipype_logging.update_logging(self.m_wf.config)
 
         # Update nypipe logging with config
         nipype_logging.update_logging(config)
