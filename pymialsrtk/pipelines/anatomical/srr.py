@@ -305,7 +305,6 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             'log_directory': os.path.join(self.m_wf_base_dir),
             'log_to_file': True
         }
-
         self.m_wf.config['execution'] = {
             'remove_unnecessary_outputs': False,
             'stop_on_first_crash': True,
@@ -315,8 +314,10 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             'write_provenance': False
         }
 
+        config.update_config(self.m_wf.config)
+
         # Update nypipe logging with config
-        nipype_logging.update_logging(self.m_wf.config)
+        nipype_logging.update_logging(config)
         # config.enable_provenance()
 
         input_mgmt_stage = input_stage.create_input_stage(
