@@ -642,7 +642,7 @@ class StacksOrdering(BaseInterface):
     m_stack_order = []
 
     def _gen_filename(self, name):
-        _,bname,_ = split_filename(self.inputs.input_masks[0])
+        _, bname, _ = split_filename(self.inputs.input_masks[0])
         bname = bname.split('_run')[0]
         if name == 'report_image':
             output = bname + '_ motion_index_QC.png'
