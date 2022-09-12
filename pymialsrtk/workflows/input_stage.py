@@ -101,7 +101,7 @@ def create_input_stage(p_bids_dir,
         )
         dg.inputs.base_directory = p_bids_dir
         dg.inputs.template = '*'
-        dg.inputs.raise_on_empty = False
+        dg.inputs.raise_on_empty = True
         dg.inputs.sort_filelist = True
 
         t2ws_template = os.path.join(sub_path,
@@ -160,7 +160,7 @@ def create_input_stage(p_bids_dir,
 
         dg.inputs.base_directory = p_bids_dir
         dg.inputs.template = '*'
-        dg.inputs.raise_on_empty = False
+        dg.inputs.raise_on_empty = True
         dg.inputs.sort_filelist = True
 
         dg.inputs.field_template = dict(
@@ -225,7 +225,7 @@ def create_input_stage(p_bids_dir,
 
         rg.inputs.base_directory = p_bids_dir
         rg.inputs.template = '*'
-        rg.inputs.raise_on_empty = False
+        rg.inputs.raise_on_empty = True
         rg.inputs.sort_filelist = True
 
         t2w_template = os.path.join(
