@@ -203,8 +203,10 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
             'write_provenance': False
         }
 
+        config.update_config(self.m_wf.config)
+
         # Update nypipe logging with config
-        nipype_logging.update_logging(self.m_wf.config)
+        nipype_logging.update_logging(config)
 
         # Update nypipe logging with config
         nipype_logging.update_logging(config)
