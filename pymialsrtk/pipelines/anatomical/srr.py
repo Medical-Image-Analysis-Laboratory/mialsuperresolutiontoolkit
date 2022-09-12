@@ -289,9 +289,9 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                 'is not available.'
             )
 
-        if not self.m_use_manual_masks and self.m_do_srr_assessment:
+        if not self.m_use_manual_masks and self.m_do_reconstruct_labels:
             raise RuntimeError(
-                'do_srr_assessment interface requires'
+                'm_do_reconstruct_labels interface requires'
                 'to provide low-resolution binary masks.'
             )
 
