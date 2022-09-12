@@ -208,8 +208,6 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
         # Update nypipe logging with config
         nipype_logging.update_logging(config)
 
-        # Update nypipe logging with config
-        nipype_logging.update_logging(config)
         # config.enable_provenance()
         input_stage = create_input_stage(
                 p_bids_dir=self.m_bids_dir,
