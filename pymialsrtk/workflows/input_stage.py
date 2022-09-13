@@ -193,8 +193,11 @@ def create_input_stage(p_bids_dir,
                                   name='labels_filtered')
 
     if not p_skip_stacks_ordering:
-        stacksOrdering = pe.Node(interface=preprocess.StacksOrdering(),
-                                 name='stackOrdering')
+        stacksOrdering = pe.Node(
+            interface=preprocess.StacksOrdering(),
+            name='stackOrdering'
+        )
+        stacksOrdering.inputs.sub_ses = p_sub_ses
     else:
         stacksOrdering = pe.Node(
             interface=IdentityInterface(fields=['stacks_order']),

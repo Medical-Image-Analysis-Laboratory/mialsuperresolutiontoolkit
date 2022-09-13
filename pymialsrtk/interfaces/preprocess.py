@@ -601,6 +601,10 @@ class StacksOrderingInputSpec(BaseInterfaceInputSpec):
 
     input_masks = InputMultiPath(File(mandatory=True),
                                  desc='Input brain masks on which motion is computed')
+    sub_ses = traits.Str(
+        desc=('Subject and session BIDS identifier'),
+        mandatory=True
+    )
     verbose = traits.Bool(desc="Enable verbosity")
 
 class StacksOrderingOutputSpec(TraitedSpec):
@@ -642,13 +646,11 @@ class StacksOrdering(BaseInterface):
     m_stack_order = []
 
     def _gen_filename(self, name):
-        _, bname, _ = split_filename(self.inputs.input_masks[0])
-        bname = bname.split('_run')[0]
         if name == 'report_image':
-            output = bname + '_motion_index_QC.png'
+            output = self.inputs.sub_ses + '_motion_index_QC.png'
             return os.path.abspath(output)
         elif name == 'motion_tsv':
-            output = bname + '_motion_index_QC.tsv'
+            output = self.inputs.sub_ses + '_motion_index_QC.tsv'
             return os.path.abspath(output)
         return None
 
