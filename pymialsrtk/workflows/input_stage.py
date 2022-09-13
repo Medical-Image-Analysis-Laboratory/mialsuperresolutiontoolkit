@@ -20,8 +20,7 @@ from pymialsrtk.interfaces import preprocess
 
 
 def create_input_stage(p_bids_dir,
-                       p_subject,
-                       p_session,
+                       p_sub_ses,
                        p_use_manual_masks,
                        p_masks_desc,
                        p_masks_derivatives_dir,
@@ -40,8 +39,7 @@ def create_input_stage(p_bids_dir,
     ::
         name : name of workflow (default: input_stage)
         p_bids_dir
-        p_subject
-        p_session
+        p_sub_ses
         p_use_manual_masks
         p_masks_desc
         p_masks_derivatives_dir
@@ -64,12 +62,6 @@ def create_input_stage(p_bids_dir,
     """
 
     input_stage = pe.Workflow(name=name)
-
-    sub_ses = p_subject
-    sub_path = p_subject
-    if p_session is not None:
-        sub_ses = ''.join([sub_ses, '_', p_session])
-        sub_path = os.path.join(p_subject, p_session)
 
     output_fields = ['t2ws_filtered', 'masks_filtered', 'stacks_order']
 
@@ -112,9 +104,9 @@ def create_input_stage(p_bids_dir,
     dict_templates = {}
 
     t2ws_template = os.path.join(
-        sub_path,
+        p_sub_path,
         'anat',
-        sub_ses + '*_run-*_T2w.nii.gz'
+        p_sub_ses + '*_run-*_T2w.nii.gz'
     )
     dict_templates['T2ws'] = t2ws_template
 
@@ -123,16 +115,16 @@ def create_input_stage(p_bids_dir,
             masks_template = os.path.join(
                 'derivatives',
                 p_masks_derivatives_dir,
-                sub_path, 'anat',
-                '_'.join([sub_ses, '*_run-*', '_desc-'+p_masks_desc,
+                p_sub_path, 'anat',
+                '_'.join([p_sub_ses, '*_run-*', '_desc-'+p_masks_desc,
                           '*mask.nii.gz'])
             )
         else:
             masks_template = os.path.join(
                 'derivatives',
                 p_masks_derivatives_dir,
-                sub_path, 'anat',
-                '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
+                p_sub_path, 'anat',
+                '_'.join([p_sub_ses, '*run-*', '*mask.nii.gz'])
             )
 
         dict_templates['masks'] = masks_template
@@ -141,9 +133,9 @@ def create_input_stage(p_bids_dir,
             labels_template = os.path.join(
                 'derivatives',
                 p_labels_derivatives_dir,
-                sub_path,
+                p_sub_path,
                 'anat',
-                '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
+                '_'.join([p_sub_ses, '*run-*', '*labels.nii.gz'])
             )
             dict_templates['labels'] = labels_template
 
@@ -226,20 +218,20 @@ def create_input_stage(p_bids_dir,
         rg.inputs.sort_filelist = True
 
         t2w_template = os.path.join(
-            sub_path,
+            p_sub_path,
             'anat',
-            sub_ses + '_desc-iso_T2w.nii.gz'
+            p_sub_ses + '_desc-iso_T2w.nii.gz'
         )
 
         mask_template = os.path.join(
-            sub_path,
+            p_sub_path,
             'anat',
-            sub_ses + '_desc-iso_mask.nii.gz'
+            p_sub_ses + '_desc-iso_mask.nii.gz'
         )
         labels_template = os.path.join(
-            sub_path,
+            p_sub_path,
             'anat',
-            sub_ses + '_desc-iso_labels.nii.gz'
+            p_sub_ses + '_desc-iso_labels.nii.gz'
         )
 
         rg.inputs.field_template = dict(
