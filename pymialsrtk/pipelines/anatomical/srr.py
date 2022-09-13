@@ -329,6 +329,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         input_mgmt_stage = input_stage.create_input_stage(
                 p_bids_dir=self.m_bids_dir,
                 p_sub_ses=self.m_sub_ses,
+                p_sub_path=self.m_sub_path,
                 p_use_manual_masks=self.m_use_manual_masks,
                 p_masks_desc=self.m_masks_desc,
                 p_masks_derivatives_dir=self.m_masks_derivatives_dir,

@@ -21,6 +21,7 @@ from pymialsrtk.interfaces import preprocess
 
 def create_input_stage(p_bids_dir,
                        p_sub_ses,
+                       p_sub_path,
                        p_use_manual_masks,
                        p_masks_desc,
                        p_masks_derivatives_dir,
