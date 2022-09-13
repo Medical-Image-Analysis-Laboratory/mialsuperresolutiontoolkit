@@ -289,6 +289,12 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                 'is not available.'
             )
 
+        if not self.m_use_manual_masks and self.m_do_reconstruct_labels:
+            raise RuntimeError(
+                'm_do_reconstruct_labels interface requires'
+                'to provide low-resolution binary masks.'
+            )
+
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
 
@@ -301,22 +307,20 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                                 base_dir=self.m_wf_base_dir
                                 )
 
-        config.update_config(
-            {
-                'logging': {
-                      'log_directory': os.path.join(self.m_wf_base_dir),
-                      'log_to_file': True
-                },
-                'execution': {
-                    'remove_unnecessary_outputs': False,
-                    'stop_on_first_crash': True,
-                    'stop_on_first_rerun': False,
-                    'crashfile_format': "txt",
-                    'use_relative_paths': True,
-                    'write_provenance': False
-                }
-            }
-        )
+        self.m_wf.config['logging'] = {
+            'log_directory': os.path.join(self.m_wf_base_dir),
+            'log_to_file': True
+        }
+        self.m_wf.config['execution'] = {
+            'remove_unnecessary_outputs': True,
+            'stop_on_first_crash': True,
+            'stop_on_first_rerun': True,
+            'crashfile_format': "txt",
+            'use_relative_paths': True,
+            'write_provenance': False
+        }
+
+        config.update_config(self.m_wf.config)
 
         # Update nypipe logging with config
         nipype_logging.update_logging(config)
@@ -324,8 +328,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         input_mgmt_stage = input_stage.create_input_stage(
                 p_bids_dir=self.m_bids_dir,
-                p_subject=self.m_subject,
-                p_session=self.m_session,
+                p_sub_ses=self.m_sub_ses,
+                p_sub_path=self.m_sub_path,
                 p_use_manual_masks=self.m_use_manual_masks,
                 p_masks_desc=self.m_masks_desc,
                 p_masks_derivatives_dir=self.m_masks_derivatives_dir,

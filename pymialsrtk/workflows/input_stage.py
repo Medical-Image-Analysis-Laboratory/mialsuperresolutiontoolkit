@@ -20,8 +20,8 @@ from pymialsrtk.interfaces import preprocess
 
 
 def create_input_stage(p_bids_dir,
-                       p_subject,
-                       p_session,
+                       p_sub_ses,
+                       p_sub_path,
                        p_use_manual_masks,
                        p_masks_desc,
                        p_masks_derivatives_dir,
@@ -40,8 +40,7 @@ def create_input_stage(p_bids_dir,
     ::
         name : name of workflow (default: input_stage)
         p_bids_dir
-        p_subject
-        p_session
+        p_sub_ses
         p_use_manual_masks
         p_masks_desc
         p_masks_derivatives_dir
@@ -65,12 +64,6 @@ def create_input_stage(p_bids_dir,
 
     input_stage = pe.Workflow(name=name)
 
-    sub_ses = p_subject
-    sub_path = p_subject
-    if p_session is not None:
-        sub_ses = ''.join([sub_ses, '_', p_session])
-        sub_path = os.path.join(p_subject, p_session)
-
     output_fields = ['t2ws_filtered', 'masks_filtered', 'stacks_order']
 
     if not p_skip_stacks_ordering:
@@ -91,57 +84,65 @@ def create_input_stage(p_bids_dir,
         name='outputnode'
     )
 
+    dg_fields = ['T2ws']
     if p_use_manual_masks:
-        dg_fields = ['T2ws', 'masks']
-        if p_do_reconstruct_labels:
-            dg_fields += ['labels']
-        dg = pe.Node(
-            interface=DataGrabber(outfields=dg_fields),
-            name='data_grabber'
-        )
-        dg.inputs.base_directory = p_bids_dir
-        dg.inputs.template = '*'
-        dg.inputs.raise_on_empty = False
-        dg.inputs.sort_filelist = True
+        dg_fields += ['masks']
+    if p_do_reconstruct_labels:
+        dg_fields += ['labels']
 
-        t2ws_template = os.path.join(sub_path,
-                                     'anat',
-                                     sub_ses + '*_run-*_T2w.nii.gz'
-                                     )
+    dg = pe.Node(
+        interface=DataGrabber(
+            outfields=dg_fields
+        ),
+        name='data_grabber'
+    )
+
+    dg.inputs.base_directory = p_bids_dir
+    dg.inputs.template = '*'
+    dg.inputs.raise_on_empty = True
+    dg.inputs.sort_filelist = True
+
+    dict_templates = {}
+
+    t2ws_template = os.path.join(
+        p_sub_path,
+        'anat',
+        p_sub_ses + '*_run-*_T2w.nii.gz'
+    )
+    dict_templates['T2ws'] = t2ws_template
+
+    if p_use_manual_masks:
         if p_masks_desc is not None:
             masks_template = os.path.join(
                 'derivatives',
                 p_masks_derivatives_dir,
-                sub_path, 'anat',
-                '_'.join([sub_ses, '*_run-*', '_desc-'+p_masks_desc,
+                p_sub_path, 'anat',
+                '_'.join([p_sub_ses, '*_run-*', '_desc-'+p_masks_desc,
                           '*mask.nii.gz'])
             )
         else:
             masks_template = os.path.join(
                 'derivatives',
                 p_masks_derivatives_dir,
-                sub_path, 'anat',
-                '_'.join([sub_ses, '*run-*', '*mask.nii.gz'])
+                p_sub_path, 'anat',
+                '_'.join([p_sub_ses, '*run-*', '*mask.nii.gz'])
             )
+
+        dict_templates['masks'] = masks_template
 
         if p_do_reconstruct_labels:
             labels_template = os.path.join(
                 'derivatives',
                 p_labels_derivatives_dir,
-                sub_path,
+                p_sub_path,
                 'anat',
-                '_'.join([sub_ses, '*run-*', '*labels.nii.gz'])
+                '_'.join([p_sub_ses, '*run-*', '*labels.nii.gz'])
             )
+            dict_templates['labels'] = labels_template
 
-        if p_do_reconstruct_labels:
-            dg.inputs.field_template = dict(T2ws=t2ws_template,
-                                            masks=masks_template,
-                                            labels=labels_template)
-        else:
-            dg.inputs.field_template = dict(T2ws=t2ws_template,
-                                            masks=masks_template)
+    dg.inputs.field_template = dict_templates
 
-
+    if p_use_manual_masks:
         brainMask = pe.MapNode(
             interface=IdentityInterface(fields=['out_file']),
             name='brain_masks_bypass',
@@ -155,17 +156,6 @@ def create_input_stage(p_bids_dir,
             custom_masks_filter.inputs.stacks_id = p_stacks
 
     else:
-        dg = pe.Node(interface=DataGrabber(outfields=['T2ws']),
-                     name='data_grabber')
-
-        dg.inputs.base_directory = p_bids_dir
-        dg.inputs.template = '*'
-        dg.inputs.raise_on_empty = False
-        dg.inputs.sort_filelist = True
-
-        dg.inputs.field_template = dict(
-            T2ws=os.path.join(sub_path, 'anat',
-                              sub_ses+'*_run-*_T2w.nii.gz'))
 
         if p_stacks is not None:
             t2ws_filter_prior_masks = pe.Node(
@@ -204,8 +194,11 @@ def create_input_stage(p_bids_dir,
                                   name='labels_filtered')
 
     if not p_skip_stacks_ordering:
-        stacksOrdering = pe.Node(interface=preprocess.StacksOrdering(),
-                                 name='stackOrdering')
+        stacksOrdering = pe.Node(
+            interface=preprocess.StacksOrdering(),
+            name='stackOrdering'
+        )
+        stacksOrdering.inputs.sub_ses = p_sub_ses
     else:
         stacksOrdering = pe.Node(
             interface=IdentityInterface(fields=['stacks_order']),
@@ -225,24 +218,24 @@ def create_input_stage(p_bids_dir,
 
         rg.inputs.base_directory = p_bids_dir
         rg.inputs.template = '*'
-        rg.inputs.raise_on_empty = False
+        rg.inputs.raise_on_empty = True
         rg.inputs.sort_filelist = True
 
         t2w_template = os.path.join(
-            sub_path,
+            p_sub_path,
             'anat',
-            sub_ses + '_desc-iso_T2w.nii.gz'
+            p_sub_ses + '_desc-iso_T2w.nii.gz'
         )
 
         mask_template = os.path.join(
-            sub_path,
+            p_sub_path,
             'anat',
-            sub_ses + '_desc-iso_mask.nii.gz'
+            p_sub_ses + '_desc-iso_mask.nii.gz'
         )
         labels_template = os.path.join(
-            sub_path,
+            p_sub_path,
             'anat',
-            sub_ses + '_desc-iso_labels.nii.gz'
+            p_sub_ses + '_desc-iso_labels.nii.gz'
         )
 
         rg.inputs.field_template = dict(

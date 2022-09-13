@@ -601,6 +601,10 @@ class StacksOrderingInputSpec(BaseInterfaceInputSpec):
 
     input_masks = InputMultiPath(File(mandatory=True),
                                  desc='Input brain masks on which motion is computed')
+    sub_ses = traits.Str(
+        desc=('Subject and session BIDS identifier'),
+        mandatory=True
+    )
     verbose = traits.Bool(desc="Enable verbosity")
 
 class StacksOrderingOutputSpec(TraitedSpec):
@@ -641,6 +645,16 @@ class StacksOrdering(BaseInterface):
 
     m_stack_order = []
 
+    def _gen_filename(self, name):
+        if name == 'report_image':
+            output = self.inputs.sub_ses + '_motion_index_QC.png'
+            return os.path.abspath(output)
+        elif name == 'motion_tsv':
+            output = self.inputs.sub_ses + '_motion_index_QC.tsv'
+            return os.path.abspath(output)
+        return None
+
+
     def _run_interface(self, runtime):
         self.m_stack_order = self._compute_stack_order()
 
@@ -649,8 +663,8 @@ class StacksOrdering(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['stacks_order'] = self.m_stack_order
-        outputs['report_image'] = os.path.abspath('motion_index_QC.png')
-        outputs['motion_tsv'] = os.path.abspath('motion_index_QC.tsv')
+        outputs['report_image'] = self._gen_filename('report_image')
+        outputs['motion_tsv'] = self._gen_filename('motion_tsv')
         return outputs
 
     def _compute_motion_index(self, in_file):
@@ -789,7 +803,7 @@ class StacksOrdering(BaseInterface):
         df = df.sort_values(by=['Motion Index', 'Scan', 'Slice'])
 
         # Save the results in a TSV file
-        tsv_file = os.path.abspath('motion_index_QC.tsv')
+        tsv_file = self._gen_filename('motion_tsv')
         if self.inputs.verbose:
             print(f"\t\t\t - Save motion results to {tsv_file}...")
         df.to_csv(tsv_file, sep='\t')
@@ -895,7 +909,7 @@ class StacksOrdering(BaseInterface):
             ax.set_axis_off()
 
         # Save the final report image
-        image_filename = os.path.abspath('motion_index_QC.png')
+        image_filename = self._gen_filename('report_image')
         if self.inputs.verbose:
             print(f'\t\t\t - Save final report image as {image_filename}...')
         plt.savefig(image_filename, dpi=150)

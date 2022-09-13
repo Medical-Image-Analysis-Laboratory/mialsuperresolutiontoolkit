@@ -374,13 +374,13 @@ class FilenamesGeneration(BaseInterface):
                                      str(self.m_sr_id) +
                                      '_labels.nii.gz'))
 
-        self.m_substitutions.append(('motion_index_QC.png',
-                                     self.m_sub_ses + f'_{run_type}-SR' +
+        self.m_substitutions.append(('_motion_index_QC.png',
+                                     f'_{run_type}-SR' +
                                      '_id-' + str(self.m_sr_id) +
                                      '_desc-motion_stats.png'))
 
-        self.m_substitutions.append(('motion_index_QC.tsv',
-                                     self.m_sub_ses + f'_{run_type}-SR' +
+        self.m_substitutions.append(('_motion_index_QC.tsv',
+                                     f'_{run_type}-SR' +
                                      '_id-' + str(self.m_sr_id) +
                                      '_desc-motion_stats.tsv'))
         # Metric CSV files
