@@ -34,8 +34,8 @@ nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/masks_filtered/_node.pkl
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/masks_filtered/_report/report.rst
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/masks_filtered/result_masks_filtered.pklz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/stackOrdering/_inputs.pklz
-nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/stackOrdering/sub-01_run-1_motion_index_QC.png
-nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/stackOrdering/sub-01_run-1_motion_index_QC.tsv
+nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/stackOrdering/sub-01_motion_index_QC.png
+nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/stackOrdering/sub-01_motion_index_QC.tsv
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/stackOrdering/_node.pklz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/stackOrdering/_report/report.rst
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/input_mgmt_stage/stackOrdering/result_stackOrdering.pklz

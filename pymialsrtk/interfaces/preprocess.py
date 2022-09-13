@@ -645,10 +645,10 @@ class StacksOrdering(BaseInterface):
         _, bname, _ = split_filename(self.inputs.input_masks[0])
         bname = bname.split('_run')[0]
         if name == 'report_image':
-            output = bname + '_ motion_index_QC.png'
+            output = bname + '_motion_index_QC.png'
             return os.path.abspath(output)
         elif name == 'motion_tsv':
-            output = bname + '_ motion_index_QC.tsv'
+            output = bname + '_motion_index_QC.tsv'
             return os.path.abspath(output)
         return None
 
