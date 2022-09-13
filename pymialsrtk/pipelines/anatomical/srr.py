@@ -312,7 +312,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             'log_to_file': True
         }
         self.m_wf.config['execution'] = {
-            'remove_unnecessary_outputs': False,
+            'remove_unnecessary_outputs': True,
             'stop_on_first_crash': True,
             'stop_on_first_rerun': True,
             'crashfile_format': "txt",
