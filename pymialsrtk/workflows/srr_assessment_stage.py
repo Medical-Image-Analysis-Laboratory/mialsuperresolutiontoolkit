@@ -36,7 +36,7 @@ def create_srr_assessment_stage(
     ::
         name : name of workflow (default: sr_assessment_stage)
         p_do_multi_parameters : boolean
-            weither multiple SR are to be assessed
+            whether multiple SR are to be assessed
             with different TV parameters(default: False)
         p_input_srtv_node : string
             when p_do_multi_parameters is set, name of the sourcenode
