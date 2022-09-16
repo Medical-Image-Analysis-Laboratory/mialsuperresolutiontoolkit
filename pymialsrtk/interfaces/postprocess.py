@@ -223,7 +223,7 @@ class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
                                desc='List of stack run-id that specify the'
                                     ' order of the stacks')
     TV_params = traits.List(
-        mandatory=True,
+        mandatory=False,
         desc='List iterables TV parameters processed'
     )
     multi_parameters = traits.Bool(
