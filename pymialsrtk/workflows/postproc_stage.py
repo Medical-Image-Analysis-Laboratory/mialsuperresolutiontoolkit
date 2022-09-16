@@ -74,10 +74,9 @@ def create_postproc_stage(
     input_fields = ['input_image', 'input_mask']
     output_fields = ['output_image', 'output_mask']
 
-    if p_do_anat_orientation:
-        input_fields += ['input_sdi']
-        output_fields += ['output_sdi']
-
+    # if p_do_anat_orientation:
+    input_fields += ['input_sdi']
+    output_fields += ['output_sdi']
 
     if p_do_reconstruct_labels:
         input_fields += ['input_labelmap']
@@ -179,8 +178,11 @@ def create_postproc_stage(
             postproc_stage.connect(mask_hr_label, "out_im_file",
                                    outputnode, "output_labelmap")
 
+        postproc_stage.connect(inputnode, "input_sdi",
+                               outputnode, "output_sdi")
+
     else:
-        postproc_stage.connect(srtkN4BiasFieldCorrection, "output_image",
+        postproc_stage.connect(inputnode, "input_sdi",
                                resample_t2w_template, "input_reference")
         postproc_stage.connect(atlas_grabber, "atlas",
                                resample_t2w_template, "input_image")
