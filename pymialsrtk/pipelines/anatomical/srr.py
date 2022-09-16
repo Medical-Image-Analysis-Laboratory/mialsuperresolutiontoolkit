@@ -291,13 +291,6 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                     'be defined as a list of more than one item.'
                 )
 
-        if self.m_do_anat_orientation and self.m_do_srr_assessment:
-            raise RuntimeError(
-                'At the moment, srr pipeline with custom interfaces '
-                'do_anat_orientation and do_srr_assessment '
-                'is not available.'
-            )
-
         if not self.m_use_manual_masks and self.m_do_reconstruct_labels:
             raise RuntimeError(
                 'm_do_reconstruct_labels interface requires'
@@ -448,9 +441,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                               output_mgmt_stage,
                               "inputnode.input_labelmap")
 
-        if self.m_do_anat_orientation:
-            self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
-                              postprocessing_stage, "inputnode.input_sdi")
+        self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
+                          postprocessing_stage, "inputnode.input_sdi")
 
         if self.m_do_srr_assessment:
             self.m_wf.connect(reconstruction_stage,
@@ -458,16 +450,11 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                               srr_assessment_stage,
                               "inputnode.input_TV_parameters")
 
-            if self.m_do_anat_orientation:
-                self.m_wf.connect(postprocessing_stage,
-                                  "outputnode.output_sdi",
-                                  srr_assessment_stage,
-                                  "inputnode.input_sdi_image")
-            else:
-                self.m_wf.connect(reconstruction_stage,
-                                  "outputnode.output_sdi",
-                                  srr_assessment_stage,
-                                  "inputnode.input_sdi_image")
+            self.m_wf.connect(postprocessing_stage,
+                              "outputnode.output_sdi",
+                              srr_assessment_stage,
+                              "inputnode.input_sdi_image")
+
 
             self.m_wf.connect(postprocessing_stage,
                               "outputnode.output_image",
@@ -509,7 +496,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         self.m_wf.connect(reconstruction_stage, "outputnode.output_transforms",
                           output_mgmt_stage, "inputnode.input_transforms")
-        self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
+
+        self.m_wf.connect(postprocessing_stage, "outputnode.output_sdi",
                           output_mgmt_stage, "inputnode.input_sdi")
         self.m_wf.connect(reconstruction_stage, "outputnode.output_json_path",
                           output_mgmt_stage, "inputnode.input_json_path")

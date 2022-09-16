@@ -304,7 +304,6 @@ def create_recon_stage(p_paramTV,
         recon_stage.connect(inputnode,
                             ("input_images", utils.sort_ascending),
                             srtkHRMask, "input_images")
-
         recon_stage.connect(inputnode,
                             ("input_masks", utils.sort_ascending),
                             srtkHRMask, "input_masks")
