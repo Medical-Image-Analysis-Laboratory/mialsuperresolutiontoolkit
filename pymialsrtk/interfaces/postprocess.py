@@ -465,7 +465,7 @@ class FilenamesGeneration(BaseInterface):
                                          '_id-' + str(self.m_sr_id) +
                                          '_T2w.json'))
 
-            self.m_substitutions.append((input_sr_json,
+            self.m_substitutions.append((input_sr_png,
                                          self.m_sub_ses + f'_{run_type}-SR' +
                                          '_id-' + str(self.m_sr_id) +
                                          '_T2w.png'))
