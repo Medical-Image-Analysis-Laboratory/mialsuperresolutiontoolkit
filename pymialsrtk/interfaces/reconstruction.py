@@ -421,11 +421,23 @@ class MialsrtkTVSuperResolution(BaseInterface):
             str(len(self.inputs.stacks_order))
         self.m_output_dict["CustomMetaData"]["masks_used"] = 'Manual' \
             if self.m_use_manual_masks else 'Automatic'
-        self.m_output_dict["CustomMetaData"]["in_lambda"] = \
-            self.inputs.in_lambda
         self.m_output_dict["CustomMetaData"]["in_deltat"] = \
             self.inputs.in_deltat
-        self.m_output_dict["CustomMetaData"]["in_loop"] = self.inputs.in_loop
+        self.m_output_dict["CustomMetaData"]["in_lambda"] = \
+            self.inputs.in_lambda
+        self.m_output_dict["CustomMetaData"]["in_loop"] = \
+            self.inputs.in_loop
+        self.m_output_dict["CustomMetaData"]["in_bregman_loop"] = \
+            self.inputs.in_bregman_loop
+        self.m_output_dict["CustomMetaData"]["in_iter"] = \
+            self.inputs.in_iter
+        self.m_output_dict["CustomMetaData"]["in_step_scale"] = \
+            self.inputs.in_step_scale
+        self.m_output_dict["CustomMetaData"]["in_gamma"] = \
+            self.inputs.in_gamma
+
+
+
 
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
