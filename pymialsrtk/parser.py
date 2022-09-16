@@ -100,6 +100,14 @@ def get_parser():
     )
 
     p.add_argument(
+        '--all_outputs',
+        action='store_true',
+        default=False,
+        help="Weither or not all outputs should be kept"
+             "(e.g. preprocessed LR images)",
+    )
+
+    p.add_argument(
         "-v",
         "--version",
         action="version",

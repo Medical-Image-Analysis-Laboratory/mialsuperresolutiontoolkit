@@ -16,7 +16,8 @@ from nipype.interfaces.io import DataSink
 def create_srr_output_stage(p_sub_ses,
                             p_sr_id,
                             p_run_type,
-                            p_use_manual_masks,
+                            p_keep_all_outputs=False,
+                            p_use_manual_masks=False,
                             p_do_nlm_denoising=False,
                             p_do_reconstruct_labels=False,
                             p_do_srr_assessment=False,
@@ -33,6 +34,8 @@ def create_srr_output_stage(p_sub_ses,
         ID of the current run
     p_run_type :
         Type of run (preprocessing/super resolution/ ...)
+    p_keep_all_outputs :
+        Whether intermediate outputs must be issues
     p_use_manual_masks :
         Whether manual masks were used in the pipeline
     p_do_nlm_denoising : :obj:`bool`
@@ -133,14 +136,19 @@ def create_srr_output_stage(p_sub_ses,
     srr_output_stage.connect(inputnode, "final_res_dir", datasink,
                              'base_directory')
 
-    srr_output_stage.connect(inputnode, "input_masks",
-                             datasink, 'anat.@LRmasks')
-    srr_output_stage.connect(inputnode, "input_images",
-                             datasink, 'anat.@LRsPreproc')
-    srr_output_stage.connect(inputnode, "input_transforms",
-                             datasink, 'xfm.@transforms')
-    srr_output_stage.connect(inputnode, "input_sdi",
-                             datasink, 'anat.@SDI')
+    if p_keep_all_outputs:
+        srr_output_stage.connect(inputnode, "input_masks",
+                                 datasink, 'anat.@LRmasks')
+        srr_output_stage.connect(inputnode, "input_images",
+                                 datasink, 'anat.@LRsPreproc')
+        srr_output_stage.connect(inputnode, "input_transforms",
+                                 datasink, 'xfm.@transforms')
+        srr_output_stage.connect(inputnode, "input_sdi",
+                                 datasink, 'anat.@SDI')
+        if p_do_nlm_denoising:
+            srr_output_stage.connect(inputnode, "input_images_nlm",
+                                     datasink, 'anat.@LRsDenoised')
+
     srr_output_stage.connect(inputnode, "input_sr",
                              datasink, 'anat.@SR')
     srr_output_stage.connect(inputnode, "input_json_path",
@@ -156,11 +164,6 @@ def create_srr_output_stage(p_sub_ses,
         srr_output_stage.connect(inputnode, "input_metrics_labels",
                                  datasink, 'anat.@SRmetricsLabels')
 
-
-    if p_do_nlm_denoising:
-        srr_output_stage.connect(inputnode, "input_images_nlm",
-                                 datasink, 'anat.@LRsDenoised')
-
     if p_do_reconstruct_labels:
         srr_output_stage.connect(inputnode, "input_labelmap",
                                  datasink, 'anat.@SRlabelmap')
@@ -168,8 +171,9 @@ def create_srr_output_stage(p_sub_ses,
     if not p_skip_stacks_ordering:
         srr_output_stage.connect(inputnode, "report_image",
                                  datasink, 'figures.@stackOrderingQC')
-        srr_output_stage.connect(inputnode, "motion_tsv",
-                                 datasink, 'anat.@motionTSV')
+        if p_keep_all_outputs:
+            srr_output_stage.connect(inputnode, "motion_tsv",
+                                     datasink, 'anat.@motionTSV')
 
     return srr_output_stage
 

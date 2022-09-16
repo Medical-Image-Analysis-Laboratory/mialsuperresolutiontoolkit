@@ -54,7 +54,7 @@ class AbstractAnatomicalPipeline:
         for masks (optional)
 
     m_do_nlm_denoising : bool
-        Weither the NLM denoising preprocessing should be performed prior to
+        Whether the NLM denoising preprocessing should be performed prior to
         motion estimation. (default is False)
 
     m_skip_stacks_ordering : bool (optional)
