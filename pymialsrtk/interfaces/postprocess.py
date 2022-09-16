@@ -26,6 +26,8 @@ import skimage.metrics
 import pandas as pd
 from pymialsrtk.utils import EXEC_PATH
 
+import itertools
+
 #######################
 #  Refinement HR mask
 #######################
@@ -220,6 +222,14 @@ class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that specify the'
                                     ' order of the stacks')
+    TV_params = traits.List(
+        mandatory=True,
+        desc='List iterables TV parameters processed'
+    )
+    multi_parameters = traits.Bool(
+        mandatory=True,
+        desc='Whether multiple SR were reconstructed.'
+    )
 
 
 class FilenamesGenerationOutputSpec(TraitedSpec):
@@ -397,6 +407,29 @@ class FilenamesGeneration(BaseInterface):
              'V_rad1_gbcorr_trans_labels_csv.csv',
              self.m_sub_ses + '_rec-SR' + '_id-' +
              str(self.m_sr_id) + '_desc-labels_metrics.csv'))
+
+
+        if self.inputs.multi_parameters:
+            tv_parameters_labels = ["in_deltat", "in_lambda",
+                                    "in_loop", "in_bregman_loop", "in_iter",
+                                    "in_step_scale", "in_gamma"]
+            tv_parameters_labels.sort()
+            tv_params_dict = dict(self.inputs.TV_params)
+            tv_params_dict = dict(sorted(tv_params_dict.items(), key=lambda item: item[0]))
+            list_of_sr_recon = list(itertools.product(*tv_params_dict.values()))
+            for i, recon in enumerate(list_of_sr_recon):
+                template = ['_']
+                for param_label, param_value in zip(tv_parameters_labels, recon):
+                    template += [param_label]
+                    template += [str(param_value)]
+                template = '_'.join(template)
+
+                self.m_substitutions.append(
+                    (template,
+                    'tv-'+str(i))
+                )
+                print()
+
 
         return runtime
 

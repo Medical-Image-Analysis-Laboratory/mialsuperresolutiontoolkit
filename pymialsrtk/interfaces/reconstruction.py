@@ -436,9 +436,6 @@ class MialsrtkTVSuperResolution(BaseInterface):
         self.m_output_dict["CustomMetaData"]["in_gamma"] = \
             self.inputs.in_gamma
 
-
-
-
         output_json_path = self._gen_filename('output_json_path')
         with open(output_json_path, 'w') as outfile:
             if self.m_verbose:

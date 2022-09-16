@@ -123,6 +123,8 @@ def create_recon_stage(p_paramTV,
 
     if p_do_reconstruct_labels:
         output_fields += ['output_labelmap']
+    if p_do_multi_parameters:
+        output_fields += ['output_TV_params']
 
     outputnode = pe.Node(
         interface=util.IdentityInterface(
@@ -195,7 +197,7 @@ def create_recon_stage(p_paramTV,
             if not isinstance(gamma, list) \
             else gamma
 
-        srtkTVSuperResolution.iterables = [
+        iterables_TV_parameters = [
             ("in_lambda", lambdaTV),
             ("in_deltat", deltatTV),
             ("in_iter", num_iterations),
@@ -204,6 +206,8 @@ def create_recon_stage(p_paramTV,
             ("in_step_scale", step_scale),
             ("in_gamma", gamma)
         ]
+
+        srtkTVSuperResolution.iterables = iterables_TV_parameters
     else:
         srtkTVSuperResolution.inputs.in_lambda = lambdaTV
         srtkTVSuperResolution.inputs.in_deltat = deltatTV
@@ -332,5 +336,8 @@ def create_recon_stage(p_paramTV,
                         outputnode, "output_sr_png")
     recon_stage.connect(srtkTVSuperResolution, "output_TV_parameters",
                         outputnode, "output_TV_parameters")
+
+    if p_do_multi_parameters:
+        outputnode.inputs.output_TV_params = iterables_TV_parameters
 
     return recon_stage, srtkTVSuperResolution.name

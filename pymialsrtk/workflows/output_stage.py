@@ -21,6 +21,7 @@ def create_srr_output_stage(p_sub_ses,
                             p_do_reconstruct_labels=False,
                             p_do_srr_assessment=False,
                             p_skip_stacks_ordering=False,
+                            p_do_multi_parameters=False,
                             name="srr_output_stage"):
     """Create a output management workflow for the
     super-resolution reconstruction pipeline.
@@ -44,6 +45,8 @@ def create_srr_output_stage(p_sub_ses,
     p_skip_stacks_ordering :  :obj:`bool`
         Skip stacks ordering (default: False)
         If disabled, `report_image` and `motion_tsv` are not generated
+    p_do_multi_parameters :  :obj:`bool`
+        Whether recon_stage was performed in a multi-TV mode
     name : :obj:`str`
         name of workflow (default: "srr_output_stage")
 
@@ -108,6 +111,9 @@ def create_srr_output_stage(p_sub_ses,
     if p_do_reconstruct_labels:
         input_fields += ['input_labelmap']
 
+    if p_do_multi_parameters:
+        input_fields += ['input_TV_params']
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(
             fields=input_fields),
@@ -122,11 +128,17 @@ def create_srr_output_stage(p_sub_ses,
             p_use_manual_masks,
             ),
         name='filenames_gen')
+    finalFilenamesGeneration.inputs.multi_parameters = p_do_multi_parameters
 
     datasink = pe.Node(interface=DataSink(), name='data_sinker')
 
     srr_output_stage.connect(inputnode, "stacks_order",
                              finalFilenamesGeneration, "stacks_order")
+
+    if p_do_multi_parameters:
+        srr_output_stage.connect(inputnode, "input_TV_params",
+                                 finalFilenamesGeneration, "TV_params")
+
     srr_output_stage.connect(finalFilenamesGeneration, "substitutions",
                              datasink, "substitutions")
 
