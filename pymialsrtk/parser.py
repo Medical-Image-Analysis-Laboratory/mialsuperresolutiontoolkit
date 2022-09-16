@@ -103,7 +103,7 @@ def get_parser():
         '--all_outputs',
         action='store_true',
         default=False,
-        help="Weither or not all outputs should be kept"
+        help="Whether or not all outputs should be kept"
              "(e.g. preprocessed LR images)",
     )
 

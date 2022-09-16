@@ -65,7 +65,7 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
         motion estimation. (default is False)
 
     m_skip_stacks_ordering : bool (optional)
-        Weither the automatic stacks ordering should be skipped.
+        Whether the automatic stacks ordering should be skipped.
         (default is False)
 
     Examples
