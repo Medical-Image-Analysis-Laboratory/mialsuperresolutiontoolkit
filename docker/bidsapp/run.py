@@ -205,7 +205,8 @@ def main(bids_dir, output_dir,
          verbose=None,
          nipype_number_of_cores=1,
          openmp_number_of_cores=1,
-         memory=0
+         memory=0,
+         p_all_outputs=False
          ):
     """Main function that creates and executes the workflow of the BIDS App on
     one subject.
@@ -291,7 +292,8 @@ def main(bids_dir, output_dir,
             p_dict_custom_interfaces=dict_custom_interfaces,
             p_verbose=verbose,
             p_openmp_number_of_cores=openmp_number_of_cores,
-            p_nipype_number_of_cores=nipype_number_of_cores
+            p_nipype_number_of_cores=nipype_number_of_cores,
+            p_all_outputs=p_all_outputs
             )
     elif run_type == "preprocessing":
         pipeline = PreprocessingPipeline(
@@ -407,7 +409,8 @@ if __name__ == "__main__":
                         verbose=args.verbose,
                         nipype_number_of_cores=nipype_nb_of_cores,
                         openmp_number_of_cores=openmp_nb_of_cores,
-                        memory=args.memory
+                        memory=args.memory,
+                        p_all_outputs=args.all_outputs
                         )
                     out = f"Subject {sub} with parameters {sr_params} " \
                           f"succeeded."

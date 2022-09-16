@@ -79,6 +79,10 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         reconstructions with different order of stacks are run on
         the same subject
 
+    m_keep_all_outputs : bool
+        Whether intermediate outputs must be issued.
+        (default: False)
+
     m_session : string
         Session ID if applicable (in the form ``ses-YY``)
 
@@ -91,19 +95,19 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         for masks (optional)
 
     m_skip_svr : bool
-        Weither the Slice-to-Volume Registration should be skipped in the
+        Whether the Slice-to-Volume Registration should be skipped in the
         image reconstruction. (default is False)
 
     m_do_refine_hr_mask : bool
-        Weither a refinement of the HR mask should be performed.
+        Whether a refinement of the HR mask should be performed.
         (default is False)
 
     m_do_nlm_denoising : bool
-        Weither the NLM denoising preprocessing should be performed prior to
+        Whether the NLM denoising preprocessing should be performed prior to
         motion estimation. (default is False)
 
     m_skip_stacks_ordering : bool (optional)
-        Weither the automatic stacks ordering should be skipped.
+        Whether the automatic stacks ordering should be skipped.
         (default is False)
 
     Examples
@@ -131,6 +135,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
     m_pipeline_name = "srr_pipeline"
     m_paramTV = None
     m_labels_derivatives_dir = None
+    m_keep_all_outputs = None
     m_paramTV = None
 
     # Custom interfaces options
@@ -142,23 +147,25 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
     m_do_multi_parameters = None
     m_do_srr_assessment = None
 
+
     def __init__(
-        self,
-        p_bids_dir,
-        p_output_dir,
-        p_subject,
-        p_ga=None,
-        p_stacks=None,
-        p_sr_id=1,
-        p_session=None,
-        p_paramTV=None,
-        p_masks_derivatives_dir=None,
-        p_labels_derivatives_dir=None,
-        p_masks_desc=None,
-        p_dict_custom_interfaces=None,
-        p_verbose=None,
-        p_openmp_number_of_cores=None,
-        p_nipype_number_of_cores=None
+            self,
+            p_bids_dir,
+            p_output_dir,
+            p_subject,
+            p_ga=None,
+            p_stacks=None,
+            p_sr_id=1,
+            p_session=None,
+            p_paramTV=None,
+            p_masks_derivatives_dir=None,
+            p_labels_derivatives_dir=None,
+            p_masks_desc=None,
+            p_dict_custom_interfaces=None,
+            p_verbose=None,
+            p_openmp_number_of_cores=None,
+            p_nipype_number_of_cores=None,
+            p_all_outputs=None
     ):
         """Constructor of SRReconPipeline class instance."""
 
@@ -174,6 +181,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         self.m_paramTV = p_paramTV
 
         self.m_labels_derivatives_dir = p_labels_derivatives_dir
+
+        self.m_keep_all_outputs = p_all_outputs
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
@@ -295,6 +304,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                 'to provide low-resolution binary masks.'
             )
 
+
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
 
@@ -381,6 +391,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             p_sub_ses=self.m_sub_ses,
             p_sr_id=self.m_sr_id,
             p_run_type=self.m_run_type,
+            p_keep_all_outputs=self.m_keep_all_outputs,
             p_use_manual_masks=self.m_use_manual_masks,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
