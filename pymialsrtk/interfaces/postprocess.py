@@ -26,6 +26,8 @@ import skimage.metrics
 import pandas as pd
 from pymialsrtk.utils import EXEC_PATH
 
+import itertools
+
 #######################
 #  Refinement HR mask
 #######################
@@ -220,6 +222,14 @@ class FilenamesGenerationInputSpec(BaseInterfaceInputSpec):
     stacks_order = traits.List(mandatory=True,
                                desc='List of stack run-id that specify the'
                                     ' order of the stacks')
+    TV_params = traits.List(
+        mandatory=False,
+        desc='List iterables TV parameters processed'
+    )
+    multi_parameters = traits.Bool(
+        mandatory=True,
+        desc='Whether multiple SR were reconstructed.'
+    )
 
 
 class FilenamesGenerationOutputSpec(TraitedSpec):
@@ -331,20 +341,6 @@ class FilenamesGeneration(BaseInterface):
                                      '_id-' + str(self.m_sr_id) +
                                      '_T2w.nii.gz'))
 
-        self.m_substitutions.append(('SRTV_' + self.m_sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order)) +
-                                     'V_rad1_gbcorr.nii.gz',
-                                    self.m_sub_ses + f'_{run_type}-SR' +
-                                    '_id-' + str(self.m_sr_id) +
-                                     '_T2w.nii.gz'))
-
-        self.m_substitutions.append(('SRTV_' + self.m_sub_ses + '_' +
-                                     str(len(self.inputs.stacks_order))
-                                     + 'V_rad1.json',
-                                    self.m_sub_ses + f'_{run_type}-SR' +
-                                    '_id-' + str(self.m_sr_id) +
-                                     '_T2w.json'))
-
         self.m_substitutions.append((self.m_sub_ses +
                                      '_T2w_uni_bcorr_histnorm_srMask.nii.gz',
                                      self.m_sub_ses + f'_{run_type}-SR' +
@@ -357,13 +353,6 @@ class FilenamesGeneration(BaseInterface):
                                      self.m_sub_ses + '_rec-SR' +
                                      '_id-' + str(self.m_sr_id) +
                                      '_mod-T2w_desc-brain_mask.nii.gz'))
-
-        self.m_substitutions.append(('SRTV_' + self.m_sub_ses +
-                                     '_' + str(len(self.inputs.stacks_order)) +
-                                     'V_rad1.png',
-                                     self.m_sub_ses + f'_{run_type}-SR' +
-                                     '_id-' + str(self.m_sr_id) +
-                                     '_T2w.png'))
 
         self.m_substitutions.append((self.m_sub_ses +
                                      '_' +
@@ -397,6 +386,89 @@ class FilenamesGeneration(BaseInterface):
              'V_rad1_gbcorr_trans_labels_csv.csv',
              self.m_sub_ses + '_rec-SR' + '_id-' +
              str(self.m_sr_id) + '_desc-labels_metrics.csv'))
+
+        #
+        # Management SR
+        input_sr_tv = ''.join([
+            'SRTV_',
+            self.m_sub_ses,
+            '_',
+            str(len(self.inputs.stacks_order)),
+            'V_rad1_gbcorr.nii.gz'
+        ])
+        input_sr_json = ''.join([
+            'SRTV_',
+            self.m_sub_ses,
+            '_',
+            str(len(self.inputs.stacks_order)),
+            'V_rad1.json'
+        ])
+        input_sr_png = ''.join([
+            'SRTV_',
+            self.m_sub_ses,
+            '_',
+            str(len(self.inputs.stacks_order)),
+            'V_rad1.png'
+        ])
+
+        if self.inputs.multi_parameters:
+            tv_parameters_labels = ["in_deltat", "in_lambda",
+                                    "in_loop", "in_bregman_loop", "in_iter",
+                                    "in_step_scale", "in_gamma"]
+            tv_parameters_labels.sort()
+            tv_params_dict = dict(self.inputs.TV_params)
+            tv_params_dict = dict(sorted(tv_params_dict.items(), key=lambda item: item[0]))
+            list_of_sr_recon = list(itertools.product(*tv_params_dict.values()))
+            for i, recon in enumerate(list_of_sr_recon):
+                tv_dir = ''
+                for param_label, param_value in zip(tv_parameters_labels, recon):
+                    tv_dir += '_' + param_label
+                    tv_dir += '_' + str(param_value)
+
+                tv_identifier = '_tv-'+str(i)
+
+                self.m_substitutions.append(
+                    (
+                        os.path.join(tv_dir, input_sr_tv),
+                        self.m_sub_ses + f'_{run_type}-SR' +
+                        tv_identifier +
+                        '_id-' + str(self.m_sr_id) + '_T2w.nii.gz'
+                    )
+                )
+
+                self.m_substitutions.append(
+                    (
+                        os.path.join(tv_dir, input_sr_json),
+                        self.m_sub_ses + f'_{run_type}-SR' +
+                        tv_identifier +
+                        '_id-' + str(self.m_sr_id) + '_T2w.json'
+                    )
+                )
+                self.m_substitutions.append(
+                    (
+                        os.path.join(tv_dir, input_sr_png),
+                        self.m_sub_ses + f'_{run_type}-SR' +
+                        tv_identifier +
+                        '_id-' + str(self.m_sr_id) + '_T2w.png'
+                    )
+                )
+
+        else:
+
+            self.m_substitutions.append((input_sr_tv,
+                                         self.m_sub_ses + f'_{run_type}-SR' +
+                                         '_id-' + str(self.m_sr_id) +
+                                         '_T2w.nii.gz'))
+
+            self.m_substitutions.append((input_sr_json,
+                                         self.m_sub_ses + f'_{run_type}-SR' +
+                                         '_id-' + str(self.m_sr_id) +
+                                         '_T2w.json'))
+
+            self.m_substitutions.append((input_sr_png,
+                                         self.m_sub_ses + f'_{run_type}-SR' +
+                                         '_id-' + str(self.m_sr_id) +
+                                         '_T2w.png'))
 
         return runtime
 

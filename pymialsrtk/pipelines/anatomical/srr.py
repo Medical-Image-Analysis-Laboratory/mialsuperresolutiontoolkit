@@ -390,6 +390,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_skip_stacks_ordering=self.m_skip_stacks_ordering,
             p_do_srr_assessment=self.m_do_srr_assessment,
+            p_do_multi_parameters=self.m_do_multi_parameters,
             name='output_mgmt_stage'
         )
         output_mgmt_stage.inputs.inputnode.final_res_dir = self.m_final_res_dir
@@ -492,17 +493,22 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                           output_mgmt_stage, "inputnode.input_masks")
         self.m_wf.connect(preprocessing_stage, "outputnode.output_images",
                           output_mgmt_stage, "inputnode.input_images")
+
         self.m_wf.connect(reconstruction_stage, "outputnode.output_transforms",
                           output_mgmt_stage, "inputnode.input_transforms")
 
         self.m_wf.connect(postprocessing_stage, "outputnode.output_sdi",
                           output_mgmt_stage, "inputnode.input_sdi")
-        self.m_wf.connect(postprocessing_stage, "outputnode.output_image",
-                          output_mgmt_stage, "inputnode.input_sr")
         self.m_wf.connect(reconstruction_stage, "outputnode.output_json_path",
                           output_mgmt_stage, "inputnode.input_json_path")
         self.m_wf.connect(reconstruction_stage, "outputnode.output_sr_png",
                           output_mgmt_stage, "inputnode.input_sr_png")
+        if self.m_do_multi_parameters:
+            self.m_wf.connect(reconstruction_stage, "outputnode.output_TV_params",
+                              output_mgmt_stage, "inputnode.input_TV_params")
+
+        self.m_wf.connect(postprocessing_stage, "outputnode.output_image",
+                          output_mgmt_stage, "inputnode.input_sr")
         self.m_wf.connect(postprocessing_stage, "outputnode.output_mask",
                           output_mgmt_stage, "inputnode.input_hr_mask")
 
