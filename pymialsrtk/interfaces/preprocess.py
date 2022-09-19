@@ -40,6 +40,7 @@ from scipy.signal import argrelextrema
 import scipy.ndimage as snd
 import pandas as pd
 import cv2
+from copy import deepcopy
 
 from nipype.utils.filemanip import split_filename
 from nipype.interfaces.base import (
@@ -664,10 +665,17 @@ class FilteringByRunid(BaseInterface):
 
     def _filter_by_runid(self, input_files, p_stacks_id):
         output_files = []
+        stacks = deepcopy(p_stacks_id)
         for f in input_files:
             f_id = int(f.split("_run-")[1].split("_")[0])
             if f_id in p_stacks_id:
                 output_files.append(f)
+                stacks.remove(f_id)
+        print(f"filtering: {input_files}, {p_stacks_id}")
+        if len(stacks) > 0:
+            raise RuntimeError(
+                f"Stacks with id {stacks} not found in {os.path.dirname(f)}."
+            )
         return output_files
 
     def _list_outputs(self):

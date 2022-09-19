@@ -8,6 +8,7 @@ import os
 import sys
 import json
 from glob import glob
+
 # from traits.api import *
 
 import multiprocessing
@@ -52,7 +53,9 @@ def return_default_nb_of_cores(nb_of_cores, openmp_proportion=2):
     return openmp_nb_of_cores, nipype_nb_of_cores
 
 
-def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, openmp_proportion=2):
+def check_and_return_valid_nb_of_cores(
+    openmp_nb_of_cores, nipype_nb_of_cores, openmp_proportion=2
+):
     """Function that checks and returns a valid number of cores used by OpenMP and Nipype.
 
     If the number of cores available is exceeded by one of these variables or by the multiplication of the two,
@@ -88,72 +91,99 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
         nipype_nb_of_cores = 1
     else:
         if openmp_nb_of_cores == 0 and nipype_nb_of_cores == 0:
-            openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
+            (
+                openmp_nb_of_cores,
+                nipype_nb_of_cores,
+            ) = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
 
         elif openmp_nb_of_cores > 0 and nipype_nb_of_cores == 0:
             if openmp_nb_of_cores > nb_of_cores:
-                print(f"WARNING: Value of {openmp_nb_of_cores} set by"
-                      f"'--openmp_nb_of_cores' is bigger than the number of "
-                      f"cores available ({nb_of_cores}) and will be reset.")
+                print(
+                    f"WARNING: Value of {openmp_nb_of_cores} set by"
+                    f"'--openmp_nb_of_cores' is bigger than the number of "
+                    f"cores available ({nb_of_cores}) and will be reset."
+                )
                 openmp_nb_of_cores = nb_of_cores
                 nipype_nb_of_cores = 1
             else:
-              openmp_nb_of_cores = openmp_nb_of_cores
-              nipype_nb_of_cores = nb_of_cores // openmp_nb_of_cores
+                openmp_nb_of_cores = openmp_nb_of_cores
+                nipype_nb_of_cores = nb_of_cores // openmp_nb_of_cores
 
         elif openmp_nb_of_cores == 0 and nipype_nb_of_cores > 0:
             if nipype_nb_of_cores > nb_of_cores:
-                print(f"WARNING: Value of {nipype_nb_of_cores} set by"
-                      f"'--nipype_nb_of_cores' is bigger than the number of "
-                      "cores available ({nb_of_cores}) and will be reset.")
+                print(
+                    f"WARNING: Value of {nipype_nb_of_cores} set by"
+                    f"'--nipype_nb_of_cores' is bigger than the number of "
+                    "cores available ({nb_of_cores}) and will be reset."
+                )
                 nipype_nb_of_cores = nb_of_cores
                 openmp_nb_of_cores = 1
             else:
-              nipype_nb_of_cores = nipype_nb_of_cores
-              openmp_nb_of_cores = nb_of_cores // nipype_nb_of_cores
+                nipype_nb_of_cores = nipype_nb_of_cores
+                openmp_nb_of_cores = nb_of_cores // nipype_nb_of_cores
 
         elif openmp_nb_of_cores > 0 and nipype_nb_of_cores > 0:
             if nipype_nb_of_cores > nb_of_cores:
                 if openmp_nb_of_cores > nb_of_cores:
-                    print(f"WARNING: Value of {nipype_nb_of_cores} and "
-                          f"{openmp_nb_of_cores} set by '--openmp_nb_of_cores'"
-                          f"and '--nipype_nb_of_cores' are both bigger than "
-                          f"the number of cores available ({nb_of_cores})"
-                          f"and will be reset.")
-                    openmp_nb_of_cores, nipype_nb_of_cores = \
-                        return_default_nb_of_cores(nb_of_cores,
-                                                   openmp_proportion)
+                    print(
+                        f"WARNING: Value of {nipype_nb_of_cores} and "
+                        f"{openmp_nb_of_cores} set by '--openmp_nb_of_cores'"
+                        f"and '--nipype_nb_of_cores' are both bigger than "
+                        f"the number of cores available ({nb_of_cores})"
+                        f"and will be reset."
+                    )
+                    (
+                        openmp_nb_of_cores,
+                        nipype_nb_of_cores,
+                    ) = return_default_nb_of_cores(
+                        nb_of_cores, openmp_proportion
+                    )
                 else:
                     if (openmp_nb_of_cores * nipype_nb_of_cores) > nb_of_cores:
-                        print(f"WARNING: Multiplication of "
-                              f"{nipype_nb_of_cores} and {openmp_nb_of_cores} "
-                              "set by '--nipype_nb_of_cores' and "
-                              "'--nipype_nb_of_cores' is bigger than the "
-                              "number of cores available ({nb_of_cores}) "
-                              "and will be reset.")
-                        openmp_nb_of_cores, nipype_nb_of_cores = \
-                            return_default_nb_of_cores(nb_of_cores,
-                                                       openmp_proportion)
+                        print(
+                            f"WARNING: Multiplication of "
+                            f"{nipype_nb_of_cores} and {openmp_nb_of_cores} "
+                            "set by '--nipype_nb_of_cores' and "
+                            "'--nipype_nb_of_cores' is bigger than the "
+                            "number of cores available ({nb_of_cores}) "
+                            "and will be reset."
+                        )
+                        (
+                            openmp_nb_of_cores,
+                            nipype_nb_of_cores,
+                        ) = return_default_nb_of_cores(
+                            nb_of_cores, openmp_proportion
+                        )
             else:
                 if openmp_nb_of_cores > nb_of_cores:
-                    print(f"WARNING: Value of {openmp_nb_of_cores} set by "
-                          f"'--openmp_nb_of_cores' is bigger than the number "
-                          f"of cores available ({nb_of_cores}) and will "
-                          "be reset.")
-                    openmp_nb_of_cores, nipype_nb_of_cores = \
-                        return_default_nb_of_cores(nb_of_cores,
-                                                   openmp_proportion)
+                    print(
+                        f"WARNING: Value of {openmp_nb_of_cores} set by "
+                        f"'--openmp_nb_of_cores' is bigger than the number "
+                        f"of cores available ({nb_of_cores}) and will "
+                        "be reset."
+                    )
+                    (
+                        openmp_nb_of_cores,
+                        nipype_nb_of_cores,
+                    ) = return_default_nb_of_cores(
+                        nb_of_cores, openmp_proportion
+                    )
                 else:
                     if (openmp_nb_of_cores * nipype_nb_of_cores) > nb_of_cores:
-                        print(f"WARNING: Multiplication of "
-                              f"{nipype_nb_of_cores} and {openmp_nb_of_cores}"
-                              "set by '--nipype_nb_of_cores' and "
-                              "'--nipype_nb_of_cores' is bigger than the "
-                              "number of cores available ({nb_of_cores}) "
-                              "and will be reset.")
-                        openmp_nb_of_cores, nipype_nb_of_cores = \
-                            return_default_nb_of_cores(nb_of_cores,
-                                                       openmp_proportion)
+                        print(
+                            f"WARNING: Multiplication of "
+                            f"{nipype_nb_of_cores} and {openmp_nb_of_cores}"
+                            "set by '--nipype_nb_of_cores' and "
+                            "'--nipype_nb_of_cores' is bigger than the "
+                            "number of cores available ({nb_of_cores}) "
+                            "and will be reset."
+                        )
+                        (
+                            openmp_nb_of_cores,
+                            nipype_nb_of_cores,
+                        ) = return_default_nb_of_cores(
+                            nb_of_cores, openmp_proportion
+                        )
 
     return openmp_nb_of_cores, nipype_nb_of_cores
 
@@ -176,8 +206,8 @@ def check_participants_params(participants_params):
         "do_reconstruct_labels",
         "do_anat_orientation",
         "do_multi_parameters",
-        "do_srr_assessment"
-        ]
+        "do_srr_assessment",
+    ]
     for sub, sub_list in participants_params.items():
         for config in sub_list:
             if "custom_interfaces" in config.keys():
@@ -185,29 +215,37 @@ def check_participants_params(participants_params):
                     if k not in allowed_keys:
                         raise RuntimeError(
                             f"Invalid custom interface key {k} for subject "
-                            f"{sub}. Valid keys are \n" +
-                            ", ".join(allowed_keys)
-                            )
+                            f"{sub}. Valid keys are \n"
+                            + ", ".join(allowed_keys)
+                        )
+            if "stacks" in config.keys():
+                stacks = config["stacks"]
+                assert len(stacks) > 1, (
+                    f"Invalid number of stacks {stacks} for subject {sub}. "
+                    f"MIALSRTK currently only handles n_stacks > 1."
+                )
 
 
-def main(bids_dir, output_dir,
-         subject,
-         session,
-         run_type,
-         p_ga=None,
-         p_stacks=None,
-         param_TV=None,
-         sr_id=None,
-         masks_derivatives_dir="",
-         labels_derivatives_dir='',
-         masks_desc=None,
-         dict_custom_interfaces=None,
-         verbose=None,
-         nipype_number_of_cores=1,
-         openmp_number_of_cores=1,
-         memory=0,
-         p_all_outputs=False
-         ):
+def main(
+    bids_dir,
+    output_dir,
+    subject,
+    session,
+    run_type,
+    p_ga=None,
+    p_stacks=None,
+    param_TV=None,
+    sr_id=None,
+    masks_derivatives_dir="",
+    labels_derivatives_dir="",
+    masks_desc=None,
+    dict_custom_interfaces=None,
+    verbose=None,
+    nipype_number_of_cores=1,
+    openmp_number_of_cores=1,
+    memory=0,
+    p_all_outputs=False,
+):
     """Main function that creates and executes the workflow of the BIDS App on
     one subject.
 
@@ -293,8 +331,8 @@ def main(bids_dir, output_dir,
             p_verbose=verbose,
             p_openmp_number_of_cores=openmp_number_of_cores,
             p_nipype_number_of_cores=nipype_number_of_cores,
-            p_all_outputs=p_all_outputs
-            )
+            p_all_outputs=p_all_outputs,
+        )
     elif run_type == "preprocessing":
         pipeline = PreprocessingPipeline(
             bids_dir,
@@ -310,10 +348,12 @@ def main(bids_dir, output_dir,
             p_verbose=verbose,
             p_openmp_number_of_cores=openmp_number_of_cores,
             p_nipype_number_of_cores=nipype_number_of_cores,
-            )
+        )
     else:
-        raise ValueError(f"Invalid run_type {run_type}."
-                         f"Please choose from ('sr,'preprocessing').")
+        raise ValueError(
+            f"Invalid run_type {run_type}."
+            f"Please choose from ('sr,'preprocessing')."
+        )
 
     # Create the super resolution Nipype workflow
     pipeline.create_workflow()
@@ -333,17 +373,24 @@ if __name__ == "__main__":
     nipype_nb_of_cores = args.nipype_nb_of_cores
 
     # Check values set for the number of cores and reset them if invalid
-    openmp_nb_of_cores, nipype_nb_of_cores = \
-        check_and_return_valid_nb_of_cores(openmp_nb_of_cores,
-                                           nipype_nb_of_cores)
-    print(f"INFO: Number of cores used by Nipype engine "
-          f"set to {nipype_nb_of_cores}")
+    (
+        openmp_nb_of_cores,
+        nipype_nb_of_cores,
+    ) = check_and_return_valid_nb_of_cores(
+        openmp_nb_of_cores, nipype_nb_of_cores
+    )
+    print(
+        f"INFO: Number of cores used by Nipype engine "
+        f"set to {nipype_nb_of_cores}"
+    )
 
     os.environ["OMP_NUM_THREADS"] = str(openmp_nb_of_cores)
-    print("INFO: Environment variable OMP_NUM_THREADS set to: "
-          "{}".format(os.environ["OMP_NUM_THREADS"]))
+    print(
+        "INFO: Environment variable OMP_NUM_THREADS set to: "
+        "{}".format(os.environ["OMP_NUM_THREADS"])
+    )
 
-    with open(args.param_file, 'r') as f:
+    with open(args.param_file, "r") as f:
         participants_params = json.load(f)
     check_participants_params(participants_params)
     subjects_to_analyze = []
@@ -353,9 +400,9 @@ if __name__ == "__main__":
     # for all subjects
     else:
         subject_dirs = glob(os.path.join(args.bids_dir, "sub-*"))
-        subjects_to_analyze = sorted([
-            subject_dir.split("-")[-1] for subject_dir in subject_dirs
-        ])
+        subjects_to_analyze = sorted(
+            [subject_dir.split("-")[-1] for subject_dir in subject_dirs]
+        )
     success_dict = {}
     failed_dict = {}
 
@@ -370,24 +417,42 @@ if __name__ == "__main__":
 
             for sr_params in sr_list:
 
-                sr_id = sr_params["sr-id"] if "sr-id" in sr_params.keys() \
+                sr_id = (
+                    sr_params["sr-id"] if "sr-id" in sr_params.keys() else None
+                )
+                ses = (
+                    sr_params["session"]
+                    if "session" in sr_params.keys()
                     else None
-                ses = sr_params["session"] if "session" in sr_params.keys() \
-                    else None
+                )
                 ga = sr_params["ga"] if "ga" in sr_params.keys() else None
-                stacks = sr_params["stacks"] if "stacks" in sr_params.keys() \
+                stacks = (
+                    sr_params["stacks"]
+                    if "stacks" in sr_params.keys()
                     else None
-                param_TV = sr_params["paramTV"] if "paramTV" in \
-                    sr_params.keys() else None
-                masks_desc = sr_params["masks_desc"] if "masks_desc" in \
-                    sr_params.keys() else None
+                )
+                param_TV = (
+                    sr_params["paramTV"]
+                    if "paramTV" in sr_params.keys()
+                    else None
+                )
+                masks_desc = (
+                    sr_params["masks_desc"]
+                    if "masks_desc" in sr_params.keys()
+                    else None
+                )
 
-                dict_custom_interfaces = sr_params["custom_interfaces"] \
-                    if "custom_interfaces" in sr_params.keys() else None
+                dict_custom_interfaces = (
+                    sr_params["custom_interfaces"]
+                    if "custom_interfaces" in sr_params.keys()
+                    else None
+                )
 
                 if sr_id is None:
-                    e = f'Subject {sub} was not processed ' \
-                        f'because of missing parameters.'
+                    e = (
+                        f"Subject {sub} was not processed "
+                        f"because of missing parameters."
+                    )
                     failed_dict[sub] += [e]
                     print(e)
                     continue
@@ -410,32 +475,36 @@ if __name__ == "__main__":
                         nipype_number_of_cores=nipype_nb_of_cores,
                         openmp_number_of_cores=openmp_nb_of_cores,
                         memory=args.memory,
-                        p_all_outputs=args.all_outputs
-                        )
-                    out = f"Subject {sub} with parameters {sr_params} " \
-                          f"succeeded."
+                        p_all_outputs=args.all_outputs,
+                    )
+                    out = (
+                        f"Subject {sub} with parameters {sr_params} "
+                        f"succeeded."
+                    )
                     success_dict[sub] += [out]
                 except Exception as e:
-                    e = f"Subject {sub} with parameters {sr_params} failed "\
+                    e = (
+                        f"Subject {sub} with parameters {sr_params} failed "
                         f"with message \n\t {e}"
+                    )
                     failed_dict[sub] += [e]
                     print(e)
         else:
-            e = f"Subject {sub} was not processed because of missing "\
+            e = (
+                f"Subject {sub} was not processed because of missing "
                 f"configuration."
+            )
             failed_dict[sub] += [e]
             print(e)
 
     if not all(v == [] for v in success_dict.values()):
-        print("\n" + "-"*15 + "\nSUCCESSFUL RUNS\n" +
-              "-"*15)
+        print("\n" + "-" * 15 + "\nSUCCESSFUL RUNS\n" + "-" * 15)
         for sub, v in success_dict.items():
             for out in v:
                 print("-> ", out)
 
     if not all(v == [] for v in failed_dict.values()):
-        print("\n" + "-"*24 + "\nWARNING: SOME RUN FAILED\n" +
-              "-"*24)
+        print("\n" + "-" * 24 + "\nWARNING: SOME RUN FAILED\n" + "-" * 24)
         for sub, v in failed_dict.items():
             for error in v:
                 print("-> ", error)
