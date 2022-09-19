@@ -132,6 +132,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
     >>> res = pipeline.run(number_of_cores=1) # doctest: +SKIP
 
     """
+
     m_pipeline_name = "srr_pipeline"
     m_paramTV = None
     m_labels_derivatives_dir = None
@@ -147,34 +148,43 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
     m_do_multi_parameters = None
     m_do_srr_assessment = None
 
-
     def __init__(
-            self,
-            p_bids_dir,
-            p_output_dir,
-            p_subject,
-            p_ga=None,
-            p_stacks=None,
-            p_sr_id=1,
-            p_session=None,
-            p_paramTV=None,
-            p_masks_derivatives_dir=None,
-            p_labels_derivatives_dir=None,
-            p_masks_desc=None,
-            p_dict_custom_interfaces=None,
-            p_verbose=None,
-            p_openmp_number_of_cores=None,
-            p_nipype_number_of_cores=None,
-            p_all_outputs=None
+        self,
+        p_bids_dir,
+        p_output_dir,
+        p_subject,
+        p_ga=None,
+        p_stacks=None,
+        p_sr_id=1,
+        p_session=None,
+        p_paramTV=None,
+        p_masks_derivatives_dir=None,
+        p_labels_derivatives_dir=None,
+        p_masks_desc=None,
+        p_dict_custom_interfaces=None,
+        p_verbose=None,
+        p_openmp_number_of_cores=None,
+        p_nipype_number_of_cores=None,
+        p_all_outputs=None,
     ):
         """Constructor of SRReconPipeline class instance."""
 
-        super().__init__(p_bids_dir, p_output_dir, p_subject, p_ga, p_stacks,
-                         p_sr_id, p_session, p_masks_derivatives_dir,
-                         p_masks_desc, p_dict_custom_interfaces, p_verbose,
-                         p_openmp_number_of_cores, p_nipype_number_of_cores,
-                         "rec"
-                         )
+        super().__init__(
+            p_bids_dir,
+            p_output_dir,
+            p_subject,
+            p_ga,
+            p_stacks,
+            p_sr_id,
+            p_session,
+            p_masks_derivatives_dir,
+            p_masks_desc,
+            p_dict_custom_interfaces,
+            p_verbose,
+            p_openmp_number_of_cores,
+            p_nipype_number_of_cores,
+            "rec",
+        )
         # (default) sr tv parameters
         if p_paramTV is None:
             p_paramTV = dict()
@@ -186,47 +196,59 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
-            self.m_do_nlm_denoising = \
-                p_dict_custom_interfaces['do_nlm_denoising'] \
-                if 'do_nlm_denoising' in p_dict_custom_interfaces.keys() \
+            self.m_do_nlm_denoising = (
+                p_dict_custom_interfaces["do_nlm_denoising"]
+                if "do_nlm_denoising" in p_dict_custom_interfaces.keys()
                 else False
+            )
 
-            self.m_skip_stacks_ordering =\
-                p_dict_custom_interfaces['skip_stacks_ordering']\
-                if ((self.m_stacks is not None) and
-                    ('skip_stacks_ordering' in
-                     p_dict_custom_interfaces.keys())) \
+            self.m_skip_stacks_ordering = (
+                p_dict_custom_interfaces["skip_stacks_ordering"]
+                if (
+                    (self.m_stacks is not None)
+                    and (
+                        "skip_stacks_ordering"
+                        in p_dict_custom_interfaces.keys()
+                    )
+                )
                 else False
+            )
 
-            self.m_skip_svr = \
-                p_dict_custom_interfaces['skip_svr'] \
-                if 'skip_svr' in p_dict_custom_interfaces.keys() \
+            self.m_skip_svr = (
+                p_dict_custom_interfaces["skip_svr"]
+                if "skip_svr" in p_dict_custom_interfaces.keys()
                 else False
+            )
 
-            self.m_do_refine_hr_mask = \
-                p_dict_custom_interfaces['do_refine_hr_mask'] \
-                if 'do_refine_hr_mask' in p_dict_custom_interfaces.keys() \
+            self.m_do_refine_hr_mask = (
+                p_dict_custom_interfaces["do_refine_hr_mask"]
+                if "do_refine_hr_mask" in p_dict_custom_interfaces.keys()
                 else False
+            )
 
-            self.m_do_anat_orientation = \
-                p_dict_custom_interfaces['do_anat_orientation'] \
-                if 'do_anat_orientation' in p_dict_custom_interfaces.keys() \
+            self.m_do_anat_orientation = (
+                p_dict_custom_interfaces["do_anat_orientation"]
+                if "do_anat_orientation" in p_dict_custom_interfaces.keys()
                 else False
+            )
 
-            self.m_do_reconstruct_labels = \
-                p_dict_custom_interfaces['do_reconstruct_labels'] \
-                if 'do_reconstruct_labels' in p_dict_custom_interfaces.keys() \
+            self.m_do_reconstruct_labels = (
+                p_dict_custom_interfaces["do_reconstruct_labels"]
+                if "do_reconstruct_labels" in p_dict_custom_interfaces.keys()
                 else False
+            )
 
-            self.m_do_multi_parameters = \
-                p_dict_custom_interfaces['do_multi_parameters'] \
-                if 'do_multi_parameters' in p_dict_custom_interfaces.keys() \
+            self.m_do_multi_parameters = (
+                p_dict_custom_interfaces["do_multi_parameters"]
+                if "do_multi_parameters" in p_dict_custom_interfaces.keys()
                 else False
+            )
 
-            self.m_do_srr_assessment = \
-                p_dict_custom_interfaces['do_srr_assessment'] \
-                if 'do_srr_assessment' in p_dict_custom_interfaces.keys() \
+            self.m_do_srr_assessment = (
+                p_dict_custom_interfaces["do_srr_assessment"]
+                if "do_srr_assessment" in p_dict_custom_interfaces.keys()
                 else False
+            )
 
         else:
 
@@ -240,63 +262,67 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             self.m_do_srr_assessment = False
 
         if self.m_do_anat_orientation:
-            if not os.path.isdir('/sta'):
+            if not os.path.isdir("/sta"):
                 raise RuntimeError(
-                    'A template directory must be specified to '
-                    'perform alignement.')
+                    "A template directory must be specified to "
+                    "perform alignement."
+                )
             if self.m_ga is None:
                 raise RuntimeError(
-                    'A gestational age must be specified to '
-                    'perform alignement.'
-                      )
+                    "A gestational age must be specified to "
+                    "perform alignement."
+                )
 
         if self.m_do_reconstruct_labels:
             if not self.m_labels_derivatives_dir:
                 raise OSError(
-                    'A derivatives directory of LR labelmaps must '
-                    'be specified to perform labelmap reconstruction.'
-                    )
+                    "A derivatives directory of LR labelmaps must "
+                    "be specified to perform labelmap reconstruction."
+                )
             elif not os.path.isdir(
-                os.path.join(self.m_bids_dir,
-                             'derivatives',
-                             self.m_labels_derivatives_dir
-                             )):
+                os.path.join(
+                    self.m_bids_dir,
+                    "derivatives",
+                    self.m_labels_derivatives_dir,
+                )
+            ):
                 raise OSError(
-                    'An existing derivatives directory of LR labelmaps must'
-                    'be specified to perform labelmap reconstruction.'
-                    )
+                    "An existing derivatives directory of LR labelmaps must"
+                    "be specified to perform labelmap reconstruction."
+                )
 
         if self.m_do_multi_parameters:
             # if any of the TV parameters is a list of more than one item,
             # we are in a multi_parameters running mode
-            num_parameters_multi = [value
-                                    for value in list(self.m_paramTV.values())
-                                    if (isinstance(value, list)
-                                        and len(value) > 1)]
+            num_parameters_multi = [
+                value
+                for value in list(self.m_paramTV.values())
+                if (isinstance(value, list) and len(value) > 1)
+            ]
             if not num_parameters_multi:
                 raise RuntimeError(
-                    'With do_multi_parameters interface, '
-                    'at least one entry of \'paramsTV\' should '
-                    'be defined as a list of more than one item.'
+                    "With do_multi_parameters interface, "
+                    "at least one entry of 'paramsTV' should "
+                    "be defined as a list of more than one item."
                 )
         else:
-            num_parameters_multi = [value
-                                    for value in list(self.m_paramTV.values())
-                                    if (isinstance(value, list)
-                                        and len(value) > 1)]
+            num_parameters_multi = [
+                value
+                for value in list(self.m_paramTV.values())
+                if (isinstance(value, list) and len(value) > 1)
+            ]
             if num_parameters_multi:
                 raise RuntimeError(
-                    'With do_multi_parameters=False, '
-                    'no entry of \'paramsTV\' should '
-                    'be defined as a list of more than one item.'
+                    "With do_multi_parameters=False, "
+                    "no entry of 'paramsTV' should "
+                    "be defined as a list of more than one item."
                 )
 
         if not self.m_use_manual_masks and self.m_do_reconstruct_labels:
             raise RuntimeError(
-                'm_do_reconstruct_labels interface requires'
-                'to provide low-resolution binary masks.'
+                "m_do_reconstruct_labels interface requires"
+                "to provide low-resolution binary masks."
             )
-
 
     def create_workflow(self):
         """Create the Niype workflow of the super-resolution pipeline.
@@ -306,21 +332,21 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         """
 
-        self.m_wf = pe.Workflow(name=self.m_pipeline_name,
-                                base_dir=self.m_wf_base_dir
-                                )
+        self.m_wf = pe.Workflow(
+            name=self.m_pipeline_name, base_dir=self.m_wf_base_dir
+        )
 
-        self.m_wf.config['logging'] = {
-            'log_directory': os.path.join(self.m_wf_base_dir),
-            'log_to_file': True
+        self.m_wf.config["logging"] = {
+            "log_directory": os.path.join(self.m_wf_base_dir),
+            "log_to_file": True,
         }
-        self.m_wf.config['execution'] = {
-            'remove_unnecessary_outputs': True,
-            'stop_on_first_crash': True,
-            'stop_on_first_rerun': True,
-            'crashfile_format': "txt",
-            'use_relative_paths': True,
-            'write_provenance': False
+        self.m_wf.config["execution"] = {
+            "remove_unnecessary_outputs": True,
+            "stop_on_first_crash": True,
+            "stop_on_first_rerun": True,
+            "crashfile_format": "txt",
+            "use_relative_paths": True,
+            "write_provenance": False,
         }
 
         config.update_config(self.m_wf.config)
@@ -330,26 +356,26 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         # config.enable_provenance()
 
         input_mgmt_stage = input_stage.create_input_stage(
-                p_bids_dir=self.m_bids_dir,
-                p_sub_ses=self.m_sub_ses,
-                p_sub_path=self.m_sub_path,
-                p_use_manual_masks=self.m_use_manual_masks,
-                p_masks_desc=self.m_masks_desc,
-                p_masks_derivatives_dir=self.m_masks_derivatives_dir,
-                p_labels_derivatives_dir=self.m_labels_derivatives_dir,
-                p_skip_stacks_ordering=self.m_skip_stacks_ordering,
-                p_do_reconstruct_labels=self.m_do_reconstruct_labels,
-                p_stacks=self.m_stacks,
-                p_do_srr_assessment=self.m_do_srr_assessment,
-                p_verbose=self.m_verbose,
-                name='input_mgmt_stage'
-                )
+            p_bids_dir=self.m_bids_dir,
+            p_sub_ses=self.m_sub_ses,
+            p_sub_path=self.m_sub_path,
+            p_use_manual_masks=self.m_use_manual_masks,
+            p_masks_desc=self.m_masks_desc,
+            p_masks_derivatives_dir=self.m_masks_derivatives_dir,
+            p_labels_derivatives_dir=self.m_labels_derivatives_dir,
+            p_skip_stacks_ordering=self.m_skip_stacks_ordering,
+            p_do_reconstruct_labels=self.m_do_reconstruct_labels,
+            p_stacks=self.m_stacks,
+            p_do_srr_assessment=self.m_do_srr_assessment,
+            p_verbose=self.m_verbose,
+            name="input_mgmt_stage",
+        )
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
-            p_verbose=self.m_verbose
-            )
+            p_verbose=self.m_verbose,
+        )
 
         reconstruction_stage, srtv_node_name = recon_stage.create_recon_stage(
             p_paramTV=self.m_paramTV,
@@ -360,25 +386,27 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             p_do_refine_hr_mask=self.m_do_refine_hr_mask,
             p_skip_svr=self.m_skip_svr,
             p_sub_ses=self.m_sub_ses,
-            p_verbose=self.m_verbose)
-
+            p_verbose=self.m_verbose,
+        )
 
         postprocessing_stage = postproc_stage.create_postproc_stage(
             p_ga=self.m_ga,
             p_do_anat_orientation=self.m_do_anat_orientation,
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_verbose=self.m_verbose,
-            name='postprocessing_stage')
+            name="postprocessing_stage",
+        )
 
         if self.m_do_srr_assessment:
-            srr_assessment_stage = \
+            srr_assessment_stage = (
                 srr_assment_stage.create_srr_assessment_stage(
                     p_do_multi_parameters=self.m_do_multi_parameters,
                     p_input_srtv_node=srtv_node_name,
                     p_verbose=self.m_verbose,
                     p_openmp_number_of_cores=self.m_openmp_number_of_cores,
-                    name='srr_assessment_stage'
+                    name="srr_assessment_stage",
                 )
+            )
 
         output_mgmt_stage = output_stage.create_srr_output_stage(
             p_sub_ses=self.m_sub_ses,
@@ -391,140 +419,252 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             p_skip_stacks_ordering=self.m_skip_stacks_ordering,
             p_do_srr_assessment=self.m_do_srr_assessment,
             p_do_multi_parameters=self.m_do_multi_parameters,
-            name='output_mgmt_stage'
+            name="output_mgmt_stage",
         )
         output_mgmt_stage.inputs.inputnode.final_res_dir = self.m_final_res_dir
 
         # Build workflow : connections of the nodes
         # Nodes ready : Linking now
-        self.m_wf.connect(input_mgmt_stage, "outputnode.t2ws_filtered",
-                          preprocessing_stage, "inputnode.input_images")
+        self.m_wf.connect(
+            input_mgmt_stage,
+            "outputnode.t2ws_filtered",
+            preprocessing_stage,
+            "inputnode.input_images",
+        )
 
-        self.m_wf.connect(input_mgmt_stage, "outputnode.masks_filtered",
-                          preprocessing_stage, "inputnode.input_masks")
+        self.m_wf.connect(
+            input_mgmt_stage,
+            "outputnode.masks_filtered",
+            preprocessing_stage,
+            "inputnode.input_masks",
+        )
 
         if self.m_do_nlm_denoising:
-            self.m_wf.connect(preprocessing_stage,
-                              "outputnode.output_images_nlm",
-                              reconstruction_stage,
-                              "inputnode.input_images_nlm")
+            self.m_wf.connect(
+                preprocessing_stage,
+                "outputnode.output_images_nlm",
+                reconstruction_stage,
+                "inputnode.input_images_nlm",
+            )
 
-        self.m_wf.connect(preprocessing_stage, "outputnode.output_images",
-                          reconstruction_stage, "inputnode.input_images")
+        self.m_wf.connect(
+            preprocessing_stage,
+            "outputnode.output_images",
+            reconstruction_stage,
+            "inputnode.input_images",
+        )
 
-        self.m_wf.connect(preprocessing_stage, "outputnode.output_masks",
-                          reconstruction_stage, "inputnode.input_masks")
+        self.m_wf.connect(
+            preprocessing_stage,
+            "outputnode.output_masks",
+            reconstruction_stage,
+            "inputnode.input_masks",
+        )
 
-        self.m_wf.connect(input_mgmt_stage, "outputnode.stacks_order",
-                          reconstruction_stage, "inputnode.stacks_order")
+        self.m_wf.connect(
+            input_mgmt_stage,
+            "outputnode.stacks_order",
+            reconstruction_stage,
+            "inputnode.stacks_order",
+        )
 
-        self.m_wf.connect(reconstruction_stage, "outputnode.output_hr_mask",
-                          postprocessing_stage, "inputnode.input_mask")
+        self.m_wf.connect(
+            reconstruction_stage,
+            "outputnode.output_hr_mask",
+            postprocessing_stage,
+            "inputnode.input_mask",
+        )
 
-        self.m_wf.connect(reconstruction_stage, "outputnode.output_sr",
-                          postprocessing_stage, "inputnode.input_image")
+        self.m_wf.connect(
+            reconstruction_stage,
+            "outputnode.output_sr",
+            postprocessing_stage,
+            "inputnode.input_image",
+        )
 
         if self.m_do_reconstruct_labels:
-            self.m_wf.connect(input_mgmt_stage, "outputnode.labels_filtered",
-                              preprocessing_stage, "inputnode.input_labels")
+            self.m_wf.connect(
+                input_mgmt_stage,
+                "outputnode.labels_filtered",
+                preprocessing_stage,
+                "inputnode.input_labels",
+            )
 
-            self.m_wf.connect(preprocessing_stage, "outputnode.output_labels",
-                              reconstruction_stage, "inputnode.input_labels")
+            self.m_wf.connect(
+                preprocessing_stage,
+                "outputnode.output_labels",
+                reconstruction_stage,
+                "inputnode.input_labels",
+            )
 
-            self.m_wf.connect(reconstruction_stage,
-                              "outputnode.output_labelmap",
-                              postprocessing_stage,
-                              "inputnode.input_labelmap")
+            self.m_wf.connect(
+                reconstruction_stage,
+                "outputnode.output_labelmap",
+                postprocessing_stage,
+                "inputnode.input_labelmap",
+            )
 
-            self.m_wf.connect(postprocessing_stage,
-                              "outputnode.output_labelmap",
-                              output_mgmt_stage,
-                              "inputnode.input_labelmap")
+            self.m_wf.connect(
+                postprocessing_stage,
+                "outputnode.output_labelmap",
+                output_mgmt_stage,
+                "inputnode.input_labelmap",
+            )
 
-        self.m_wf.connect(reconstruction_stage, "outputnode.output_sdi",
-                          postprocessing_stage, "inputnode.input_sdi")
+        self.m_wf.connect(
+            reconstruction_stage,
+            "outputnode.output_sdi",
+            postprocessing_stage,
+            "inputnode.input_sdi",
+        )
 
         if self.m_do_srr_assessment:
-            self.m_wf.connect(reconstruction_stage,
-                              "outputnode.output_TV_parameters",
-                              srr_assessment_stage,
-                              "inputnode.input_TV_parameters")
+            self.m_wf.connect(
+                reconstruction_stage,
+                "outputnode.output_TV_parameters",
+                srr_assessment_stage,
+                "inputnode.input_TV_parameters",
+            )
 
-            self.m_wf.connect(postprocessing_stage,
-                              "outputnode.output_sdi",
-                              srr_assessment_stage,
-                              "inputnode.input_sdi_image")
+            self.m_wf.connect(
+                postprocessing_stage,
+                "outputnode.output_sdi",
+                srr_assessment_stage,
+                "inputnode.input_sdi_image",
+            )
 
+            self.m_wf.connect(
+                postprocessing_stage,
+                "outputnode.output_image",
+                srr_assessment_stage,
+                "inputnode.input_sr_image",
+            )
 
-            self.m_wf.connect(postprocessing_stage,
-                              "outputnode.output_image",
-                              srr_assessment_stage,
-                              "inputnode.input_sr_image")
+            self.m_wf.connect(
+                input_mgmt_stage,
+                "outputnode.hr_reference_image",
+                srr_assessment_stage,
+                "inputnode.input_ref_image",
+            )
 
-            self.m_wf.connect(input_mgmt_stage,
-                              "outputnode.hr_reference_image",
-                              srr_assessment_stage,
-                              "inputnode.input_ref_image")
+            self.m_wf.connect(
+                input_mgmt_stage,
+                "outputnode.hr_reference_mask",
+                srr_assessment_stage,
+                "inputnode.input_ref_mask",
+            )
 
-            self.m_wf.connect(input_mgmt_stage,
-                              "outputnode.hr_reference_mask",
-                              srr_assessment_stage,
-                              "inputnode.input_ref_mask")
+            self.m_wf.connect(
+                input_mgmt_stage,
+                "outputnode.hr_reference_labels",
+                srr_assessment_stage,
+                "inputnode.input_ref_labelmap",
+            )
 
-            self.m_wf.connect(input_mgmt_stage,
-                              "outputnode.hr_reference_labels",
-                              srr_assessment_stage,
-                              "inputnode.input_ref_labelmap")
+            self.m_wf.connect(
+                srr_assessment_stage,
+                "outputnode.output_metrics",
+                output_mgmt_stage,
+                "inputnode.input_metrics",
+            )
 
-            self.m_wf.connect(srr_assessment_stage,
-                              "outputnode.output_metrics",
-                              output_mgmt_stage,
-                              "inputnode.input_metrics")
+            self.m_wf.connect(
+                srr_assessment_stage,
+                "outputnode.output_metrics_labels",
+                output_mgmt_stage,
+                "inputnode.input_metrics_labels",
+            )
 
-            self.m_wf.connect(srr_assessment_stage,
-                              "outputnode.output_metrics_labels",
-                              output_mgmt_stage,
-                              "inputnode.input_metrics_labels")
+        self.m_wf.connect(
+            input_mgmt_stage,
+            "outputnode.stacks_order",
+            output_mgmt_stage,
+            "inputnode.stacks_order",
+        )
 
-        self.m_wf.connect(input_mgmt_stage, "outputnode.stacks_order",
-                          output_mgmt_stage, "inputnode.stacks_order")
+        self.m_wf.connect(
+            preprocessing_stage,
+            "outputnode.output_masks",
+            output_mgmt_stage,
+            "inputnode.input_masks",
+        )
+        self.m_wf.connect(
+            preprocessing_stage,
+            "outputnode.output_images",
+            output_mgmt_stage,
+            "inputnode.input_images",
+        )
 
-        self.m_wf.connect(preprocessing_stage, "outputnode.output_masks",
-                          output_mgmt_stage, "inputnode.input_masks")
-        self.m_wf.connect(preprocessing_stage, "outputnode.output_images",
-                          output_mgmt_stage, "inputnode.input_images")
+        self.m_wf.connect(
+            reconstruction_stage,
+            "outputnode.output_transforms",
+            output_mgmt_stage,
+            "inputnode.input_transforms",
+        )
 
-        self.m_wf.connect(reconstruction_stage, "outputnode.output_transforms",
-                          output_mgmt_stage, "inputnode.input_transforms")
-
-        self.m_wf.connect(postprocessing_stage, "outputnode.output_sdi",
-                          output_mgmt_stage, "inputnode.input_sdi")
-        self.m_wf.connect(reconstruction_stage, "outputnode.output_json_path",
-                          output_mgmt_stage, "inputnode.input_json_path")
-        self.m_wf.connect(reconstruction_stage, "outputnode.output_sr_png",
-                          output_mgmt_stage, "inputnode.input_sr_png")
+        self.m_wf.connect(
+            postprocessing_stage,
+            "outputnode.output_sdi",
+            output_mgmt_stage,
+            "inputnode.input_sdi",
+        )
+        self.m_wf.connect(
+            reconstruction_stage,
+            "outputnode.output_json_path",
+            output_mgmt_stage,
+            "inputnode.input_json_path",
+        )
+        self.m_wf.connect(
+            reconstruction_stage,
+            "outputnode.output_sr_png",
+            output_mgmt_stage,
+            "inputnode.input_sr_png",
+        )
         if self.m_do_multi_parameters:
-            self.m_wf.connect(reconstruction_stage, "outputnode.output_TV_params",
-                              output_mgmt_stage, "inputnode.input_TV_params")
+            self.m_wf.connect(
+                reconstruction_stage,
+                "outputnode.output_TV_params",
+                output_mgmt_stage,
+                "inputnode.input_TV_params",
+            )
 
-        self.m_wf.connect(postprocessing_stage, "outputnode.output_image",
-                          output_mgmt_stage, "inputnode.input_sr")
-        self.m_wf.connect(postprocessing_stage, "outputnode.output_mask",
-                          output_mgmt_stage, "inputnode.input_hr_mask")
+        self.m_wf.connect(
+            postprocessing_stage,
+            "outputnode.output_image",
+            output_mgmt_stage,
+            "inputnode.input_sr",
+        )
+        self.m_wf.connect(
+            postprocessing_stage,
+            "outputnode.output_mask",
+            output_mgmt_stage,
+            "inputnode.input_hr_mask",
+        )
 
         if self.m_do_nlm_denoising:
-            self.m_wf.connect(preprocessing_stage,
-                              "outputnode.output_images_nlm",
-                              output_mgmt_stage, "inputnode.input_images_nlm")
+            self.m_wf.connect(
+                preprocessing_stage,
+                "outputnode.output_images_nlm",
+                output_mgmt_stage,
+                "inputnode.input_images_nlm",
+            )
 
         if not self.m_skip_stacks_ordering:
-            self.m_wf.connect(input_mgmt_stage, "outputnode.report_image",
-                              output_mgmt_stage, "inputnode.report_image")
-            self.m_wf.connect(input_mgmt_stage, "outputnode.motion_tsv",
-                              output_mgmt_stage, "inputnode.motion_tsv")
+            self.m_wf.connect(
+                input_mgmt_stage,
+                "outputnode.report_image",
+                output_mgmt_stage,
+                "inputnode.report_image",
+            )
+            self.m_wf.connect(
+                input_mgmt_stage,
+                "outputnode.motion_tsv",
+                output_mgmt_stage,
+                "inputnode.motion_tsv",
+            )
 
     def run(self, memory=None):
-        iflogger = nipype_logging.getLogger('nipype.interface')
+        iflogger = nipype_logging.getLogger("nipype.interface")
         res = super().run(memory, iflogger)
 
         if not self.m_do_multi_parameters:
@@ -539,60 +679,65 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         sub_ses = self.m_subject
         sub_path = self.m_subject
         if self.m_session is not None:
-            sub_ses += f'_{self.m_session}'
+            sub_ses += f"_{self.m_session}"
             sub_path = os.path.join(self.m_subject, self.m_session)
 
-        final_res_dir = os.path.join(self.m_output_dir,
-                                     '-'.join(["pymialsrtk", __version__]),
-                                     sub_path)
+        final_res_dir = os.path.join(
+            self.m_output_dir, "-".join(["pymialsrtk", __version__]), sub_path
+        )
 
         # Get the HTML report template
         path = pkg_resources.resource_filename(
-            'pymialsrtk',
-            "data/report/templates/template.html"
+            "pymialsrtk", "data/report/templates/template.html"
         )
         jinja_template_dir = os.path.dirname(path)
 
         file_loader = FileSystemLoader(jinja_template_dir)
         env = Environment(loader=file_loader)
 
-        template = env.get_template('template.html')
+        template = env.get_template("template.html")
 
         # Load main data derivatives necessary for the report
         sr_nii_image = os.path.join(
-            final_res_dir, 'anat',
-            f'{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.nii.gz'
+            final_res_dir,
+            "anat",
+            f"{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.nii.gz",
         )
         img = nib.load(sr_nii_image)
         sx, sy, sz = img.header.get_zooms()
 
         sr_json_metadata = os.path.join(
-            final_res_dir, 'anat',
-            f'{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.json'
+            final_res_dir,
+            "anat",
+            f"{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.json",
         )
         with open(sr_json_metadata) as f:
             sr_json_metadata = json.load(f)
 
         workflow_image = os.path.join(
-            '..', 'figures',
-            f'{sub_ses}_{self.m_run_type}-SR_id-'
-            f'{self.m_sr_id}_desc-processing_graph.png'
+            "..",
+            "figures",
+            f"{sub_ses}_{self.m_run_type}-SR_id-"
+            f"{self.m_sr_id}_desc-processing_graph.png",
         )
 
         sr_png_image = os.path.join(
-            '..', 'figures',
-            f'{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.png'
+            "..",
+            "figures",
+            f"{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.png",
         )
 
         motion_report_image = os.path.join(
-            '..', 'figures',
-            f'{sub_ses}_{self.m_run_type}-SR_id-'
-            f'{self.m_sr_id}_desc-motion_stats.png'
+            "..",
+            "figures",
+            f"{sub_ses}_{self.m_run_type}-SR_id-"
+            f"{self.m_sr_id}_desc-motion_stats.png",
         )
 
         log_file = os.path.join(
-            '..', 'logs',
-            f'{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_log.txt'
+            "..",
+            "logs",
+            f"{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_log.txt",
         )
 
         # Create the text for {{subject}} and {{session}} fields in template
@@ -615,28 +760,30 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             nlm_denoising="on" if self.m_do_nlm_denoising else "off",
             stacks_ordering="on" if not self.m_skip_stacks_ordering else "off",
             do_refine_hr_mask="on" if self.m_do_refine_hr_mask else "off",
-            use_auto_masks="on" if self.m_masks_derivatives_dir is None
-                else "off",
+            use_auto_masks="on"
+            if self.m_masks_derivatives_dir is None
+            else "off",
             custom_masks_dir=self.m_masks_derivatives_dir
-                if self.m_masks_derivatives_dir is not None else None,
+            if self.m_masks_derivatives_dir is not None
+            else None,
             sr_resolution=f"{sx} x {sy} x {sz} mm<sup>3</sup>",
             sr_json_metadata=sr_json_metadata,
             workflow_graph=workflow_image,
             sr_png_image=sr_png_image,
             motion_report_image=motion_report_image,
             version=__version__,
-            os=f'{platform.system()} {platform.release()}',
-            python=f'{sys.version}',
+            os=f"{platform.system()} {platform.release()}",
+            python=f"{sys.version}",
             openmp_threads=self.m_openmp_number_of_cores,
             nipype_threads=self.m_nipype_number_of_cores,
-            jinja_version=__jinja2_version__
+            jinja_version=__jinja2_version__,
         )
         # Create the report directory if it does not exist
-        report_dir = os.path.join(final_res_dir, 'report')
+        report_dir = os.path.join(final_res_dir, "report")
         os.makedirs(report_dir, exist_ok=True)
 
         # Save the HTML report file
-        out_report_filename = os.path.join(report_dir, f'{sub_ses}.html')
-        print(f'\t* Save HTML report as {out_report_filename}...')
+        out_report_filename = os.path.join(report_dir, f"{sub_ses}.html")
+        print(f"\t* Save HTML report as {out_report_filename}...")
         with open(out_report_filename, "w+") as file:
             file.write(report_html_content)

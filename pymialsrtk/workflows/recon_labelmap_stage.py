@@ -98,8 +98,8 @@ def create_recon_labelmap_stage(
 
     labels_reconstruct_hr_maps = pe.MapNode(
         interface=reconstruction.MialsrtkSDIComputation(
-            p_sub_ses,
-            p_verbose=p_verbose,
+            sub_ses=p_sub_ses,
+            verbose=p_verbose,
         ),
         iterfield=['label_id'],
         name='labels_reconstruct_hr_maps'

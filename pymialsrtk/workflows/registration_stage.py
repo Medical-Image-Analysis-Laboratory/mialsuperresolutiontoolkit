@@ -6,6 +6,7 @@
 """Module for the various parts of workflow pipeline."""
 
 from nipype.pipeline import engine as pe
+
 # Import the implemented interface from pymialsrtk
 import pymialsrtk.interfaces.reconstruction as reconstruction
 from pymialsrtk.workflows.input_stage import create_input_stage
@@ -16,12 +17,13 @@ from pymialsrtk.info import __version__
 from nipype.interfaces import utility as util
 
 
-def create_registration_stage(p_do_nlm_denoising=False,
-                              p_skip_svr=False,
-                              p_sub_ses='',
-                              p_verbose=False,
-                              name="registration_stage"
-                              ):
+def create_registration_stage(
+    p_do_nlm_denoising=False,
+    p_skip_svr=False,
+    p_sub_ses="",
+    p_verbose=False,
+    name="registration_stage",
+):
     """Create a a registration workflow, used as an optional stage in the
     preprocessing only pipeline.
 
@@ -62,75 +64,95 @@ def create_registration_stage(p_do_nlm_denoising=False,
 
     registration_stage = pe.Workflow(name=name)
     # Set up a node to define all inputs required for the preproc workflow
-    input_fields = ['input_images', 'input_masks', 'stacks_order']
+    input_fields = ["input_images", "input_masks", "stacks_order"]
 
     if p_do_nlm_denoising:
-        input_fields += ['input_images_nlm']
+        input_fields += ["input_images_nlm"]
 
     # Input node with the input fields specified above
     inputnode = pe.Node(
-        interface=util.IdentityInterface(
-            fields=input_fields),
-        name='inputnode')
+        interface=util.IdentityInterface(fields=input_fields), name="inputnode"
+    )
 
     # Output node with the interpolated HR image + transforms from registration
     outputnode = pe.Node(
         interface=util.IdentityInterface(
-            fields=['output_sdi', 'output_transforms']
-            ),
-        name='outputnode'
-        )
+            fields=["output_sdi", "output_transforms"]
+        ),
+        name="outputnode",
+    )
 
     srtkImageReconstruction = pe.Node(
         interface=reconstruction.MialsrtkImageReconstruction(
-            p_sub_ses,
-            p_skip_svr,
-            p_verbose
+            sub_ses=p_sub_ses, skip_svr=p_skip_svr, verbose=p_verbose
         ),
-        name='srtkImageReconstruction')
+        name="srtkImageReconstruction",
+    )
 
     if p_do_nlm_denoising:
         sdiComputation = pe.Node(
             interface=reconstruction.MialsrtkSDIComputation(
-                p_sub_ses,
-                p_verbose
+                sub_ses=p_sub_ses, verbose=p_verbose
             ),
-            name='sdiComputation')
+            name="sdiComputation",
+        )
 
-    registration_stage.connect(inputnode, "input_masks",
-                               srtkImageReconstruction, "input_masks")
-    registration_stage.connect(inputnode, "stacks_order",
-                               srtkImageReconstruction, "stacks_order")
-
-    if p_do_nlm_denoising:
-        registration_stage.connect(inputnode, "input_images_nlm",
-                                   srtkImageReconstruction, "input_images")
-
-        registration_stage.connect(inputnode, "stacks_order",
-                                   sdiComputation, "stacks_order")
-        registration_stage.connect(inputnode, "input_images_nlm",
-                                   sdiComputation, "input_images")
-        registration_stage.connect(inputnode, "input_masks",
-                                   sdiComputation, "input_masks")
-        registration_stage.connect(srtkImageReconstruction,
-                                   "output_transforms",
-                                   sdiComputation,
-                                   "input_transforms")
-        registration_stage.connect(srtkImageReconstruction, "output_sdi",
-                                   sdiComputation, "input_reference")
-
-    else:
-        registration_stage.connect(inputnode, "input_images",
-                                   srtkImageReconstruction, "input_images")
+    registration_stage.connect(
+        inputnode, "input_masks", srtkImageReconstruction, "input_masks"
+    )
+    registration_stage.connect(
+        inputnode, "stacks_order", srtkImageReconstruction, "stacks_order"
+    )
 
     if p_do_nlm_denoising:
-        registration_stage.connect(sdiComputation, "output_sdi",
-                                   outputnode, "output_sdi")
-    else:
-        registration_stage.connect(srtkImageReconstruction, "output_sdi",
-                                   outputnode, "output_sdi")
+        registration_stage.connect(
+            inputnode,
+            "input_images_nlm",
+            srtkImageReconstruction,
+            "input_images",
+        )
 
-    registration_stage.connect(srtkImageReconstruction, "output_transforms",
-                               outputnode, "output_transforms")
+        registration_stage.connect(
+            inputnode, "stacks_order", sdiComputation, "stacks_order"
+        )
+        registration_stage.connect(
+            inputnode, "input_images_nlm", sdiComputation, "input_images"
+        )
+        registration_stage.connect(
+            inputnode, "input_masks", sdiComputation, "input_masks"
+        )
+        registration_stage.connect(
+            srtkImageReconstruction,
+            "output_transforms",
+            sdiComputation,
+            "input_transforms",
+        )
+        registration_stage.connect(
+            srtkImageReconstruction,
+            "output_sdi",
+            sdiComputation,
+            "input_reference",
+        )
+
+    else:
+        registration_stage.connect(
+            inputnode, "input_images", srtkImageReconstruction, "input_images"
+        )
+
+    if p_do_nlm_denoising:
+        registration_stage.connect(
+            sdiComputation, "output_sdi", outputnode, "output_sdi"
+        )
+    else:
+        registration_stage.connect(
+            srtkImageReconstruction, "output_sdi", outputnode, "output_sdi"
+        )
+
+    registration_stage.connect(
+        srtkImageReconstruction,
+        "output_transforms",
+        outputnode,
+        "output_transforms",
+    )
 
     return registration_stage
