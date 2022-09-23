@@ -620,67 +620,117 @@ class MialsrtkMaskImage(BaseInterface):
 ###############################
 
 
-class FilteringByRunidInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the FilteringByRunid interface."""
+class CheckAndFilterInputStacksInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of the FilterInputStacks interface."""
 
-    input_files = InputMultiPath(
-        File(mandatory=True), desc="Input files on which motion is computed"
-    )
+    input_images = InputMultiPath(File(mandatory=True), desc="Input images")
+    input_masks = InputMultiPath(File(None), desc="Input masks")
+    input_labels = InputMultiPath(File(None), desc="Input label maps")
     stacks_id = traits.List(desc="List of stacks id to be kept")
 
 
-class FilteringByRunidOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the FilteringByRunid interface."""
+class CheckAndFilterInputStacksOutputSpec(TraitedSpec):
+    """Class used to represent outputs of the FilterInputStacks interface."""
 
-    output_files = traits.List(desc="Filtered list of stack files")
+    output_stacks = traits.List(desc="Filtered list of stack files")
+    output_images = traits.List(
+        traits.Str, desc="Filtered list of image files"
+    )
+    output_masks = traits.List(desc="Filtered list of mask files")
+    output_labels = traits.List(desc="Filtered list of label files")
 
 
-class FilteringByRunid(BaseInterface):
-    """Runs a filtering of files.
+class CheckAndFilterInputStacks(BaseInterface):
+    """Runs a filtering and a check on the input files.
 
     This module filters the input files matching the specified run-ids.
     Other files are discarded.
 
     Examples
     --------
-    >>> from pymialsrtk.interfaces.preprocess import FilteringByRunid
-    >>> stacksFiltering = FilteringByRunid()
+    >>> from pymialsrtk.interfaces.preprocess import CheckAndFilterInputStacks
+    >>> stacksFiltering = CheckAndFilterInputStacks()
     >>> stacksFiltering.inputs.input_masks = ['sub-01_run-1_mask.nii.gz', 'sub-01_run-4_mask.nii.gz', 'sub-01_run-2_mask.nii.gz']
     >>> stacksFiltering.inputs.stacks_id = [1,2]
     >>> stacksFiltering.run() # doctest: +SKIP
 
     """
 
-    input_spec = FilteringByRunidInputSpec
-    output_spec = FilteringByRunidOutputSpec
+    input_spec = CheckAndFilterInputStacksInputSpec
+    output_spec = CheckAndFilterInputStacksOutputSpec
 
-    m_output_files = []
+    m_output_stacks = []
+    m_output_images = []
+    m_output_masks = []
+    m_output_labels = []
 
     def _run_interface(self, runtime):
-        self.m_output_files = self._filter_by_runid(
-            self.inputs.input_files, self.inputs.stacks_id
+        self.m_output_stacks, out_files = self._filter_by_runid(
+            self.inputs.input_images,
+            self.inputs.input_masks,
+            self.inputs.input_labels,
+            self.inputs.stacks_id,
         )
+        print(out_files)
+        self.m_output_images = out_files.pop(0)
+        if self.inputs.input_masks:
+            self.m_output_masks = out_files.pop(0)
+        if self.inputs.input_labels:
+            self.m_output_labels = out_files.pop(0)
 
         return runtime
 
-    def _filter_by_runid(self, input_files, p_stacks_id):
-        output_files = []
-        stacks = deepcopy(p_stacks_id)
-        for f in input_files:
-            f_id = int(f.split("_run-")[1].split("_")[0])
-            if f_id in p_stacks_id:
-                output_files.append(f)
-                stacks.remove(f_id)
-        print(f"filtering: {input_files}, {p_stacks_id}")
-        if len(stacks) > 0:
-            raise RuntimeError(
-                f"Stacks with id {stacks} not found in {os.path.dirname(f)}."
+    def _filter_by_runid(
+        self, input_images, input_masks, input_labels, p_stacks_id
+    ):
+
+        input_checks = [input_images]
+        if input_masks:
+            input_checks.append(input_masks)
+        if input_labels:
+            input_checks.append(input_labels)
+
+        if p_stacks_id:
+            assert len(p_stacks_id) > 1, (
+                f"Only a single stack (# {p_stacks_id[0]}) "
+                "was given. MialSRTK needs at least two stacks to run."
             )
-        return output_files
+        else:
+            # If stacks aren't given, take as stack the runs found in the images.
+            # 1. Check that there is at least two scans in the input folder.
+            assert len(input_images) > 1, (
+                f"Only a single input file ({input_images[0]}) "
+                "was found. MialSRTK needs at least two stacks to run.\n"
+                "It is however recommended to use at least *three* orthogonal stacks."
+            )
+            p_stacks_id = [
+                int(f.split("run-")[1].split("_")[0]) for f in input_images
+            ]
+
+        # Check consistency between files, i.e. that for a given p_stacks_id
+        # the file exists for each inputs.
+        output_files = []
+        for input_files in input_checks:
+            stacks = deepcopy(p_stacks_id)
+            output_list = []
+            for f in input_files:
+                f_id = int(f.split("_run-")[1].split("_")[0])
+                if f_id in p_stacks_id:
+                    output_list.append(f)
+                    stacks.remove(f_id)
+            output_files.append(output_list)
+            if len(stacks) > 0:
+                raise RuntimeError(
+                    f"Stacks with id {stacks} not found in {os.path.dirname(f)}."
+                )
+        return p_stacks_id, output_files
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs["output_files"] = self.m_output_files
+        outputs["output_stacks"] = self.m_output_stacks
+        outputs["output_images"] = self.m_output_images
+        outputs["output_masks"] = self.m_output_masks
+        outputs["output_labels"] = self.m_output_labels
         return outputs
 
 

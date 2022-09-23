@@ -320,7 +320,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         if not self.m_use_manual_masks and self.m_do_reconstruct_labels:
             raise RuntimeError(
-                "m_do_reconstruct_labels interface requires"
+                "m_do_reconstruct_labels interface requires "
                 "to provide low-resolution binary masks."
             )
 

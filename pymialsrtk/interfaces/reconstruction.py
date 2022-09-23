@@ -183,7 +183,7 @@ class MialsrtkImageReconstruction(BaseInterface):
         input_masks = reorder_by_run_ids(
             self.inputs.input_masks, self.inputs.stacks_order
         )
-        print(self.inputs.out_sdi_prefix, self.inputs.input_rad_dilatation)
+
         for in_image, in_mask in zip(input_images, input_masks):
 
             params.append("-i")

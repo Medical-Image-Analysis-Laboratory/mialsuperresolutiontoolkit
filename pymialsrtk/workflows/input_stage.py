@@ -155,20 +155,7 @@ def create_input_stage(
             iterfield=["out_file"],
         )
 
-        if p_stacks is not None:
-            custom_masks_filter = pe.Node(
-                interface=preprocess.FilteringByRunid(stacks_id=p_stacks),
-                name="custom_masks_filter",
-            )
-
     else:
-
-        if p_stacks is not None:
-            t2ws_filter_prior_masks = pe.Node(
-                interface=preprocess.FilteringByRunid(stacks_id=p_stacks),
-                name="t2ws_filter_prior_masks",
-            )
-
         brainMask = pe.MapNode(
             interface=preprocess.BrainExtraction(),
             name="brainExtraction",
@@ -196,17 +183,12 @@ def create_input_stage(
         ).split(".index")[0]
         brainMask.inputs.threshold_seg = 0.5
 
-    t2ws_filtered = pe.Node(
-        interface=preprocess.FilteringByRunid(), name="t2ws_filtered"
-    )
-    masks_filtered = pe.Node(
-        interface=preprocess.FilteringByRunid(), name="masks_filtered"
+    check_input = pe.Node(
+        preprocess.CheckAndFilterInputStacks(),
+        name="filter_input",
     )
 
-    if p_do_reconstruct_labels:
-        labels_filtered = pe.Node(
-            interface=preprocess.FilteringByRunid(), name="labels_filtered"
-        )
+    check_input.inputs.stacks_id = p_stacks if p_stacks else []
 
     if not p_skip_stacks_ordering:
         stacksOrdering = pe.Node(
@@ -249,60 +231,30 @@ def create_input_stage(
         rg.inputs.field_template = dict(
             T2w=t2w_template, mask=mask_template, labels=labels_template
         )
+    input_stage.connect(dg, "T2ws", check_input, "input_images")
 
     if p_use_manual_masks:
-        if p_stacks is not None:
-            input_stage.connect(
-                dg, "masks", custom_masks_filter, "input_files"
-            )
-            input_stage.connect(
-                custom_masks_filter, "output_files", brainMask, "out_file"
-            )
-        else:
-            input_stage.connect(dg, "masks", brainMask, "out_file")
+        input_stage.connect(dg, "masks", check_input, "input_masks")
+        input_stage.connect(check_input, "output_masks", brainMask, "out_file")
     else:
-        if p_stacks is not None:
-            input_stage.connect(
-                dg, "T2ws", t2ws_filter_prior_masks, "input_files"
-            )
-            input_stage.connect(
-                t2ws_filter_prior_masks, "output_files", brainMask, "in_file"
-            )
-        else:
-            input_stage.connect(dg, "T2ws", brainMask, "in_file")
+        input_stage.connect(check_input, "output_images", brainMask, "in_file")
 
     if not p_skip_stacks_ordering:
         input_stage.connect(
             brainMask, "out_file", stacksOrdering, "input_masks"
         )
-
     input_stage.connect(
-        stacksOrdering, "stacks_order", t2ws_filtered, "stacks_id"
+        check_input, "output_images", outputnode, "t2ws_filtered"
     )
-    input_stage.connect(dg, "T2ws", t2ws_filtered, "input_files")
-    input_stage.connect(
-        stacksOrdering, "stacks_order", masks_filtered, "stacks_id"
-    )
-    input_stage.connect(brainMask, "out_file", masks_filtered, "input_files")
-
-    input_stage.connect(
-        masks_filtered, "output_files", outputnode, "masks_filtered"
-    )
-    input_stage.connect(
-        t2ws_filtered, "output_files", outputnode, "t2ws_filtered"
-    )
+    input_stage.connect(brainMask, "out_file", outputnode, "masks_filtered")
     input_stage.connect(
         stacksOrdering, "stacks_order", outputnode, "stacks_order"
     )
 
     if p_do_reconstruct_labels:
+        input_stage.connect(dg, "labels", check_input, "input_labels")
         input_stage.connect(
-            stacksOrdering, "stacks_order", labels_filtered, "stacks_id"
-        )
-        input_stage.connect(dg, "labels", labels_filtered, "input_files")
-
-        input_stage.connect(
-            labels_filtered, "output_files", outputnode, "labels_filtered"
+            check_input, "output_labels", outputnode, "labels_filtered"
         )
 
     if not p_skip_stacks_ordering:
