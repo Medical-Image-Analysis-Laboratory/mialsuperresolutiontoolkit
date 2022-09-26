@@ -671,7 +671,6 @@ class CheckAndFilterInputStacks(BaseInterface):
             self.inputs.input_labels,
             self.inputs.stacks_id,
         )
-        print(out_files)
         self.m_output_images = out_files.pop(0)
         if self.inputs.input_masks:
             self.m_output_masks = out_files.pop(0)
