@@ -125,7 +125,7 @@ class AbstractAnatomicalPipeline:
         p_verbose=None,
         p_openmp_number_of_cores=None,
         p_nipype_number_of_cores=None,
-        p_run_type=None
+        p_run_type=None,
     ):
         """Constructor of AnatomicalPipeline class instance."""
 
@@ -146,29 +146,30 @@ class AbstractAnatomicalPipeline:
         # If masks directory is not specified use the
         # automated brain extraction method.
         self.m_masks_derivatives_dir = p_masks_derivatives_dir
-        self.m_use_manual_masks = True \
-            if self.m_masks_derivatives_dir is not None else False
+        self.m_use_manual_masks = (
+            True if self.m_masks_derivatives_dir is not None else False
+        )
         self.m_masks_desc = p_masks_desc if self.m_use_manual_masks else None
 
         self.m_sub_ses = self.m_subject
         self.m_sub_path = self.m_subject
 
         if self.m_session is not None:
-            self.m_sub_ses = ''.join([self.m_sub_ses, '_', self.m_session])
+            self.m_sub_ses = "".join([self.m_sub_ses, "_", self.m_session])
             self.m_sub_path = os.path.join(self.m_subject, self.m_session)
 
         self.m_wf_base_dir = os.path.join(
             self.m_output_dir,
-            '-'.join(["nipype", __nipype_version__]),
+            "-".join(["nipype", __nipype_version__]),
             self.m_sub_path,
-            f"{self.m_run_type}-{self.m_sr_id}"
-            )
+            f"{self.m_run_type}-{self.m_sr_id}",
+        )
 
         self.m_final_res_dir = os.path.join(
             self.m_output_dir,
-            '-'.join(["pymialsrtk", __version__]),
-            self.m_sub_path
-            )
+            "-".join(["pymialsrtk", __version__]),
+            self.m_sub_path,
+        )
 
         if not os.path.exists(self.m_wf_base_dir):
             os.makedirs(self.m_wf_base_dir)
@@ -208,19 +209,25 @@ class AbstractAnatomicalPipeline:
         if logger:
             iflogger = logger
         else:
-            iflogger = nipype_logging.getLogger('nipype.interface')
+            iflogger = nipype_logging.getLogger("nipype.interface")
         iflogger.info("**** Workflow graph creation ****")
-        self.m_wf.write_graph(dotfilename='graph.dot', graph2use='colored',
-                              format='png', simple_form=True)
+        self.m_wf.write_graph(
+            dotfilename="graph.dot",
+            graph2use="colored",
+            format="png",
+            simple_form=True,
+        )
 
         # Copy and rename the generated "graph.png" image
-        src = os.path.join(self.m_wf.base_dir, self.m_wf.name, 'graph.png')
+        src = os.path.join(self.m_wf.base_dir, self.m_wf.name, "graph.png")
 
         # String formatting for saving
         subject_str = f"{self.m_subject}"
-        dst_base = os.path.join(self.m_output_dir,
-                                '-'.join(["pymialsrtk", __version__]),
-                                self.m_subject)
+        dst_base = os.path.join(
+            self.m_output_dir,
+            "-".join(["pymialsrtk", __version__]),
+            self.m_subject,
+        )
 
         if self.m_session is not None:
             subject_str += f"_{self.m_session}"
@@ -228,25 +235,26 @@ class AbstractAnatomicalPipeline:
 
         dst = os.path.join(
             dst_base,
-            'figures',
-            f'{subject_str}_{self.m_run_type}-SR_id-{self.m_sr_id}_' +
-            'desc-processing_graph.png')
+            "figures",
+            f"{subject_str}_{self.m_run_type}-SR_id-{self.m_sr_id}_"
+            + "desc-processing_graph.png",
+        )
 
         # Create the figures/ and parent directories if they do not exist
         figures_dir = os.path.dirname(dst)
         os.makedirs(figures_dir, exist_ok=True)
         # Make the copy
-        iflogger.info(f'\t > Copy {src} to {dst}...')
+        iflogger.info(f"\t > Copy {src} to {dst}...")
         shutil.copy(src=src, dst=dst)
 
         # Create dictionary of arguments passed to plugin_args
         args_dict = {
-            'raise_insufficient': False,
-            'n_procs': self.m_nipype_number_of_cores
+            "raise_insufficient": False,
+            "n_procs": self.m_nipype_number_of_cores,
         }
 
         if (memory is not None) and (memory > 0):
-            args_dict['memory_gb'] = memory
+            args_dict["memory_gb"] = memory
 
         iflogger.info("**** Processing ****")
         # datetime object containing current start date and time
@@ -256,7 +264,7 @@ class AbstractAnatomicalPipeline:
 
         # Execute the workflow
         if self.m_nipype_number_of_cores > 1:
-            res = self.m_wf.run(plugin='MultiProc', plugin_args=args_dict)
+            res = self.m_wf.run(plugin="MultiProc", plugin_args=args_dict)
         else:
             res = self.m_wf.run()
 
@@ -264,14 +272,14 @@ class AbstractAnatomicalPipeline:
         src = os.path.join(self.m_wf.base_dir, "pypeline.log")
         dst = os.path.join(
             dst_base,
-            'logs',
-            f'{subject_str}_{self.m_run_type}-SR_id-{self.m_sr_id}_log.txt'
-            )
+            "logs",
+            f"{subject_str}_{self.m_run_type}-SR_id-{self.m_sr_id}_log.txt",
+        )
         # Create the logs/ and parent directories if they do not exist
         logs_dir = os.path.dirname(dst)
         os.makedirs(logs_dir, exist_ok=True)
         # Make the copy
-        iflogger.info(f'\t > Copy {src} to {dst}...')
+        iflogger.info(f"\t > Copy {src} to {dst}...")
         shutil.copy(src=src, dst=dst)
 
         # datetime object containing current end date and time
@@ -282,7 +290,7 @@ class AbstractAnatomicalPipeline:
         # Compute elapsed running time in minutes and seconds
         duration = end - start
         (minutes, seconds) = divmod(duration.total_seconds(), 60)
-        self.m_run_elapsed_time = f'{int(minutes)} min. and {int(seconds)} s.'
+        self.m_run_elapsed_time = f"{int(minutes)} min. and {int(seconds)} s."
         print(f" Elapsed time: {self.m_run_end_time}")
 
         iflogger.info("**** Write dataset derivatives description ****")
@@ -290,7 +298,7 @@ class AbstractAnatomicalPipeline:
             write_bids_derivative_description(
                 bids_dir=self.m_bids_dir,
                 deriv_dir=self.m_output_dir,
-                pipeline_name=toolbox
+                pipeline_name=toolbox,
             )
 
         return res
