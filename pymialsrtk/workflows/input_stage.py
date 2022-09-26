@@ -148,14 +148,7 @@ def create_input_stage(
 
     dg.inputs.field_template = dict_templates
 
-    if p_use_manual_masks:
-        brainMask = pe.MapNode(
-            interface=IdentityInterface(fields=["out_file"]),
-            name="brain_masks_bypass",
-            iterfield=["out_file"],
-        )
-
-    else:
+    if not p_use_manual_masks:
         brainMask = pe.MapNode(
             interface=preprocess.BrainExtraction(),
             name="brainExtraction",
@@ -234,19 +227,30 @@ def create_input_stage(
     input_stage.connect(dg, "T2ws", check_input, "input_images")
 
     if p_use_manual_masks:
+        # Directly connect the input_masks to the output and stack ordering
         input_stage.connect(dg, "masks", check_input, "input_masks")
-        input_stage.connect(check_input, "output_masks", brainMask, "out_file")
-    else:
-        input_stage.connect(check_input, "output_images", brainMask, "in_file")
-
-    if not p_skip_stacks_ordering:
         input_stage.connect(
-            brainMask, "out_file", stacksOrdering, "input_masks"
+            check_input, "output_masks", outputnode, "masks_filtered"
         )
+        if not p_skip_stacks_ordering:
+            input_stage.connect(
+                check_input, "output_masks", stacksOrdering, "input_masks"
+            )
+    else:
+        # Compute the masks, map them to the output and stack ordering
+        input_stage.connect(check_input, "output_images", brainMask, "in_file")
+        input_stage.connect(
+            brainMask, "out_file", outputnode, "masks_filtered"
+        )
+        if not p_skip_stacks_ordering:
+            input_stage.connect(
+                brainMask, "out_file", stacksOrdering, "input_masks"
+            )
+
     input_stage.connect(
         check_input, "output_images", outputnode, "t2ws_filtered"
     )
-    input_stage.connect(brainMask, "out_file", outputnode, "masks_filtered")
+
     input_stage.connect(
         stacksOrdering, "stacks_order", outputnode, "stacks_order"
     )
