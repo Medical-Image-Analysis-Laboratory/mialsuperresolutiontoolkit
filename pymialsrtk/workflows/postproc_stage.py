@@ -107,15 +107,15 @@ def create_postproc_stage(
 
         atlas_grabber = pe.Node(
             interface=DataGrabber(
-                outfields=["atlas", "tissue"],
+                outfields=["atlas"],
                 base_directory="/sta",
                 template="*",
                 raise_on_empty=True,
                 sort_filelist=True,
-                field_template=dict(atlas="STA" + ga_str + ".nii.gz"),
             ),
             name="atlas_grabber",
         )
+        atlas_grabber.inputs.field_template = dict(atlas="STA" + ga_str + ".nii.gz")
 
         resample_t2w_template = pe.Node(
             interface=preprocess.ResampleImage(verbose=p_verbose),
