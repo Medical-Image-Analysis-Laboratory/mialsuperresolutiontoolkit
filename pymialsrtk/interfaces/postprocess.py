@@ -699,10 +699,25 @@ class ImageMetricsInputSpec(BaseInterfaceInputSpec):
     input_ref_image = File(
         desc="Input reference image filename", mandatory=True
     )
+    input_ref_mask = File(desc="Input reference mask filename", mandatory=True)
     input_ref_labelmap = File(
         desc="Input reference labelmap filename", mandatory=False
     )
+
     input_TV_parameters = traits.Dict(mandatory=True)
+
+    normalize_input = traits.Bool(
+        True,
+        desc="Whether the image and reference should be individually "
+        "normalized before passing them into the metrics",
+        usedefault=True,
+    )
+    mask_input = traits.Bool(
+        True,
+        desc="Whether the image and reference should be masked when "
+        "computing the metrics",
+        usedefault=True,
+    )
 
 
 class ImageMetricsOutputSpec(TraitedSpec):
@@ -720,6 +735,7 @@ class ImageMetrics(BaseInterface):
 
     _image_array = None
     _reference_array = None
+    _mask_array = None
     _labelmap_array = None
 
     _dict_metrics = None
@@ -751,6 +767,9 @@ class ImageMetrics(BaseInterface):
         reader.SetFileName(self.inputs.input_ref_image)
         self._reference_array = sitk.GetArrayFromImage(reader.Execute())
 
+        reader.SetFileName(self.inputs.input_ref_mask)
+        self._mask_array = sitk.GetArrayFromImage(reader.Execute())
+
         reader.SetFileName(self.inputs.input_image)
         self._image_array = sitk.GetArrayFromImage(reader.Execute())
 
@@ -758,40 +777,73 @@ class ImageMetrics(BaseInterface):
             reader.SetFileName(self.inputs.input_ref_labelmap)
             self._labelmap_array = sitk.GetArrayFromImage(reader.Execute())
 
-    def _compute_metrics(self):
+    def norm_data(self, data):
+        """Normalize data into 0-1 range"""
+        return (data - data.min()) / (data.max() - data.min())
 
-        datarange = int(
-            np.amax(self._reference_array)
-            - min(np.amin(self._image_array), np.amin(self._reference_array))
-        )
+    def _compute_metrics(self, mask=None):
+        dict_metrics = {}
+        im = self._image_array
+        ref = self._reference_array
+        if mask is None:
+            mask = self._mask_array
 
-        # print('Running PSNR computation')
+        if self.inputs.normalize_input:
+            im = self.norm_data(im)
+            ref = self.norm_data(ref)
+
+        # Datarange will be 1. if normalize_input = True
+        datarange = int(np.amax(ref) - min(np.amin(im), np.amin(ref)))
+
+        im_in = im
+        ref_in = ref
+        if self.inputs.mask_input:
+            im_in = im[mask > 0]
+            ref_in = ref[mask > 0]
+        print("im_in", im_in.sum(), ref_in.sum())
+        # PSNR COMPUTATION
         psnr = skimage.metrics.peak_signal_noise_ratio(
-            self._reference_array, self._image_array, data_range=datarange
+            ref_in, im_in, data_range=datarange
         )
-        self._dict_metrics["PSNR"] = psnr
+        dict_metrics["PSNR"] = psnr
 
-        # print('Running SSIM computation')
+        # nRMSE
+        nrmse = skimage.metrics.normalized_root_mse(ref_in, im_in)
+        dict_metrics["nRMSE"] = nrmse
+
+        # RMSE
+        rmse = np.sqrt(skimage.metrics.mean_squared_error(ref_in, im_in))
+        dict_metrics["RMSE"] = rmse
+
+        # SSIM
         ssim = skimage.metrics.structural_similarity(
-            self._reference_array, self._image_array, data_range=datarange
+            ref,
+            im,
+            data_range=datarange,
+            full=True,
         )
-        self._dict_metrics["SSIM"] = ssim
 
-        # print('Running nSSIM computation')
+        def pick_ssim(ssim):
+            """Pick the SSIM output:
+            1- If masked input, take the full SSIM on the masked input
+            2- Else, return the average SSIM
+            """
+            if self.inputs.mask_input:
+                return ssim[1][mask > 0].mean()
+            else:
+                return ssim[0]
+
+        dict_metrics["SSIM"] = pick_ssim(ssim)
+
+        # nSSIM
         nssim = skimage.metrics.structural_similarity(
-            (self._reference_array - np.min(self._reference_array))
-            / np.ptp(self._reference_array),
-            (self._image_array - np.min(self._image_array))
-            / np.ptp(self._image_array),
+            (ref - np.min(ref)) / np.ptp(ref),
+            (im - np.min(im)) / np.ptp(im),
             data_range=1,
+            full=True,
         )
-        self._dict_metrics["nSSIM"] = nssim
-
-        # print('Running RMSE computation')
-        rmse = skimage.metrics.normalized_root_mse(
-            self._reference_array, self._image_array
-        )
-        self._dict_metrics["RMSE"] = rmse
+        dict_metrics["nSSIM"] = pick_ssim(nssim)
+        return dict_metrics
 
     def _generate_csv(self):
         TV_params = self.inputs.input_TV_parameters
@@ -810,35 +862,11 @@ class ImageMetrics(BaseInterface):
     def _compute_metrics_labels(self):
         label_ids = list(np.unique(self._labelmap_array).astype(int))
         label_ids.remove(0)
-
         for label in label_ids:
-            dict_label = {"Label": label}
-            ref_label = np.where(
-                self._labelmap_array == label, self._reference_array, 0
-            )
-            img_label = np.where(
-                self._labelmap_array == label, self._image_array, 0
-            )
-
-            datarange = int(
-                np.amax(ref_label)
-                - min(np.amin(img_label), np.amin(ref_label))
-            )
-
-            # print('Running PSNR computation')
-            psnr = skimage.metrics.peak_signal_noise_ratio(
-                ref_label, img_label, data_range=datarange
-            )
-            dict_label["PSNR"] = psnr
-
-            # print('Running SSIM computation')
-            ssim = skimage.metrics.structural_similarity(
-                ref_label, img_label, data_range=datarange
-            )
-            dict_label["SSIM"] = ssim
-
+            mask_label = self._labelmap_array == label
+            dict_label = self._compute_metrics(mask_label)
+            dict_label["Label"] = label
             self._list_metrics_labels.append(dict_label)
-            # return
 
     def _generate_csv_labels(self):
         TV_params = self.inputs.input_TV_parameters
@@ -858,7 +886,7 @@ class ImageMetrics(BaseInterface):
     def _run_interface(self, runtime):
         self._reset_class_members()
         self._load_image_arrays()
-        self._compute_metrics()
+        self._dict_metrics = self._compute_metrics()
         self._generate_csv()
         print("Computed and saved overall metrics!")
 
