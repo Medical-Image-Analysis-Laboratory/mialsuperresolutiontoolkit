@@ -5,6 +5,7 @@
 """Workflow for the management of the output of super-resolution
 reconstruction pipeline."""
 
+from pymialsrtk import interfaces
 from traits.api import *
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
@@ -123,6 +124,10 @@ def create_srr_output_stage(
         interface=util.IdentityInterface(fields=input_fields), name="inputnode"
     )
 
+    # Report generation
+    reportGenerator = pe.Node(
+        interface=postprocess.ReportGeneration(), name="report_gen"
+    )
     # Datasinker
     finalFilenamesGeneration = pe.Node(
         interface=postprocess.FilenamesGeneration(

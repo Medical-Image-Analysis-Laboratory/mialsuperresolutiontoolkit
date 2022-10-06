@@ -536,7 +536,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
                 f"    Image properties: Zooms={zooms}/ Shape={shapes}/ "
                 f"FOV={fovs}/ middle cut={cuts}"
             )
-
+        print("CUTS:", cuts)
         # Crop the image if the FOV exceeds a certain value
         def compute_axis_crop_indices(cut, fov, max_fov=120):
             """Compute the cropping index in a dimension if the Field-Of-View exceeds a maximum value of 120mm by default.

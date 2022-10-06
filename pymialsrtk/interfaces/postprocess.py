@@ -999,3 +999,135 @@ class MergeMajorityVote(BaseInterface):
         outputs = self._outputs().get()
         outputs["output_image"] = self._gen_filename()
         return outputs
+
+
+class ReportGenerationInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of
+    the ReportGeneration interface."""
+
+    input_stuff = InputMultiPath(File(mandatory=True), desc="")
+    input_2 = InputMultiPath(File(mandatory=True), desc="")
+
+
+class ReportGenerationOutputSpec(TraitedSpec):
+    """Class used to represent outputs of
+    the ReportGeneration interface."""
+
+    report_html = File(desc="")
+
+
+class ReportGeneration(BaseInterface):
+    def create_subject_report(self):
+        """Create the HTML report"""
+        # Set main subject derivatives directory
+        sub_ses = self.m_subject
+        sub_path = self.m_subject
+        if self.m_session is not None:
+            sub_ses += f"_{self.m_session}"
+            sub_path = os.path.join(self.m_subject, self.m_session)
+
+        final_res_dir = os.path.join(
+            self.m_output_dir, "-".join(["pymialsrtk", __version__]), sub_path
+        )
+
+        # Get the HTML report template
+        path = pkg_resources.resource_filename(
+            "pymialsrtk", "data/report/templates/template.html"
+        )
+        jinja_template_dir = os.path.dirname(path)
+
+        file_loader = FileSystemLoader(jinja_template_dir)
+        env = Environment(loader=file_loader)
+
+        template = env.get_template("template.html")
+
+        # Load main data derivatives necessary for the report
+        sr_nii_image = os.path.join(
+            final_res_dir,
+            "anat",
+            f"{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.nii.gz",
+        )
+        img = nib.load(sr_nii_image)
+        sx, sy, sz = img.header.get_zooms()
+
+        sr_json_metadata = os.path.join(
+            final_res_dir,
+            "anat",
+            f"{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.json",
+        )
+        with open(sr_json_metadata) as f:
+            sr_json_metadata = json.load(f)
+
+        workflow_image = os.path.join(
+            "..",
+            "figures",
+            f"{sub_ses}_{self.m_run_type}-SR_id-"
+            f"{self.m_sr_id}_desc-processing_graph.png",
+        )
+
+        sr_png_image = os.path.join(
+            "..",
+            "figures",
+            f"{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_T2w.png",
+        )
+
+        motion_report_image = os.path.join(
+            "..",
+            "figures",
+            f"{sub_ses}_{self.m_run_type}-SR_id-"
+            f"{self.m_sr_id}_desc-motion_stats.png",
+        )
+
+        log_file = os.path.join(
+            "..",
+            "logs",
+            f"{sub_ses}_{self.m_run_type}-SR_id-{self.m_sr_id}_log.txt",
+        )
+
+        # Create the text for {{subject}} and {{session}} fields in template
+        report_subject_text = f'{self.m_subject.split("-")[-1]}'
+        if self.m_session is not None:
+            report_session_text = f'{self.m_session.split("-")[-1]}'
+        else:
+            report_session_text = None
+
+        # Generate the report
+        report_html_content = template.render(
+            subject=report_subject_text,
+            session=report_session_text,
+            processing_datetime=self.m_run_start_time,
+            run_time=self.m_run_elapsed_time,
+            log=log_file,
+            sr_id=self.m_sr_id,
+            stacks=self.m_stacks,
+            svr="on" if not self.m_skip_svr else "off",
+            nlm_denoising="on" if self.m_do_nlm_denoising else "off",
+            stacks_ordering="on" if not self.m_skip_stacks_ordering else "off",
+            do_refine_hr_mask="on" if self.m_do_refine_hr_mask else "off",
+            use_auto_masks="on"
+            if self.m_masks_derivatives_dir is None
+            else "off",
+            custom_masks_dir=self.m_masks_derivatives_dir
+            if self.m_masks_derivatives_dir is not None
+            else None,
+            sr_resolution=f"{sx} x {sy} x {sz} mm<sup>3</sup>",
+            sr_json_metadata=sr_json_metadata,
+            workflow_graph=workflow_image,
+            sr_png_image=sr_png_image,
+            motion_report_image=motion_report_image,
+            version=__version__,
+            os=f"{platform.system()} {platform.release()}",
+            python=f"{sys.version}",
+            openmp_threads=self.m_openmp_number_of_cores,
+            nipype_threads=self.m_nipype_number_of_cores,
+            jinja_version=__jinja2_version__,
+        )
+        # Create the report directory if it does not exist
+        report_dir = os.path.join(final_res_dir, "report")
+        os.makedirs(report_dir, exist_ok=True)
+
+        # Save the HTML report file
+        out_report_filename = os.path.join(report_dir, f"{sub_ses}.html")
+        print(f"\t* Save HTML report as {out_report_filename}...")
+        with open(out_report_filename, "w+") as file:
+            file.write(report_html_content)
