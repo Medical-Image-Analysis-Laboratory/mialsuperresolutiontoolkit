@@ -5,12 +5,6 @@
 """Module for the super-resolution reconstruction pipeline."""
 
 import os
-import sys
-import platform
-import json
-import pkg_resources
-from jinja2 import Environment, FileSystemLoader
-from jinja2 import __version__ as __jinja2_version__
 import nibabel as nib
 import pymialsrtk.interfaces.utils as utils
 from nipype.info import __version__ as __nipype_version__
@@ -28,9 +22,6 @@ import pymialsrtk.workflows.output_stage as output_stage
 import pymialsrtk.workflows.input_stage as input_stage
 
 from .abstract import AbstractAnatomicalPipeline
-
-# Get pymialsrtk version
-from pymialsrtk.info import __version__
 
 
 class SRReconPipeline(AbstractAnatomicalPipeline):
@@ -419,6 +410,18 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             p_skip_stacks_ordering=self.m_skip_stacks_ordering,
             p_do_srr_assessment=self.m_do_srr_assessment,
             p_do_multi_parameters=self.m_do_multi_parameters,
+            p_subject=self.m_subject,
+            p_session=self.m_session,
+            p_stacks=self.m_stacks,
+            p_output_dir=self.m_output_dir,
+            p_run_start_time=self.m_run_start_time,
+            p_run_elapsed_time=self.m_run_elapsed_time,
+            p_skip_svr=self.m_skip_svr,
+            p_do_anat_orientation=self.m_do_anat_orientation,
+            p_do_refine_hr_mask=self.m_do_refine_hr_mask,
+            p_masks_derivatives_dir=self.m_masks_derivatives_dir,
+            p_openmp_number_of_cores=self.m_openmp_number_of_cores,
+            p_nipype_number_of_cores=self.m_nipype_number_of_cores,
             name="output_mgmt_stage",
         )
         output_mgmt_stage.inputs.inputnode.final_res_dir = self.m_final_res_dir
@@ -667,10 +670,8 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         iflogger = nipype_logging.getLogger("nipype.interface")
         res = super().run(memory, iflogger)
 
-        if not self.m_do_multi_parameters:
-            iflogger.info("**** Super-resolution HTML report creation ****")
-            self.create_subject_report()
+        # if not self.m_do_multi_parameters:
+        #    iflogger.info("**** Super-resolution HTML report creation ****")
+        #    self.create_subject_report()
 
         return res
-
-    

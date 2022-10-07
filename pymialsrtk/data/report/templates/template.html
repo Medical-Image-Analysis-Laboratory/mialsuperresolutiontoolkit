@@ -50,7 +50,7 @@ img {
     <div class="w3-third w3-container">
       <p>
         <ul>
-          <li><span class="w3-text-orange">Number of scans:</span> {{sr_json_metadata["CustomMetaData"]["Number of scans used"]}}</li>
+          <li><span class="w3-text-orange">Number of scans:</span> {{sr_json_metadata["CustomMetaData"]["n_stacks"]}}</li>
           <li><span class="w3-text-orange">Original scan run index order:</span> {{stacks}}</li>
           {% if stacks_ordering=="on" %}
           <li><span class="w3-text-orange">Motion-based scan auto-ordering:</span> <span class="w3-text-green">&#x2713;</span></li>
@@ -68,7 +68,7 @@ img {
         </ul>
       </p>
     </div>
-    <div class="w3-twothird w3-container">
+    <div class="w3-third w3-container">
       <p>
         <ul>
           {% if nlm_denoising=="on" %}
@@ -85,6 +85,32 @@ img {
           <li><span class="w3-text-orange">SR brain mask refinement:</span> <span class="w3-text-green">&#x2713;</span></li>
           {% else %}
           <li><span class="w3-text-orange">SR brain mask refinement:</span> <span class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
+          {% if do_anat_orientation=="on" %}
+          <li><span class="w3-text-orange">SR oriented to template:</span> <span class="w3-text-green">&#x2713;</span></li>
+          {% else %}
+          <li><span class="w3-text-orange">SR oriented to template:</span> <span class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
+        </ul>
+      </p>
+    </div>
+    <div class="w3-third w3-container">
+      <p>
+        <ul>
+          {% if do_multi_parameters=="on" %}
+          <li><span class="w3-text-orange">SR parameter sweep:</span> <span class="w3-text-green">&#x2713;</span></li>
+          {% else %}
+          <li><span class="w3-text-orange">SR parameter sweep:</span> <span class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
+          {% if do_srr_assessment=="on" %}
+          <li><span class="w3-text-orange">SR quality assessment:</span> <span class="w3-text-green">&#x2713;</span></li>
+          {% else %}
+          <li><span class="w3-text-orange">SR quality assessment:</span> <span class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
+          {% if do_reconstruct_labels=="on" %}
+          <li><span class="w3-text-orange">Labelmaps reconstructed from SR:</span> <span class="w3-text-green">&#x2713;</span></li>
+          {% else %}
+          <li><span class="w3-text-orange">Labelmaps reconstructed from SR:</span> <span class="w3-text-red">&#x2717;</span></li>
           {% endif %}
         </ul>
       </p>
@@ -142,9 +168,9 @@ img {
       <p>
         <h1 class="w3-text-teal"> </h1>
         <ul>
-          <li><span class="w3-text-orange">Regularization weight (Lambda):</span> {{sr_json_metadata["CustomMetaData"]["TV regularization weight lambda"]}}</li>
-          <li><span class="w3-text-orange">Optimization time step:</span> {{sr_json_metadata["CustomMetaData"]["Optimization time step"]}}</li>
-          <li><span class="w3-text-orange">Number of primal/dual iterations:</span> {{sr_json_metadata["CustomMetaData"]["Primal/dual loops"]}}</li>
+          <li><span class="w3-text-orange">Regularization weight (Lambda):</span> {{sr_json_metadata["CustomMetaData"]["in_lambda"]}}</li>
+          <li><span class="w3-text-orange">Optimization time step:</span> {{sr_json_metadata["CustomMetaData"]["in_deltat"]}}</li>
+          <li><span class="w3-text-orange">Number of primal/dual iterations:</span> {{sr_json_metadata["CustomMetaData"]["in_loop"]}}</li>
         </ul>
       </p>
     </div>
@@ -205,3 +231,4 @@ img {
 
 </body>
 </html>
+
