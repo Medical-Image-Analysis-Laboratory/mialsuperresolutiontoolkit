@@ -79,8 +79,7 @@ where:
 
         * ``"do_refine_hr_mask"`` (optional) indicates whether a refinement of the HR mask should be performed. (default is False)
         
-        * ``"skip_preprocessing"`` (optional) indicates whether the preprocessing stage should be skipped. (default is False)
-        .. note:: In this case, a minimal preprocessing is still kept, including reducing the field-of-view based on the brain masks as well as masking of the images to keep only the ROI. 
+        * ``"skip_preprocessing"`` (optional) indicates whether the preprocessing stage should be skipped. A minimal preprocessing is still computed: the field-of-view is reduced based on the brain masks and the LR series are masked on the ROI. (default is False)
         .. note:: This option requires input images to be normalised in the range [0,255] prior to running the code with this option. The projection step of the TV algorithm will otherwise clip values to 255. 
         * ``"do_nlm_denoising"`` (optional) indicates whether the NLM denoising preprocessing should be performed prior to motion estimation. (default is False)
 
