@@ -87,9 +87,8 @@ where:
 
         * ``"skip_stacks_ordering"`` (optional) indicates whether the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
 
-        * ``"do_anat_orientation"`` (optional) indicates whether the alignement into anatomical planes should be performed. (default is False)
-        If True, path to a directory containing STA atlas (Gholipour et al., 2017 [1]_, [2]_) must be mounted to `/sta`.
-
+        * ``"do_anat_orientation"`` (optional) indicates whether the alignement into anatomical planes should be performed. If True, path to a directory containing STA atlas (Gholipour et al., 2017 [1]_, [2]_) must be mounted to `/sta`. (default is False)
+        
         * ``"preproc_do_registration"`` (optional) indicates whether the Slice-to-Volume Registration should be computed in the ``"preprocessing"`` run (default is False).
 
         * ``"do_multi_parameters"`` (optional) enables running the super-resolution reconstruction with lists of parameters. The algorithm will
