@@ -196,6 +196,12 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
 
         # Custom interfaces and default values.
         if p_dict_custom_interfaces is not None:
+            self.m_skip_preprocessing = (
+                p_dict_custom_interfaces["skip_preprocessing"]
+                if "skip_preprocessing" in p_dict_custom_interfaces.keys()
+                else False
+            )
+
             self.m_do_nlm_denoising = (
                 p_dict_custom_interfaces["do_nlm_denoising"]
                 if "do_nlm_denoising" in p_dict_custom_interfaces.keys()
@@ -251,7 +257,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             )
 
         else:
-
+            self.m_skip_preprocessing = False
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
             self.m_skip_svr = False
@@ -260,6 +266,12 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             self.m_do_anat_orientation = False
             self.m_do_multi_parameters = False
             self.m_do_srr_assessment = False
+
+        if self.m_skip_preprocessing:
+            if self.m_do_nlm_denoising:
+                raise RuntimeError(
+                    "`do_nlm denoising` is incompatible with `skip_preprocessing`."
+                )
 
         if self.m_do_anat_orientation:
             if not os.path.isdir("/sta"):
@@ -331,7 +343,6 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         where the output of node i goes to the input of node i+1.
 
         """
-
         self.m_wf = pe.Workflow(
             name=self.m_pipeline_name, base_dir=self.m_wf_base_dir
         )
@@ -372,6 +383,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         )
 
         preprocessing_stage = preproc_stage.create_preproc_stage(
+            p_skip_preprocessing=self.m_skip_preprocessing,
             p_do_nlm_denoising=self.m_do_nlm_denoising,
             p_do_reconstruct_labels=self.m_do_reconstruct_labels,
             p_verbose=self.m_verbose,
