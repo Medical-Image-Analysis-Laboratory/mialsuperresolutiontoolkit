@@ -77,10 +77,6 @@ def create_preproc_stage(
     if p_do_reconstruct_labels:
         input_fields += ["input_labels"]
         output_fields += ["output_labels"]
-    if p_skip_preprocessing:
-        assert (
-            not p_do_nlm_denoising
-        ), "ERROR: `do_nlm denoising` is incompatible with `skip_preprocessing`."
 
     inputnode = pe.Node(
         interface=util.IdentityInterface(fields=input_fields), name="inputnode"

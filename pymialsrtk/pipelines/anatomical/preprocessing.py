@@ -180,6 +180,12 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
             self.m_do_registration = False
             self.m_skip_svr = False
 
+        if self.m_skip_preprocessing:
+            if self.m_do_nlm_denoising:
+                raise RuntimeError(
+                    "`do_nlm denoising` is incompatible with `skip_preprocessing`."
+                )
+
     def check_parameters_integrity(self, p_dict_custom_interfaces):
         """Check whether the custom interfaces dictionary
         contains only keys that are used in preprocessing,

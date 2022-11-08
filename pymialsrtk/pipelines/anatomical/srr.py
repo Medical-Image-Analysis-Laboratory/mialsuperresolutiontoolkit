@@ -257,7 +257,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             )
 
         else:
-
+            self.m_skip_preprocessing = False
             self.m_do_nlm_denoising = False
             self.m_skip_stacks_ordering = False
             self.m_skip_svr = False
@@ -266,6 +266,12 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             self.m_do_anat_orientation = False
             self.m_do_multi_parameters = False
             self.m_do_srr_assessment = False
+
+        if self.m_skip_preprocessing:
+            if self.m_do_nlm_denoising:
+                raise RuntimeError(
+                    "`do_nlm denoising` is incompatible with `skip_preprocessing`."
+                )
 
         if self.m_do_anat_orientation:
             if not os.path.isdir("/sta"):
