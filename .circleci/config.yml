@@ -749,7 +749,7 @@ workflows:
                 only: /.*/
 
       - deploy-pypi-release:
-         requires:
+          requires:
             - test-python-install
             - build-docker
             - build-singularity
