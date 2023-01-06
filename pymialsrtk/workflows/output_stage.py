@@ -135,32 +135,32 @@ def create_srr_output_stage(
     inputnode = pe.Node(
         interface=util.IdentityInterface(fields=input_fields), name="inputnode"
     )
-
-    # Report generation
-    reportGenerator = pe.Node(
-        interface=postprocess.ReportGeneration(
-            subject=p_subject,
-            session=p_session,
-            stacks=[] if p_stacks is None else p_stacks,
-            sr_id=p_sr_id,
-            run_type=p_run_type,
-            output_dir=p_output_dir,
-            run_start_time=0.0,  # p_run_start_time,
-            run_elapsed_time=0.0,  # p_run_elapsed_time,
-            skip_svr=p_skip_svr,
-            do_nlm_denoising=p_do_nlm_denoising,
-            do_refine_hr_mask=p_do_refine_hr_mask,
-            do_reconstruct_labels=p_do_reconstruct_labels,
-            do_anat_orientation=p_do_anat_orientation,
-            do_multi_parameters=p_do_multi_parameters,
-            do_srr_assessment=p_do_srr_assessment,
-            skip_stacks_ordering=p_skip_stacks_ordering,
-            masks_derivatives_dir=p_masks_derivatives_dir,
-            openmp_number_of_cores=p_openmp_number_of_cores,
-            nipype_number_of_cores=p_nipype_number_of_cores,
-        ),
-        name="report_gen",
-    )
+    if not p_do_multi_parameters:
+        # Report generation
+        reportGenerator = pe.Node(
+            interface=postprocess.ReportGeneration(
+                subject=p_subject,
+                session=p_session,
+                stacks=[] if p_stacks is None else p_stacks,
+                sr_id=p_sr_id,
+                run_type=p_run_type,
+                output_dir=p_output_dir,
+                run_start_time=0.0,  # p_run_start_time,
+                run_elapsed_time=0.0,  # p_run_elapsed_time,
+                skip_svr=p_skip_svr,
+                do_nlm_denoising=p_do_nlm_denoising,
+                do_refine_hr_mask=p_do_refine_hr_mask,
+                do_reconstruct_labels=p_do_reconstruct_labels,
+                do_anat_orientation=p_do_anat_orientation,
+                do_multi_parameters=p_do_multi_parameters,
+                do_srr_assessment=p_do_srr_assessment,
+                skip_stacks_ordering=p_skip_stacks_ordering,
+                masks_derivatives_dir=p_masks_derivatives_dir,
+                openmp_number_of_cores=p_openmp_number_of_cores,
+                nipype_number_of_cores=p_nipype_number_of_cores,
+            ),
+            name="report_gen",
+        )
     # Datasinker
     finalFilenamesGeneration = pe.Node(
         interface=postprocess.FilenamesGeneration(
@@ -243,24 +243,25 @@ def create_srr_output_stage(
             srr_output_stage.connect(
                 inputnode, "motion_tsv", datasink, "anat.@motionTSV"
             )
-    srr_output_stage.connect(
-        inputnode, "input_json_path", reportGenerator, "input_json_path"
-    )
-    srr_output_stage.connect(
-        inputnode, "stacks_order", reportGenerator, "stacks_order"
-    )
-    srr_output_stage.connect(
-        inputnode, "input_sr", reportGenerator, "input_sr"
-    )
-    srr_output_stage.connect(
-        finalFilenamesGeneration,
-        "substitutions",
-        reportGenerator,
-        "substitutions",
-    )
-    srr_output_stage.connect(
-        reportGenerator, "report_html", datasink, "report"
-    )
+    if not p_do_multi_parameters:
+        srr_output_stage.connect(
+            inputnode, "input_json_path", reportGenerator, "input_json_path"
+        )
+        srr_output_stage.connect(
+            inputnode, "stacks_order", reportGenerator, "stacks_order"
+        )
+        srr_output_stage.connect(
+            inputnode, "input_sr", reportGenerator, "input_sr"
+        )
+        srr_output_stage.connect(
+            finalFilenamesGeneration,
+            "substitutions",
+            reportGenerator,
+            "substitutions",
+        )
+        srr_output_stage.connect(
+            reportGenerator, "report_html", datasink, "report"
+        )
     return srr_output_stage
 
 
