@@ -51,7 +51,7 @@
         <p>
         <ul>
           <li><span class="w3-text-orange">Subject:</span> {{subject}}</li>
-          {% if session is defined and session is not none %}
+          {% if session is defined and session !="" %}
           <li><span class="w3-text-orange">Session:</span> {{session}}</li>
           {% endif %}
           <li><span class="w3-text-orange">Reconstruction ID:</span> {{sr_id}}</li>
@@ -82,7 +82,7 @@
           <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-red">&#x2717;</span>
           </li>
           {% endif %}
-          {% if custom_masks_dir is defined and custom_masks_dir is not none %}
+          {% if custom_masks_dir is defined and custom_masks_dir !="" %}
           <li><span class="w3-text-orange">Custom brain mask directory:</span> <span
               class="w3-light-grey w3-text-dark-grey">derivatives/{{custom_masks_dir}}</span></li>
           {% endif %}

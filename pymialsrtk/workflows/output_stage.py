@@ -140,7 +140,7 @@ def create_srr_output_stage(
         reportGenerator = pe.Node(
             interface=postprocess.ReportGeneration(
                 subject=p_subject,
-                session=p_session,
+                session=p_session if p_session is not None else "",
                 stacks=[] if p_stacks is None else p_stacks,
                 sr_id=p_sr_id,
                 run_type=p_run_type,
@@ -155,7 +155,9 @@ def create_srr_output_stage(
                 do_multi_parameters=p_do_multi_parameters,
                 do_srr_assessment=p_do_srr_assessment,
                 skip_stacks_ordering=p_skip_stacks_ordering,
-                masks_derivatives_dir=p_masks_derivatives_dir,
+                masks_derivatives_dir=p_masks_derivatives_dir
+                if p_masks_derivatives_dir is not None
+                else "",
                 openmp_number_of_cores=p_openmp_number_of_cores,
                 nipype_number_of_cores=p_nipype_number_of_cores,
             ),
