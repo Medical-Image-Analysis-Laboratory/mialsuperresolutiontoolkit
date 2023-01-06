@@ -7,8 +7,10 @@ ENV MAMBA_ROOT_PREFIX /opt/conda
 RUN apt-get update && \
     apt-get install software-properties-common -y && \
     apt-add-repository ppa:saiarcot895/myppa -y && \
+    apt-add-repository ppa:apt-fast/stable -y && \
     apt-get update && \
-    apt-get -y install \
+    apt-get -y install apt-fast && \
+    apt-fast -y install \
     build-essential \
     exfat-fuse \
     exfat-utils \
