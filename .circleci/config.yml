@@ -693,7 +693,7 @@ workflows:
             tags:
               only: /.*/
       - build-docker:
-	  requires:
+          requires:
 	    - test-python-install
           filters:
             tags:
