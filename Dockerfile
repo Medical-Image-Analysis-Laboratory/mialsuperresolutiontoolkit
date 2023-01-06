@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get install software-properties-common -y && \
     apt-add-repository ppa:saiarcot895/myppa -y && \
     apt-get update && \
-    && apt-get install -y \
+    apt-get -y install \
     build-essential \
     exfat-fuse \
     exfat-utils \
