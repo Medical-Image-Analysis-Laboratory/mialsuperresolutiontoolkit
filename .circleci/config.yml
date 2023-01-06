@@ -694,7 +694,7 @@ workflows:
               only: /.*/
       - build-docker:
           requires:
-	    - test-python-install
+            - test-python-install
           filters:
             tags:
               only: /.*/
@@ -750,7 +750,7 @@ workflows:
 
       - deploy-pypi-release:
          requires:
-	    - test-python-install
+            - test-python-install
             - build-docker
             - build-singularity
             # - build_docs
