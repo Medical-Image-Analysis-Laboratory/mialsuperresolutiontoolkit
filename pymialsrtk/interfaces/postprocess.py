@@ -345,18 +345,14 @@ class FilenamesGeneration(BaseInterface):
             self.m_substitutions.append(
                 (
                     "_T2w_brainMask.nii.gz",
-                    "_id-"
-                    + str(self.inputs.sr_id)
-                    + "_desc-brain_mask.nii.gz",
+                    "_id-" + str(self.inputs.sr_id) + "_T2w_mask.nii.gz",
                 )
             )
         else:
             self.m_substitutions.append(
                 (
                     "_T2w_mask.nii.gz",
-                    "_id-"
-                    + str(self.inputs.sr_id)
-                    + "_desc-brain_mask.nii.gz",
+                    "_id-" + str(self.inputs.sr_id) + "_T2w_mask.nii.gz",
                 )
             )
 
@@ -402,7 +398,7 @@ class FilenamesGeneration(BaseInterface):
                     + str(stack)
                     + "_id-"
                     + str(self.inputs.sr_id)
-                    + "_desc-brain_mask.nii.gz",
+                    + "_T2w_mask.nii.gz",
                 )
             )
 
@@ -428,7 +424,7 @@ class FilenamesGeneration(BaseInterface):
                 + f"_{run_type}-SR"
                 + "_id-"
                 + str(self.inputs.sr_id)
-                + "_mod-T2w_desc-brain_mask.nii.gz",
+                + "_T2w_mask.nii.gz",
             )
         )
 
@@ -443,7 +439,7 @@ class FilenamesGeneration(BaseInterface):
                 + "_rec-SR"
                 + "_id-"
                 + str(self.inputs.sr_id)
-                + "_mod-T2w_desc-brain_mask.nii.gz",
+                + "_T2w_mask.nii.gz",
             )
         )
 
@@ -535,6 +531,16 @@ class FilenamesGeneration(BaseInterface):
                 "_",
                 str(len(self.inputs.stacks_order)),
                 "V_rad1.png",
+            ]
+        )
+
+        sr_report = "".join(
+            [
+                "SRTV_",
+                self.inputs.sub_ses,
+                "_",
+                str(len(self.inputs.stacks_order)),
+                "V_rad1_gbcorr_report.html",
             ]
         )
 
@@ -633,6 +639,16 @@ class FilenamesGeneration(BaseInterface):
                     + "_id-"
                     + str(self.inputs.sr_id)
                     + "_T2w.png",
+                )
+            )
+            self.m_substitutions.append(
+                (
+                    sr_report,
+                    self.inputs.sub_ses
+                    + f"_{run_type}-SR"
+                    + "_id-"
+                    + str(self.inputs.sr_id)
+                    + "_desc-report_T2w.html",
                 )
             )
 
@@ -1025,6 +1041,10 @@ class ReportGenerationInputSpec(BaseInterfaceInputSpec):
         mandatory=True,
         desc="List of stack run-id that specify the order of the stacks",
     )
+    stacks_order = traits.List(
+        mandatory=True,
+        desc="List of stack run-id that specify the order of the stacks",
+    )
     sr_id = traits.Int(mandatory=True, desc="Super-Resolution id")
     run_type = traits.Str(mandatory=True, desc="Type of run (preproc or sr)")
     output_dir = traits.Str(
@@ -1143,6 +1163,7 @@ class ReportGeneration(BaseInterface):
         )
         with open(self.inputs.input_json_path) as f:
             sr_json_metadata = json.load(f)
+
         workflow_image = os.path.join(
             "..",
             "figures",
@@ -1220,12 +1241,13 @@ class ReportGeneration(BaseInterface):
         os.makedirs(report_dir, exist_ok=True)
 
         # Save the HTML report file
-        out_report_filename = os.path.join(report_dir, f"{sub_ses}.html")
-        print(f"\t* Save HTML report as {out_report_filename}...")
-        with open(out_report_filename, "w+") as file:
-            file.write(report_html_content)
+        # out_report_filename = os.path.join(report_dir, f"{sub_ses}.html")
+        #
+        # with open(out_report_filename, "w+") as file:
+        #    file.write(report_html_content)
 
         output_html = self._gen_filename("report_html")
+        print(f"\t* Save HTML report as {output_html}...")
         with open(output_html, "w+") as f:
             f.write(report_html_content)
 

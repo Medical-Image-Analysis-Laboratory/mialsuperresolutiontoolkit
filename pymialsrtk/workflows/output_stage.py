@@ -141,7 +141,7 @@ def create_srr_output_stage(
         interface=postprocess.ReportGeneration(
             subject=p_subject,
             session=p_session,
-            stacks=p_stacks,
+            stacks=[] if p_stacks is None else p_stacks,
             sr_id=p_sr_id,
             run_type=p_run_type,
             output_dir=p_output_dir,
@@ -246,7 +246,9 @@ def create_srr_output_stage(
     srr_output_stage.connect(
         inputnode, "input_json_path", reportGenerator, "input_json_path"
     )
-
+    srr_output_stage.connect(
+        inputnode, "stacks_order", reportGenerator, "stacks_order"
+    )
     srr_output_stage.connect(
         inputnode, "input_sr", reportGenerator, "input_sr"
     )
