@@ -4,9 +4,10 @@ FROM ubuntu:14.04
 # Ubuntu system setup
 ##############################################################
 ENV MAMBA_ROOT_PREFIX /opt/conda
+# Disable interctive debconf post-install-configuration
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install software-properties-common -y && \
-    apt-add-repository ppa:saiarcot895/myppa -y && \
     apt-add-repository ppa:apt-fast/stable -y && \
     apt-get update && \
     apt-get -y install apt-fast && \
