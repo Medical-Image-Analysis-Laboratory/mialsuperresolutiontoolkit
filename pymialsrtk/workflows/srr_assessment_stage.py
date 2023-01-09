@@ -218,6 +218,11 @@ def create_srr_assessment_stage(
     srr_assessment_stage.connect(
         crop_reference, "output_label", sr_image_metrics, "input_ref_labelmap"
     )
+
+    srr_assessment_stage.connect(
+        crop_reference, "output_mask", sr_image_metrics, "input_ref_mask"
+    )
+
     srr_assessment_stage.connect(
         inputnode,
         "input_TV_parameters",
