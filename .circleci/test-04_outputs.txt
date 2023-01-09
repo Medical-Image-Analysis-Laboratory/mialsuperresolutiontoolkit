@@ -47,6 +47,11 @@ nipype-1.8.3/sub-01/rec-1/srr_pipeline/output_mgmt_stage/filenames_gen/_inputs.p
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/output_mgmt_stage/filenames_gen/_node.pklz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/output_mgmt_stage/filenames_gen/_report/report.rst
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/output_mgmt_stage/filenames_gen/result_filenames_gen.pklz
+nipype-1.8.3/sub-01/rec-1/srr_pipeline/output_mgmt_stage/report_gen/_inputs.pklz
+nipype-1.8.3/sub-01/rec-1/srr_pipeline/output_mgmt_stage/report_gen/_node.pklz
+nipype-1.8.3/sub-01/rec-1/srr_pipeline/output_mgmt_stage/report_gen/_report/report.rst
+nipype-1.8.3/sub-01/rec-1/srr_pipeline/output_mgmt_stage/report_gen/result_report_gen.pklz
+nipype-1.8.3/sub-01/rec-1/srr_pipeline/output_mgmt_stage/report_gen/SRTV_sub-01_3V_rad1_gbcorr_report.html
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/postprocessing_stage/srtkMaskImage02/_inputs.pklz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/postprocessing_stage/srtkMaskImage02/_node.pklz
 nipype-1.8.3/sub-01/rec-1/srr_pipeline/postprocessing_stage/srtkMaskImage02/_report/report.rst
@@ -256,8 +261,8 @@ nipype-1.8.3/sub-01/rec-1/srr_pipeline/recon_stage/srtkTVSuperResolution/SRTV_su
 pymialsrtk-2.1.0-dev/dataset_description.json
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SDI_id-1_T2w.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SR_id-1_desc-motion_stats.tsv
-pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SR_id-1_mod-T2w_desc-brain_mask.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SR_id-1_T2w.json
+pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SR_id-1_T2w_mask.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SR_id-1_T2w.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-1_id-1_desc-brain_mask.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-1_id-1_desc-preprocSR_T2w.nii.gz
@@ -269,7 +274,7 @@ pymialsrtk-2.1.0-dev/sub-01/figures/sub-01_rec-SR_id-1_desc-motion_stats.png
 pymialsrtk-2.1.0-dev/sub-01/figures/sub-01_rec-SR_id-1_desc-processing_graph.png
 pymialsrtk-2.1.0-dev/sub-01/figures/sub-01_rec-SR_id-1_T2w.png
 pymialsrtk-2.1.0-dev/sub-01/logs/sub-01_rec-SR_id-1_log.txt
-pymialsrtk-2.1.0-dev/sub-01/report/sub-01.html
+pymialsrtk-2.1.0-dev/sub-01/report/sub-01_rec-SR_id-1_desc-report_T2w.html
 pymialsrtk-2.1.0-dev/sub-01/xfm/sub-01_run-1_T2w_uni_bcorr_histnorm_transform_3V.txt
 pymialsrtk-2.1.0-dev/sub-01/xfm/sub-01_run-3_T2w_uni_bcorr_histnorm_transform_3V.txt
 pymialsrtk-2.1.0-dev/sub-01/xfm/sub-01_run-6_T2w_uni_bcorr_histnorm_transform_3V.txt
