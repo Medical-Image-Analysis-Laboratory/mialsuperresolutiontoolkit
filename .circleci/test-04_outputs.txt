@@ -264,12 +264,12 @@ pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SR_id-1_desc-motion_stats.tsv
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SR_id-1_T2w.json
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SR_id-1_T2w_mask.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_rec-SR_id-1_T2w.nii.gz
-pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-1_id-1_desc-brain_mask.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-1_id-1_desc-preprocSR_T2w.nii.gz
-pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-3_id-1_desc-brain_mask.nii.gz
+pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-1_id-1_T2w_mask.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-3_id-1_desc-preprocSR_T2w.nii.gz
-pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-6_id-1_desc-brain_mask.nii.gz
+pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-3_id-1_T2w_mask.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-6_id-1_desc-preprocSR_T2w.nii.gz
+pymialsrtk-2.1.0-dev/sub-01/anat/sub-01_run-6_id-1_T2w_mask.nii.gz
 pymialsrtk-2.1.0-dev/sub-01/figures/sub-01_rec-SR_id-1_desc-motion_stats.png
 pymialsrtk-2.1.0-dev/sub-01/figures/sub-01_rec-SR_id-1_desc-processing_graph.png
 pymialsrtk-2.1.0-dev/sub-01/figures/sub-01_rec-SR_id-1_T2w.png
