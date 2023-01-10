@@ -73,21 +73,22 @@ where:
     
     * ``"run_type"`` (optional): defines the type of run that should be done. It can be set between `sr` (super-resolution) and `preprocessing` (preprocessing-only). (default is ``"sr"``)
     
-    * ``"custom_interfaces"`` (optional): indicates weither optional interfaces of the pipeline should be performed.
+    * ``"custom_interfaces"`` (optional): indicates whether optional interfaces of the pipeline should be performed.
 
         * ``"skip_svr"`` (optional) the Slice-to-Volume Registration should be skipped in the image reconstruction. (default is False)
 
-        * ``"do_refine_hr_mask"`` (optional) indicates weither a refinement of the HR mask should be performed. (default is False)
+        * ``"do_refine_hr_mask"`` (optional) indicates whether a refinement of the HR mask should be performed. (default is False)
+        
+        * ``"skip_preprocessing"`` (optional) indicates whether the preprocessing stage should be skipped. A minimal preprocessing is still computed: the field-of-view is reduced based on the brain masks and the LR series are masked on the ROI. (default is False)
+        .. note:: This option requires input images to be normalised in the range [0,255] prior to running the code with this option. The projection step of the TV algorithm will otherwise clip values to 255. 
+        * ``"do_nlm_denoising"`` (optional) indicates whether the NLM denoising preprocessing should be performed prior to motion estimation. (default is False)
 
-        * ``"do_nlm_denoising"`` (optional) indicates weither the NLM denoising preprocessing should be performed prior to motion estimation. (default is False)
+        * ``"do_reconstruct_labels"`` (optional) indicates whether the reconstruction of LR label maps should be performed together with T2w images. (default is False)
 
-        * ``"do_reconstruct_labels"`` (optional) indicates weither the reconstruction of LR label maps should be performed together with T2w images. (default is False)
+        * ``"skip_stacks_ordering"`` (optional) indicates whether the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
 
-        * ``"skip_stacks_ordering"`` (optional) indicates weither the order of stacks specified in ``"stacks"`` should be kept or re-computed. (default is False)
-
-        * ``"do_anat_orientation"`` (optional) indicates weither the alignement into anatomical planes should be performed. (default is False)
-        If True, path to a directory containing STA atlas (Gholipour et al., 2017 [1]_, [2]_) must be mounted to `/sta`.
-
+        * ``"do_anat_orientation"`` (optional) indicates whether the alignement into anatomical planes should be performed. If True, path to a directory containing STA atlas (Gholipour et al., 2017 [1]_, [2]_) must be mounted to `/sta`. (default is False)
+        
         * ``"preproc_do_registration"`` (optional) indicates whether the Slice-to-Volume Registration should be computed in the ``"preprocessing"`` run (default is False).
 
         * ``"do_multi_parameters"`` (optional) enables running the super-resolution reconstruction with lists of parameters. The algorithm will

@@ -201,6 +201,7 @@ def check_participants_params(participants_params):
     allowed_keys = [
         "skip_svr",
         "do_refine_hr_mask",
+        "skip_preprocessing",
         "do_nlm_denoising",
         "skip_stacks_ordering",
         "do_reconstruct_labels",
