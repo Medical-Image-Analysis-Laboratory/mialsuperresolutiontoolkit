@@ -19,6 +19,7 @@ from skimage.morphology import binary_opening, binary_closing
 import numpy as np
 from traits.api import *
 
+
 # Reorientation
 import SimpleITK as sitk
 import nsol.principal_component_analysis as pca
