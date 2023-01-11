@@ -5,7 +5,6 @@
 """Module for the super-resolution reconstruction pipeline."""
 
 import os
-import nibabel as nib
 import pymialsrtk.interfaces.utils as utils
 from nipype.info import __version__ as __nipype_version__
 from nipype import config

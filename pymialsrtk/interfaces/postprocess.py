@@ -35,8 +35,6 @@ from pymialsrtk.interfaces.utils import run
 import nibabel as nib
 import numpy as np
 import SimpleITK as sitk
-
-import SimpleITK as sitk
 import skimage.metrics
 import pandas as pd
 from pymialsrtk.utils import EXEC_PATH
@@ -767,11 +765,11 @@ class ImageMetrics(BaseInterface):
 
     def _gen_filename(self, name):
         if name == "output_metrics":
-            _, name, ext = split_filename(self.inputs.input_image)
+            _, name, _ = split_filename(self.inputs.input_image)
             output = name + "_csv" + ".csv"
             return os.path.abspath(output)
         if name == "output_metrics_labels":
-            _, name, ext = split_filename(self.inputs.input_image)
+            _, name, _ = split_filename(self.inputs.input_image)
             output = name + "_labels_csv" + ".csv"
             return os.path.abspath(output)
         return None
@@ -1137,6 +1135,12 @@ class ReportGenerationOutputSpec(TraitedSpec):
 
 
 class ReportGeneration(BaseInterface):
+    """Generate a report summarizing the outputs
+    of mialsrtk. This comprises
+        - Details of which parameters were run.
+        - A visualization of the SR-reconstructed image
+        - A visualization of the computational graph.
+    """
 
     input_spec = ReportGenerationInputSpec
     output_spec = ReportGenerationOutputSpec
@@ -1175,11 +1179,6 @@ class ReportGeneration(BaseInterface):
         template = env.get_template("template.html")
         # Not found here.
         # Load main data derivatives necessary for the report
-        sr_nii_image = os.path.join(
-            final_res_dir,
-            "anat",
-            f"{sub_ses}_{self.inputs.run_type}-SR_id-{self.inputs.sr_id}_T2w.nii.gz",
-        )
 
         img = nib.load(self.inputs.input_sr)
         sx, sy, sz = img.header.get_zooms()

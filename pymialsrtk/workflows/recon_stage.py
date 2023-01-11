@@ -8,14 +8,12 @@ reconstruction pipeline."""
 from traits.api import *
 
 from nipype.interfaces import utility as util
-from nipype.interfaces.io import DataGrabber
 from nipype.pipeline import engine as pe
 
 import pymialsrtk.workflows.recon_labelmap_stage as recon_labelmap_stage
 
 import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.interfaces.postprocess as postprocess
-import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.utils as utils
 
 

@@ -18,6 +18,11 @@ from nipype.interfaces.io import DataGrabber
 
 
 def convert_ga(ga):
+    """Convert the gestational age to
+    integers between 21 and 38. This is in order to be
+    able to load the corresponding template using
+    the spatio-temporal atlas of Gholipour et al.
+    """
     ga = int(np.round(ga))
     if ga > 38:
         ga = 38
@@ -115,7 +120,9 @@ def create_postproc_stage(
             ),
             name="atlas_grabber",
         )
-        atlas_grabber.inputs.field_template = dict(atlas="STA" + ga_str + ".nii.gz")
+        atlas_grabber.inputs.field_template = dict(
+            atlas="STA" + ga_str + ".nii.gz"
+        )
 
         resample_t2w_template = pe.Node(
             interface=preprocess.ResampleImage(verbose=p_verbose),
