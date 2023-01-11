@@ -5,7 +5,6 @@
 """Module for the super-resolution reconstruction pipeline."""
 
 import os
-import nibabel as nib
 import pymialsrtk.interfaces.utils as utils
 from nipype.info import __version__ as __nipype_version__
 from nipype import config
@@ -13,7 +12,6 @@ from nipype import logging as nipype_logging
 from nipype.pipeline import engine as pe
 
 # Import the implemented interface from pymialsrtk
-import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
 import pymialsrtk.workflows.srr_assessment_stage as srr_assment_stage

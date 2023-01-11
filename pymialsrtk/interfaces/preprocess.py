@@ -12,8 +12,6 @@ histogram normalization and both manual or deep learning based automatic brain e
 
 from decimal import DivisionByZero
 import os
-import traceback
-from glob import glob
 import pathlib
 
 from skimage.morphology import binary_opening, binary_closing
@@ -23,14 +21,10 @@ from traits.api import *
 
 # Reorientation
 import SimpleITK as sitk
-import skimage.measure
 import nsol.principal_component_analysis as pca
 from nipype.algorithms.metrics import Similarity
-import transforms3d
 
 import nibabel as nib
-import SimpleITK as sitk
-
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns

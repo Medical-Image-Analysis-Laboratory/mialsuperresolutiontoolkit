@@ -9,8 +9,6 @@ from nipype.pipeline import engine as pe
 
 # Import the implemented interface from pymialsrtk
 import pymialsrtk.interfaces.reconstruction as reconstruction
-from pymialsrtk.workflows.input_stage import create_input_stage
-from pymialsrtk.bids.utils import write_bids_derivative_description
 
 # Get pymialsrtk version
 from pymialsrtk.info import __version__

@@ -13,7 +13,6 @@ from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.utils as utils
-from nipype import config
 
 
 def create_preproc_stage(
