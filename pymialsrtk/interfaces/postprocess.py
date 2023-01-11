@@ -9,7 +9,15 @@ It encompasses a High Resolution mask refinement and an N4 global bias field cor
 """
 
 import os
+import sys
+import platform
+import json
+import pkg_resources
+from jinja2 import Environment, FileSystemLoader
+from jinja2 import __version__ as __jinja2_version__
 
+# Get pymialsrtk version
+from pymialsrtk.info import __version__
 from traits.api import *
 
 from nipype.utils.filemanip import split_filename
@@ -337,18 +345,14 @@ class FilenamesGeneration(BaseInterface):
             self.m_substitutions.append(
                 (
                     "_T2w_brainMask.nii.gz",
-                    "_id-"
-                    + str(self.inputs.sr_id)
-                    + "_desc-brain_mask.nii.gz",
+                    "_id-" + str(self.inputs.sr_id) + "_T2w_mask.nii.gz",
                 )
             )
         else:
             self.m_substitutions.append(
                 (
                     "_T2w_mask.nii.gz",
-                    "_id-"
-                    + str(self.inputs.sr_id)
-                    + "_desc-brain_mask.nii.gz",
+                    "_id-" + str(self.inputs.sr_id) + "_T2w_mask.nii.gz",
                 )
             )
 
@@ -394,7 +398,7 @@ class FilenamesGeneration(BaseInterface):
                     + str(stack)
                     + "_id-"
                     + str(self.inputs.sr_id)
-                    + "_desc-brain_mask.nii.gz",
+                    + "_T2w_mask.nii.gz",
                 )
             )
 
@@ -420,7 +424,7 @@ class FilenamesGeneration(BaseInterface):
                 + f"_{run_type}-SR"
                 + "_id-"
                 + str(self.inputs.sr_id)
-                + "_mod-T2w_desc-brain_mask.nii.gz",
+                + "_T2w_mask.nii.gz",
             )
         )
 
@@ -435,7 +439,7 @@ class FilenamesGeneration(BaseInterface):
                 + "_rec-SR"
                 + "_id-"
                 + str(self.inputs.sr_id)
-                + "_mod-T2w_desc-brain_mask.nii.gz",
+                + "_T2w_mask.nii.gz",
             )
         )
 
@@ -527,6 +531,16 @@ class FilenamesGeneration(BaseInterface):
                 "_",
                 str(len(self.inputs.stacks_order)),
                 "V_rad1.png",
+            ]
+        )
+
+        sr_report = "".join(
+            [
+                "SRTV_",
+                self.inputs.sub_ses,
+                "_",
+                str(len(self.inputs.stacks_order)),
+                "V_rad1_gbcorr_report.html",
             ]
         )
 
@@ -625,6 +639,16 @@ class FilenamesGeneration(BaseInterface):
                     + "_id-"
                     + str(self.inputs.sr_id)
                     + "_T2w.png",
+                )
+            )
+            self.m_substitutions.append(
+                (
+                    sr_report,
+                    self.inputs.sub_ses
+                    + f"_{run_type}-SR"
+                    + "_id-"
+                    + str(self.inputs.sr_id)
+                    + "_desc-report_T2w.html",
                 )
             )
 
@@ -1026,4 +1050,236 @@ class MergeMajorityVote(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs["output_image"] = self._gen_filename()
+        return outputs
+
+
+class ReportGenerationInputSpec(BaseInterfaceInputSpec):
+    """Class used to represent inputs of
+    the ReportGeneration interface."""
+
+    subject = traits.Str(
+        mandatory=True,
+        desc="Subject BIDS identifier to construct output filename.",
+    )
+    session = traits.Str(
+        mandatory=True,
+        desc="Session BIDS identifier to construct output filename.",
+    )
+    stacks = traits.List(
+        mandatory=True,
+        desc="List of stack run-id that specify the order of the stacks",
+    )
+    stacks_order = traits.List(
+        mandatory=True,
+        desc="List of stack run-id that specify the order of the stacks",
+    )
+    sr_id = traits.Int(mandatory=True, desc="Super-Resolution id")
+    run_type = traits.Str(mandatory=True, desc="Type of run (preproc or sr)")
+    output_dir = traits.Str(
+        mandatory=True,
+        desc="",
+    )
+
+    run_start_time = traits.Float(mandatory=True, desc="")
+    run_elapsed_time = traits.Float(mandatory=True, desc="")
+    do_refine_hr_mask = traits.Bool(
+        mandatory=True,
+        desc="",
+    )
+    do_nlm_denoising = traits.Bool(
+        mandatory=True,
+        desc="",
+    )
+
+    skip_stacks_ordering = traits.Bool(
+        mandatory=True,
+        desc="",
+    )
+
+    skip_svr = traits.Bool(
+        mandatory=True,
+        desc="",
+    )
+    masks_derivatives_dir = traits.Str(
+        mandatory=True,
+        desc="",
+    )
+    do_reconstruct_labels = traits.Bool(
+        mandatory=True,
+        desc="",
+    )
+    do_anat_orientation = traits.Bool(
+        mandatory=True,
+        desc="",
+    )
+    do_multi_parameters = traits.Bool(
+        mandatory=True,
+        desc="",
+    )
+    do_srr_assessment = traits.Bool(
+        mandatory=True,
+        desc="",
+    )
+    openmp_number_of_cores = traits.Int(mandatory=True, desc="")
+    nipype_number_of_cores = traits.Int(mandatory=True, desc="")
+    substitutions = traits.List(
+        desc="Output correspondance between old and new filenames."
+    )
+    input_sr = File(mandatory=True, desc="")
+    input_json_path = File(mandatory=True, desc="")
+
+
+class ReportGenerationOutputSpec(TraitedSpec):
+    """Class used to represent outputs of
+    the ReportGeneration interface."""
+
+    report_html = File(desc="")
+
+
+class ReportGeneration(BaseInterface):
+
+    input_spec = ReportGenerationInputSpec
+    output_spec = ReportGenerationOutputSpec
+
+    def _gen_filename(self, name):
+        if name == "report_html":
+            _, name, _ = split_filename(self.inputs.input_sr)
+            output = name + "_report.html"
+            return os.path.abspath(output)
+        return None
+
+    def _run_interface(self, runtime):
+        """Create the HTML report"""
+        # Set main subject derivatives directory
+        sub_ses = self.inputs.subject
+        sub_path = self.inputs.subject
+        if self.inputs.session is not None:
+            sub_ses += f"_{self.inputs.session}"
+            sub_path = os.path.join(self.inputs.subject, self.inputs.session)
+
+        final_res_dir = os.path.join(
+            self.inputs.output_dir,
+            "-".join(["pymialsrtk", __version__]),
+            sub_path,
+        )
+
+        # Get the HTML report template
+        path = pkg_resources.resource_filename(
+            "pymialsrtk", "data/report/templates/template.html"
+        )
+        jinja_template_dir = os.path.dirname(path)
+
+        file_loader = FileSystemLoader(jinja_template_dir)
+        env = Environment(loader=file_loader)
+
+        template = env.get_template("template.html")
+        # Not found here.
+        # Load main data derivatives necessary for the report
+        sr_nii_image = os.path.join(
+            final_res_dir,
+            "anat",
+            f"{sub_ses}_{self.inputs.run_type}-SR_id-{self.inputs.sr_id}_T2w.nii.gz",
+        )
+
+        img = nib.load(self.inputs.input_sr)
+        sx, sy, sz = img.header.get_zooms()
+
+        sr_json_metadata = os.path.join(
+            final_res_dir,
+            "anat",
+            f"{sub_ses}_{self.inputs.run_type}-SR_id-{self.inputs.sr_id}_T2w.json",
+        )
+        with open(self.inputs.input_json_path) as f:
+            sr_json_metadata = json.load(f)
+
+        workflow_image = os.path.join(
+            "..",
+            "figures",
+            f"{sub_ses}_{self.inputs.run_type}-SR_id-"
+            f"{self.inputs.sr_id}_desc-processing_graph.png",
+        )
+
+        sr_png_image = os.path.join(
+            "..",
+            "figures",
+            f"{sub_ses}_{self.inputs.run_type}-SR_id-{self.inputs.sr_id}_T2w.png",
+        )
+
+        motion_report_image = os.path.join(
+            "..",
+            "figures",
+            f"{sub_ses}_{self.inputs.run_type}-SR_id-"
+            f"{self.inputs.sr_id}_desc-motion_stats.png",
+        )
+
+        log_file = os.path.join(
+            "..",
+            "logs",
+            f"{sub_ses}_{self.inputs.run_type}-SR_id-{self.inputs.sr_id}_log.txt",
+        )
+
+        # Create the text for {{subject}} and {{session}} fields in template
+        report_subject_text = f'{self.inputs.subject.split("-")[-1]}'
+        if self.inputs.session is not None:
+            report_session_text = f'{self.inputs.session.split("-")[-1]}'
+        else:
+            report_session_text = None
+
+        # Generate the report
+        def is_true(x):
+            """Check if a given input is True and returns "on".
+            Else returns "off"
+            """
+            return "on" if x else "off"
+
+        report_html_content = template.render(
+            subject=report_subject_text,
+            session=report_session_text,
+            processing_datetime=self.inputs.run_start_time,
+            run_time=self.inputs.run_elapsed_time,
+            log=log_file,
+            sr_id=self.inputs.sr_id,
+            stacks=self.inputs.stacks,
+            svr=is_true(self.inputs.skip_svr),
+            nlm_denoising=is_true(self.inputs.do_nlm_denoising),
+            stacks_ordering=is_true(self.inputs.skip_stacks_ordering),
+            do_refine_hr_mask=is_true(self.inputs.do_refine_hr_mask),
+            do_reconstruct_labels=is_true(self.inputs.do_reconstruct_labels),
+            do_anat_orientation=is_true(self.inputs.do_anat_orientation),
+            do_multi_parameters=is_true(self.inputs.do_multi_parameters),
+            do_srr_assessment=is_true(self.inputs.do_srr_assessment),
+            use_auto_masks=is_true(self.inputs.masks_derivatives_dir is None),
+            custom_masks_dir=self.inputs.masks_derivatives_dir
+            if self.inputs.masks_derivatives_dir is not None
+            else None,
+            sr_resolution=f"{sx:.2f} x {sy:.2f} x {sz:.2f} mm<sup>3</sup>",
+            sr_json_metadata=sr_json_metadata,
+            workflow_graph=workflow_image,
+            sr_png_image=sr_png_image,
+            motion_report_image=motion_report_image,
+            version=__version__,
+            os=f"{platform.system()} {platform.release()}",
+            python=f"{sys.version}",
+            openmp_threads=self.inputs.openmp_number_of_cores,
+            nipype_threads=self.inputs.nipype_number_of_cores,
+            jinja_version=__jinja2_version__,
+        )
+        # Create the report directory if it does not exist
+        report_dir = os.path.join(final_res_dir, "report")
+        os.makedirs(report_dir, exist_ok=True)
+
+        # Save the HTML report file
+        # out_report_filename = os.path.join(report_dir, f"{sub_ses}.html")
+        #
+        # with open(out_report_filename, "w+") as file:
+        #    file.write(report_html_content)
+
+        output_html = self._gen_filename("report_html")
+        print(f"\t* Save HTML report as {output_html}...")
+        with open(output_html, "w+") as f:
+            f.write(report_html_content)
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs["report_html"] = self._gen_filename("report_html")
         return outputs

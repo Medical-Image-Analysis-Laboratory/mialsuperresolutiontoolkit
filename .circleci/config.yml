@@ -422,6 +422,39 @@ jobs:
       - store_artifacts:
           path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
 
+  test-python-install:
+    parameters:
+      version:
+        type: string
+        default: latest
+    docker:
+      - image: circleci/python:<< parameters.version >>
+    steps:
+      - checkout
+      - run:
+          name: "Test Install Twine"
+          command: |
+            python --version
+            pip3 install twine
+      - run:
+          name: "Smoke Test Install Twine"
+          command: |
+            python --version
+            twine upload -h
+      - run:
+          name: "Test Wheel Build"
+          command: |
+            python3 setup_pypi.py sdist bdist_wheel
+      - run:
+          name: "Test Install"
+          command: |
+            pip install -e .
+      - run:
+          name: "Smoke Test Install"
+          command: |
+            python --version
+            pip3 install pymialsrtk
+
   deploy-pypi-release:
     docker:
       - image: circleci/python:3.6
@@ -654,7 +687,14 @@ workflows:
   version: 2
   build-test-deploy:
     jobs:
+      - test-python-install:
+          version: "3.6"
+          filters:
+            tags:
+              only: /.*/
       - build-docker:
+          requires:
+            - test-python-install
           filters:
             tags:
               only: /.*/
@@ -710,6 +750,7 @@ workflows:
 
       - deploy-pypi-release:
           requires:
+            - test-python-install
             - build-docker
             - build-singularity
             # - build_docs
