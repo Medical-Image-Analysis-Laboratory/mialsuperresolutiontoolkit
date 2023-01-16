@@ -14,6 +14,7 @@ INCLUDE_DIRECTORIES(
     ${ANN_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/Code/BTK
 )
+
 #MIALSRTK
 INCLUDE_DIRECTORIES(
 	${CMAKE_SOURCE_DIR}/Code/Reconstruction
@@ -31,9 +32,23 @@ ADD_EXECUTABLE(mialsrtkImageReconstruction mialsrtkImageReconstruction.cxx
     ${CMAKE_SOURCE_DIR}/Code/Registration/mialsrtkRegistration.h
     ${CMAKE_SOURCE_DIR}/Code/Registration/mialsrtkRigidRegistration.h
 )
+
+ADD_EXECUTABLE(mialsrtkSDIComputation mialsrtkSDIComputation.cxx
+    ${CMAKE_SOURCE_DIR}/Code/Reconstruction/mialsrtkLowToHighImageResolutionMethod.h
+    ${CMAKE_SOURCE_DIR}/Code/Registration/mialsrtkSliceBySliceRigidRegistration.h
+    ${CMAKE_SOURCE_DIR}/Code/Reconstruction/mialsrtkResampleImageByInjectionFilter.h
+    ${CMAKE_SOURCE_DIR}/Code/Transformations/mialsrtkVersorSliceBySliceTransform.h
+    ${CMAKE_SOURCE_DIR}/Code/Transformations/mialsrtkSliceBySliceTransform.h
+    ${CMAKE_SOURCE_DIR}/Code/Reconstruction/mialsrtkImageIntersectionCalculator.h
+    ${CMAKE_SOURCE_DIR}/Code/Registration/mialsrtkRegistration.h
+    ${CMAKE_SOURCE_DIR}/Code/Registration/mialsrtkRigidRegistration.h
+)
+
 TARGET_LINK_LIBRARIES(mialsrtkImageReconstruction ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(mialsrtkSDIComputation ${ITK_LIBRARIES})
 #TARGET_LINK_LIBRARIES(mialsrtkImageReconstruction btkToolsLibrary ${ITK_LIBRARIES})
 
 INSTALL(TARGETS
                 mialsrtkImageReconstruction
+                mialsrtkSDIComputation
         DESTINATION bin)

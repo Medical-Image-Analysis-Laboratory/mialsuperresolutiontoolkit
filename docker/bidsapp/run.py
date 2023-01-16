@@ -8,13 +8,15 @@ import os
 import sys
 import json
 from glob import glob
+
 # from traits.api import *
 
 import multiprocessing
 
 # Import the super-resolution pipeline
 from pymialsrtk.parser import get_parser
-from pymialsrtk.pipelines.anatomical.srr import AnatomicalPipeline
+from pymialsrtk.pipelines.anatomical import SRReconPipeline
+from pymialsrtk.pipelines.anatomical import PreprocessingPipeline
 
 
 def return_default_nb_of_cores(nb_of_cores, openmp_proportion=2):
@@ -51,7 +53,9 @@ def return_default_nb_of_cores(nb_of_cores, openmp_proportion=2):
     return openmp_nb_of_cores, nipype_nb_of_cores
 
 
-def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, openmp_proportion=2):
+def check_and_return_valid_nb_of_cores(
+    openmp_nb_of_cores, nipype_nb_of_cores, openmp_proportion=2
+):
     """Function that checks and returns a valid number of cores used by OpenMP and Nipype.
 
     If the number of cores available is exceeded by one of these variables or by the multiplication of the two,
@@ -87,70 +91,168 @@ def check_and_return_valid_nb_of_cores(openmp_nb_of_cores, nipype_nb_of_cores, o
         nipype_nb_of_cores = 1
     else:
         if openmp_nb_of_cores == 0 and nipype_nb_of_cores == 0:
-            openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
+            (
+                openmp_nb_of_cores,
+                nipype_nb_of_cores,
+            ) = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
 
         elif openmp_nb_of_cores > 0 and nipype_nb_of_cores == 0:
             if openmp_nb_of_cores > nb_of_cores:
-                print(f'WARNING: Value of {openmp_nb_of_cores} set by "--openmp_nb_of_cores" is bigger than'
-                      f'the number of cores available ({nb_of_cores}) and will be reset.')
+                print(
+                    f"WARNING: Value of {openmp_nb_of_cores} set by"
+                    f"'--openmp_nb_of_cores' is bigger than the number of "
+                    f"cores available ({nb_of_cores}) and will be reset."
+                )
                 openmp_nb_of_cores = nb_of_cores
                 nipype_nb_of_cores = 1
             else:
-              openmp_nb_of_cores = openmp_nb_of_cores
-              nipype_nb_of_cores = nb_of_cores // openmp_nb_of_cores
+                openmp_nb_of_cores = openmp_nb_of_cores
+                nipype_nb_of_cores = nb_of_cores // openmp_nb_of_cores
 
         elif openmp_nb_of_cores == 0 and nipype_nb_of_cores > 0:
             if nipype_nb_of_cores > nb_of_cores:
-                print(f'WARNING: Value of {nipype_nb_of_cores} set by "--nipype_nb_of_cores" is bigger than'
-                      f'the number of cores available ({nb_of_cores}) and will be reset.')
+                print(
+                    f"WARNING: Value of {nipype_nb_of_cores} set by"
+                    f"'--nipype_nb_of_cores' is bigger than the number of "
+                    "cores available ({nb_of_cores}) and will be reset."
+                )
                 nipype_nb_of_cores = nb_of_cores
                 openmp_nb_of_cores = 1
             else:
-              nipype_nb_of_cores = nipype_nb_of_cores
-              openmp_nb_of_cores = nb_of_cores // nipype_nb_of_cores
+                nipype_nb_of_cores = nipype_nb_of_cores
+                openmp_nb_of_cores = nb_of_cores // nipype_nb_of_cores
 
         elif openmp_nb_of_cores > 0 and nipype_nb_of_cores > 0:
             if nipype_nb_of_cores > nb_of_cores:
                 if openmp_nb_of_cores > nb_of_cores:
-                    print(f'WARNING: Value of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--openmp_nb_of_cores" and'
-                          f'"--nipype_nb_of_cores" are both bigger than the number of cores available ({nb_of_cores})'
-                          'and will be reset.')
-                    openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
+                    print(
+                        f"WARNING: Value of {nipype_nb_of_cores} and "
+                        f"{openmp_nb_of_cores} set by '--openmp_nb_of_cores'"
+                        f"and '--nipype_nb_of_cores' are both bigger than "
+                        f"the number of cores available ({nb_of_cores})"
+                        f"and will be reset."
+                    )
+                    (
+                        openmp_nb_of_cores,
+                        nipype_nb_of_cores,
+                    ) = return_default_nb_of_cores(
+                        nb_of_cores, openmp_proportion
+                    )
                 else:
                     if (openmp_nb_of_cores * nipype_nb_of_cores) > nb_of_cores:
-                        print(f'WARNING: Multiplication of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
-                              f'"--nipype_nb_of_cores" is bigger than the number of cores available ({nb_of_cores}) and will be reset.')
-                        openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
+                        print(
+                            f"WARNING: Multiplication of "
+                            f"{nipype_nb_of_cores} and {openmp_nb_of_cores} "
+                            "set by '--nipype_nb_of_cores' and "
+                            "'--nipype_nb_of_cores' is bigger than the "
+                            "number of cores available ({nb_of_cores}) "
+                            "and will be reset."
+                        )
+                        (
+                            openmp_nb_of_cores,
+                            nipype_nb_of_cores,
+                        ) = return_default_nb_of_cores(
+                            nb_of_cores, openmp_proportion
+                        )
             else:
                 if openmp_nb_of_cores > nb_of_cores:
-                    print(f'WARNING: Value of {openmp_nb_of_cores} set by "--openmp_nb_of_cores" is bigger'
-                          f'than the number of cores available ({nb_of_cores}) and will be reset.')
-                    openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
+                    print(
+                        f"WARNING: Value of {openmp_nb_of_cores} set by "
+                        f"'--openmp_nb_of_cores' is bigger than the number "
+                        f"of cores available ({nb_of_cores}) and will "
+                        "be reset."
+                    )
+                    (
+                        openmp_nb_of_cores,
+                        nipype_nb_of_cores,
+                    ) = return_default_nb_of_cores(
+                        nb_of_cores, openmp_proportion
+                    )
                 else:
                     if (openmp_nb_of_cores * nipype_nb_of_cores) > nb_of_cores:
-                        print(f'WARNING: Multiplication of {nipype_nb_of_cores} and {openmp_nb_of_cores} set by "--nipype_nb_of_cores" and'
-                              f'"--nipype_nb_of_cores" is bigger than the number of cores available ({nb_of_cores}) and will be reset.')
-                        openmp_nb_of_cores, nipype_nb_of_cores = return_default_nb_of_cores(nb_of_cores, openmp_proportion)
+                        print(
+                            f"WARNING: Multiplication of "
+                            f"{nipype_nb_of_cores} and {openmp_nb_of_cores}"
+                            "set by '--nipype_nb_of_cores' and "
+                            "'--nipype_nb_of_cores' is bigger than the "
+                            "number of cores available ({nb_of_cores}) "
+                            "and will be reset."
+                        )
+                        (
+                            openmp_nb_of_cores,
+                            nipype_nb_of_cores,
+                        ) = return_default_nb_of_cores(
+                            nb_of_cores, openmp_proportion
+                        )
 
     return openmp_nb_of_cores, nipype_nb_of_cores
 
 
-def main(bids_dir, output_dir,
-         subject,
-         session,
-         p_stacks,
-         paramTV=None,
-         srID=None,
-         masks_derivatives_dir='',
-         masks_desc=None,
-         dict_custom_interfaces=None,
-         nipype_number_of_cores=1,
-         openmp_number_of_cores=1,
-         memory=0):
-    """Main function that creates and executes the workflow of the BIDS App on one subject.
+def check_participants_params(participants_params):
+    """Check the participants_params input json to see
+    if the custom_interfaces have only allowed keys, i.e.
+    keys that are used somewhere in mialsrtk.
 
-    It creates an instance of the class :class:`pymialsrtk.pipelines.anatomical.srr.AnatomicalPipeline`,
-    which is then used to create and execute the workflow of the super-resolution reconstruction pipeline.
+    Parameters
+    ----------
+    pariticipants_params: dict
+        A dictionary corresponding to the json config file.
+    """
+    allowed_keys = [
+        "skip_svr",
+        "do_refine_hr_mask",
+        "skip_preprocessing",
+        "do_nlm_denoising",
+        "skip_stacks_ordering",
+        "do_reconstruct_labels",
+        "do_anat_orientation",
+        "do_multi_parameters",
+        "do_srr_assessment",
+    ]
+    for sub, sub_list in participants_params.items():
+        for config in sub_list:
+            if "custom_interfaces" in config.keys():
+                for k in config["custom_interfaces"].keys():
+                    if k not in allowed_keys:
+                        raise RuntimeError(
+                            f"Invalid custom interface key {k} for subject "
+                            f"{sub}. Valid keys are \n"
+                            + ", ".join(allowed_keys)
+                        )
+            if "stacks" in config.keys():
+                stacks = config["stacks"]
+                assert len(stacks) > 1, (
+                    f"Invalid number of stacks {stacks} for subject {sub}. "
+                    f"MIALSRTK currently only handles n_stacks > 1."
+                )
+
+
+def main(
+    bids_dir,
+    output_dir,
+    subject,
+    session,
+    run_type,
+    p_ga=None,
+    p_stacks=None,
+    param_TV=None,
+    sr_id=None,
+    masks_derivatives_dir="",
+    labels_derivatives_dir="",
+    masks_desc=None,
+    dict_custom_interfaces=None,
+    verbose=None,
+    nipype_number_of_cores=1,
+    openmp_number_of_cores=1,
+    memory=0,
+    p_all_outputs=False,
+):
+    """Main function that creates and executes the workflow of the BIDS App on
+    one subject.
+
+    It creates an instance of the class :class:`pymialsrtk.pipelines.anatomical
+    srr.AnatomicalPipeline`, which is then used to create and execute the
+    workflow of the super-resolution reconstruction pipeline.
 
     Parameters
     ----------
@@ -167,22 +269,28 @@ def main(bids_dir, output_dir,
         Session ID if applicable (in the form ``ses-YY``)
 
     p_stacks : list(int)
-        List of stack to be used in the reconstruction. The specified order is kept if `skip_stacks_ordering` is True.
+        List of stack to be used in the reconstruction. The specified order is
+        kept if `skip_stacks_ordering` is True.
 
-    paramTV dict : {'deltatTV': float, 'lambdaTV': float, 'primal_dual_loops': int}
+    param_TV dict : {"deltatTV": float, "lambdaTV": float,
+                     "primal_dual_loops": int}
         Dictionary of Total-Variation super-resolution optimizer parameters
 
-    srID : string
-        ID of the reconstruction useful to distinguish when multiple reconstructions
-        with different order of stacks are run on the same subject
+    sr_id : string
+        ID of the reconstruction useful to distinguish when multiple
+        reconstructions with different order of stacks are run on the
+        same subject
 
     masks_derivatives_dir : string
-        directory basename in BIDS directory derivatives where to search for masks (optional)
+        directory basename in BIDS directory derivatives where to search
+        for masks (optional)
 
     masks_desc : string
         BIDS description tag of masks to use (optional)
 
-    dict_custom_interfaces : {'do_refine_hr_mask': False, 'skip_nlm_denoising': False, 'skip_stacks_ordering': False}
+    dict_custom_interfaces : {"do_refine_hr_mask": False,
+        "do_nlm_denoising": False, "skip_stacks_ordering": False,
+        "preproc_do_registration": False}
         Dictionary that customize the workflow (skip interfaces).
 
     nipype_number_of_cores : int
@@ -197,30 +305,56 @@ def main(bids_dir, output_dir,
 
     """
 
-    if paramTV is None:
-        paramTV = dict()
+    if param_TV is None:
+        param_TV = dict()
 
-    subject = 'sub-' + subject
+    subject = "sub-" + subject
     if session is not None:
-        session = 'ses-' + session
+        session = "ses-" + session
 
-    if srID is None:
-        srID = 1
-
+    if sr_id is None:
+        sr_id = 1
     # Initialize an instance of AnatomicalPipeline
-    pipeline = AnatomicalPipeline(bids_dir,
-                                  output_dir,
-                                  subject,
-                                  p_stacks,
-                                  srID,
-                                  session,
-                                  paramTV,
-                                  masks_derivatives_dir,
-                                  masks_desc,
-                                  p_dict_custom_interfaces=dict_custom_interfaces,
-                                  openmp_number_of_cores=openmp_number_of_cores,
-                                  nipype_number_of_cores=nipype_number_of_cores
-                                  )
+    if run_type == "sr":
+        pipeline = SRReconPipeline(
+            bids_dir,
+            output_dir,
+            subject,
+            p_ga,
+            p_stacks,
+            sr_id,
+            session,
+            param_TV,
+            masks_derivatives_dir,
+            labels_derivatives_dir,
+            masks_desc,
+            p_dict_custom_interfaces=dict_custom_interfaces,
+            p_verbose=verbose,
+            p_openmp_number_of_cores=openmp_number_of_cores,
+            p_nipype_number_of_cores=nipype_number_of_cores,
+            p_all_outputs=p_all_outputs,
+        )
+    elif run_type == "preprocessing":
+        pipeline = PreprocessingPipeline(
+            bids_dir,
+            output_dir,
+            subject,
+            p_ga,
+            p_stacks,
+            sr_id,
+            session,
+            masks_derivatives_dir,
+            masks_desc,
+            p_dict_custom_interfaces=dict_custom_interfaces,
+            p_verbose=verbose,
+            p_openmp_number_of_cores=openmp_number_of_cores,
+            p_nipype_number_of_cores=nipype_number_of_cores,
+        )
+    else:
+        raise ValueError(
+            f"Invalid run_type {run_type}."
+            f"Please choose from ('sr,'preprocessing')."
+        )
 
     # Create the super resolution Nipype workflow
     pipeline.create_workflow()
@@ -231,7 +365,7 @@ def main(bids_dir, output_dir,
     return res
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     parser = get_parser()
     args = parser.parse_args()
@@ -240,20 +374,26 @@ if __name__ == '__main__':
     nipype_nb_of_cores = args.nipype_nb_of_cores
 
     # Check values set for the number of cores and reset them if invalid
-    openmp_nb_of_cores, nipype_nb_of_cores = check_and_return_valid_nb_of_cores(openmp_nb_of_cores,
-                                                                                nipype_nb_of_cores)
-    print(f'INFO: Number of cores used by Nipype engine set to {nipype_nb_of_cores}')
+    (
+        openmp_nb_of_cores,
+        nipype_nb_of_cores,
+    ) = check_and_return_valid_nb_of_cores(
+        openmp_nb_of_cores, nipype_nb_of_cores
+    )
+    print(
+        f"INFO: Number of cores used by Nipype engine "
+        f"set to {nipype_nb_of_cores}"
+    )
 
-    os.environ['OMP_NUM_THREADS'] = str(openmp_nb_of_cores)
-    print('INFO: Environment variable OMP_NUM_THREADS set to: {}'.format(os.environ['OMP_NUM_THREADS']))
+    os.environ["OMP_NUM_THREADS"] = str(openmp_nb_of_cores)
+    print(
+        "INFO: Environment variable OMP_NUM_THREADS set to: "
+        "{}".format(os.environ["OMP_NUM_THREADS"])
+    )
 
-    print(args.param_file)
-    with open(args.param_file, 'r') as f:
+    with open(args.param_file, "r") as f:
         participants_params = json.load(f)
-        print(participants_params)
-        print(participants_params.keys())
-    print()
-
+    check_participants_params(participants_params)
     subjects_to_analyze = []
     # only for a subset of subjects
     if args.participant_label:
@@ -261,44 +401,113 @@ if __name__ == '__main__':
     # for all subjects
     else:
         subject_dirs = glob(os.path.join(args.bids_dir, "sub-*"))
-        subjects_to_analyze = [
-            subject_dir.split("-")[-1] for subject_dir in subject_dirs
-        ]
+        subjects_to_analyze = sorted(
+            [subject_dir.split("-")[-1] for subject_dir in subject_dirs]
+        )
+    success_dict = {}
+    failed_dict = {}
 
     for sub in subjects_to_analyze:
+        success_dict[sub] = []
+        failed_dict[sub] = []
         if sub in participants_params.keys():
 
             sr_list = participants_params[sub]
+            print(f"Processing subject {sub}.")
             print(sr_list)
 
             for sr_params in sr_list:
 
-                srID = sr_params['sr-id'] if 'sr-id' in sr_params.keys() else None
-                ses = sr_params["session"] if "session" in sr_params.keys() else None
-                stacks = sr_params['stacks'] if 'stacks' in sr_params.keys() else None
-                paramTV = sr_params['paramTV'] if 'paramTV' in sr_params.keys() else None
-                masks_desc = sr_params['masks_desc'] if 'masks_desc' in sr_params.keys() else None
+                sr_id = (
+                    sr_params["sr-id"] if "sr-id" in sr_params.keys() else None
+                )
+                ses = (
+                    sr_params["session"]
+                    if "session" in sr_params.keys()
+                    else None
+                )
+                ga = sr_params["ga"] if "ga" in sr_params.keys() else None
+                stacks = (
+                    sr_params["stacks"]
+                    if "stacks" in sr_params.keys()
+                    else None
+                )
+                param_TV = (
+                    sr_params["paramTV"]
+                    if "paramTV" in sr_params.keys()
+                    else None
+                )
+                masks_desc = (
+                    sr_params["masks_desc"]
+                    if "masks_desc" in sr_params.keys()
+                    else None
+                )
 
-                dict_custom_interfaces = sr_params['custom_interfaces'] if 'custom_interfaces' in sr_params.keys() else None
+                dict_custom_interfaces = (
+                    sr_params["custom_interfaces"]
+                    if "custom_interfaces" in sr_params.keys()
+                    else None
+                )
 
-                if srID is None:
-                    print('WARNING: Do not process subjects %s because of missing parameters.' % sub)
+                if sr_id is None:
+                    e = (
+                        f"Subject {sub} was not processed "
+                        f"because of missing parameters."
+                    )
+                    failed_dict[sub] += [e]
+                    print(e)
                     continue
-
-                res = main(bids_dir=args.bids_dir,
-                           output_dir=args.output_dir,
-                           subject=sub,
-                           session=ses,
-                           p_stacks=stacks,
-                           paramTV=paramTV,
-                           srID=srID,
-                           masks_derivatives_dir=args.masks_derivatives_dir,
-                           masks_desc=masks_desc,
-                           dict_custom_interfaces=dict_custom_interfaces,
-                           nipype_number_of_cores=nipype_nb_of_cores,
-                           openmp_number_of_cores=openmp_nb_of_cores,
-                           memory=args.memory)
+                try:
+                    res = main(
+                        bids_dir=args.bids_dir,
+                        output_dir=args.output_dir,
+                        subject=sub,
+                        session=ses,
+                        run_type=args.run_type,
+                        p_ga=ga,
+                        p_stacks=stacks,
+                        param_TV=param_TV,
+                        sr_id=sr_id,
+                        masks_derivatives_dir=args.masks_derivatives_dir,
+                        labels_derivatives_dir=args.labels_derivatives_dir,
+                        masks_desc=masks_desc,
+                        dict_custom_interfaces=dict_custom_interfaces,
+                        verbose=args.verbose,
+                        nipype_number_of_cores=nipype_nb_of_cores,
+                        openmp_number_of_cores=openmp_nb_of_cores,
+                        memory=args.memory,
+                        p_all_outputs=args.all_outputs,
+                    )
+                    out = (
+                        f"Subject {sub} with parameters {sr_params} "
+                        f"succeeded."
+                    )
+                    success_dict[sub] += [out]
+                except Exception as e:
+                    e = (
+                        f"Subject {sub} with parameters {sr_params} failed "
+                        f"with message \n\t {e}"
+                    )
+                    failed_dict[sub] += [e]
+                    print(e)
         else:
-            print('WARNING: Do not process subjects %s because of missing configuration.' % sub)
+            e = (
+                f"Subject {sub} was not processed because of missing "
+                f"configuration."
+            )
+            failed_dict[sub] += [e]
+            print(e)
+
+    if not all(v == [] for v in success_dict.values()):
+        print("\n" + "-" * 15 + "\nSUCCESSFUL RUNS\n" + "-" * 15)
+        for sub, v in success_dict.items():
+            for out in v:
+                print("-> ", out)
+
+    if not all(v == [] for v in failed_dict.values()):
+        print("\n" + "-" * 24 + "\nWARNING: SOME RUN FAILED\n" + "-" * 24)
+        for sub, v in failed_dict.items():
+            for error in v:
+                print("-> ", error)
 
     sys.exit(0)

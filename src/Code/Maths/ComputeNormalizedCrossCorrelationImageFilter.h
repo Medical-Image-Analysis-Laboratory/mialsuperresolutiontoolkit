@@ -76,6 +76,10 @@ template <typename TInputImage, typename TOutputImage>
 
     void SetCentralVoxelIndex(InputImageIndexType indx);
 
+    bool GetVerbose(){
+        return this -> m_Verbose;
+    }
+
     protected:
     ComputeNormalizedCrossCorrelationImageFilter()
     : Superclass()

@@ -370,6 +370,16 @@ public:
     /** Gets the vector of observations Y.*/
     vnl_vector<float> GetObservationsY();
 
+    void SetVerbose( bool verbose )
+    {
+    m_verbose = verbose;
+    }
+
+    bool GetVerbose ()
+    {
+    return this -> m_verbose;
+    }
+
 #ifdef ITK_USE_CONCEPT_CHECKING
     /** Begin concept checking */
     itkConceptMacro(OutputHasNumericTraitsCheck,
@@ -460,7 +470,7 @@ private:
     double m_TVEnergy;/**< Run time for optimization **/
 
     double m_SliceGap;/** Gap between slices**/
-
+    bool m_verbose;
 };
 
 

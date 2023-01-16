@@ -190,7 +190,16 @@ public:
   itkSetMacro(RelaxationFactor,double);
   itkGetMacro(RelaxationFactor,double);
 
+  void SetVerbose( bool verbose )
+  {
+    m_verbose = verbose;
+  }
 
+  bool GetVerbose ()
+  {
+    return this -> m_verbose;
+  }
+  
 protected:
   SliceBySliceRigidRegistration();
   virtual ~SliceBySliceRigidRegistration() {};
@@ -227,6 +236,7 @@ private:
   double                                      m_MaxStepLength;
   double                                      m_RelaxationFactor;
 
+  bool                                        m_verbose;
 };
 
 

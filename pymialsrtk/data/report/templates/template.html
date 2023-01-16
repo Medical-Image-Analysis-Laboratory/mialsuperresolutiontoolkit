@@ -10,66 +10,87 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
-html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif;}
-.w3-sidebar {
-  z-index: 3;
-  width: 250px;
-  top: 43px;
-  bottom: 0;
-  height: inherit;
-}
-img {
-  max-width: 100%;
-  height: auto;
-}
+  html,
+  body,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Roboto", sans-serif;
+  }
 
+  .w3-sidebar {
+    z-index: 3;
+    width: 250px;
+    top: 43px;
+    bottom: 0;
+    height: inherit;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  #workflow {
+    max-width: 60%;
+  }
 </style>
+
 <body>
 
 
-<!-- Main content: shift it to the right by 100 pixels -->
-<div class="w3-main" style="margin-left:100px">
-  <h1 class="w3-text-teal">Super-Resolution Reconstruction Report</h1>
+  <!-- Main content: shift it to the right by 100 pixels -->
+  <div class="w3-main" style="margin-left:100px">
+    <h1 class="w3-text-teal">Super-Resolution Reconstruction Report</h1>
 
-  <div class="w3-row w3-padding-16">
-    <div class="w3-container">
-      <p>
+    <div class="w3-row w3-padding-16">
+      <div class="w3-container">
+        <p>
         <ul>
           <li><span class="w3-text-orange">Subject:</span> {{subject}}</li>
-          {% if session is defined and session is not none %}
+          {% if session is defined and session !="" %}
           <li><span class="w3-text-orange">Session:</span> {{session}}</li>
           {% endif %}
           <li><span class="w3-text-orange">Reconstruction ID:</span> {{sr_id}}</li>
         </ul>
-      </p>
+        </p>
+      </div>
     </div>
-  </div>
 
-  <div class="w3-row w3-padding-16">
-    <h1 class="w3-text-teal">Configuration</h1>
-    <div class="w3-third w3-container">
-      <p>
+    <div class="w3-row w3-padding-16">
+      <h1 class="w3-text-teal">Configuration</h1>
+      <div class="w3-third w3-container">
+        <p>
         <ul>
-          <li><span class="w3-text-orange">Number of scans:</span> {{sr_json_metadata["CustomMetaData"]["Number of scans used"]}}</li>
+          <li><span class="w3-text-orange">Number of scans:</span> {{sr_json_metadata["CustomMetaData"]["n_stacks"]}}
+          </li>
           <li><span class="w3-text-orange">Original scan run index order:</span> {{stacks}}</li>
           {% if stacks_ordering=="on" %}
-          <li><span class="w3-text-orange">Motion-based scan auto-ordering:</span> <span class="w3-text-green">&#x2713;</span></li>
+          <li><span class="w3-text-orange">Motion-based scan auto-ordering:</span> <span
+              class="w3-text-green">&#x2713;</span></li>
           {% else %}
-          <li><span class="w3-text-orange">Motion-based scan auto-ordering:</span> <span class="w3-text-red">&#x2717;</span></li>
+          <li><span class="w3-text-orange">Motion-based scan auto-ordering:</span> <span
+              class="w3-text-red">&#x2717;</span></li>
           {% endif %}
           {% if use_auto_masks=="on" %}
-          <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-green">&#x2713;</span></li>
+          <li><span class="w3-text-orange">Automatic brain extraction:</span> <span
+              class="w3-text-green">&#x2713;</span></li>
           {% else %}
-          <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-red">&#x2717;</span></li>
+          <li><span class="w3-text-orange">Automatic brain extraction:</span> <span class="w3-text-red">&#x2717;</span>
+          </li>
           {% endif %}
-          {% if custom_masks_dir is defined and custom_masks_dir is not none %}
-          <li><span class="w3-text-orange">Custom brain mask directory:</span> <span class="w3-light-grey w3-text-dark-grey">derivatives/{{custom_masks_dir}}</span></li>
+          {% if custom_masks_dir is defined and custom_masks_dir !="" %}
+          <li><span class="w3-text-orange">Custom brain mask directory:</span> <span
+              class="w3-light-grey w3-text-dark-grey">derivatives/{{custom_masks_dir}}</span></li>
           {% endif %}
         </ul>
-      </p>
-    </div>
-    <div class="w3-twothird w3-container">
-      <p>
+        </p>
+      </div>
+      <div class="w3-third w3-container">
+        <p>
         <ul>
           {% if nlm_denoising=="on" %}
           <li><span class="w3-text-orange">NLM denoising:</span> <span class="w3-text-green">&#x2713;</span></li>
@@ -77,89 +98,131 @@ img {
           <li><span class="w3-text-orange">NLM denoising:</span> <span class="w3-text-red">&#x2717;</span></li>
           {% endif %}
           {% if svr=="on" %}
-          <li><span class="w3-text-orange">Slice-to-volume registration:</span> <span class="w3-text-green">&#x2713;</span></li>
+          <li><span class="w3-text-orange">Slice-to-volume registration:</span> <span
+              class="w3-text-green">&#x2713;</span></li>
           {% else %}
-          <li><span class="w3-text-orange">Slice-to-volume registration:</span> <span class="w3-text-red">&#x2717;</span></li>
+          <li><span class="w3-text-orange">Slice-to-volume registration:</span> <span
+              class="w3-text-red">&#x2717;</span></li>
           {% endif %}
           {% if do_refine_hr_mask=="on" %}
-          <li><span class="w3-text-orange">SR brain mask refinement:</span> <span class="w3-text-green">&#x2713;</span></li>
+          <li><span class="w3-text-orange">SR brain mask refinement:</span> <span class="w3-text-green">&#x2713;</span>
+          </li>
           {% else %}
-          <li><span class="w3-text-orange">SR brain mask refinement:</span> <span class="w3-text-red">&#x2717;</span></li>
+          <li><span class="w3-text-orange">SR brain mask refinement:</span> <span class="w3-text-red">&#x2717;</span>
+          </li>
+          {% endif %}
+          {% if do_anat_orientation=="on" %}
+          <li><span class="w3-text-orange">SR oriented to template:</span> <span class="w3-text-green">&#x2713;</span>
+          </li>
+          {% else %}
+          <li><span class="w3-text-orange">SR oriented to template:</span> <span class="w3-text-red">&#x2717;</span>
+          </li>
           {% endif %}
         </ul>
-      </p>
-    </div>
-  </div>
-
-  <div class="w3-row w3-padding-16">
-    <h1 class="w3-text-teal">Workflow</h1>
-    <div class="w3-container">
-      <p class="w3-padding-large w3-padding-8 w3-center">
-        <img src="{{workflow_graph}}">
-      </p>
-    </div>
-  </div>
-
-  <div class="w3-row w3-padding-16">
-    <h1 class="w3-text-teal">Execution</h1>
-    <div class="w3-container">
-      <p>
+        </p>
+      </div>
+      <div class="w3-third w3-container">
+        <p>
         <ul>
-          <li><span class="w3-text-orange">Starting processing date / time:</span> {{processing_datetime}}</li>
-          <li><span class="w3-text-orange">Elapsed time:</span> {{run_time}}</li>
-          <li><span class="w3-text-orange">Log file:</span> <a href="{{log}}"><span class="w3-light-grey w3-text-dark-grey">{{log}}</span></a></li>
-           {% if resources_stats is defined and resources_stats is not none %}
-           <li><span class="w3-text-orange">Computational resources report:</span> <a href="{{resources_stats}}"><span class="w3-light-grey w3-text-dark-grey">{{resources_stats}}</span></a></li>
-           {% endif %}
+          {% if do_multi_parameters=="on" %}
+          <li><span class="w3-text-orange">SR parameter sweep:</span> <span class="w3-text-green">&#x2713;</span></li>
+          {% else %}
+          <li><span class="w3-text-orange">SR parameter sweep:</span> <span class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
+          {% if do_srr_assessment=="on" %}
+          <li><span class="w3-text-orange">SR quality assessment:</span> <span class="w3-text-green">&#x2713;</span>
+          </li>
+          {% else %}
+          <li><span class="w3-text-orange">SR quality assessment:</span> <span class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
+          {% if do_reconstruct_labels=="on" %}
+          <li><span class="w3-text-orange">Labelmaps reconstructed from SR:</span> <span
+              class="w3-text-green">&#x2713;</span></li>
+          {% else %}
+          <li><span class="w3-text-orange">Labelmaps reconstructed from SR:</span> <span
+              class="w3-text-red">&#x2717;</span></li>
+          {% endif %}
         </ul>
-      </p>
+        </p>
+      </div>
     </div>
-  </div>
 
-  {% if stacks_ordering=="on" %}
-  <div class="w3-row w3-padding-16">
-    <h1 class="w3-text-teal">Motion and stack order</h1>
-    <div class="w3-container">
-      <p class="w3-padding-large w3-padding-32 w3-center">
-          <img src="{{motion_report_image}}">
-      </p>
-    </div>
-  </div>
-  {% endif %}
 
-  <div class="w3-row">
-    <h1 class="w3-text-teal">Super-Resolution</h1>
-    <div class="w3-half w3-container">
-      <p>
+    <div class="w3-row">
+      <h1 class="w3-text-teal">Super-Resolution</h1>
+      <div class="w3-half w3-container">
+        <p>
         <ul>
-          <li><span class="w3-text-orange">Input scan run index order:</span> {{sr_json_metadata["Input sources run order"]}}</li>
+          <li><span class="w3-text-orange">Input scan run index order:</span> {{sr_json_metadata["Input sources run
+            order"]}}</li>
           <li><span class="w3-text-orange">Output resolution:</span> {{sr_resolution}}</li>
           <li><span class="w3-text-orange">Algorithm:</span> Total-Variation</li>
         </ul>
-      </p>
-    </div>
-    <div class="w3-half w3-container">
-      <p>
+        </p>
+      </div>
+      <div class="w3-half w3-container">
+        <p>
         <h1 class="w3-text-teal"> </h1>
         <ul>
-          <li><span class="w3-text-orange">Regularization weight (Lambda):</span> {{sr_json_metadata["CustomMetaData"]["TV regularization weight lambda"]}}</li>
-          <li><span class="w3-text-orange">Optimization time step:</span> {{sr_json_metadata["CustomMetaData"]["Optimization time step"]}}</li>
-          <li><span class="w3-text-orange">Number of primal/dual iterations:</span> {{sr_json_metadata["CustomMetaData"]["Primal/dual loops"]}}</li>
+          <li><span class="w3-text-orange">Regularization weight (Lambda):</span>
+            {{sr_json_metadata["CustomMetaData"]["in_lambda"]}}</li>
+          <li><span class="w3-text-orange">Optimization time step:</span>
+            {{sr_json_metadata["CustomMetaData"]["in_deltat"]}}</li>
+          <li><span class="w3-text-orange">Number of primal/dual iterations:</span>
+            {{sr_json_metadata["CustomMetaData"]["in_loop"]}}</li>
         </ul>
-      </p>
-    </div>
-    <br>
-    <div class="w3-container">
-      <p class="w3-padding-large w3-padding-32 w3-center">
+        </p>
+      </div>
+      <br>
+      <div class="w3-container">
+        <p class="w3-padding-large w3-padding-32 w3-center">
           <img src="{{sr_png_image}}">
-      </p>
+        </p>
+      </div>
     </div>
-  </div>
 
-  <div class="w3-row w3-padding-16">
-    <div class="w3-half w3-container">
-      <h1 class="w3-text-teal">Computing Environment</h1>
-      <p>
+    <div class="w3-row w3-padding-16">
+      <h1 class="w3-text-teal">Workflow</h1>
+      <div class="w3-container">
+        <p class="w3-padding-large w3-padding-8 w3-center">
+          <img id="workflow" src="{{workflow_graph}}">
+        </p>
+      </div>
+    </div>
+
+    <div class="w3-row w3-padding-16">
+      <h1 class="w3-text-teal">Execution</h1>
+      <div class="w3-container">
+        <p>
+        <ul>
+          <li><span class="w3-text-orange">Starting processing date / time:</span> {{processing_datetime}}</li>
+          <li><span class="w3-text-orange">Elapsed time:</span> {{run_time}}</li>
+          <li><span class="w3-text-orange">Log file:</span> <a href="{{log}}"><span
+                class="w3-light-grey w3-text-dark-grey">{{log}}</span></a></li>
+          {% if resources_stats is defined and resources_stats is not none %}
+          <li><span class="w3-text-orange">Computational resources report:</span> <a href="{{resources_stats}}"><span
+                class="w3-light-grey w3-text-dark-grey">{{resources_stats}}</span></a></li>
+          {% endif %}
+        </ul>
+        </p>
+      </div>
+    </div>
+
+    {% if stacks_ordering=="on" %}
+    <div class="w3-row w3-padding-16">
+      <h1 class="w3-text-teal">Motion and stack order</h1>
+      <div class="w3-container">
+        <p class="w3-padding-large w3-padding-32 w3-center">
+          <img src="{{motion_report_image}}">
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="w3-row w3-padding-16">
+      <div class="w3-half w3-container">
+        <h1 class="w3-text-teal">Computing Environment</h1>
+        <p>
         <ul>
           {% if python is defined %}
           <li><span class="w3-text-orange">Python:</span> {{python}}</li>
@@ -168,12 +231,12 @@ img {
           <li><span class="w3-text-orange">OS:</span> {{os}}</li>
           {% endif %}
         </ul>
-      </p>
-    </div>
-    <div class="w3-half w3-container">
-      <h1 class="w3-text-teal">Multithreading</h1>
-      <p>
-        Number of threads for:
+        </p>
+      </div>
+      <div class="w3-half w3-container">
+        <h1 class="w3-text-teal">Multithreading</h1>
+        <p>
+          Number of threads for:
         <ul>
           {% if nipype_threads is defined and nipype_threads is not none %}
           <li><span class="w3-text-orange">Nipype:</span> {{nipype_threads}}</li>
@@ -182,26 +245,28 @@ img {
           <li><span class="w3-text-orange">OpenMP:</span> {{openmp_threads}}</li>
           {% endif %}
         </ul>
-      </p>
+        </p>
+      </div>
     </div>
+
+    <footer id="myFooter">
+      <div class="w3-container w3-theme-cyan w3-padding-8">
+        <h4>Auto-generated by MIALSRTK version {{version}} using <a
+            href="https://jinja.palletsprojects.com/en/3.0.x/">Jinja</a> {{jinja_version}}</h4>
+      </div>
+
+      <div class="w3-container w3-theme-l1">
+        <p>Copyright &copy;
+          2016-2021 Medical Image Analysis Laboratory,
+          University Hospital Center and University of Lausanne (UNIL-CHUV),
+          Switzerland, and contributors</p>
+        <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>
+      </div>
+    </footer>
+
+    <!-- END MAIN -->
   </div>
 
-  <footer id="myFooter">
-    <div class="w3-container w3-theme-cyan w3-padding-8">
-      <h4>Auto-generated by MIALSRTK version {{version}} using <a href="https://jinja.palletsprojects.com/en/3.0.x/">Jinja</a> {{jinja_version}}</h4>
-    </div>
-
-    <div class="w3-container w3-theme-l1">
-      <p>Copyright &copy;
-        2016-2021 Medical Image Analysis Laboratory,
-        University Hospital Center and University of Lausanne (UNIL-CHUV),
-        Switzerland, and contributors</p>
-      <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>
-    </div>
-  </footer>
-
-<!-- END MAIN -->
-</div>
-
 </body>
+
 </html>

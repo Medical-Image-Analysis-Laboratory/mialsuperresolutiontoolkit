@@ -90,7 +90,7 @@ public:
     void SetSpacing(SpacingType spacing)
     {
         m_Spacing = spacing.GetVnlVector();
-
+        //bool verbose = this -> GetVerbose();
         ArrayType sigma;
 
         float cst = 8*sqrt(log(2));
@@ -110,10 +110,12 @@ public:
                 sliceThicknessIndex = i;
             }
         }
-
-        std::cout << "sliceThicknessIndex : " << sliceThicknessIndex << std::endl;
-        std::cout << "sliceThickness : " << sliceThickness << std::endl;
-
+        if (m_verbose){
+            std::cout << "OrientedSpatialFunction" << std::endl;
+            std::cout << m_verbose << std::endl;
+            std::cout << "sliceThicknessIndex : " << sliceThicknessIndex << std::endl;
+            std::cout << "sliceThickness : " << sliceThickness << std::endl;
+        }
         if(m_RES==2)//Anisotropic resolution
         {
             for(unsigned int i=0;i<3;i++)
@@ -179,6 +181,15 @@ public:
     /** Gets the type of PSF (Boxcar, Gaussian). */
     itkGetMacro(RES, unsigned int);
 
+    void SetVerbose(bool verbose)
+    {
+        this -> m_verbose = verbose;
+    }
+
+    bool GetVerbose()
+    {
+        return this -> m_verbose;
+    }
 
 protected:
     OrientedSpatialFunction();
@@ -203,7 +214,7 @@ private:
 
     typename GaussianFunctionType::Pointer m_Gaussian;
 
-
+    bool m_verbose;
 };
 
 } // end namespace mialsrtk

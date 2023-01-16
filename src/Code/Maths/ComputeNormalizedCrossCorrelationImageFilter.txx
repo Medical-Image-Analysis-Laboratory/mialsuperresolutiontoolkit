@@ -452,7 +452,7 @@ ComputeNormalizedCrossCorrelationImageFilter< TInputImage,TOutputImage >
     if (m_ComputationMask)
         return;
 
-    if (m_Verbose)
+    if (this -> GetVerbose())
         std::cout << "No computation mask specified... Using the whole image..." << std::endl;
 
     if (!m_ComputationMask)

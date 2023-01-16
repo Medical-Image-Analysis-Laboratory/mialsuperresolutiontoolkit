@@ -9,30 +9,31 @@ commands:
 
 
 jobs:
-
   build-docker:
     environment:
       TZ: "/usr/share/zoneinfo/Europe/Zurich"
       SCRATCH: "/scratch"
     docker:
       - image: docker:19.03.1-git 
-    working_directory: tmp/src/mialsuperresolutiontoolkit
+    working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
       - run:
-          name: "Install parallel gzip and python2"
+          name: "Install parallel gzip, python2 and git-lfs"
           command: |
-            apk add --no-cache pigz python2
+            apk add --no-cache pigz python2 git-lfs
       - restore_cache:
           keys:
             - docker-{{ .Branch }}-{{ epoch }}
             - docker-{{ .Branch }}-
-            - docker-master-
-            - docker-
           paths:
-            - /tmp/cache/docker.tar.gz
+            - /tmp/src/mialsuperresolutiontoolkit/
       - checkout
+      - save_cache:
+          key: docker-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /tmp/src/mialsuperresolutiontoolkit/
       - setup_remote_docker:
-          docker_layer_caching: false
+          docker_layer_caching: true 
       - run:
           name: "Load Docker image layer cache"
           no_output_timeout: 30m
@@ -60,16 +61,10 @@ jobs:
 
             # Build main docker image
             ls -la .
-            e=1 && for i in {1..5}; do
-              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 --rm=false --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=$VCS_REF --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 . \
-              && e=0 && break || sleep 15
-            done && [ "$e" -eq "0" ]   
+            docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 --rm=false --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=$VCS_REF --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04 .
             # Build CMP BIDS App docker image
             ls -la ./docker/bidsapp
-            e=1 && for i in {1..5}; do
-              docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit ./docker/bidsapp \
-              && e=0 && break || sleep 15
-            done && [ "$e" -eq "0" ]
+            docker build --cache-from sebastientourbier/mialsuperresolutiontoolkit --rm=false --build-arg MAIN_DOCKER="sebastientourbier/mialsuperresolutiontoolkit-ubuntu14.04" --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" -t sebastientourbier/mialsuperresolutiontoolkit ./docker/bidsapp
       - run:
           name: "Save Docker Images"
           no_output_timeout: 40m
@@ -84,25 +79,24 @@ jobs:
           paths:
             - cache/docker.tar.gz
             - src/mialsuperresolutiontoolkit
-
+  
   build-singularity:
     machine:
-      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
+      - attach_workspace:
+          at: /tmp
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether build-singularity job should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?build-singularity]' )" != "" ]]; then
-              echo "Skipping test"
+              echo "Skipping build-singularity"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       - run:
           name: "Starting local registry"
           command: docker run -d -p 5000:5000 --restart=always --name registry registry:2
@@ -133,27 +127,25 @@ jobs:
           root: /tmp
           paths:
             - cache/mialsuperresolutiontoolkit.simg
-      - store_artifacts:
-          path: /tmp/cache/mialsuperresolutiontoolkit.simg
 
   test-docker:
     machine:
-      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
-    working_directory: /tmp/src/mialsuperresolutiontoolkit/data
+      # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-2004:202201-02
+    resource_class: medium
+    working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
+      - attach_workspace:
+          at: /tmp
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether test should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?test]' )" != "" ]]; then
               echo "Skipping test"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       # - restore_cache:
       #     keys:
       #       - ds-sample-derivatives-{{ .Branch }}-{{ epoch }}
@@ -197,6 +189,7 @@ jobs:
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
                 --nipype_nb_of_cores 1 \
+                --all_outputs \
                 --masks_derivatives_dir 'manual_masks'
 
             # Rename log
@@ -221,7 +214,7 @@ jobs:
                 -type f -print | \
                 sed s+/tmp/src/mialsuperresolutiontoolkit/data/derivatives/++ | \
                 sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
-            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-01_outputs.txt \
+            diff /tmp/src/mialsuperresolutiontoolkit/.circleci/test-01_outputs.txt \
                 /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
             exit $?
       - run:
@@ -246,7 +239,8 @@ jobs:
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
-                --nipype_nb_of_cores 1
+                --nipype_nb_of_cores 1 \
+                --all_outputs
 
             # Rename log
             mv /tmp/src/mialsuperresolutiontoolkit/data/code/log.txt \
@@ -266,7 +260,7 @@ jobs:
                 -type f -print | \
                 sed s+/tmp/src/mialsuperresolutiontoolkit/data/derivatives/++ | \
                 sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
-            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-02_outputs.txt \
+            diff /tmp/src/mialsuperresolutiontoolkit/.circleci/test-02_outputs.txt \
                 /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
             exit $?
       - run:
@@ -285,13 +279,12 @@ jobs:
       - persist_to_workspace:
           root: /tmp
           paths:
-            - src/mialsuperresolutiontoolkit/data/test
+            - src/mialsuperresolutiontoolkit/data/test/test-01_coverage.xml
+            - src/mialsuperresolutiontoolkit/data/test/test-02_coverage.xml
       - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/code
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-01_outputs.out
       - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/test
-      - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/derivatives
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-02_outputs.out
 
   codacy-coverage-report:
     docker:
@@ -310,22 +303,22 @@ jobs:
 
   test-singularity:
     machine:
-      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-2004:202201-02
+    resource_class: medium
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
+      - attach_workspace:
+          at: /tmp
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether test should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
-            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?test-singularity]' )" != "" ]]; then
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?build-singularity]|\[skip[ _]?test-singularity]' )" != "" ]]; then
               echo "Skipping singularity test"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       - singularity/install-go:
           go-version: '1.13'
       - singularity/debian-install-3:
@@ -357,6 +350,7 @@ jobs:
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
                 --nipype_nb_of_cores 1 \
+                --all_outputs \
                 --masks_derivatives_dir 'manual_masks'
       - run:
           name: "Test-03 - Checking outputs of MIALSRTK BIDS App run"
@@ -369,7 +363,7 @@ jobs:
                 -type f -print | \
                 sed s+/tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives/++ | \
                 sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
-            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-03_outputs.txt \
+            diff /tmp/src/mialsuperresolutiontoolkit/.circleci/test-03_outputs.txt \
                 /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
             exit $?
       - run:
@@ -394,7 +388,8 @@ jobs:
                 /bids_dir /output_dir participant --participant_label 01 \
                 --param_file /bids_dir/code/participants_params.json \
                 --openmp_nb_of_cores 1 \
-                --nipype_nb_of_cores 1
+                --nipype_nb_of_cores 1 \
+                --all_outputs
       - run:
           name: "Test-04 - Checking outputs of MIALSRTK BIDS App run"
           command: |
@@ -406,7 +401,7 @@ jobs:
                 -type f -print | \
                 sed s+/tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives/++ | \
                 sort > /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
-            diff /home/circleci/src/mialsuperresolutiontoolkit/.circleci/test-04_outputs.txt \
+            diff /tmp/src/mialsuperresolutiontoolkit/.circleci/test-04_outputs.txt \
                 /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
             exit $?
       - run:
@@ -422,16 +417,10 @@ jobs:
                 -not -name "*.txt" -not -name "*.pklz" \
                 -not -name "*.log" -not -name "*.html" \
                 -type f -delete
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - src/mialsuperresolutiontoolkit/data/test
       - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/code
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-03_outputs.out
       - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/test
-      - store_artifacts:
-          path: /tmp/src/mialsuperresolutiontoolkit/data/singularity-derivatives
+          path: /tmp/src/mialsuperresolutiontoolkit/data/test/test-04_outputs.out
 
   test-python-install:
     parameters:
@@ -497,8 +486,8 @@ jobs:
 
   # build_docs:
   #   machine:
-  #     # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-  #     image: ubuntu-1604:201903-01 
+  #     # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+  #     image: ubuntu-2004:202201-02 
   #   working_directory: /home/circleci/out/docs
   #   steps:
   #     - checkout:
@@ -543,13 +532,13 @@ jobs:
   deploy-docker-release:
     machine:
       # Ubuntu 14.04 with Docker 17.10.0-ce
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
-      - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
       - attach_workspace:
           at: /tmp
+      - checkout:
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Load Docker image layer cache"
           no_output_timeout: 30m
@@ -567,7 +556,7 @@ jobs:
           no_output_timeout: 40m
           command: |
             # Get version, update files.
-            THISVERSION=$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            THISVERSION=$( python /tmp/src/mialsuperresolutiontoolkit/get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_TAG : ${CIRCLE_TAG}"
 
@@ -582,13 +571,13 @@ jobs:
   deploy-docker-latest:
     machine:
       # Ubuntu 14.04 with Docker 17.10.0-ce
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit
     steps:
-      - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
       - attach_workspace:
           at: /tmp
+      - checkout:
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Load Docker image layer cache"
           no_output_timeout: 30m
@@ -606,7 +595,7 @@ jobs:
           no_output_timeout: 40m
           command: |
             # Get version, update files.
-            THISVERSION=$( python /home/circleci/src/mialsuperresolutiontoolkit/get_version.py )
+            THISVERSION=$( python /tmp/src/mialsuperresolutiontoolkit/get_version.py )
             echo "THISVERSION : ${THISVERSION}"
             echo "CIRCLE_BRANCH : ${CIRCLE_BRANCH}"
 
@@ -619,21 +608,20 @@ jobs:
   deploy-singularity-latest:
     machine:
       # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
+      - attach_workspace:
+          at: /tmp
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether test should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?deploy-singularity]' )" != "" ]]; then
               echo "Skipping singularity deployment"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       - singularity/install-go:
           go-version: '1.13'
       - singularity/debian-install-3:
@@ -656,22 +644,21 @@ jobs:
 
   deploy-singularity-release:
     machine:
-      # Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-      image: ubuntu-1604:201903-01
+      # Ubuntu 20.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-2004:202201-02
     working_directory: /tmp/src/mialsuperresolutiontoolkit/data
     steps:
+      - attach_workspace:
+          at: /tmp
       - checkout:
-          path: /home/circleci/src/mialsuperresolutiontoolkit
+          path: /tmp/src/mialsuperresolutiontoolkit
       - run:
           name: "Check whether test should be skipped"
           command: |
-            cd /home/circleci/src/mialsuperresolutiontoolkit
             if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?deploy-singularity]' )" != "" ]]; then
               echo "Skipping singularity deployment"
               circleci step halt
             fi
-      - attach_workspace:
-          at: /tmp
       - singularity/install-go:
           go-version: '1.13'
       - singularity/debian-install-3:
@@ -705,7 +692,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-
       - build-docker:
           requires:
             - test-python-install
@@ -831,3 +817,4 @@ workflows:
             # ignore any commit on any branch by default
             branches:
               only: master
+

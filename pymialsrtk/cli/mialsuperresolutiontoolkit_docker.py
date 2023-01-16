@@ -107,14 +107,8 @@ def main():
         tracker.start()
 
     # Execute the docker run command
-    try:
-        print(f'... cmd: {cmd}')
-        run(cmd)
-        exit_code = 0
-    except Exception as e:
-        print('Failed')
-        print(e)
-        exit_code = 1
+    print(f'... cmd: {cmd}')
+    run(cmd)
 
     if args.track_carbon_footprint:
         emissions: float = tracker.stop()
@@ -139,7 +133,7 @@ def main():
         print("Results can be visualized with the codecarbon visualization tool using following command:\n")
         print(f'\t$ carbonboard --filepath="{args.bids_dir}/code/emissions.csv" --port=9999\n')
 
-    return exit_code
+    return 0
 
 
 if __name__ == '__main__':

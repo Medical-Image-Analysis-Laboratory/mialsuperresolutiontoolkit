@@ -110,6 +110,9 @@ void
 ResampleImageByInjectionFilter<TInputImage, TOutputImage, TInterpolatorPrecisionType>
 ::GenerateData()
 {
+  // Get verbosity level
+  bool verbose = this -> GetVerbose();
+
   // Get the output pointers
   OutputImagePointer      outputPtr = this->GetOutput();
 
@@ -200,10 +203,11 @@ ResampleImageByInjectionFilter<TInputImage, TOutputImage, TInterpolatorPrecision
 
     SpacingType inputSpacing = m_ImageArray[im] -> GetSpacing();
 
-    std::cout << std::endl;
-    std::cout << "inputSpacing" << inputSpacing << std::endl;
-    std::cout << "m_outputSpacing" << m_OutputSpacing << std::endl;
-
+    if (verbose){
+      std::cout << std::endl;
+      std::cout << "inputSpacing" << inputSpacing << std::endl;
+      std::cout << "m_outputSpacing" << m_OutputSpacing << std::endl;
+    }
     //radius = maximum size of the bounding box in the HR space
 
     vnl_vector<float> radTemp(3);
@@ -211,15 +215,16 @@ ResampleImageByInjectionFilter<TInputImage, TOutputImage, TInterpolatorPrecision
     radTemp[1] = (inputSpacing[2] / m_OutputSpacing[1]);
     radTemp[2] = (inputSpacing[2] / m_OutputSpacing[2]);
 
-    std::cout << "Kernel radTemp : " << radTemp[0] << " , " <<  radTemp[1] << " , " <<  radTemp[2] << std::endl;
-
+    if (verbose){
+      std::cout << "Kernel radTemp : " << radTemp[0] << " , " <<  radTemp[1] << " , " <<  radTemp[2] << std::endl;
+    }
     radius[0] = ceil(radTemp[0]);
     radius[1] = ceil(radTemp[1]);
     radius[2] = ceil(radTemp[2]);
 
-
-    std::cout << "Kernel radius : " << radius << std::endl;
-
+    if (verbose){
+      std::cout << "Kernel radius : " << radius << std::endl;
+    }
     FloatNeighborhoodIteratorType nbIt( radius, sumImage,
                                       sumImage -> GetLargestPossibleRegion() );
     nbIt.NeedToUseBoundaryConditionOn();
@@ -253,9 +258,12 @@ ResampleImageByInjectionFilter<TInputImage, TOutputImage, TInterpolatorPrecision
       }
     }
 
-    std::cout << "sliceThicknessIndex : " << sliceThicknessIndex << std::endl;
-    std::cout << "sliceThickness : " << sliceThickness << std::endl;
-
+    if (verbose){
+      std::cout << "ResampleImageByInjectionFilter" << std::endl;
+      std::cout << "sliceThicknessIndex : " << sliceThicknessIndex << std::endl;
+      std::cout << "sliceThickness : " << sliceThickness << std::endl;
+    }
+    
     for(unsigned int i=0;i<3;i++)
     {
       if(i==sliceThicknessIndex)

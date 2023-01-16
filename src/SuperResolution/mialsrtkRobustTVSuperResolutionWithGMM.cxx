@@ -204,7 +204,8 @@ int main( int argc, char *argv[] )
         TCLAP::ValueArg<float> huberArg  ("","huber-mode","Control how many median absolute deviations (MADs)  from the median error must  a point be before it becomes an outlier (Huber norm threshold),  (default = 5.0), used only in RobustSR flag is enabled.",false, 2.0,"float",cmd);
 
         TCLAP::ValueArg<float> upscalingArg("","upscaling-factor","Upscaling factor used in the super resolution (default = 1)",false, 2,"float",cmd);
-
+        TCLAP::SwitchArg  verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
+        
         // Parse the argv array.
         cmd.parse( argc, argv );
 
@@ -218,7 +219,7 @@ int main( int argc, char *argv[] )
         refMask = refMaskArg.getValue().c_str();
         pre_input = preInputArg.getValue();
         outTransform = outTransArg.getValue();
-
+        
         //V1
         //wFile=wArg.getValue();
         //meanFile=meanArg.getValue();
@@ -246,7 +247,8 @@ int main( int argc, char *argv[] )
         sigma_init = ( 1 / stepScale ) * sigma_init;
 
         debugDir = debugDirArg.getValue().c_str();
-
+        bool verbose = verboseArg.getValue();
+        
         if ( ( strcmp(refMask,"") == 0 || pre_input.size() == 0 ) && updateMotionSwitchArg.isSet())
         {
             std::cout << "Execution abandonned - Motion Update during SR is enable but some required input are missing" << std::endl;
@@ -321,6 +323,7 @@ int main( int argc, char *argv[] )
         // Super resolution filter that solves the inverse problem
         typedef mialsrtk::RobustSuperResolutionRigidImageFilterWithGMM< ImageType, ImageType >  ResamplerType;
         ResamplerType::Pointer resampler = ResamplerType::New();
+        resampler -> SetVerbose(verbose);
 
         typedef itk::OrientImageFilter<ImageType,ImageType> OrientImageFilterType;
         typedef itk::OrientImageFilter<ImageMaskType,ImageMaskType> OrientImageMaskFilterType;

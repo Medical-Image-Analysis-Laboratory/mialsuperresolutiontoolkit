@@ -69,6 +69,7 @@ int main( int argc, char * argv [] )
         TCLAP::MultiArg<std::string> inputArg("i","input","input image file",true,"string",cmd);
         TCLAP::MultiArg<std::string> outputArg("o","output","output image file",false,"string",cmd);
         TCLAP::ValueArg<float> maxArg  ("","max","max intensity (255 by default)",false,255.0,"float",cmd);
+        TCLAP::SwitchArg  verboseArg("v","verbose","Verbose output (False by default)",cmd, false);
 
         // Parse the argv array.
         cmd.parse( argc, argv );
@@ -76,9 +77,10 @@ int main( int argc, char * argv [] )
         inputFileNames = inputArg.getValue();
         outputFileNames = outputArg.getValue();
         maxIntensity = maxArg.getValue();
-
-        prompt_start(inputFileNames,maxIntensity);
-
+        bool verbose = verboseArg.getValue();
+        if (verbose){
+            prompt_start(inputFileNames,maxIntensity);
+        }
         //Typedef
         const unsigned int Dimension = 3;
         typedef float PixelType;
@@ -129,15 +131,19 @@ int main( int argc, char * argv [] )
         for(unsigned int i=0; i< numberOfImages; i++)
         {
             float new_max = ( maximums[i] / global_max ) * maxIntensity;
-            std::cout << "Rescale intensity of image # " << int2str(i) << std::endl;
+            if (verbose){
+                std::cout << "Rescale intensity of image # " << int2str(i) << std::endl;
+            }
             RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
             rescaleFilter->SetInput(images[i]);
             rescaleFilter->SetOutputMinimum(0);
             rescaleFilter->SetOutputMaximum(new_max);
             rescaleFilter->Update();
             images[i] = rescaleFilter -> GetOutput();
-            std::cout << "Old range = [0," << maximums[i] << "],  New range = [0," << new_max<< "]" << std::endl;
-            std::cout << "----------------------------------------------------------------------------------------------------------- \n" << std::endl;
+            if (verbose){
+                std::cout << "Old range = [0," << maximums[i] << "],  New range = [0," << new_max<< "]" << std::endl;
+                std::cout << "----------------------------------------------------------------------------------------------------------- \n" << std::endl;
+            }
         }
 
         //Write output images
@@ -167,8 +173,9 @@ int main( int argc, char * argv [] )
             writer -> SetFileName( outputFileName );
             writer -> SetInput( images[i] );
             writer -> Update();
-
-            std::cout << "Output Image # " << int2str(i) << " saved as " << outputFileName << std::endl;
+            if (verbose){
+                std::cout << "Output Image # " << int2str(i) << " saved as " << outputFileName << std::endl;
+            }
         }
 
         return EXIT_SUCCESS;

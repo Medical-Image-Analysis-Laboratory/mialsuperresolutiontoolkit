@@ -33,6 +33,15 @@ def get_parser():
     )
 
     p.add_argument(
+        "--run_type",
+        help="Type of pipeline that is run. Can choose between "
+             "running the super-resolution pipeline (`sr`) "
+             "or only preprocesing (`preprocessing`).",
+        choices=["sr", "preprocessing"],
+        default="sr"
+    )
+
+    p.add_argument(
         "--participant_label",
         help="The label(s) of the participant(s) that should be analyzed. "
              "The label corresponds to sub-<participant_label> from the BIDS spec "
@@ -85,10 +94,31 @@ def get_parser():
     )
 
     p.add_argument(
+        "--labels_derivatives_dir",
+        help="Use low-resolution labelmaps found in "
+             "``<output_dir>/<labels_derivatives_dir>/`` directory.",
+    )
+
+    p.add_argument(
+        '--all_outputs',
+        action='store_true',
+        default=False,
+        help="Whether or not all outputs should be kept"
+             "(e.g. preprocessed LR images)",
+    )
+
+    p.add_argument(
         "-v",
         "--version",
         action="version",
         version=f"BIDS-App MIALSRTK version {__version__} (Released: {__release_date__})",
+    )
+
+    p.add_argument(
+        '--verbose',
+        action='store_true',
+        default=False,
+        help="Verbose mode",
     )
     return p
 

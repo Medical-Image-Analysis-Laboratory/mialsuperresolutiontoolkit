@@ -3,13 +3,11 @@ FROM ubuntu:14.04
 ##############################################################
 # Ubuntu system setup
 ##############################################################
-ENV CONDA_ENV_PATH /opt/conda
+ENV MAMBA_ROOT_PREFIX /opt/conda
+# Disable interctive debconf post-install-configuration
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get install software-properties-common -y && \
-    apt-add-repository ppa:saiarcot895/myppa -y && \
-    apt-get update && \
-    apt-get -y install apt-fast \
-    && apt-fast install -y \
+    apt-get -y install software-properties-common \
     build-essential \
     exfat-fuse \
     exfat-utils \
@@ -36,17 +34,16 @@ RUN apt-get update && \
         libncurses5  \
         libncurses5-dev \
     libann-dev && \
-    curl -sSL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh && \
-    bash /tmp/miniconda.sh -bfp "$CONDA_ENV_PATH" && \
-    rm -rf /tmp/miniconda.sh && \
-    rm -rf /var/lib/apt/lists/*
+    curl -L http://micro.mamba.pm/api/micromamba/linux-64/latest | \
+    tar -xj -C /tmp bin/micromamba && \
+	cp /tmp/bin/micromamba /bin/micromamba 
 
 ##############################################################
-# Setup and update miniconda
+# Setup and update micromamba 
 ##############################################################
-ENV PATH "$CONDA_ENV_PATH/bin:$PATH"
-RUN conda update conda && \
-    conda clean --all --yes
+RUN mkdir -p "$(dirname $MAMBA_ROOT_PREFIX)" && \
+    /bin/micromamba shell init -s bash -p ~/micromamba 
+ENV PATH="$MAMBA_ROOT_PREFIX/bin:${PATH}"
 
 ##############################################################
 # User/group creation
@@ -75,12 +72,6 @@ RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_
     && make -j6 && make install
 
 ##############################################################
-# Make MIALSRTK happy
-##############################################################
-ENV BIN_DIR "/usr/local/bin"
-ENV PATH "${BIN_DIR}:$PATH"
-
-##############################################################
 # Python cache setup and creation of conda environment
 ##############################################################
 # Create .cache and set right permissions for generated
@@ -92,14 +83,19 @@ RUN mkdir /.cache && \
 WORKDIR /app
 RUN chmod -R 777 /app
 
-# Store command related variables
-ENV MY_CONDA_PY3ENV "pymialsrtk-env"
-# This is how you will activate this conda environment
-ENV CONDA_ACTIVATE "source $CONDA_ENV_PATH/bin/activate $MY_CONDA_PY3ENV"
-
 # Create the conda environment
 COPY docker/bidsapp/environment.yml /app/environment.yml
-RUN conda env create -f /app/environment.yml
+RUN micromamba install -v -y -n base -f /app/environment.yml
+# Note that it seems that using an environment name other
+# than "base" is not recommended:
+# https://github.com/mamba-org/micromamba-docker
+
+##############################################################
+# Make MIALSRTK and ANTs happy
+##############################################################
+ENV BIN_DIR="/usr/local/bin" \
+    ANTSPATH="/opt/conda/bin" \
+    PATH="$ANTSPATH:${BIN_DIR}:$PATH"
 
 ##############################################################
 # Setup for scikit-image
