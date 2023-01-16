@@ -22,8 +22,7 @@ def create_registration_stage(
     p_verbose=False,
     name="registration_stage",
 ):
-    """Create a a registration workflow, used as an optional stage in the
-    preprocessing only pipeline.
+    """Create a a registration workflow, used as an optional stage in the preprocessing only pipeline.
 
     Parameters
     ----------

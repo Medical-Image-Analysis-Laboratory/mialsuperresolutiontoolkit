@@ -27,8 +27,7 @@ from pymialsrtk.info import __version__
 
 
 class PreprocessingPipeline(AbstractAnatomicalPipeline):
-    """Class used to represent the workflow of the
-    Preprocessing pipeline.
+    """Class used to represent the workflow of the Preprocessing pipeline.
 
     Attributes
     -----------
@@ -187,9 +186,10 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
                 )
 
     def check_parameters_integrity(self, p_dict_custom_interfaces):
-        """Check whether the custom interfaces dictionary
-        contains only keys that are used in preprocessing,
-        and raises an exception if it doesn't.
+        """Check parameters integrity.
+
+        This checks whether the custom interfaces dictionary contains only keys
+        that are used in preprocessing, and raises an exception if it doesn't.
 
         Parameters
         ----------

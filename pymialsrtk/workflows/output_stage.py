@@ -2,8 +2,7 @@
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Workflow for the management of the output of super-resolution
-reconstruction pipeline."""
+"""Workflow for the management of the output of super-resolution reconstruction pipeline."""
 
 from pymialsrtk import interfaces
 from traits.api import *

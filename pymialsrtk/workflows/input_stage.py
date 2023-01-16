@@ -3,9 +3,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Workflow for the management of the input of super-resolution
-reconstruction pipeline.
-"""
+"""Workflow for the management of the input of super-resolution reconstruction pipeline."""
 
 import os
 import pkg_resources
@@ -34,30 +32,33 @@ def create_input_stage(
     p_verbose,
     name="input_stage",
 ):
-    """Create a input management workflow
-    for srr pipeline
+    """Create a input management workflow for srr pipeline.
+
     Parameters
     ----------
-    ::
-        name : name of workflow (default: input_stage)
-        p_bids_dir
-        p_sub_ses
-        p_use_manual_masks
-        p_masks_desc
-        p_masks_derivatives_dir
-        p_skip_stacks_ordering
-        p_stacks
-        p_do_srr_assessment
+    name :
+        name of workflow (default: input_stage)
+    p_bids_dir
+    p_sub_ses
+    p_use_manual_masks
+    p_masks_desc
+    p_masks_derivatives_dir
+    p_skip_stacks_ordering
+    p_stacks
+    p_do_srr_assessment
 
-    Inputs::
+    Inputs
+    ------
 
-    Outputs::
-        outputnode.t2ws_filtered
-        outputnode.masks_filtered
-        outputnode.stacks_order
-        outputnode.report_image
-        outputnode.motion_tsv
-        outputnode.ground_truth (optional, if p_do_srr_assessment=True)
+    Outputs
+    -------
+    outputnode.t2ws_filtered
+    outputnode.masks_filtered
+    outputnode.stacks_order
+    outputnode.report_image
+    outputnode.motion_tsv
+    outputnode.ground_truth (optional, if p_do_srr_assessment=True)
+    
     Example
     -------
     >>>

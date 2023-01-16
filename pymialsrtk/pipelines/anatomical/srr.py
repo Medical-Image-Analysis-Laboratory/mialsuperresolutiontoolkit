@@ -24,8 +24,7 @@ from .abstract import AbstractAnatomicalPipeline
 
 
 class SRReconPipeline(AbstractAnatomicalPipeline):
-    """Class used to represent the workflow of the Super-Resolution
-    reconstruction pipeline.
+    """Class used to represent the workflow of the Super-Resolution reconstruction pipeline.
 
     Attributes
     -----------

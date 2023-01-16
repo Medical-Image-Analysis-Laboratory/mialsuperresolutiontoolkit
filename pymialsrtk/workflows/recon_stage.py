@@ -2,8 +2,7 @@
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 # This software is distributed under the open-source license Modified BSD.
 
-"""Module for the reconstruction stage of the super-resolution
-reconstruction pipeline."""
+"""Module for the reconstruction stage of the super-resolution reconstruction pipeline."""
 
 from traits.api import *
 
@@ -29,7 +28,8 @@ def create_recon_stage(
     p_verbose=False,
     name="recon_stage",
 ):
-    """Create a super-resolution reconstruction workflow
+    """Create a super-resolution reconstruction workflow.
+
     Parameters
     ----------
         p_paramTV : `obj`:dict:

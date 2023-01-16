@@ -2028,7 +2028,7 @@ class BrainExtraction(BaseInterface):
 
 
 class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
-    """Class."""
+    """Class used to represent the inputs of the ReduceFieldOfView interface."""
 
     input_image = File(mandatory=True, desc="Input image filename")
     input_mask = File(mandatory=True, desc="Input mask filename")
@@ -2036,7 +2036,7 @@ class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
 
 
 class ReduceFieldOfViewOutputSpec(TraitedSpec):
-    """Class"""
+    """Class used to represent the outputs of the ReduceFieldOfView interface."""
 
     output_image = File(desc="Cropped image")
     output_mask = File(desc="Cropped mask")
@@ -2044,7 +2044,7 @@ class ReduceFieldOfViewOutputSpec(TraitedSpec):
 
 
 class ReduceFieldOfView(BaseInterface):
-    """Runs the"""
+    """Interface to reduce the Field-of-View."""
 
     input_spec = ReduceFieldOfViewInputSpec
     output_spec = ReduceFieldOfViewOutputSpec
@@ -2194,9 +2194,7 @@ class SplitLabelMapsOutputSpec(TraitedSpec):
 
 
 class SplitLabelMaps(BaseInterface):
-    """Split a multi-label labelmap
-    into one label map per label.
-    """
+    """Split a multi-label labelmap into one label map per label."""
 
     input_spec = SplitLabelMapsInputSpec
     output_spec = SplitLabelMapsOutputSpec
@@ -2263,7 +2261,7 @@ class ListsMergerOutputSpec(TraitedSpec):
 
 
 class ListsMerger(BaseInterface):
-    """Interface to merge list of paths or list of list of path"""
+    """Interface to merge list of paths or list of list of paths."""
 
     input_spec = ListsMergerInputSpec
     output_spec = ListsMergerOutputSpec
@@ -2313,9 +2311,7 @@ class ResampleImageOutputSpec(TraitedSpec):
 
 
 class ResampleImage(BaseInterface):
-    """Retrieve atlas of the same age and
-    resample it to subject's in-plane resolution
-    """
+    """Retrieve atlas of the same age and resample it to subject's in-plane resolution."""
 
     input_spec = ResampleImageInputSpec
     output_spec = ResampleImageOutputSpec
@@ -2389,8 +2385,7 @@ class ComputeAlignmentToReferenceInputSpec(BaseInterfaceInputSpec):
 
 
 class ComputeAlignmentToReferenceOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the
-    ComputeAlignmentToReference interface."""
+    """Class used to represent outputs of the ComputeAlignmentToReference interface."""
 
     output_transform = File(
         mandatory=True, desc="Output 3D rigid tranformation file"
@@ -2444,8 +2439,10 @@ class ComputeAlignmentToReference(BaseInterface):
 
     def _compute_pca(self, mask):
         def get_largest_connected_region_mask(mask_nda):
-            """This function is from:
-            https://github.com/gift-surg/NiftyMIC/blob/e62c5389dfa2bb367fb217b7060472978d3e7654/niftymic/utilities/template_stack_estimator.py#L123
+            """This function get the largest connected region mask.
+
+            It originates from https://github.com/gift-surg/NiftyMIC/blob/e62c5389dfa2bb367fb217b7060472978d3e7654/niftymic/utilities/template_stack_estimator.py#L123.
+            
             """
             # get label for each connected component
             labels_nda = skimage.measure.label(mask_nda)
@@ -2567,8 +2564,7 @@ class ComputeAlignmentToReference(BaseInterface):
 
 
 class ApplyAlignmentTransformInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the
-    ApplyAlignmentTransform interface."""
+    """Class used to represent inputs of the ApplyAlignmentTransform interface."""
 
     input_image = File(mandatory=True, desc="Input image to realign")
     input_template = File(mandatory=True, desc="Input reference image")
@@ -2581,8 +2577,7 @@ class ApplyAlignmentTransformInputSpec(BaseInterfaceInputSpec):
 
 
 class ApplyAlignmentTransformOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the
-    ApplyAlignmentTransform interface."""
+    """Class used to represent outputs of the ApplyAlignmentTransform interface."""
 
     output_image = File(mandatory=True, desc="Output reoriented image")
     output_mask = File(mandatory=False, desc="Output reoriented mask")

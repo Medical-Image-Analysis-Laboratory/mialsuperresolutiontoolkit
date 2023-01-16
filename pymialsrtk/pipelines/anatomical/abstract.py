@@ -191,8 +191,7 @@ class AbstractAnatomicalPipeline:
         """
 
     def run(self, memory=None, logger=None):
-        """Execute the workflow of the super-resolution
-        reconstruction pipeline.
+        """Execute the workflow of the super-resolution reconstruction pipeline.
 
         Nipype execution engine will take care of the management and
         execution of all processing steps involved in the super-resolution

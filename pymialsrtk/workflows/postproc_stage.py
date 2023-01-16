@@ -3,8 +3,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the postprocessing stage of the super-resolution
-reconstruction pipeline."""
+"""Module for the postprocessing stage of the super-resolution reconstruction pipeline."""
 
 import numpy as np
 
@@ -18,10 +17,11 @@ from nipype.interfaces.io import DataGrabber
 
 
 def convert_ga(ga):
-    """Convert the gestational age to
-    integers between 21 and 38. This is in order to be
-    able to load the corresponding template using
+    """Convert the gestational age to integers between 21 and 38.
+
+    This is in order to be able to load the corresponding template using
     the spatio-temporal atlas of Gholipour et al.
+
     """
     ga = int(np.round(ga))
     if ga > 38:
@@ -39,7 +39,7 @@ def create_postproc_stage(
     p_verbose=False,
     name="postproc_stage",
 ):
-    """Create a SR preprocessing workflow
+    """Create a SR preprocessing workflow.
     Parameters
     ----------
         name : :str:

@@ -304,8 +304,7 @@ class FilenamesGenerationOutputSpec(TraitedSpec):
 
 
 class FilenamesGeneration(BaseInterface):
-    """Generates final filenames from outputs of super-resolution
-    reconstruction.
+    """Generates final filenames from outputs of super-resolution reconstruction.
 
     Example
     ----------
@@ -675,6 +674,7 @@ class BinarizeImageOutputSpec(TraitedSpec):
 
 class BinarizeImage(BaseInterface):
     """Runs the MIAL SRTK mask image module.
+
     Example
     =======
     >>> from pymialsrtk.interfaces.postprocess import BinarizeImage
@@ -929,16 +929,14 @@ class ImageMetrics(BaseInterface):
 
 
 class ConcatenateImageMetricsInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of
-    the ConcatenateImageMetrics interface."""
+    """Class used to represent inputs of the ConcatenateImageMetrics interface."""
 
     input_metrics = InputMultiPath(File(mandatory=True), desc="")
     input_metrics_labels = InputMultiPath(File(mandatory=True), desc="")
 
 
 class ConcatenateImageMetricsOutputSpec(TraitedSpec):
-    """Class used to represent outputs of
-    the ConcatenateImageMetrics interface."""
+    """Class used to represent outputs of the ConcatenateImageMetrics interface."""
 
     output_csv = File(desc="")
     output_csv_labels = File(desc="")
@@ -1052,8 +1050,7 @@ class MergeMajorityVote(BaseInterface):
 
 
 class ReportGenerationInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of
-    the ReportGeneration interface."""
+    """Class used to represent inputs of the ReportGeneration interface."""
 
     subject = traits.Str(
         mandatory=True,
@@ -1128,15 +1125,15 @@ class ReportGenerationInputSpec(BaseInterfaceInputSpec):
 
 
 class ReportGenerationOutputSpec(TraitedSpec):
-    """Class used to represent outputs of
-    the ReportGeneration interface."""
+    """Class used to represent outputs of the ReportGeneration interface."""
 
     report_html = File(desc="")
 
 
 class ReportGeneration(BaseInterface):
-    """Generate a report summarizing the outputs
-    of mialsrtk. This comprises
+    """Generate a report summarizing the outputs of mialsrtk.
+
+    This comprises:
         - Details of which parameters were run.
         - A visualization of the SR-reconstructed image
         - A visualization of the computational graph.
@@ -1153,7 +1150,7 @@ class ReportGeneration(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-        """Create the HTML report"""
+        """Create the HTML report."""
         # Set main subject derivatives directory
         sub_ses = self.inputs.subject
         sub_path = self.inputs.subject

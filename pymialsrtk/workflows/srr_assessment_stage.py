@@ -27,8 +27,7 @@ def create_srr_assessment_stage(
     p_openmp_number_of_cores=1,
     name="srr_assessment_stage",
 ):
-    """Create an assessment workflow to compare
-    a SR-reconstructed image and a reference target.
+    """Create an assessment workflow to compare a SR-reconstructed image and a reference target.
 
     Parameters
     ----------
