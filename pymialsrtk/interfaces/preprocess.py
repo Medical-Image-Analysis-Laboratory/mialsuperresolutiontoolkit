@@ -2058,9 +2058,12 @@ class ReduceFieldOfView(BaseInterface):
         return None
 
     def _crop_image_and_mask(
-        self, in_image, in_mask, in_label, paddings_mm=[15, 15, 15]
+        self, in_image, in_mask, in_label, paddings_mm=None
     ):
         import SimpleITK as sitk
+
+        if paddings_mm is None:
+            paddings_mm = [15, 15, 15]
 
         reader = sitk.ImageFileReader()
 
