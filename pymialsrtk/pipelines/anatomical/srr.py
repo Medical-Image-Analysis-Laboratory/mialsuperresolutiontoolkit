@@ -673,8 +673,14 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                 "inputnode.motion_tsv",
             )
 
-    def run(self, memory=None):
-        iflogger = nipype_logging.getLogger("nipype.interface")
+    def run(self, memory=None, logger=None):
+        # Use nipype.interface logger to print some information messages
+        if logger:
+            iflogger = logger
+        else:
+            iflogger = nipype_logging.getLogger("nipype.interface")
+
+        # Run the pipeline        
         res = super().run(memory, iflogger)
 
         # if not self.m_do_multi_parameters:
