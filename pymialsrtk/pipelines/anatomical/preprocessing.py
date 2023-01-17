@@ -7,7 +7,6 @@
 
 import os
 
-from nipype.info import __version__ as __nipype_version__
 from nipype import config
 from nipype import logging as nipype_logging
 from nipype.pipeline import engine as pe
@@ -15,15 +14,11 @@ from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.utils as utils
 
 # Import the implemented interface from pymialsrtk
-import pymialsrtk.interfaces.reconstruction as reconstruction
 from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 from pymialsrtk.workflows.output_stage import create_preproc_output_stage
 from pymialsrtk.workflows.registration_stage import create_registration_stage
 from .abstract import AbstractAnatomicalPipeline
-
-# Get pymialsrtk version
-from pymialsrtk.info import __version__
 
 
 class PreprocessingPipeline(AbstractAnatomicalPipeline):

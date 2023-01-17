@@ -4,7 +4,6 @@
 
 """Workflow for the management of the output of super-resolution reconstruction pipeline."""
 
-from pymialsrtk import interfaces
 from traits.api import *
 from nipype.interfaces import utility as util
 from nipype.pipeline import engine as pe

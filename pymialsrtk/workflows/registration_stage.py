@@ -11,7 +11,6 @@ from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.reconstruction as reconstruction
 
 # Get pymialsrtk version
-from pymialsrtk.info import __version__
 from nipype.interfaces import utility as util
 
 

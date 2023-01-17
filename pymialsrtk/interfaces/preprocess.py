@@ -21,7 +21,6 @@ from traits.api import *
 
 
 # Reorientation
-import SimpleITK as sitk
 import nsol.principal_component_analysis as pca
 from nipype.algorithms.metrics import Similarity
 
@@ -2615,6 +2614,8 @@ class ApplyAlignmentTransform(BaseInterface):
         return outputs
 
     def _reorient_image(self):
+        import SimpleITK as sitk
+
         reader = sitk.ImageFileReader()
         writer = sitk.ImageFileWriter()
 

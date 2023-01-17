@@ -13,7 +13,6 @@ from traits.api import *
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.reconstruction as reconstruction
-import pymialsrtk.interfaces.utils as utils
 
 from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
