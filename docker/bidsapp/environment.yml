@@ -10,7 +10,7 @@ dependencies:
 - python=3.7.10
 - pip=21.0.1
 - pandas=1.1.5
-- nipype=1.8.3
+- nipype=1.8.4
 - nilearn=0.8.1
 - pydotplus=2.0.2
 - pandoc=2.14.2
