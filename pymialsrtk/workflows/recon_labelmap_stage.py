@@ -21,8 +21,8 @@ from nipype.interfaces import utility as util
 def create_recon_labelmap_stage(
     p_sub_ses, p_verbose, name="recon_labels_stage"
 ):
-    """Create a SR reconstruction workflow
-    for tissue label maps.
+    """Create a SR reconstruction workflow for tissue label maps.
+
     Parameters
     ----------
         p_sub_ses:
