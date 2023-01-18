@@ -373,6 +373,7 @@ class FilenamesGeneration(BaseInterface):
             )
         )
 
+        # Transforms if NLM was applied
         self.m_substitutions.append(
             (
                 "_T2w_nlm_uni_bcorr_histnorm_transform_"
@@ -384,6 +385,19 @@ class FilenamesGeneration(BaseInterface):
                 + "mode-image_xfm.txt",
             )
         )
+        # Transforms if NLM was not applied
+        self.m_substitutions.append(
+            (
+                "_T2w_uni_bcorr_histnorm_transform_"
+                + str(len(self.inputs.stacks_order))
+                + "V.txt",
+                "_id-"
+                + str(self.inputs.sr_id)
+                + "_mod-T2w_from-origin_to-SDI_"
+                + "mode-image_xfm.txt",
+            )
+        )
+
         for stack in self.inputs.stacks_order:
             self.m_substitutions.append(
                 (
