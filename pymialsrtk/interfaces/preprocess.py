@@ -2444,7 +2444,7 @@ class ComputeAlignmentToReference(BaseInterface):
             """This function get the largest connected region mask.
 
             It originates from https://github.com/gift-surg/NiftyMIC/blob/e62c5389dfa2bb367fb217b7060472978d3e7654/niftymic/utilities/template_stack_estimator.py#L123.
-            
+
             """
             # get label for each connected component
             labels_nda = skimage.measure.label(mask_nda)

@@ -680,7 +680,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         else:
             iflogger = nipype_logging.getLogger("nipype.interface")
 
-        # Run the pipeline        
+        # Run the pipeline
         res = super().run(memory, iflogger)
 
         # if not self.m_do_multi_parameters:

@@ -58,7 +58,7 @@ def create_input_stage(
     outputnode.report_image
     outputnode.motion_tsv
     outputnode.ground_truth (optional, if p_do_srr_assessment=True)
-    
+
     Example
     -------
     >>>
