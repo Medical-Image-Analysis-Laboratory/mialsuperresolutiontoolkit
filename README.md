@@ -47,14 +47,16 @@ All these design considerations allow us not only to (1) represent the entire pr
     $ mialsuperresolutiontoolkit_[docker|singularity] -h
     
     usage: mialsuperresolutiontoolkit_[docker|singularity] [-h]
+                                         [--run_type {sr,preprocessing}]
                                          [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
                                          [--param_file PARAM_FILE]
                                          [--openmp_nb_of_cores OPENMP_NB_OF_CORES]
                                          [--nipype_nb_of_cores NIPYPE_NB_OF_CORES]
                                          [--memory MEMORY]
                                          [--masks_derivatives_dir MASKS_DERIVATIVES_DIR]
-                                         [-v]
-                                         [--codecarbon_output_dir CODECARBON_OUTPUT_DIR]
+                                         [--labels_derivatives_dir LABELS_DERIVATIVES_DIR]
+                                         [--all_outputs] [-v] [--verbose]
+                                         [--track_carbon_footprint]
                                          bids_dir output_dir {participant}
 
     Argument parser of the MIALSRTK BIDS App Python wrapper
@@ -71,6 +73,10 @@ All these design considerations allow us not only to (1) represent the entire pr
     
     optional arguments:
       -h, --help            show this help message and exit
+      --run_type {sr,preprocessing}
+                            Type of pipeline that is run. Can choose between
+                            running the super-resolution pipeline (`sr`) or only
+                            preprocessing (`preprocessing`).
       --participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]
                             The label(s) of the participant(s) that should be
                             analyzed. The label corresponds to
@@ -101,12 +107,18 @@ All these design considerations allow us not only to (1) represent the entire pr
       --masks_derivatives_dir MASKS_DERIVATIVES_DIR
                             Use manual brain masks found in
                             ``<output_dir>/<masks_derivatives_dir>/`` directory
-      --codecarbon_output_dir CODECARBON_OUTPUT_DIR
-                            Directory path in which `codecarbon` saves a CSV file
-                            called `emissions.csv` reporting carbon footprint
-                            details of the overall run (Defaults to user’s home
-                            directory)
+      --labels_derivatives_dir LABELS_DERIVATIVES_DIR
+                            Use low-resolution labelmaps found in
+                            ``<output_dir>/<labels_derivatives_dir>/`` directory.
+      --all_outputs         Whether or not all outputs should be kept(e.g.
+                            preprocessed LR images)
       -v, --version         show program's version number and exit
+      --verbose             Verbose mode
+      --track_carbon_footprint
+                            Track carbon footprint with `codecarbon
+                            <https://codecarbon.io/>`_ and save results in a CSV
+                            file called ``emissions.csv`` in the
+                            ``<bids_dir>/code`` directory.
 
 ## Credits 
 
