@@ -2043,7 +2043,17 @@ class ReduceFieldOfViewOutputSpec(TraitedSpec):
 
 
 class ReduceFieldOfView(BaseInterface):
-    """Interface to reduce the Field-of-View."""
+    """Interface to reduce the Field-of-View.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import ReduceFieldOfView
+    >>> reduce_fov = ReduceFieldOfView()
+    >>> reduce_fov.inputs.input_image = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> reduce_fov.inputs.input_mask = 'sub-01_acq-haste_run-1_T2w_mask.nii.gz'
+    >>> reduce_fov.run() # doctest: +SKIP
+
+    """
 
     input_spec = ReduceFieldOfViewInputSpec
     output_spec = ReduceFieldOfViewOutputSpec
@@ -2196,7 +2206,16 @@ class SplitLabelMapsOutputSpec(TraitedSpec):
 
 
 class SplitLabelMaps(BaseInterface):
-    """Split a multi-label labelmap into one label map per label."""
+    """Split a multi-label labelmap into one label map per label.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import SplitLabelMaps
+    >>> split_labels = SplitLabelMaps()
+    >>> split_labels.inputs.in_labelmap = 'sub-01_acq-haste_run-1_labels.nii.gz'
+    >>> split_labels.run() # doctest: +SKIP
+
+    """
 
     input_spec = SplitLabelMapsInputSpec
     output_spec = SplitLabelMapsOutputSpec
@@ -2263,7 +2282,16 @@ class ListsMergerOutputSpec(TraitedSpec):
 
 
 class ListsMerger(BaseInterface):
-    """Interface to merge list of paths or list of list of paths."""
+    """Interface to merge list of paths or list of list of paths.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import ListsMerger
+    >>> merge_lists = ListsMerger()
+    >>> merge_lists.inputs.inputs = ["sub-01_acq-haste_run-1_labels_1.nii.gz", "sub-01_acq-haste_run-1_labels_2.nii.gz"]
+    >>> merge_lists.run() # doctest: +SKIP
+
+    """
 
     input_spec = ListsMergerInputSpec
     output_spec = ListsMergerOutputSpec
@@ -2313,7 +2341,17 @@ class ResampleImageOutputSpec(TraitedSpec):
 
 
 class ResampleImage(BaseInterface):
-    """Retrieve atlas of the same age and resample it to subject's in-plane resolution."""
+    """Retrieve atlas of the same age and resample it to subject's in-plane resolution.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import ResampleImage
+    >>> resample_image = ResampleImage()
+    >>> resample_image.inputs.input_image = "sub-01_acq-haste_run-1_T2w.nii.gz"
+    >>> resample_image.inputs.input_reference = "STA30.nii.gz"
+    >>> resample_image.run() # doctest: +SKIP
+
+    """
 
     input_spec = ResampleImageInputSpec
     output_spec = ResampleImageOutputSpec
@@ -2379,8 +2417,7 @@ class ResampleImage(BaseInterface):
 
 
 class ComputeAlignmentToReferenceInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the
-    ComputeAlignmentToReference interface."""
+    """Class used to represent inputs of the ComputeAlignmentToReference interface."""
 
     input_image = File(mandatory=True, desc="Input image to realign")
     input_template = File(mandatory=True, desc="Input reference image")
@@ -2409,7 +2446,11 @@ class ComputeAlignmentToReference(BaseInterface):
 
     Examples
     --------
-    >>>
+    >>> from pymialsrtk.interfaces.preprocess import ComputeAlignmentToReference
+    >>> align_to_ref = ComputeAlignmentToReference()
+    >>> align_to_ref.inputs.input_image = "sub-01_acq-haste_run-1_T2w.nii.gz"
+    >>> align_to_ref.inputs.input_template = "STA30.nii.gz"
+    >>> align_to_ref.run() # doctest: +SKIP
 
     """
 
@@ -2590,7 +2631,13 @@ class ApplyAlignmentTransform(BaseInterface):
 
     Examples
     --------
-    >>>
+    >>> from pymialsrtk.interfaces.preprocess import ApplyAlignmentTransform
+    >>> align_img = ApplyAlignmentTransform()
+    >>> align_img.inputs.input_image = "sub-01_acq-haste_run-1_T2w.nii.gz"
+    >>> align_img.inputs.input_template = "STA30.nii.gz"
+    >>> align_img.inputs.input_mask = "sub-01_acq-haste_run-1_T2w_mask.nii.gz"
+    >>> align_img.inputs.input_transform = "sub-01_acq-haste_run-1_rigid.tfm"
+    >>> align_img.run() # doctest: +SKIP
 
     """
 
