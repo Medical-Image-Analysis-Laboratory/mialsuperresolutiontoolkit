@@ -683,8 +683,4 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
         # Run the pipeline
         res = super().run(memory, iflogger)
 
-        # if not self.m_do_multi_parameters:
-        #    iflogger.info("**** Super-resolution HTML report creation ****")
-        #    self.create_subject_report()
-
         return res
