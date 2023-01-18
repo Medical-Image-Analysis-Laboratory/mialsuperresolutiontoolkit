@@ -127,6 +127,7 @@ Contents
    api_reconstruction
    api_utils
    api_pipelines
+   api_workflows
 
 .. _user-usecases:
 
