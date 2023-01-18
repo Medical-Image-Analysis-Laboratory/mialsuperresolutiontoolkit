@@ -71,7 +71,7 @@ autodoc_mock_imports = [
     "matplotlib",
     "nsol",
     "seaborn",
-    "simpleITK",
+    "SimpleITK",
     "pandas",
     "nilearn",
     "tflearn",
