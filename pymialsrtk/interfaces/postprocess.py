@@ -214,7 +214,7 @@ class MialsrtkN4BiasFieldCorrection(BaseInterface):
 
     Example
     ----------
-    >>> from pymialsrtk.interfaces.preprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
+    >>> from pymialsrtk.interfaces.postprocess import MialsrtkSliceBySliceN4BiasFieldCorrection
     >>> N4biasFieldCorr = MialsrtkSliceBySliceN4BiasFieldCorrection()
     >>> N4biasFieldCorr.inputs.input_image = 'sub-01_acq-haste_run-1_SR.nii.gz'
     >>> N4biasFieldCorr.inputs.input_mask = 'sub-01_acq-haste_run-1_mask.nii.gz'
@@ -750,7 +750,19 @@ class ImageMetricsOutputSpec(TraitedSpec):
 
 
 class ImageMetrics(BaseInterface):
-    """ """
+    """Compute various image metrics on a SR reconstructed image compared to a ground truth.
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.postprocess import ImageMetrics
+    >>> compute_metrics = ImageMetrics()
+    >>> compute_metrics.inputs.input_image = 'sub-01_acq-haste_rec-SR_id-1_T2w.nii.gz'
+    >>> compute_metrics.inputs.input_ref_image = 'sub-01_acq-haste_desc-GT_T2w.nii.gz'
+    >>> compute_metrics.inputs.input_ref_mask = 'sub-01_acq-haste_desc-GT_T2w_mask.nii.gz'
+    >>> compute_metrics.inputs.input_TV_parameters = {'in_loop': '10', 'in_deltat': '0.01', 'in_lambda': '2.5', 'in_bregman_loop': '3', 'in_iter': '50', 'in_step_scale': '1', 'in_gamma': '1', 'in_inner_thresh': '1e-05', 'in_outer_thresh': '1e-06'}
+    >>> concat_metrics.run() # doctest: +SKIP
+
+    """
 
     input_spec = ImageMetricsInputSpec
     output_spec = ImageMetricsOutputSpec
@@ -943,7 +955,17 @@ class ConcatenateImageMetricsOutputSpec(TraitedSpec):
 
 
 class ConcatenateImageMetrics(BaseInterface):
-    """ConcatenateImageMetrics"""
+    """Concatenate metrics CSV files with the metrics computed on each labelmap.
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.postprocess import ConcatenateImageMetrics
+    >>> concat_metrics = ConcatenateImageMetrics()
+    >>> concat_metrics.inputs.input_metrics = ['sub-01_acq-haste_run-1_paramset_1_metrics.csv', 'sub-01_acq-haste_run-1_paramset2_metrics.csv']
+    concat_metrics.inputs.input_metrics_labels = ['sub-01_acq-haste_run-1_paramset_1_metrics_labels.csv', 'sub-01_acq-haste_run-1_paramset2_metrics_labels.csv']
+    >>> concat_metrics.run() # doctest: +SKIP
+
+    """
 
     input_spec = ConcatenateImageMetricsInputSpec
     output_spec = ConcatenateImageMetricsOutputSpec
@@ -1005,7 +1027,16 @@ class MergeMajorityVoteOutputSpec(TraitedSpec):
 
 
 class MergeMajorityVote(BaseInterface):
-    """Perform majority voting to merge a list of label-wise labelmaps."""
+    """Perform majority voting to merge a list of label-wise labelmaps.
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.postprocess import MergeMajorityVote
+    >>> merge_labels = MergeMajorityVote()
+    >>> merge_labels.inputs.input_images = ['sub-01_acq-haste_run-1_labels_1.nii.gz', 'sub-01_acq-haste_run-1_labels_2.nii.gz', 'sub-01_acq-haste_run-1_labels_3.nii.gz']
+    >>> merge_labels.run() # doctest: +SKIP
+
+    """
 
     input_spec = MergeMajorityVoteInputSpec
     output_spec = MergeMajorityVoteOutputSpec
@@ -1137,6 +1168,34 @@ class ReportGeneration(BaseInterface):
         - Details of which parameters were run.
         - A visualization of the SR-reconstructed image
         - A visualization of the computational graph.
+
+    Example
+    ----------
+    >>> from pymialsrtk.interfaces.postprocess import ReportGeneration
+    >>> report_gen = ReportGeneration()
+    >>> report_gen.inputs.subject = "sub-01"
+    >>> report_gen.inputs.session = "ses-01"
+    >>> report_gen.inputs.stacks = [2,3,5,1]
+    >>> report_gen.inputs.stacks_order = [5,2,3,1]
+    >>> report_gen.inputs.sr_id = "1"
+    >>> report_gen.inputs.run_type = "sr"
+    >>> report_gen.inputs.output_dir = "report_dir/
+    >>> report_gen.inputs.run_start_time = ""
+    >>> report_gen.inputs.run_elapsed_time = ""
+    >>> report_gen.inputs.do_refine_hr_mask = True
+    >>> report_gen.inputs.do_nlm_denoising = True
+    >>> report_gen.inputs.skip_stacks_ordering = False
+    >>> report_gen.inputs.skip_svr = False
+    >>> report_gen.inputs.masks_derivatives_dir = "derivatives/masks"
+    >>> report_gen.inputs.do_reconstruct_labels = False
+    >>> report_gen.inputs.do_anat_orientation = True
+    >>> report_gen.inputs.do_srr_assessment = False
+    >>> report_gen.inputs.openmp_number_of_cores = 3
+    >>> report_gen.inputs.nipype_number_of_cores = 1
+    >>> report_gen.inputs.input_sr = "outputs/sub-01_ses-01_res-SR_T2w.nii.gz"
+    >>> report_gen.inputs.input_json_path = "outputs/sub-01_ses-01_res-SR_T2w.json"
+    >>> report_gen.run() # doctest: +SKIP
+
     """
 
     input_spec = ReportGenerationInputSpec
@@ -1263,12 +1322,6 @@ class ReportGeneration(BaseInterface):
         # Create the report directory if it does not exist
         report_dir = os.path.join(final_res_dir, "report")
         os.makedirs(report_dir, exist_ok=True)
-
-        # Save the HTML report file
-        # out_report_filename = os.path.join(report_dir, f"{sub_ses}.html")
-        #
-        # with open(out_report_filename, "w+") as file:
-        #    file.write(report_html_content)
 
         output_html = self._gen_filename("report_html")
         print(f"\t* Save HTML report as {output_html}...")
