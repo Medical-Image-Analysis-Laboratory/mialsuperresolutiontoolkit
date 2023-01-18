@@ -2231,6 +2231,8 @@ class SplitLabelMaps(BaseInterface):
         return None
 
     def _extractlabelimage(self, in_labelmap):
+        import SimpleITK as sitk
+
         reader = sitk.ImageFileReader()
         writer = sitk.ImageFileWriter()
 
