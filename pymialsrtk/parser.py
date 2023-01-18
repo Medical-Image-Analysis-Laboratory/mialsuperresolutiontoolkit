@@ -36,7 +36,7 @@ def get_parser():
         "--run_type",
         help="Type of pipeline that is run. Can choose between "
              "running the super-resolution pipeline (`sr`) "
-             "or only preprocesing (`preprocessing`).",
+             "or only preprocessing (`preprocessing`).",
         choices=["sr", "preprocessing"],
         default="sr"
     )
