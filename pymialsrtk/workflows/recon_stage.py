@@ -83,7 +83,8 @@ def create_recon_stage(
         outputnode.output_TV_parameters
     Example
     -------
-    >>> recon_stage = create_preproc_stage(
+    >>> from pymialsrtk.pipelines.workflows import recon_stage as rec
+    >>> recon_stage = rec.create_preproc_stage(
             p_paramTV,
             p_use_manual_masks,
             p_do_nlm_denoising=False)
@@ -91,7 +92,7 @@ def create_recon_stage(
             ['sub-01_run-1_T2w.nii.gz', 'sub-01_run-2_T2w.nii.gz']
     >>> recon_stage.inputs.inputnode.input_masks =
             ['sub-01_run-1_T2w_mask.nii.gz', 'sub-01_run-2_T2w_mask.nii.gz']
-    >>> recon_stage.inputs.inputnode.p_do_nlm_denoising = 'mask.nii'
+    >>> recon_stage.inputs.stacks_order = [2,1]
     >>> recon_stage.run() # doctest: +SKIP
     """
 

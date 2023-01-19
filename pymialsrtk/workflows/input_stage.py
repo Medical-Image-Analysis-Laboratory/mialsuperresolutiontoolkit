@@ -36,19 +36,26 @@ def create_input_stage(
 
     Parameters
     ----------
-    name :
+    name : :obj:`str`
         name of workflow (default: input_stage)
-    p_bids_dir
-    p_sub_ses
-    p_use_manual_masks
-    p_masks_desc
-    p_masks_derivatives_dir
-    p_skip_stacks_ordering
-    p_stacks
-    p_do_srr_assessment
-
-    Inputs
-    ------
+    p_bids_dir : :obj:`str`
+            Path to the bids directory
+    p_sub_ses : :obj:`str`
+            String containing subject-session information.
+    p_use_manual_masks : :obj:`bool`
+        Whether manual masks are used
+    p_masks_desc : :obj:`str`
+        BIDS description tag of masks to use (optional)
+    p_masks_derivatives_dir : :obj:`str`
+        Path to the directory of the manual masks.
+    p_skip_stacks_ordering : :obj:`bool`
+        Whether stacks ordering should be skipped. If true, uses the order
+        provided in `p_stacks`.
+    p_stacks : :obj:`list(int)`
+        List of stack to be used in the reconstruction. The specified order is
+        kept if `skip_stacks_ordering` is True.
+    p_do_srr_assessment : :obj:`bool`
+        If super-resolution assessment should be done.
 
     Outputs
     -------
@@ -61,7 +68,17 @@ def create_input_stage(
 
     Example
     -------
-    >>>
+    >>> from pymialsrtk.pipelines.workflows import input_stage
+    >>> input_mgmt_stage = input_stage.create_input_stage(
+            p_bids_dir="bids_data",
+            p_sub_ses="sub-01_ses-1",
+            p_sub_path="sub-01/ses-1/anat",
+            p_use_manual_masks=False,
+            p_skip_stacks_ordering=False,
+            p_do_srr_assessment=False,
+            name="input_mgmt_stage",
+        )
+    >>> input_mgmt_stage.run()
     """
 
     input_stage = pe.Workflow(name=name)

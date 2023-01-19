@@ -3,7 +3,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the various parts of workflow pipeline."""
+"""Module for the various parts of preprocessing pipeline."""
 
 from nipype.pipeline import engine as pe
 
@@ -55,7 +55,22 @@ def create_registration_stage(
         output_tranforms :
             Transfmation estimated parameters (list of filenames)
 
-    # doctest: +SKIP
+    Example
+    -------
+    >>> from pymialsrtk.pipelines.workflows import registration_stage as reg
+    >>> registration_stage = reg.create_registration_stage(
+            p_sub_ses=p_sub_ses,
+        )
+    >>> registration_stage.inputs.input_images = [
+            'sub-01_run-1_T2w.nii.gz',
+            'sub-01_run-2_T2w.nii.gz'
+        ]
+    >>> registration_stage.inputs.input_masks = [
+            'sub-01_run-1_T2w.nii_mask.gz',
+            'sub-01_run-2_T2w.nii_mask.gz'
+        ]
+    >>> registration_stage.inputs.stacks_order = [2,1]
+    >>> registration_stage.run()
     """
 
     registration_stage = pe.Workflow(name=name)

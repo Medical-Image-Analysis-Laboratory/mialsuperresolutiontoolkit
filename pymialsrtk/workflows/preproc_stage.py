@@ -23,6 +23,7 @@ def create_preproc_stage(
     name="preproc_stage",
 ):
     """Create a SR preprocessing workflow
+
     Parameters
     ----------
         p_do_nlm_denoising :
@@ -52,7 +53,8 @@ def create_preproc_stage(
 
     Example
     -------
-    >>> preproc_stage = create_preproc_stage(p_do_nlm_denoising=False)
+    >>> from pymialsrtk.pipelines.workflows import preproc_stage as preproc
+    >>> preproc_stage = preproc.create_preproc_stage(p_do_nlm_denoising=False)
     >>> preproc_stage.inputs.inputnode.input_images =
             ['sub-01_run-1_T2w.nii.gz',
              'sub-01_run-2_T2w.nii.gz']

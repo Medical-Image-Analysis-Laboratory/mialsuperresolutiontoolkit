@@ -25,9 +25,12 @@ def create_recon_labelmap_stage(
 
     Parameters
     ----------
-        p_sub_ses:
-        p_verbose:
-        name : name of workflow (default: recon_labels_stage)
+        p_sub_ses: :obj:`str`
+            String containing subject-session information for output formatting
+        p_verbose:  :obj:`bool`
+            Whether verbosity should be enabled
+        name : :obj:`str`
+         name of workflow (default: recon_labels_stage)
     Inputs
     ------
         input_labels :
@@ -47,6 +50,30 @@ def create_recon_labelmap_stage(
     -------
         output_labelmap :
             HR labelmap (filename)
+    Example
+    -------
+    >>> from pymialsrtk.pipelines.workflows import recon_labelmap_stage as rec_label
+    >>> recon_labels_stage = rec_label.create_recon_labelmap_stage(
+            p_sub_ses=p_sub_ses,
+            p_verbose=p_verbose
+        )
+    >>> recon_labels_stage.inputs.input_labels = [
+            'sub-01_run-1_labels.nii.gz',
+            'sub-01_run-2_labels.nii.gz'
+        ]
+    >>> recon_labels_stage.inputs.input_masks = [
+            'sub-01_run-1_T2w.nii_mask.gz',
+            'sub-01_run-2_T2w.nii_mask.gz'
+        ]
+    >>> recon_labels_stage.inputs.input_transforms = [
+            'sub-01_run-1_transforms.txt',
+            'sub-01_run-2_transforms.txt'
+        ]
+    >>> recon_labels_stage.inputs.input_reference = 'sub-01_desc-GT_T2w.nii.gz'
+    >>> recon_labels_stage.inputs.label_ids = 'sub-01_desc-GT_T2w.nii.gz'
+    >>> recon_labels_stage.inputs.stacks_order = [2,1]
+    >>> recon_labels_stage.run()
+
     """
 
     recon_labels_stage = pe.Workflow(name=name)

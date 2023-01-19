@@ -31,7 +31,6 @@ def create_srr_assessment_stage(
 
     Parameters
     ----------
-    ::
         name : name of workflow (default: sr_assessment_stage)
         p_do_multi_parameters : boolean
             whether multiple SR are to be assessed
@@ -43,17 +42,40 @@ def create_srr_assessment_stage(
             number of threads possible
             for ants registration (default : 1)
 
-    Inputs::
+    Inputs
+    --------
         input_reference_image
         input_reference_mask
         input_reference_labelmap
         input_sr_image
         input_sdi_image
         input_TV_parameters
-    Outputs::
+    Outputs
+    --------
         outputnode.output_metrics
     Example
     -------
+    >>> from pymialsrtk.pipelines.workflows import srr_assessment_stage as srr_assessment
+    >>> srr_eval = srr_assessment.create_srr_assessment_stage()
+    >>> srr_eval.inputs.input_reference_image = 'sub-01_desc-GT_T2w.nii.gz'
+    >>> srr_eval.inputs.input_reference_mask = 'sub-01_desc-GT_mask.nii.gz'
+    >>> srr_eval.inputs.input_reference_mask = 'sub-01_desc-GT_labels.nii.gz'
+    >>> srr_eval.inputs.input_sr_image = 'sub-01_id-1_rec-SR_T2w.nii.gz'
+    >>> srr_eval.inputs.input_sdi_image = 'sub-01_id-1_desc-SDI_T2w.nii.gz'
+    >>> srr_eval.inputs.input_TV_parameters = {
+            'in_loop': '10',
+            'in_deltat': '0.01',
+            'in_lambda': '0.75',
+            'in_bregman_loop': '3',
+            'in_iter': '50',
+            'in_step_scale': '1',
+            'in_gamma': '1',
+            'in_inner_thresh':
+            '1e-05',
+            'in_outer_thresh': '1e-06'
+        }
+    >>> srr_eval.run()
+
     """
 
     srr_assessment_stage = pe.Workflow(name=name)

@@ -56,7 +56,7 @@ def create_srr_output_stage(
         Enable non-local means denoising (default: False)
     p_do_reconstruct_labels: :obj:`bool`
         Enable the reconstruction of labelmaps
-    p_do_srr_assessment: :obj:`bool
+    p_do_srr_assessment: :obj:`bool`
         Enables output of srr assessment stage
     p_skip_stacks_ordering :  :obj:`bool`
         Skip stacks ordering (default: False)
