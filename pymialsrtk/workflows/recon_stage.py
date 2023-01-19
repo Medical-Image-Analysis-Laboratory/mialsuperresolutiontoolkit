@@ -78,9 +78,12 @@ def create_recon_stage(
         output_tranforms :
             Transfmation estimated parameters
             (list of filenames)
-        outputnode.output_json_path
+        outputnode.output_json_path :
+            Path to the json sidecar of the SR reconstruction
         outputnode.output_sr_png
+            Path to the PNG of the SR reconstruction
         outputnode.output_TV_parameters
+            Parameters used for TV reconstruction
     Example
     -------
     >>> from pymialsrtk.pipelines.workflows import recon_stage as rec

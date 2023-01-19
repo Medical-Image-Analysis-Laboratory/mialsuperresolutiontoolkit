@@ -59,12 +59,18 @@ def create_input_stage(
 
     Outputs
     -------
-    outputnode.t2ws_filtered
-    outputnode.masks_filtered
-    outputnode.stacks_order
-    outputnode.report_image
-    outputnode.motion_tsv
-    outputnode.ground_truth (optional, if p_do_srr_assessment=True)
+    outputnode.t2ws_filtered:
+        Low-resolution T2w images (list of filenames)
+    outputnode.masks_filtered:
+        Low-resolution T2w masks (list of filenames)
+    outputnode.stacks_order:
+        Order in which the stacks should be processed (list of ids)
+    outputnode.report_image:
+        Output PNG image for report
+    outputnode.motion_tsv:
+        Output TSV file with results used to create `report_image`
+    outputnode.ground_truth:
+        Ground truth image used for `srr_assessment` (optional, if p_do_srr_assessment=True)
 
     Example
     -------

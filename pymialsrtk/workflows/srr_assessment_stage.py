@@ -44,12 +44,18 @@ def create_srr_assessment_stage(
 
     Inputs
     --------
-        input_reference_image
-        input_reference_mask
-        input_reference_labelmap
-        input_sr_image
-        input_sdi_image
-        input_TV_parameters
+        input_reference_image :
+            Path to the ground truth image against which the SR will be evaluated.
+        input_reference_mask :
+            Path to the mask of the ground truth image.
+        input_reference_labelmap :
+            Path to the labelmap (tissue segmentation) of the ground truth image.
+        input_sr_image :
+            Path to the SR reconstructed image.
+        input_sdi_image:
+            Path to the SDI (interpolated image) used as input to the SR.
+        input_TV_parameters:
+            Dictionary of parameters that were used for the TV reconstruction.
     Outputs
     --------
         outputnode.output_metrics
