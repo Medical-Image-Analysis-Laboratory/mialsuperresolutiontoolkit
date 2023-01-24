@@ -1,7 +1,7 @@
 # ![MIALSRTK logo](https://raw.githubusercontent.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/dev-pgd-hk/documentation/images/mialsrtk-logo.png)
 ---
 
-Copyright © 2016-2020 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
+Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
 
 This software is distributed under the open-source BSD 3-Clause License. See [LICENSE](LICENSE.txt) file for details.
 
