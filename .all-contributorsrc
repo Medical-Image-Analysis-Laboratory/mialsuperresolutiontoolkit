@@ -44,12 +44,18 @@
       ]
     },
     {
-      "login": "meribach",
-      "name": "Meritxell Bach",
-      "avatar_url": "https://avatars3.githubusercontent.com/u/2786897?v=4",
-      "profile": "https://github.com/meribach",
+      "login": "t-sanchez",
+      "name": "Thomas Sanchez",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14288440?v=4",
+      "profile": "http://t-sanchez.github.io",
       "contributions": [
-        "fundingFinding"
+        "bug",
+        "code",
+        "doc",
+        "example",
+        "ideas",
+        "infra",
+        "review"
       ]
     },
     {
@@ -74,18 +80,12 @@
       ]
     },
     {
-      "login": "t-sanchez",
-      "name": "Thomas Sanchez",
-      "avatar_url": "https://avatars.githubusercontent.com/u/14288440?v=4",
-      "profile": "http://t-sanchez.github.io",
+      "login": "meribach",
+      "name": "Meritxell Bach",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/2786897?v=4",
+      "profile": "https://github.com/meribach",
       "contributions": [
-        "bug",
-        "code",
-        "doc",
-        "example",
-        "ideas",
-        "infra",
-        "review"
+        "fundingFinding"
       ]
     }
   ],
