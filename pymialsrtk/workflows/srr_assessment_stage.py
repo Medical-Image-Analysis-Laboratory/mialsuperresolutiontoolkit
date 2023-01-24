@@ -2,8 +2,7 @@
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 # This software is distributed under the open-source license Modified BSD.
 
-"""Module for the reconstruction stage of the super-resolution
-reconstruction pipeline."""
+"""Module for the reconstruction stage of the super-resolution reconstruction pipeline."""
 
 from traits.api import *
 
@@ -31,34 +30,39 @@ def create_srr_assessment_stage(
 
     Parameters
     ----------
-        name : name of workflow (default: sr_assessment_stage)
-        p_do_multi_parameters : boolean
-            whether multiple SR are to be assessed
-            with different TV parameters(default: False)
-        p_input_srtv_node : string
-            when p_do_multi_parameters is set, name of the sourcenode
-            from which metrics must be merged
-        p_openmp_number_of_cores : integer
-            number of threads possible
-            for ants registration (default : 1)
+    name : :str:
+        Name of workflow
+        (default: "sr_assessment_stage")
+    p_do_multi_parameters : :bool:
+        whether multiple SR are to be assessed with different TV parameters
+        (default: `False`)
+    p_input_srtv_node : :str:
+        when p_do_multi_parameters is set, name of the sourcenode
+        from which metrics must be merged
+    p_openmp_number_of_cores : :int:
+        number of threads possible for ants registration
+        (default : 1)
 
     Inputs
     --------
-        input_reference_image :
-            Path to the ground truth image against which the SR will be evaluated.
-        input_reference_mask :
-            Path to the mask of the ground truth image.
-        input_reference_labelmap :
-            Path to the labelmap (tissue segmentation) of the ground truth image.
-        input_sr_image :
-            Path to the SR reconstructed image.
-        input_sdi_image:
-            Path to the SDI (interpolated image) used as input to the SR.
-        input_TV_parameters:
-            Dictionary of parameters that were used for the TV reconstruction.
+    input_reference_image : path
+        Path to the ground truth image against which the SR will be evaluated.
+    input_reference_mask : path
+        Path to the mask of the ground truth image.
+    input_reference_labelmap : path
+        Path to the labelmap (tissue segmentation) of the ground truth image.
+    input_sr_image : path
+        Path to the SR reconstructed image.
+    input_sdi_image : path
+        Path to the SDI (interpolated image) used as input to the SR.
+    input_TV_parameters : :dict:
+        Dictionary of parameters that were used for the TV reconstruction.
+
     Outputs
     --------
-        outputnode.output_metrics
+    outputnode.output_metrics : list of :float:
+        List of output metrics
+
     Example
     -------
     >>> from pymialsrtk.pipelines.workflows import srr_assessment_stage as srr_assessment
@@ -80,7 +84,7 @@ def create_srr_assessment_stage(
             '1e-05',
             'in_outer_thresh': '1e-06'
         }
-    >>> srr_eval.run()
+    >>> srr_eval.run()  # doctest: +SKIP
 
     """
 

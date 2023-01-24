@@ -32,58 +32,66 @@ def create_recon_stage(
 
     Parameters
     ----------
-        p_paramTV : `obj`:dict:
-            Dictionary of TV parameters
-        p_use_manual_masks :
-            Whether masks were done manually.
-        p_do_nlm_denoising :
-            Whether to proceed to non-local mean denoising.
-            (default False)
-        p_do_multi_parameters :
-        p_do_reconstruct_labels :
-            Whether we are also reconstruction label maps.
-            (default False)
-        p_do_refine_hr_mask :
-            Whether to do high-resolution mask refinement.
-            (default False)
-        p_skip_svr :
-            Whether slice-to-volume registration (SVR) should
-            be skipped. (default False)
-        p_sub_ses :
-            String describing subject-session information
-            (default '')
-        p_verbose :
-            Whether verbosity should be enabled (default False)
-        name : name of workflow (default: recon_stage)
+    p_paramTV : :dict:
+        Dictionary of TV parameters
+    p_use_manual_masks : :bool:
+        Whether masks were done manually.
+    p_do_nlm_denoising : :bool:
+        Whether to proceed to non-local mean denoising.
+        (default: `False`)
+    p_do_multi_parameters : :bool:
+        Perform super-resolution reconstruction with
+        a set of multiple parameters.
+        (default: `False`)
+    p_do_reconstruct_labels : :bool:
+        Whether we are also reconstruction label maps.
+        (default: `False`)
+    p_do_refine_hr_mask : :bool:
+        Whether to do high-resolution mask refinement.
+        (default: `False`)
+    p_skip_svr : :bool:
+        Whether slice-to-volume registration (SVR) should
+        be skipped.
+        (default: `False`)
+    p_sub_ses : :str:
+        String describing subject-session information
+        (default: '')
+    p_verbose : :bool:
+        Whether verbosity should be enabled
+        (default: `False`)
+    name : :str:
+        Name of workflow
+        (default: "recon_stage")
+
     Inputs
     ----------
-        input_images :
-            Input T2w images (list of filenames)
-        input_images_nlm :
-            Input T2w images (list of filenames),
-            if p_do_nlm_denoising was set (list of filenames)
-        input_masks :
-            Input mask images (list of filenames)
-        stacks_order :
-            Order of stacks in the reconstruction
-            (list of integer)
+    input_images : :list: of paths
+        Input T2w images
+    input_images_nlm : :list: of paths
+        Input T2w images,
+        required if `p_do_nlm_denoising=True`
+    input_masks : list of paths
+        Input mask images
+    stacks_order : list of :int:
+        Order of stacks in the reconstruction
+
     Outputs
     ----------
-        output_sr :
-            SR reconstructed image (filename)
-        output_sdi :
-            SDI image (filename)
-        output_hr_mask :
-            SRR mask (filename)
-        output_tranforms :
-            Transfmation estimated parameters
-            (list of filenames)
-        outputnode.output_json_path :
-            Path to the json sidecar of the SR reconstruction
-        outputnode.output_sr_png
-            Path to the PNG of the SR reconstruction
-        outputnode.output_TV_parameters
-            Parameters used for TV reconstruction
+    output_sr : path
+        SR reconstructed image
+    output_sdi : path
+        SDI image
+    output_hr_mask : path
+        SRR mask
+    output_tranforms : :list: of paths
+        Estimated transformation parameters
+    outputnode.output_json_path : path
+        Path to the json sidecar of the SR reconstruction
+    outputnode.output_sr_png : path
+        Path to the PNG of the SR reconstruction
+    outputnode.output_TV_parameters : :dict:
+        Parameters used for TV reconstruction
+
     Example
     -------
     >>> from pymialsrtk.pipelines.workflows import recon_stage as rec
@@ -96,7 +104,7 @@ def create_recon_stage(
     >>> recon_stage.inputs.inputnode.input_masks =
             ['sub-01_run-1_T2w_mask.nii.gz', 'sub-01_run-2_T2w_mask.nii.gz']
     >>> recon_stage.inputs.stacks_order = [2,1]
-    >>> recon_stage.run() # doctest: +SKIP
+    >>> recon_stage.run()  # doctest: +SKIP
     """
 
     recon_stage = pe.Workflow(name=name)

@@ -40,36 +40,40 @@ def create_postproc_stage(
     name="postproc_stage",
 ):
     """Create a SR preprocessing workflow.
+
     Parameters
     ----------
-        name : :str:
-            name of workflow (default: preproc_stage)
-        p_ga: :int:
-            Subject's gestational age in weeks
-        p_do_anat_orientation: :bool:
-            Whether the alignement to template should be performed
-        p_do_reconstruct_labels: :bool:
-            Whether the reconstruction of LR labelmaps should be performed
-        p_verbose: :bool:
-            Whether verbosity is enabled.
+    name : :str:
+        Name of workflow (default: "preproc_stage")
+    p_ga : :int:
+        Subject's gestational age in weeks
+    p_do_anat_orientation : :bool:
+        Whether the alignement to template should be performed
+    p_do_reconstruct_labels : :bool:
+        Whether the reconstruction of LR labelmaps should be performed
+    p_verbose : :bool:
+        Whether verbosity is enabled
+
     Inputs
     ------
-        input_sdi:
-            Input SDI image (filename)
-        input_image:
-            Input T2w image (filename)
-        input_mask:
-            Input mask image (filename)
-        input_labelmap: (optional)
-            Input labelmap image (filename)
+    input_sdi : path
+        Input SDI image
+    input_image : path
+        Input T2w image
+    input_mask : path
+        Input mask image
+    input_labelmap : path
+        Input labelmap image (optional)
+
     Outputs
     -------
-        output_image :
-            Postprocessed image (filename)
-        output_mask :
-            Postprocessed mask (filename)
-        output_labelmap :
-            Postprocessed labelmap (filename)
+    output_image : path
+        Postprocessed image
+    output_mask : path
+        Postprocessed mask
+    output_labelmap : path
+        Postprocessed labelmap
+
     """
 
     postproc_stage = pe.Workflow(name=name)

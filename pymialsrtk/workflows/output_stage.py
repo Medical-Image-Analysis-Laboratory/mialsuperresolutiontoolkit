@@ -37,8 +37,7 @@ def create_srr_output_stage(
     p_nipype_number_of_cores=None,
     name="srr_output_stage",
 ):
-    """Create a output management workflow for the
-    super-resolution reconstruction pipeline.
+    """Create a output management workflow for the super-resolution reconstruction pipeline.
 
     Parameters
     ----------
@@ -68,43 +67,41 @@ def create_srr_output_stage(
 
     Inputs
     ------
-    stacks_order
+    stacks_order : list of integer
         Order of stacks in the registration (list of integer)
-    use_manual_masks
+    use_manual_masks : :obj:`bool`
         Whether manual masks were used in the pipeline
-    final_res_dir
+    final_res_dir : path
         Output directory
-
-    input_masks
+    input_masks : list of paths
         Input mask images from the low-resolution T2w images
-        (list of filenames)
-    input_images
-        Input low-resolution T2w images (list of filenames)
-    input_transforms
+    input_images : list of paths
+        Input low-resolution T2w images
+    input_transforms : list of paths
         Transforms obtained after SVR
-    input_sdi
+    input_sdi : path
         Interpolated high resolution volume, obtained after
         slice-to-volume registration (SVR)
-    input_sr
+    input_sr : path
         High resolution volume, obtained after the super-
         resolution (SR) reconstruction from the SDI volume.
-    input_hr_mask
+    input_hr_mask : path
         Brain mask from the high-resolution reconstructed
         volume.
-    input_json_path
+    input_json_path : path
         Path to the JSON file describing the parameters
         used in the SR reconstruction.
-    input_sr_png
+    input_sr_png : path
         PNG image summarizing the SR reconstruction.
-    report_image
+    report_image : path
         Report image obtained from the StacksOrdering module
-        Optional - only if p_skip_stacks_ordering = False
-    motion_tsv
+        Optional - only if `p_skip_stacks_ordering = False`
+    motion_tsv : path
         Motion index obtained from the StacksOrdering module
-        Optional - only if p_skip_stacks_ordering = False
-    input_images_nlm
+        Optional - only if `p_skip_stacks_ordering = False`
+    input_images_nlm : path
         Input low-resolution denoised T2w images
-        Optional - only if p_do_nlm_denoising = True
+        Optional - only if `p_do_nlm_denoising = True`
 
     """
 
@@ -130,6 +127,12 @@ def create_srr_output_stage(
     if p_do_multi_parameters:
         input_fields += ["input_TV_params"]
 
+    if not p_run_start_time:
+        p_run_start_time = 0.0
+
+    if not p_run_elapsed_time:
+        p_run_elapsed_time = 0.0
+
     inputnode = pe.Node(
         interface=util.IdentityInterface(fields=input_fields), name="inputnode"
     )
@@ -143,8 +146,8 @@ def create_srr_output_stage(
                 sr_id=p_sr_id,
                 run_type=p_run_type,
                 output_dir=p_output_dir,
-                run_start_time=0.0,  # p_run_start_time,
-                run_elapsed_time=0.0,  # p_run_elapsed_time,
+                run_start_time=p_run_start_time,
+                run_elapsed_time=p_run_elapsed_time,
                 skip_svr=p_skip_svr,
                 do_nlm_denoising=p_do_nlm_denoising,
                 do_refine_hr_mask=p_do_refine_hr_mask,
@@ -280,57 +283,60 @@ def create_preproc_output_stage(
 
     Parameters
     ----------
-    p_sub_ses :
+    p_sub_ses : :str:
         String containing subject-session information for output formatting
-    p_sr_id :
+    p_sr_id : :int:
         ID of the current run
-    p_run_type :
-        Type of run (preprocessing/super resolution/ ...)
-    p_use_manual_masks :
+    p_run_type : "preprocessing" or "super resolution"
+        Type of run
+    p_use_manual_masks : :bool:
         Whether manual masks were used in the pipeline
-    p_do_nlm_denoising : :obj:`bool`
-        Enable non-local means denoising (default: False)
-    p_skip_stacks_ordering :  :obj:`bool`
-        Skip stacks ordering (default: False)
+    p_do_nlm_denoising : :bool:
+        Enable non-local means denoising
+        (default: False)
+    p_skip_stacks_ordering : :bool:
+        Skip stacks ordering
+        (default: False)
         If disabled, `report_image` and `motion_tsv` are not generated
-    p_do_registration : :obj:`bool`
+    p_do_registration : :bool:
         Whether registration is performed in the preprocessing pipeline
-    name : :obj:`str`
-        name of workflow (default: "preproc_output_stage")
+    name : :str:
+        name of workflow
+        (default: "preproc_output_stage")
 
     Inputs
     ------
-    sub_ses
+    sub_ses : :str:
         String containing subject-session information for output formatting
-    sr_id
+    sr_id : :int:
         ID of the current run
-    stacks_order
+    stacks_order : :list: of :int:
         Order of stacks in the registration (list of integer)
-    final_res_dir
+    final_res_dir : path
         Output directory
-    run_type
-        Type of run (preprocessing/super resolution/ ...)
-    input_masks
+    run_type : "preprocessing" or "super resolution"
+        Type of run
+    input_masks : :list: of paths
         Input mask images from the low-resolution T2w images
-        (list of filenames)
-    input_images
-        Input low-resolution T2w images (list of filenames)
-    input_sdi
+    input_images : :list: of paths
+        Input low-resolution T2w images
+    input_sdi : path
         Interpolated high resolution volume, obtained after
         slice-to-volume registration (SVR)
-        Optional - only if p_do_registration = True
-    input_transforms
+        Optional - only if `p_do_registration = True`
+    input_transforms : :list: of paths
         Transforms obtained after SVR
-        Optional - only if p_do_registration = True
-    report_image
+        Optional - only if `p_do_registration = True`
+    report_image : path
         Report image obtained from the StacksOrdering module
-        Optional - only if p_skip_stacks_ordering = False
-    motion_tsv
+        Optional - only if `p_skip_stacks_ordering = False`
+    motion_tsv : path
         Motion index obtained from the StacksOrdering module
-        Optional - only if p_skip_stacks_ordering = False
-    input_images_nlm
-        Input low-resolution denoised T2w images (list of filenames),
-        Optional - only if p_do_nlm_denoising = True
+        Optional - only if `p_skip_stacks_ordering = False`
+    input_images_nlm : :list: of paths
+        Input low-resolution denoised T2w images,
+        Optional - only if `p_do_nlm_denoising = True`
+
     """
 
     preproc_output_stage = pe.Workflow(name=name)

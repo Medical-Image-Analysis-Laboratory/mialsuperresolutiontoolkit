@@ -36,22 +36,22 @@ def create_input_stage(
 
     Parameters
     ----------
-    name : :obj:`str`
+    name : :str:
         name of workflow (default: input_stage)
-    p_bids_dir : :obj:`str`
+    p_bids_dir : :str:
             Path to the bids directory
-    p_sub_ses : :obj:`str`
+    p_sub_ses : :str:
             String containing subject-session information.
-    p_use_manual_masks : :obj:`bool`
+    p_use_manual_masks : :bool:
         Whether manual masks are used
-    p_masks_desc : :obj:`str`
+    p_masks_desc : :str:
         BIDS description tag of masks to use (optional)
-    p_masks_derivatives_dir : :obj:`str`
+    p_masks_derivatives_dir : :str:
         Path to the directory of the manual masks.
-    p_skip_stacks_ordering : :obj:`bool`
+    p_skip_stacks_ordering : :bool:
         Whether stacks ordering should be skipped. If true, uses the order
         provided in `p_stacks`.
-    p_stacks : :obj:`list(int)`
+    p_stacks : :list: of :int:
         List of stack to be used in the reconstruction. The specified order is
         kept if `skip_stacks_ordering` is True.
     p_do_srr_assessment : :obj:`bool`
@@ -59,18 +59,19 @@ def create_input_stage(
 
     Outputs
     -------
-    outputnode.t2ws_filtered:
-        Low-resolution T2w images (list of filenames)
-    outputnode.masks_filtered:
-        Low-resolution T2w masks (list of filenames)
-    outputnode.stacks_order:
-        Order in which the stacks should be processed (list of ids)
-    outputnode.report_image:
+    outputnode.t2ws_filtered : :list: of filenames
+        Low-resolution T2w images
+    outputnode.masks_filtered : :list: of filenames
+        Low-resolution T2w masks
+    outputnode.stacks_order : :list: of ids
+        Order in which the stacks should be processed
+    outputnode.report_image : filename
         Output PNG image for report
-    outputnode.motion_tsv:
+    outputnode.motion_tsv : filename
         Output TSV file with results used to create `report_image`
-    outputnode.ground_truth:
-        Ground truth image used for `srr_assessment` (optional, if p_do_srr_assessment=True)
+    outputnode.ground_truth : filename
+        Ground truth image used for `srr_assessment`
+        (optional, if `p_do_srr_assessment=True)
 
     Example
     -------
@@ -84,7 +85,8 @@ def create_input_stage(
             p_do_srr_assessment=False,
             name="input_mgmt_stage",
         )
-    >>> input_mgmt_stage.run()
+    >>> input_mgmt_stage.run()  # doctest: +SKIP
+
     """
 
     input_stage = pe.Workflow(name=name)

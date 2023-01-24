@@ -25,35 +25,36 @@ def create_registration_stage(
 
     Parameters
     ----------
-        p_do_nlm_denoising : :obj:`bool`
-            Enable non-local means denoising (default: False)
-        p_skip_svr : :obj:`bool`
-            Skip slice-to-volume registration (default: False)
-        p_sub_ses : :obj:`str`
-            String containing subject-session information.
-        name : :obj:`str`
-            name of workflow (default: registration_stage)
+    p_do_nlm_denoising : :bool:
+        Enable non-local means denoising
+        (default: `False`)
+    p_skip_svr : :bool:
+        Skip slice-to-volume registration
+        (default: `False`)
+    p_sub_ses : :str:
+        String containing subject-session information.
+    name : :str:
+        name of workflow
+        (default: "registration_stage")
 
     Inputs
     ------
-        input_images :
-            Input low-resolution T2w images (list of filenames)
-        input_images_nlm :
-            Input low-resolution denoised T2w images (list of filenames),
-            Optional - only if p_do_nlm_denoising = True
-        input_masks :
-            Input mask images from the low-resolution T2w images
-            (list of filenames)
-        stacks_order :
-            Order of stacks in the
-            registration (list of integer)
+    input_images : :list: of paths
+        Input low-resolution T2w images
+    input_images_nlm : :list: of paths
+        Input low-resolution denoised T2w images,
+        Optional - only if `p_do_nlm_denoising = True`
+    input_masks : :list: of paths
+        Input mask images from the low-resolution T2w images
+    stacks_order : :list: of :int:
+        Order of stacks in the registration
 
     Outputs
     -------
-        output_sdi :
-            SDI image (filename)
-        output_tranforms :
-            Transfmation estimated parameters (list of filenames)
+    output_sdi : path
+        SDI image
+    output_tranforms : :list: of paths
+        Estimated transformation parameters
 
     Example
     -------
@@ -70,7 +71,8 @@ def create_registration_stage(
             'sub-01_run-2_T2w.nii_mask.gz'
         ]
     >>> registration_stage.inputs.stacks_order = [2,1]
-    >>> registration_stage.run()
+    >>> registration_stage.run()  # doctest: +SKIP
+
     """
 
     registration_stage = pe.Workflow(name=name)
