@@ -24,33 +24,33 @@ def create_preproc_stage(
 
     Parameters
     ----------
-    p_do_nlm_denoising : :bool:
+    p_do_nlm_denoising : boolean
         Whether to proceed to non-local mean denoising
         (default: `False`)
-    p_do_reconstruct_labels : :bool:
+    p_do_reconstruct_labels : boolean
         Whether we are also reconstruction label maps.
         (default: `False`)
-    p_verbose : :bool:
+    p_verbose : boolean
         Whether verbosity should be enabled
         (default False)
-    name : :str:
+    name : string
         name of workflow
         (default: "preproc_stage")
 
     Inputs
     ------
-    input_images : :list: of paths
+    input_images : list of items which are a pathlike object or string representing a file
         Input T2w images
-    input_masks : :list: of paths
+    input_masks : list of items which are a pathlike object or string representing a file
         Input mask images
 
     Outputs
     -------
-    output_images : :list: of paths
+    output_images : list of items which are a pathlike object or string representing a file
         Processed images
-    output_masks : :list: of paths
+    output_masks : list of items which are a pathlike object or string representing a file
         Processed images
-    output_images_nlm : :list: of paths
+    output_images_nlm : list of items which are a pathlike object or string representing a file
         Processed images with NLM denoising,
         required if `p_do_nlm_denoising = True`
 

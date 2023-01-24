@@ -71,35 +71,35 @@ def create_srr_output_stage(
         Order of stacks in the registration (list of integer)
     use_manual_masks : :obj:`bool`
         Whether manual masks were used in the pipeline
-    final_res_dir : path
+    final_res_dir : pathlike object or string representing a file
         Output directory
-    input_masks : list of paths
+    input_masks : list of items which are a pathlike object or string representing a file
         Input mask images from the low-resolution T2w images
-    input_images : list of paths
+    input_images : list of items which are a pathlike object or string representing a file
         Input low-resolution T2w images
-    input_transforms : list of paths
+    input_transforms : list of items which are a pathlike object or string representing a file
         Transforms obtained after SVR
-    input_sdi : path
+    input_sdi : pathlike object or string representing a file
         Interpolated high resolution volume, obtained after
         slice-to-volume registration (SVR)
-    input_sr : path
+    input_sr : pathlike object or string representing a file
         High resolution volume, obtained after the super-
         resolution (SR) reconstruction from the SDI volume.
-    input_hr_mask : path
+    input_hr_mask : pathlike object or string representing a file
         Brain mask from the high-resolution reconstructed
         volume.
-    input_json_path : path
+    input_json_path : pathlike object or string representing a file
         Path to the JSON file describing the parameters
         used in the SR reconstruction.
-    input_sr_png : path
+    input_sr_png : pathlike object or string representing a file
         PNG image summarizing the SR reconstruction.
-    report_image : path
+    report_image : pathlike object or string representing a file
         Report image obtained from the StacksOrdering module
         Optional - only if `p_skip_stacks_ordering = False`
-    motion_tsv : path
+    motion_tsv : pathlike object or string representing a file
         Motion index obtained from the StacksOrdering module
         Optional - only if `p_skip_stacks_ordering = False`
-    input_images_nlm : path
+    input_images_nlm : pathlike object or string representing a file
         Input low-resolution denoised T2w images
         Optional - only if `p_do_nlm_denoising = True`
 
@@ -283,57 +283,57 @@ def create_preproc_output_stage(
 
     Parameters
     ----------
-    p_sub_ses : :str:
+    p_sub_ses : string
         String containing subject-session information for output formatting
-    p_sr_id : :int:
+    p_sr_id : integer
         ID of the current run
     p_run_type : "preprocessing" or "super resolution"
         Type of run
-    p_use_manual_masks : :bool:
+    p_use_manual_masks : boolean
         Whether manual masks were used in the pipeline
-    p_do_nlm_denoising : :bool:
+    p_do_nlm_denoising : boolean
         Enable non-local means denoising
         (default: False)
-    p_skip_stacks_ordering : :bool:
+    p_skip_stacks_ordering : boolean
         Skip stacks ordering
         (default: False)
         If disabled, `report_image` and `motion_tsv` are not generated
-    p_do_registration : :bool:
+    p_do_registration : boolean
         Whether registration is performed in the preprocessing pipeline
-    name : :str:
+    name : string
         name of workflow
         (default: "preproc_output_stage")
 
     Inputs
     ------
-    sub_ses : :str:
+    sub_ses : string
         String containing subject-session information for output formatting
-    sr_id : :int:
+    sr_id : integer
         ID of the current run
-    stacks_order : :list: of :int:
+    stacks_order : list of integer
         Order of stacks in the registration (list of integer)
-    final_res_dir : path
+    final_res_dir : pathlike object or string representing a file
         Output directory
     run_type : "preprocessing" or "super resolution"
         Type of run
-    input_masks : :list: of paths
+    input_masks : list of items which are a pathlike object or string representing a file
         Input mask images from the low-resolution T2w images
-    input_images : :list: of paths
+    input_images : list of items which are a pathlike object or string representing a file
         Input low-resolution T2w images
-    input_sdi : path
+    input_sdi : pathlike object or string representing a file
         Interpolated high resolution volume, obtained after
         slice-to-volume registration (SVR)
         Optional - only if `p_do_registration = True`
-    input_transforms : :list: of paths
+    input_transforms : list of items which are a pathlike object or string representing a file
         Transforms obtained after SVR
         Optional - only if `p_do_registration = True`
-    report_image : path
+    report_image : pathlike object or string representing a file
         Report image obtained from the StacksOrdering module
         Optional - only if `p_skip_stacks_ordering = False`
-    motion_tsv : path
+    motion_tsv : pathlike object or string representing a file
         Motion index obtained from the StacksOrdering module
         Optional - only if `p_skip_stacks_ordering = False`
-    input_images_nlm : :list: of paths
+    input_images_nlm : list of items which are a pathlike object or string representing a file
         Input low-resolution denoised T2w images,
         Optional - only if `p_do_nlm_denoising = True`
 

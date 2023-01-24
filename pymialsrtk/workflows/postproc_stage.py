@@ -43,35 +43,35 @@ def create_postproc_stage(
 
     Parameters
     ----------
-    name : :str:
+    name : string
         Name of workflow (default: "preproc_stage")
-    p_ga : :int:
+    p_ga : integer
         Subject's gestational age in weeks
-    p_do_anat_orientation : :bool:
+    p_do_anat_orientation : boolean
         Whether the alignement to template should be performed
-    p_do_reconstruct_labels : :bool:
+    p_do_reconstruct_labels : boolean
         Whether the reconstruction of LR labelmaps should be performed
-    p_verbose : :bool:
+    p_verbose : boolean
         Whether verbosity is enabled
 
     Inputs
     ------
-    input_sdi : path
+    input_sdi : pathlike object or string representing a file
         Input SDI image
-    input_image : path
+    input_image : pathlike object or string representing a file
         Input T2w image
-    input_mask : path
+    input_mask : pathlike object or string representing a file
         Input mask image
-    input_labelmap : path
+    input_labelmap : pathlike object or string representing a file
         Input labelmap image (optional)
 
     Outputs
     -------
-    output_image : path
+    output_image : pathlike object or string representing a file
         Postprocessed image
-    output_mask : path
+    output_mask : pathlike object or string representing a file
         Postprocessed mask
-    output_labelmap : path
+    output_labelmap : pathlike object or string representing a file
         Postprocessed labelmap
 
     """

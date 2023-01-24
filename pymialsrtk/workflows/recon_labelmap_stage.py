@@ -23,33 +23,33 @@ def create_recon_labelmap_stage(
 
     Parameters
     ----------
-    p_sub_ses : :str:
+    p_sub_ses : string
         String containing subject-session information for output formatting
-    p_verbose : :bool:
+    p_verbose : boolean
         Whether verbosity should be enabled
         (default: `False`)
-    name : :str:
+    name : string
         Name of workflow
         (default: "recon_labels_stage")
 
     Inputs
     ------
-    input_labels : :list: of paths
+    input_labels : list of items which are a pathlike object or string representing a file
         Input LR label maps
-    input_masks : :list: of paths
+    input_masks : list of items which are a pathlike object or string representing a file
         Input mask images
-    input_transforms : :list: of paths
+    input_transforms : list of items which are a pathlike object or string representing a file
         Input tranforms
-    input_reference : path
+    input_reference : pathlike object or string representing a file
         Input HR reference image
-    label_ids : :list: of :int:
+    label_ids : list of integer
         Label IDs to reconstruct
-    stacks_order : :list: of :int:
+    stacks_order : list of integer
         Order of stacks in the reconstruction
 
     Outputs
     -------
-    output_labelmap : path
+    output_labelmap : pathlike object or string representing a file
         HR labelmap
 
     Example

@@ -32,64 +32,64 @@ def create_recon_stage(
 
     Parameters
     ----------
-    p_paramTV : :dict:
+    p_paramTV : dictionary
         Dictionary of TV parameters
-    p_use_manual_masks : :bool:
+    p_use_manual_masks : boolean
         Whether masks were done manually.
-    p_do_nlm_denoising : :bool:
+    p_do_nlm_denoising : boolean
         Whether to proceed to non-local mean denoising.
         (default: `False`)
-    p_do_multi_parameters : :bool:
+    p_do_multi_parameters : boolean
         Perform super-resolution reconstruction with
         a set of multiple parameters.
         (default: `False`)
-    p_do_reconstruct_labels : :bool:
+    p_do_reconstruct_labels : boolean
         Whether we are also reconstruction label maps.
         (default: `False`)
-    p_do_refine_hr_mask : :bool:
+    p_do_refine_hr_mask : boolean
         Whether to do high-resolution mask refinement.
         (default: `False`)
-    p_skip_svr : :bool:
+    p_skip_svr : boolean
         Whether slice-to-volume registration (SVR) should
         be skipped.
         (default: `False`)
-    p_sub_ses : :str:
+    p_sub_ses : string
         String describing subject-session information
         (default: '')
-    p_verbose : :bool:
+    p_verbose : boolean
         Whether verbosity should be enabled
         (default: `False`)
-    name : :str:
+    name : string
         Name of workflow
         (default: "recon_stage")
 
     Inputs
     ----------
-    input_images : :list: of paths
+    input_images : list of items which are a pathlike object or string representing a file
         Input T2w images
-    input_images_nlm : :list: of paths
+    input_images_nlm : list of items which are a pathlike object or string representing a file
         Input T2w images,
         required if `p_do_nlm_denoising=True`
-    input_masks : list of paths
+    input_masks : list of items which are a pathlike object or string representing a file
         Input mask images
-    stacks_order : list of :int:
+    stacks_order : list of integer
         Order of stacks in the reconstruction
 
     Outputs
     ----------
-    output_sr : path
+    output_sr : pathlike object or string representing a file
         SR reconstructed image
-    output_sdi : path
+    output_sdi : pathlike object or string representing a file
         SDI image
-    output_hr_mask : path
+    output_hr_mask : pathlike object or string representing a file
         SRR mask
-    output_tranforms : :list: of paths
+    output_tranforms : list of items which are a pathlike object or string representing a file
         Estimated transformation parameters
-    outputnode.output_json_path : path
+    outputnode.output_json_path : pathlike object or string representing a file
         Path to the json sidecar of the SR reconstruction
-    outputnode.output_sr_png : path
+    outputnode.output_sr_png : pathlike object or string representing a file
         Path to the PNG of the SR reconstruction
-    outputnode.output_TV_parameters : :dict:
+    outputnode.output_TV_parameters : dictionary
         Parameters used for TV reconstruction
 
     Example

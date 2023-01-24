@@ -36,22 +36,22 @@ def create_input_stage(
 
     Parameters
     ----------
-    name : :str:
+    name : string
         name of workflow (default: input_stage)
-    p_bids_dir : :str:
+    p_bids_dir : string
             Path to the bids directory
-    p_sub_ses : :str:
+    p_sub_ses : string
             String containing subject-session information.
-    p_use_manual_masks : :bool:
+    p_use_manual_masks : boolean
         Whether manual masks are used
-    p_masks_desc : :str:
+    p_masks_desc : string
         BIDS description tag of masks to use (optional)
-    p_masks_derivatives_dir : :str:
+    p_masks_derivatives_dir : string
         Path to the directory of the manual masks.
-    p_skip_stacks_ordering : :bool:
+    p_skip_stacks_ordering : boolean
         Whether stacks ordering should be skipped. If true, uses the order
         provided in `p_stacks`.
-    p_stacks : :list: of :int:
+    p_stacks : list of integer
         List of stack to be used in the reconstruction. The specified order is
         kept if `skip_stacks_ordering` is True.
     p_do_srr_assessment : :obj:`bool`
@@ -59,11 +59,11 @@ def create_input_stage(
 
     Outputs
     -------
-    outputnode.t2ws_filtered : :list: of filenames
+    outputnode.t2ws_filtered : list of filenames
         Low-resolution T2w images
-    outputnode.masks_filtered : :list: of filenames
+    outputnode.masks_filtered : list of filenames
         Low-resolution T2w masks
-    outputnode.stacks_order : :list: of ids
+    outputnode.stacks_order : list of ids
         Order in which the stacks should be processed
     outputnode.report_image : filename
         Output PNG image for report

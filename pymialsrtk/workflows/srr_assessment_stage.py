@@ -30,37 +30,37 @@ def create_srr_assessment_stage(
 
     Parameters
     ----------
-    name : :str:
+    name : string
         Name of workflow
         (default: "sr_assessment_stage")
-    p_do_multi_parameters : :bool:
+    p_do_multi_parameters : boolean
         whether multiple SR are to be assessed with different TV parameters
         (default: `False`)
-    p_input_srtv_node : :str:
+    p_input_srtv_node : string
         when p_do_multi_parameters is set, name of the sourcenode
         from which metrics must be merged
-    p_openmp_number_of_cores : :int:
+    p_openmp_number_of_cores : integer
         number of threads possible for ants registration
         (default : 1)
 
     Inputs
     --------
-    input_reference_image : path
+    input_reference_image : pathlike object or string representing a file
         Path to the ground truth image against which the SR will be evaluated.
-    input_reference_mask : path
+    input_reference_mask : pathlike object or string representing a file
         Path to the mask of the ground truth image.
-    input_reference_labelmap : path
+    input_reference_labelmap : pathlike object or string representing a file
         Path to the labelmap (tissue segmentation) of the ground truth image.
-    input_sr_image : path
+    input_sr_image : pathlike object or string representing a file
         Path to the SR reconstructed image.
-    input_sdi_image : path
+    input_sdi_image : pathlike object or string representing a file
         Path to the SDI (interpolated image) used as input to the SR.
-    input_TV_parameters : :dict:
+    input_TV_parameters : dictionary
         Dictionary of parameters that were used for the TV reconstruction.
 
     Outputs
     --------
-    outputnode.output_metrics : list of :float:
+    outputnode.output_metrics : list of float
         List of output metrics
 
     Example

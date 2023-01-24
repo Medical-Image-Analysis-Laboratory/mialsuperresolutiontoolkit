@@ -25,35 +25,35 @@ def create_registration_stage(
 
     Parameters
     ----------
-    p_do_nlm_denoising : :bool:
+    p_do_nlm_denoising : boolean
         Enable non-local means denoising
         (default: `False`)
-    p_skip_svr : :bool:
+    p_skip_svr : boolean
         Skip slice-to-volume registration
         (default: `False`)
-    p_sub_ses : :str:
+    p_sub_ses : string
         String containing subject-session information.
-    name : :str:
+    name : string
         name of workflow
         (default: "registration_stage")
 
     Inputs
     ------
-    input_images : :list: of paths
+    input_images : list of items which are a pathlike object or string representing a file
         Input low-resolution T2w images
-    input_images_nlm : :list: of paths
+    input_images_nlm : list of items which are a pathlike object or string representing a file
         Input low-resolution denoised T2w images,
         Optional - only if `p_do_nlm_denoising = True`
-    input_masks : :list: of paths
+    input_masks : list of items which are a pathlike object or string representing a file
         Input mask images from the low-resolution T2w images
-    stacks_order : :list: of :int:
+    stacks_order : list of integer
         Order of stacks in the registration
 
     Outputs
     -------
-    output_sdi : path
+    output_sdi : pathlike object or string representing a file
         SDI image
-    output_tranforms : :list: of paths
+    output_tranforms : list of items which are a pathlike object or string representing a file
         Estimated transformation parameters
 
     Example
