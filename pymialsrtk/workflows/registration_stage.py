@@ -3,7 +3,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the various parts of preprocessing pipeline."""
+"""Module for the registration stage of the super-resolution reconstruction pipeline."""
 
 from nipype.pipeline import engine as pe
 

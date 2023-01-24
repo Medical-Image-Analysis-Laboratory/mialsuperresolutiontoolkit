@@ -4,7 +4,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the high-resolution reconstruction stage of the low-resolution labelmaps in the super-resolution reconstruction pipeline."""
+"""Module for the high-resolution reconstruction stage of low-resolution labelmaps in the super-resolution reconstruction pipeline."""
 
 from traits.api import *
 

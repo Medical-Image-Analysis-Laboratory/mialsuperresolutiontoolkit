@@ -2,7 +2,7 @@
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 # This software is distributed under the open-source license Modified BSD.
 
-"""Module for the reconstruction stage of the super-resolution reconstruction pipeline."""
+"""Module for the assessment of the super-resolution reconstruction quality with a reference."""
 
 from traits.api import *
 

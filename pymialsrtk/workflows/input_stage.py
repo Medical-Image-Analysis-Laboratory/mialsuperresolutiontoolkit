@@ -3,7 +3,7 @@
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Workflow for the management of the input of super-resolution reconstruction pipeline."""
+"""Workflow for the management of super-resolution reconstruction pipeline inputs."""
 
 import os
 import pkg_resources
