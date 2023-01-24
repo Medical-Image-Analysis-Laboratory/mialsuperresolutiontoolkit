@@ -1,4 +1,4 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory,
+# Copyright © 2016-2023 Medical Image Analysis Laboratory,
 # University Hospital Center and University of
 # Lausanne (UNIL-CHUV), Switzerland
 #

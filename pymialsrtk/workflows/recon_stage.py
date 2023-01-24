@@ -1,4 +1,4 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 # This software is distributed under the open-source license Modified BSD.
 
