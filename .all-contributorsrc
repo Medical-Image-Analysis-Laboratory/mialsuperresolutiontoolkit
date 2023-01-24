@@ -72,6 +72,20 @@
         "data",
         "fundingFinding"
       ]
+    },
+    {
+      "login": "t-sanchez",
+      "name": "Thomas Sanchez",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14288440?v=4",
+      "profile": "http://t-sanchez.github.io",
+      "contributions": [
+        "bug",
+        "code",
+        "doc",
+        "example",
+        "ideas",
+        "infra"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -79,5 +93,6 @@
   "projectOwner": "Medical-Image-Analysis-Laboratory",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "angular"
 }
