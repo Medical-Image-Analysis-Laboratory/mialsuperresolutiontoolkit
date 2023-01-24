@@ -28,7 +28,10 @@
         "example",
         "test",
         "code",
-        "doc"
+        "doc",
+        "design",
+        "ideas",
+        "review"
       ]
     },
     {
@@ -79,5 +82,6 @@
   "projectOwner": "Medical-Image-Analysis-Laboratory",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "angular"
 }
