@@ -12,10 +12,13 @@
       "profile": "https://github.com/sebastientourbier",
       "contributions": [
         "design",
-        "test",
         "code",
+        "infra",
+        "test",
+        "bug",
         "example",
         "doc",
+        "ideas",
         "review"
       ]
     },
@@ -25,10 +28,13 @@
       "avatar_url": "https://avatars2.githubusercontent.com/u/19345763?v=4",
       "profile": "https://github.com/pdedumast",
       "contributions": [
+        "design",
         "example",
         "test",
         "code",
-        "doc"
+        "doc",
+        "ideas",
+        "review"
       ]
     },
     {
@@ -40,7 +46,8 @@
         "example",
         "test",
         "code",
-        "doc"
+        "doc",
+        "ideas"
       ]
     },
     {
