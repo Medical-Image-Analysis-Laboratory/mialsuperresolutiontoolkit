@@ -10,11 +10,11 @@
       "BIDS",
       "bids-apps"
     ],
-    "publication_date": "2020-12-24",
+    "publication_date": "2023-01-31",
     "creators": [
       {
         "name": "Tourbier, Sebastien",
-        "affiliation": "Department of Radiology, Lausanne University Hospital (CHUV), Switzerland",
+        "affiliation": "Department of Clinical Neuroscience, Lausanne University Hospital (CHUV), Switzerland",
         "orcid": "0000-0002-4441-899X"
       },
       {
@@ -26,6 +26,16 @@
         "name": "Kebiri, Hamza",
         "affiliation": "Department of Radiology, Lausanne University Hospital (CHUV), Switzerland",
         "orcid": "0000-0001-7592-3166"
+      },
+      {
+        "name": "Sanchez, Thomas",
+        "affiliation": "Department of Radiology, Lausanne University Hospital (CHUV), Switzerland",
+        "orcid": "0000-0001-7592-3166"
+      },
+      {
+        "name": "Lajous, Helene",
+        "affiliation": "Department of Radiology, Lausanne University Hospital (CHUV), Switzerland",
+        "orcid": "0000-0001-7729-6274"
       },
       {
         "name": "Hagmann, Patric",
