@@ -1,4 +1,4 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -616,8 +616,7 @@ class MialsrtkTVSuperResolution(BaseInterface):
 
 
 class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the
-    MialsrtkSDIComputation interface."""
+    """Class used to represent inputs of the MialsrtkSDIComputation interface."""
 
     input_images = InputMultiPath(File(), desc="Input images", mandatory=True)
     input_masks = InputMultiPath(
@@ -644,17 +643,13 @@ class MialsrtkSDIComputationInputSpec(BaseInterfaceInputSpec):
 
 
 class MialsrtkSDIComputationOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the
-    MialsrtkSDIComputation interface."""
+    """Class used to represent outputs of the MialsrtkSDIComputation interface."""
 
     output_sdi = File(desc="Output scattered data interpolation image file")
 
 
 class MialsrtkSDIComputation(BaseInterface):
-    """Creates a high-resolution image
-    from a set of low resolution images and
-    their slice-by-slicemotion parameters.
-    """
+    """Creates a high-resolution image from a set of low resolution images and their slice-by-slicemotion parameters."""
 
     input_spec = MialsrtkSDIComputationInputSpec
     output_spec = MialsrtkSDIComputationOutputSpec
@@ -679,9 +674,7 @@ class MialsrtkSDIComputation(BaseInterface):
         return None
 
     def get_empty_ref_image(self, input_ref):
-        """Generate an empty reference image for
-        _run_interface
-        """
+        """Generate an empty reference image for `_run_interface`."""
         import SimpleITK as sitk
 
         reader = sitk.ImageFileReader()
@@ -701,7 +694,7 @@ class MialsrtkSDIComputation(BaseInterface):
         return out_path
 
     def _run_interface(self, runtime):
-
+        """Run the MialsrtkSDIComputation interface."""
         # Reference image must be empty
         empty_ref_image = self.get_empty_ref_image(self.inputs.input_reference)
         params = []

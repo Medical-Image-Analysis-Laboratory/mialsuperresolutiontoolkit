@@ -1,4 +1,4 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -21,7 +21,6 @@ from traits.api import *
 
 
 # Reorientation
-import SimpleITK as sitk
 import nsol.principal_component_analysis as pca
 from nipype.algorithms.metrics import Similarity
 
@@ -2028,7 +2027,7 @@ class BrainExtraction(BaseInterface):
 
 
 class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
-    """Class."""
+    """Class used to represent the inputs of the ReduceFieldOfView interface."""
 
     input_image = File(mandatory=True, desc="Input image filename")
     input_mask = File(mandatory=True, desc="Input mask filename")
@@ -2036,7 +2035,7 @@ class ReduceFieldOfViewInputSpec(BaseInterfaceInputSpec):
 
 
 class ReduceFieldOfViewOutputSpec(TraitedSpec):
-    """Class"""
+    """Class used to represent the outputs of the ReduceFieldOfView interface."""
 
     output_image = File(desc="Cropped image")
     output_mask = File(desc="Cropped mask")
@@ -2044,7 +2043,17 @@ class ReduceFieldOfViewOutputSpec(TraitedSpec):
 
 
 class ReduceFieldOfView(BaseInterface):
-    """Runs the"""
+    """Interface to reduce the Field-of-View.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import ReduceFieldOfView
+    >>> reduce_fov = ReduceFieldOfView()
+    >>> reduce_fov.inputs.input_image = 'sub-01_acq-haste_run-1_T2w.nii.gz'
+    >>> reduce_fov.inputs.input_mask = 'sub-01_acq-haste_run-1_T2w_mask.nii.gz'
+    >>> reduce_fov.run() # doctest: +SKIP
+
+    """
 
     input_spec = ReduceFieldOfViewInputSpec
     output_spec = ReduceFieldOfViewOutputSpec
@@ -2059,9 +2068,12 @@ class ReduceFieldOfView(BaseInterface):
         return None
 
     def _crop_image_and_mask(
-        self, in_image, in_mask, in_label, paddings_mm=[15, 15, 15]
+        self, in_image, in_mask, in_label, paddings_mm=None
     ):
         import SimpleITK as sitk
+
+        if paddings_mm is None:
+            paddings_mm = [15, 15, 15]
 
         reader = sitk.ImageFileReader()
 
@@ -2194,8 +2206,15 @@ class SplitLabelMapsOutputSpec(TraitedSpec):
 
 
 class SplitLabelMaps(BaseInterface):
-    """Split a multi-label labelmap
-    into one label map per label.
+    """Split a multi-label labelmap into one label map per label.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import SplitLabelMaps
+    >>> split_labels = SplitLabelMaps()
+    >>> split_labels.inputs.in_labelmap = 'sub-01_acq-haste_run-1_labels.nii.gz'
+    >>> split_labels.run() # doctest: +SKIP
+
     """
 
     input_spec = SplitLabelMapsInputSpec
@@ -2212,6 +2231,8 @@ class SplitLabelMaps(BaseInterface):
         return None
 
     def _extractlabelimage(self, in_labelmap):
+        import SimpleITK as sitk
+
         reader = sitk.ImageFileReader()
         writer = sitk.ImageFileWriter()
 
@@ -2263,7 +2284,16 @@ class ListsMergerOutputSpec(TraitedSpec):
 
 
 class ListsMerger(BaseInterface):
-    """Interface to merge list of paths or list of list of path"""
+    """Interface to merge list of paths or list of list of paths.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import ListsMerger
+    >>> merge_lists = ListsMerger()
+    >>> merge_lists.inputs.inputs = ["sub-01_acq-haste_run-1_labels_1.nii.gz", "sub-01_acq-haste_run-1_labels_2.nii.gz"]
+    >>> merge_lists.run() # doctest: +SKIP
+
+    """
 
     input_spec = ListsMergerInputSpec
     output_spec = ListsMergerOutputSpec
@@ -2313,8 +2343,16 @@ class ResampleImageOutputSpec(TraitedSpec):
 
 
 class ResampleImage(BaseInterface):
-    """Retrieve atlas of the same age and
-    resample it to subject's in-plane resolution
+    """Retrieve atlas of the same age and resample it to subject's in-plane resolution.
+
+    Examples
+    --------
+    >>> from pymialsrtk.interfaces.preprocess import ResampleImage
+    >>> resample_image = ResampleImage()
+    >>> resample_image.inputs.input_image = "sub-01_acq-haste_run-1_T2w.nii.gz"
+    >>> resample_image.inputs.input_reference = "STA30.nii.gz"
+    >>> resample_image.run() # doctest: +SKIP
+
     """
 
     input_spec = ResampleImageInputSpec
@@ -2381,16 +2419,14 @@ class ResampleImage(BaseInterface):
 
 
 class ComputeAlignmentToReferenceInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the
-    ComputeAlignmentToReference interface."""
+    """Class used to represent inputs of the ComputeAlignmentToReference interface."""
 
     input_image = File(mandatory=True, desc="Input image to realign")
     input_template = File(mandatory=True, desc="Input reference image")
 
 
 class ComputeAlignmentToReferenceOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the
-    ComputeAlignmentToReference interface."""
+    """Class used to represent outputs of the ComputeAlignmentToReference interface."""
 
     output_transform = File(
         mandatory=True, desc="Output 3D rigid tranformation file"
@@ -2412,7 +2448,11 @@ class ComputeAlignmentToReference(BaseInterface):
 
     Examples
     --------
-    >>>
+    >>> from pymialsrtk.interfaces.preprocess import ComputeAlignmentToReference
+    >>> align_to_ref = ComputeAlignmentToReference()
+    >>> align_to_ref.inputs.input_image = "sub-01_acq-haste_run-1_T2w.nii.gz"
+    >>> align_to_ref.inputs.input_template = "STA30.nii.gz"
+    >>> align_to_ref.run() # doctest: +SKIP
 
     """
 
@@ -2444,8 +2484,10 @@ class ComputeAlignmentToReference(BaseInterface):
 
     def _compute_pca(self, mask):
         def get_largest_connected_region_mask(mask_nda):
-            """This function is from:
-            https://github.com/gift-surg/NiftyMIC/blob/e62c5389dfa2bb367fb217b7060472978d3e7654/niftymic/utilities/template_stack_estimator.py#L123
+            """This function get the largest connected region mask.
+
+            It originates from https://github.com/gift-surg/NiftyMIC/blob/e62c5389dfa2bb367fb217b7060472978d3e7654/niftymic/utilities/template_stack_estimator.py#L123.
+
             """
             # get label for each connected component
             labels_nda = skimage.measure.label(mask_nda)
@@ -2567,8 +2609,7 @@ class ComputeAlignmentToReference(BaseInterface):
 
 
 class ApplyAlignmentTransformInputSpec(BaseInterfaceInputSpec):
-    """Class used to represent inputs of the
-    ApplyAlignmentTransform interface."""
+    """Class used to represent inputs of the ApplyAlignmentTransform interface."""
 
     input_image = File(mandatory=True, desc="Input image to realign")
     input_template = File(mandatory=True, desc="Input reference image")
@@ -2581,8 +2622,7 @@ class ApplyAlignmentTransformInputSpec(BaseInterfaceInputSpec):
 
 
 class ApplyAlignmentTransformOutputSpec(TraitedSpec):
-    """Class used to represent outputs of the
-    ApplyAlignmentTransform interface."""
+    """Class used to represent outputs of the ApplyAlignmentTransform interface."""
 
     output_image = File(mandatory=True, desc="Output reoriented image")
     output_mask = File(mandatory=False, desc="Output reoriented mask")
@@ -2593,7 +2633,13 @@ class ApplyAlignmentTransform(BaseInterface):
 
     Examples
     --------
-    >>>
+    >>> from pymialsrtk.interfaces.preprocess import ApplyAlignmentTransform
+    >>> align_img = ApplyAlignmentTransform()
+    >>> align_img.inputs.input_image = "sub-01_acq-haste_run-1_T2w.nii.gz"
+    >>> align_img.inputs.input_template = "STA30.nii.gz"
+    >>> align_img.inputs.input_mask = "sub-01_acq-haste_run-1_T2w_mask.nii.gz"
+    >>> align_img.inputs.input_transform = "sub-01_acq-haste_run-1_rigid.tfm"
+    >>> align_img.run() # doctest: +SKIP
 
     """
 
@@ -2620,6 +2666,8 @@ class ApplyAlignmentTransform(BaseInterface):
         return outputs
 
     def _reorient_image(self):
+        import SimpleITK as sitk
+
         reader = sitk.ImageFileReader()
         writer = sitk.ImageFileWriter()
 

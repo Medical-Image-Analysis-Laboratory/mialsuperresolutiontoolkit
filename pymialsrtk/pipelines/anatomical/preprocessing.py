@@ -1,4 +1,4 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
@@ -7,7 +7,6 @@
 
 import os
 
-from nipype.info import __version__ as __nipype_version__
 from nipype import config
 from nipype import logging as nipype_logging
 from nipype.pipeline import engine as pe
@@ -15,20 +14,15 @@ from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.utils as utils
 
 # Import the implemented interface from pymialsrtk
-import pymialsrtk.interfaces.reconstruction as reconstruction
 from pymialsrtk.workflows.input_stage import create_input_stage
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 from pymialsrtk.workflows.output_stage import create_preproc_output_stage
 from pymialsrtk.workflows.registration_stage import create_registration_stage
 from .abstract import AbstractAnatomicalPipeline
 
-# Get pymialsrtk version
-from pymialsrtk.info import __version__
-
 
 class PreprocessingPipeline(AbstractAnatomicalPipeline):
-    """Class used to represent the workflow of the
-    Preprocessing pipeline.
+    """Class used to represent the workflow of the Preprocessing pipeline.
 
     Attributes
     -----------
@@ -187,9 +181,10 @@ class PreprocessingPipeline(AbstractAnatomicalPipeline):
                 )
 
     def check_parameters_integrity(self, p_dict_custom_interfaces):
-        """Check whether the custom interfaces dictionary
-        contains only keys that are used in preprocessing,
-        and raises an exception if it doesn't.
+        """Check parameters integrity.
+
+        This checks whether the custom interfaces dictionary contains only keys
+        that are used in preprocessing, and raises an exception if it doesn't.
 
         Parameters
         ----------

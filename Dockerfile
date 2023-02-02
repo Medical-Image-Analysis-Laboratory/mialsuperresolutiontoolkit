@@ -68,8 +68,12 @@ WORKDIR /opt/mialsuperresolutiontoolkit/build
 # You can increase the number of cores used by make ("make -jN")
 # to speed up local build. However, make sure that it is
 # set back to make -j2 before pushing any change to GitHub.
-RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_OMP:BOOL=ON ../src \
-    && make -j6 && make install
+RUN cmake \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D USE_OMP:BOOL=ON ../src && \
+    make -j6 && \
+    make install
 
 ##############################################################
 # Python cache setup and creation of conda environment

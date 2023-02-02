@@ -1,10 +1,9 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the postprocessing stage of the super-resolution
-reconstruction pipeline."""
+"""Module for the postprocessing stage of the super-resolution reconstruction pipeline."""
 
 import numpy as np
 
@@ -18,10 +17,11 @@ from nipype.interfaces.io import DataGrabber
 
 
 def convert_ga(ga):
-    """Convert the gestational age to
-    integers between 21 and 38. This is in order to be
-    able to load the corresponding template using
+    """Convert the gestational age to integers between 21 and 38.
+
+    This is in order to be able to load the corresponding template using
     the spatio-temporal atlas of Gholipour et al.
+
     """
     ga = int(np.round(ga))
     if ga > 38:
@@ -39,37 +39,41 @@ def create_postproc_stage(
     p_verbose=False,
     name="postproc_stage",
 ):
-    """Create a SR preprocessing workflow
+    """Create a SR preprocessing workflow.
+
     Parameters
     ----------
-        name : :str:
-            name of workflow (default: preproc_stage)
-        p_ga: :int:
-            Subject's gestational age in weeks
-        p_do_anat_orientation: :bool:
-            Whether the alignement to template should be performed
-        p_do_reconstruct_labels: :bool:
-            Whether the reconstruction of LR labelmaps should be performed
-        p_verbose: :bool:
-            Whether verbosity is enabled.
+    name : string
+        Name of workflow (default: "preproc_stage")
+    p_ga : integer
+        Subject's gestational age in weeks
+    p_do_anat_orientation : boolean
+        Whether the alignement to template should be performed
+    p_do_reconstruct_labels : boolean
+        Whether the reconstruction of LR labelmaps should be performed
+    p_verbose : boolean
+        Whether verbosity is enabled
+
     Inputs
     ------
-        input_sdi:
-            Input SDI image (filename)
-        input_image:
-            Input T2w image (filename)
-        input_mask:
-            Input mask image (filename)
-        input_labelmap: (optional)
-            Input labelmap image (filename)
+    input_sdi : pathlike object or string representing a file
+        Input SDI image
+    input_image : pathlike object or string representing a file
+        Input T2w image
+    input_mask : pathlike object or string representing a file
+        Input mask image
+    input_labelmap : pathlike object or string representing a file
+        Input labelmap image (optional)
+
     Outputs
     -------
-        output_image :
-            Postprocessed image (filename)
-        output_mask :
-            Postprocessed mask (filename)
-        output_labelmap :
-            Postprocessed labelmap (filename)
+    output_image : pathlike object or string representing a file
+        Postprocessed image
+    output_mask : pathlike object or string representing a file
+        Postprocessed mask
+    output_labelmap : pathlike object or string representing a file
+        Postprocessed labelmap
+
     """
 
     postproc_stage = pe.Workflow(name=name)

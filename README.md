@@ -1,7 +1,7 @@
 # ![MIALSRTK logo](https://raw.githubusercontent.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/dev-pgd-hk/documentation/images/mialsrtk-logo.png)
 ---
 
-Copyright © 2016-2020 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
+Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland 
 
 This software is distributed under the open-source BSD 3-Clause License. See [LICENSE](LICENSE.txt) file for details.
 
@@ -47,14 +47,16 @@ All these design considerations allow us not only to (1) represent the entire pr
     $ mialsuperresolutiontoolkit_[docker|singularity] -h
     
     usage: mialsuperresolutiontoolkit_[docker|singularity] [-h]
+                                         [--run_type {sr,preprocessing}]
                                          [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
                                          [--param_file PARAM_FILE]
                                          [--openmp_nb_of_cores OPENMP_NB_OF_CORES]
                                          [--nipype_nb_of_cores NIPYPE_NB_OF_CORES]
                                          [--memory MEMORY]
                                          [--masks_derivatives_dir MASKS_DERIVATIVES_DIR]
-                                         [-v]
-                                         [--codecarbon_output_dir CODECARBON_OUTPUT_DIR]
+                                         [--labels_derivatives_dir LABELS_DERIVATIVES_DIR]
+                                         [--all_outputs] [-v] [--verbose]
+                                         [--track_carbon_footprint]
                                          bids_dir output_dir {participant}
 
     Argument parser of the MIALSRTK BIDS App Python wrapper
@@ -71,6 +73,10 @@ All these design considerations allow us not only to (1) represent the entire pr
     
     optional arguments:
       -h, --help            show this help message and exit
+      --run_type {sr,preprocessing}
+                            Type of pipeline that is run. Can choose between
+                            running the super-resolution pipeline (`sr`) or only
+                            preprocessing (`preprocessing`).
       --participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]
                             The label(s) of the participant(s) that should be
                             analyzed. The label corresponds to
@@ -101,12 +107,18 @@ All these design considerations allow us not only to (1) represent the entire pr
       --masks_derivatives_dir MASKS_DERIVATIVES_DIR
                             Use manual brain masks found in
                             ``<output_dir>/<masks_derivatives_dir>/`` directory
-      --codecarbon_output_dir CODECARBON_OUTPUT_DIR
-                            Directory path in which `codecarbon` saves a CSV file
-                            called `emissions.csv` reporting carbon footprint
-                            details of the overall run (Defaults to user’s home
-                            directory)
+      --labels_derivatives_dir LABELS_DERIVATIVES_DIR
+                            Use low-resolution labelmaps found in
+                            ``<output_dir>/<labels_derivatives_dir>/`` directory.
+      --all_outputs         Whether or not all outputs should be kept(e.g.
+                            preprocessed LR images)
       -v, --version         show program's version number and exit
+      --verbose             Verbose mode
+      --track_carbon_footprint
+                            Track carbon footprint with `codecarbon
+                            <https://codecarbon.io/>`_ and save results in a CSV
+                            file called ``emissions.csv`` in the
+                            ``<bids_dir>/code`` directory.
 
 ## Credits 
 
@@ -114,14 +126,17 @@ All these design considerations allow us not only to (1) represent the entire pr
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tr>
-    <td align="center"><a href="https://github.com/sebastientourbier"><img src="https://avatars3.githubusercontent.com/u/22279770?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Sébastien Tourbier</b></sub></a><br /><a href="#design-sebastientourbier" title="Design">🎨</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Code">💻</a> <a href="#example-sebastientourbier" title="Examples">💡</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Documentation">📖</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pulls?q=is%3Apr+reviewed-by%3Asebastientourbier" title="Reviewed Pull Requests">👀</a></td>
-    <td align="center"><a href="https://github.com/pdedumast"><img src="https://avatars2.githubusercontent.com/u/19345763?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Priscille de Dumast</b></sub></a><br /><a href="#example-pdedumast" title="Examples">💡</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=pdedumast" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=pdedumast" title="Code">💻</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=pdedumast" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/hamzake"><img src="https://avatars2.githubusercontent.com/u/27707790?v=4?s=100" width="100px;" alt=""/><br /><sub><b>hamzake</b></sub></a><br /><a href="#example-hamzake" title="Examples">💡</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=hamzake" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=hamzake" title="Code">💻</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=hamzake" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/helenelajous"><img src="https://avatars.githubusercontent.com/u/58977568?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Hélène Lajous</b></sub></a><br /><a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues?q=author%3Ahelenelajous" title="Bug reports">🐛</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=helenelajous" title="Tests">⚠️</a></td>
-    <td align="center"><a href="https://wp.unil.ch/connectomics"><img src="https://avatars.githubusercontent.com/u/411192?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Patric Hagmann</b></sub></a><br /><a href="#data-pahagman" title="Data">🔣</a> <a href="#fundingFinding-pahagman" title="Funding Finding">🔍</a></td>
-    <td align="center"><a href="https://github.com/meribach"><img src="https://avatars3.githubusercontent.com/u/2786897?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Meritxell Bach</b></sub></a><br /><a href="#fundingFinding-meribach" title="Funding Finding">🔍</a></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/sebastientourbier"><img src="https://avatars3.githubusercontent.com/u/22279770?v=4?s=100" width="100px;" alt="Sébastien Tourbier"/><br /><sub><b>Sébastien Tourbier</b></sub></a><br /><a href="#design-sebastientourbier" title="Design">🎨</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Code">💻</a> <a href="#infra-sebastientourbier" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues?q=author%3Asebastientourbier" title="Bug reports">🐛</a> <a href="#example-sebastientourbier" title="Examples">💡</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=sebastientourbier" title="Documentation">📖</a> <a href="#ideas-sebastientourbier" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pulls?q=is%3Apr+reviewed-by%3Asebastientourbier" title="Reviewed Pull Requests">👀</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/pdedumast"><img src="https://avatars2.githubusercontent.com/u/19345763?v=4?s=100" width="100px;" alt="Priscille de Dumast"/><br /><sub><b>Priscille de Dumast</b></sub></a><br /><a href="#design-pdedumast" title="Design">🎨</a> <a href="#example-pdedumast" title="Examples">💡</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=pdedumast" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=pdedumast" title="Code">💻</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=pdedumast" title="Documentation">📖</a> <a href="#ideas-pdedumast" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pulls?q=is%3Apr+reviewed-by%3Apdedumast" title="Reviewed Pull Requests">👀</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/hamzake"><img src="https://avatars2.githubusercontent.com/u/27707790?v=4?s=100" width="100px;" alt="hamzake"/><br /><sub><b>hamzake</b></sub></a><br /><a href="#example-hamzake" title="Examples">💡</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=hamzake" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=hamzake" title="Code">💻</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=hamzake" title="Documentation">📖</a> <a href="#ideas-hamzake" title="Ideas, Planning, & Feedback">🤔</a></td>
+       <td align="center" valign="top" width="14.28%"><a href="http://t-sanchez.github.io"><img src="https://avatars.githubusercontent.com/u/14288440?v=4?s=100" width="100px;" alt="Thomas Sanchez"/><br /><sub><b>Thomas Sanchez</b></sub></a><br /><a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues?q=author%3At-sanchez" title="Bug reports">🐛</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=t-sanchez" title="Code">💻</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=t-sanchez" title="Documentation">📖</a> <a href="#example-t-sanchez" title="Examples">💡</a> <a href="#ideas-t-sanchez" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-t-sanchez" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pulls?q=is%3Apr+reviewed-by%3At-sanchez" title="Reviewed Pull Requests">👀</a></td>
+       <td align="center" valign="top" width="14.28%"><a href="https://github.com/helenelajous"><img src="https://avatars.githubusercontent.com/u/58977568?v=4?s=100" width="100px;" alt="Hélène Lajous"/><br /><sub><b>Hélène Lajous</b></sub></a><br /><a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/issues?q=author%3Ahelenelajous" title="Bug reports">🐛</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/commits?author=helenelajous" title="Tests">⚠️</a> <a href="https://github.com/Medical-Image-Analysis-Laboratory/mialsuperresolutiontoolkit/pulls?q=is%3Apr+reviewed-by%3Ahelenelajous" title="Reviewed Pull Requests">👀</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://wp.unil.ch/connectomics"><img src="https://avatars.githubusercontent.com/u/411192?v=4?s=100" width="100px;" alt="Patric Hagmann"/><br /><sub><b>Patric Hagmann</b></sub></a><br /><a href="#data-pahagman" title="Data">🔣</a> <a href="#fundingFinding-pahagman" title="Funding Finding">🔍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/meribach"><img src="https://avatars3.githubusercontent.com/u/2786897?v=4?s=100" width="100px;" alt="Meritxell Bach"/><br /><sub><b>Meritxell Bach</b></sub></a><br /><a href="#fundingFinding-meribach" title="Funding Finding">🔍</a></td>
+    </tr>
+  </tbody>
 </table>
 
 <!-- markdownlint-restore -->

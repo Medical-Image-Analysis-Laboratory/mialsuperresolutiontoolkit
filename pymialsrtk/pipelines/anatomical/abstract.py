@@ -1,4 +1,4 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
@@ -191,8 +191,7 @@ class AbstractAnatomicalPipeline:
         """
 
     def run(self, memory=None, logger=None):
-        """Execute the workflow of the super-resolution
-        reconstruction pipeline.
+        """Execute the workflow of the super-resolution reconstruction pipeline.
 
         Nipype execution engine will take care of the management and
         execution of all processing steps involved in the super-resolution

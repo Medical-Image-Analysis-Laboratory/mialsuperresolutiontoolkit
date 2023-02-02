@@ -1,4 +1,4 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
@@ -36,7 +36,7 @@ def get_parser():
         "--run_type",
         help="Type of pipeline that is run. Can choose between "
              "running the super-resolution pipeline (`sr`) "
-             "or only preprocesing (`preprocessing`).",
+             "or only preprocessing (`preprocessing`).",
         choices=["sr", "preprocessing"],
         default="sr"
     )
