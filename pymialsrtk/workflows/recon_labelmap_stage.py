@@ -1,53 +1,81 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory,
+# Copyright © 2016-2023 Medical Image Analysis Laboratory,
 # University Hospital Center and University of Lausanne (UNIL-CHUV),
 # Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the high-resolution reconstruction stage
-of the low-resolution labelmaps
-in the super-resolution reconstruction pipeline."""
+"""Module for the high-resolution reconstruction stage of low-resolution labelmaps in the super-resolution reconstruction pipeline."""
 
 from traits.api import *
 
 import pymialsrtk.interfaces.preprocess as preprocess
 import pymialsrtk.interfaces.postprocess as postprocess
 import pymialsrtk.interfaces.reconstruction as reconstruction
-import pymialsrtk.interfaces.utils as utils
 
 from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as util
 
 
 def create_recon_labelmap_stage(
-    p_sub_ses, p_verbose, name="recon_labels_stage"
+    p_sub_ses, p_verbose=False, name="recon_labels_stage"
 ):
-    """Create a SR reconstruction workflow
-    for tissue label maps.
+    """Create a SR reconstruction workflow for tissue label maps.
+
     Parameters
     ----------
-        p_sub_ses:
-        p_verbose:
-        name : name of workflow (default: recon_labels_stage)
+    p_sub_ses : string
+        String containing subject-session information for output formatting
+    p_verbose : boolean
+        Whether verbosity should be enabled
+        (default: `False`)
+    name : string
+        Name of workflow
+        (default: "recon_labels_stage")
+
     Inputs
     ------
-        input_labels :
-            Input LR label maps (list of filenames)
-        input_masks :
-            Input mask images (list of filenames)
-        input_transforms :
-            Input tranforms (list of filenames)
-        input_reference :
-            Input HR reference image (filename)
-        label_ids :
-            Label IDs to reconstruct (list of integer)
-        stacks_order :
-            Order of stacks in the reconstruction
-            (list of integer)
+    input_labels : list of items which are a pathlike object or string representing a file
+        Input LR label maps
+    input_masks : list of items which are a pathlike object or string representing a file
+        Input mask images
+    input_transforms : list of items which are a pathlike object or string representing a file
+        Input tranforms
+    input_reference : pathlike object or string representing a file
+        Input HR reference image
+    label_ids : list of integer
+        Label IDs to reconstruct
+    stacks_order : list of integer
+        Order of stacks in the reconstruction
+
     Outputs
     -------
-        output_labelmap :
-            HR labelmap (filename)
+    output_labelmap : pathlike object or string representing a file
+        HR labelmap
+
+    Example
+    -------
+    >>> from pymialsrtk.pipelines.workflows import recon_labelmap_stage as rec_label
+    >>> recon_labels_stage = rec_label.create_recon_labelmap_stage(
+            p_sub_ses=p_sub_ses,
+            p_verbose=p_verbose
+        )
+    >>> recon_labels_stage.inputs.input_labels = [
+            'sub-01_run-1_labels.nii.gz',
+            'sub-01_run-2_labels.nii.gz'
+        ]
+    >>> recon_labels_stage.inputs.input_masks = [
+            'sub-01_run-1_T2w.nii_mask.gz',
+            'sub-01_run-2_T2w.nii_mask.gz'
+        ]
+    >>> recon_labels_stage.inputs.input_transforms = [
+            'sub-01_run-1_transforms.txt',
+            'sub-01_run-2_transforms.txt'
+        ]
+    >>> recon_labels_stage.inputs.input_reference = 'sub-01_desc-GT_T2w.nii.gz'
+    >>> recon_labels_stage.inputs.label_ids = 'sub-01_desc-GT_T2w.nii.gz'
+    >>> recon_labels_stage.inputs.stacks_order = [2,1]
+    >>> recon_labels_stage.run()  # doctest: +SKIP
+
     """
 
     recon_labels_stage = pe.Workflow(name=name)

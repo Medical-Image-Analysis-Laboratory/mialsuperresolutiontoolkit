@@ -1,12 +1,10 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory,
+# Copyright © 2016-2023 Medical Image Analysis Laboratory,
 # University Hospital Center and University of
 # Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the preprocessing stage of the super-resolution
-reconstruction pipeline.
-"""
+"""Module for the preprocessing stage of the super-resolution reconstruction pipeline."""
 
 from traits.api import *
 from nipype.interfaces import utility as util
@@ -22,37 +20,44 @@ def create_preproc_stage(
     p_verbose=False,
     name="preproc_stage",
 ):
-    """Create a SR preprocessing workflow
+    """Create a SR preprocessing workflow.
+
     Parameters
     ----------
-        p_do_nlm_denoising :
-            Whether to proceed to non-local mean denoising
-        p_do_reconstruct_labels :
-            Whether we are also reconstruction label maps.
-            (default False)
-        p_verbose :
-            Whether verbosity should be enabled (default False)
-        name :
-            name of workflow (default: preproc_stage)
+    p_do_nlm_denoising : boolean
+        Whether to proceed to non-local mean denoising
+        (default: `False`)
+    p_do_reconstruct_labels : boolean
+        Whether we are also reconstruction label maps.
+        (default: `False`)
+    p_verbose : boolean
+        Whether verbosity should be enabled
+        (default False)
+    name : string
+        name of workflow
+        (default: "preproc_stage")
+
     Inputs
     ------
-        input_images :
-            Input T2w images (list of filenames)
-        input_masks :
-            Input mask images (list of filenames)
+    input_images : list of items which are a pathlike object or string representing a file
+        Input T2w images
+    input_masks : list of items which are a pathlike object or string representing a file
+        Input mask images
+
     Outputs
     -------
-        output_images :
-            Processed images (list of filenames)
-        output_masks :
-            Processed images (list of filenames)
-        output_images_nlm :
-            Processed images with NLM denoising,
-            if p_do_nlm_denoising was set (list of filenames)
+    output_images : list of items which are a pathlike object or string representing a file
+        Processed images
+    output_masks : list of items which are a pathlike object or string representing a file
+        Processed images
+    output_images_nlm : list of items which are a pathlike object or string representing a file
+        Processed images with NLM denoising,
+        required if `p_do_nlm_denoising = True`
 
     Example
     -------
-    >>> preproc_stage = create_preproc_stage(p_do_nlm_denoising=False)
+    >>> from pymialsrtk.pipelines.workflows import preproc_stage as preproc
+    >>> preproc_stage = preproc.create_preproc_stage(p_do_nlm_denoising=False)
     >>> preproc_stage.inputs.inputnode.input_images =
             ['sub-01_run-1_T2w.nii.gz',
              'sub-01_run-2_T2w.nii.gz']
@@ -60,7 +65,8 @@ def create_preproc_stage(
             ['sub-01_run-1_T2w_mask.nii.gz',
              'sub-01_run-2_T2w_mask.nii.gz']
     >>> preproc_stage.inputs.inputnode.p_do_nlm_denoising = 'mask.nii'
-    >>> preproc_stage.run() # doctest: +SKIP
+    >>> preproc_stage.run()  # doctest: +SKIP
+
     """
 
     preproc_stage = pe.Workflow(name=name)

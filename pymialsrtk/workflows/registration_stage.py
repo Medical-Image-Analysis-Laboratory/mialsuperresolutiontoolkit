@@ -1,9 +1,9 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Module for the various parts of workflow pipeline."""
+"""Module for the registration stage of the super-resolution reconstruction pipeline."""
 
 from nipype.pipeline import engine as pe
 
@@ -11,7 +11,6 @@ from nipype.pipeline import engine as pe
 import pymialsrtk.interfaces.reconstruction as reconstruction
 
 # Get pymialsrtk version
-from pymialsrtk.info import __version__
 from nipype.interfaces import utility as util
 
 
@@ -22,42 +21,58 @@ def create_registration_stage(
     p_verbose=False,
     name="registration_stage",
 ):
-    """Create a a registration workflow, used as an optional stage in the
-    preprocessing only pipeline.
+    """Create a a registration workflow, used as an optional stage in the preprocessing only pipeline.
 
     Parameters
     ----------
-        p_do_nlm_denoising : :obj:`bool`
-            Enable non-local means denoising (default: False)
-        p_skip_svr : :obj:`bool`
-            Skip slice-to-volume registration (default: False)
-        p_sub_ses : :obj:`str`
-            String containing subject-session information.
-        name : :obj:`str`
-            name of workflow (default: registration_stage)
+    p_do_nlm_denoising : boolean
+        Enable non-local means denoising
+        (default: `False`)
+    p_skip_svr : boolean
+        Skip slice-to-volume registration
+        (default: `False`)
+    p_sub_ses : string
+        String containing subject-session information.
+    name : string
+        name of workflow
+        (default: "registration_stage")
 
     Inputs
     ------
-        input_images :
-            Input low-resolution T2w images (list of filenames)
-        input_images_nlm :
-            Input low-resolution denoised T2w images (list of filenames),
-            Optional - only if p_do_nlm_denoising = True
-        input_masks :
-            Input mask images from the low-resolution T2w images
-            (list of filenames)
-        stacks_order :
-            Order of stacks in the
-            registration (list of integer)
+    input_images : list of items which are a pathlike object or string representing a file
+        Input low-resolution T2w images
+    input_images_nlm : list of items which are a pathlike object or string representing a file
+        Input low-resolution denoised T2w images,
+        Optional - only if `p_do_nlm_denoising = True`
+    input_masks : list of items which are a pathlike object or string representing a file
+        Input mask images from the low-resolution T2w images
+    stacks_order : list of integer
+        Order of stacks in the registration
 
     Outputs
     -------
-        output_sdi :
-            SDI image (filename)
-        output_tranforms :
-            Transfmation estimated parameters (list of filenames)
+    output_sdi : pathlike object or string representing a file
+        SDI image
+    output_tranforms : list of items which are a pathlike object or string representing a file
+        Estimated transformation parameters
 
-    # doctest: +SKIP
+    Example
+    -------
+    >>> from pymialsrtk.pipelines.workflows import registration_stage as reg
+    >>> registration_stage = reg.create_registration_stage(
+            p_sub_ses=p_sub_ses,
+        )
+    >>> registration_stage.inputs.input_images = [
+            'sub-01_run-1_T2w.nii.gz',
+            'sub-01_run-2_T2w.nii.gz'
+        ]
+    >>> registration_stage.inputs.input_masks = [
+            'sub-01_run-1_T2w.nii_mask.gz',
+            'sub-01_run-2_T2w.nii_mask.gz'
+        ]
+    >>> registration_stage.inputs.stacks_order = [2,1]
+    >>> registration_stage.run()  # doctest: +SKIP
+
     """
 
     registration_stage = pe.Workflow(name=name)

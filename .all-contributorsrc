@@ -12,10 +12,13 @@
       "profile": "https://github.com/sebastientourbier",
       "contributions": [
         "design",
-        "test",
         "code",
+        "infra",
+        "test",
+        "bug",
         "example",
         "doc",
+        "ideas",
         "review"
       ]
     },
@@ -25,10 +28,13 @@
       "avatar_url": "https://avatars2.githubusercontent.com/u/19345763?v=4",
       "profile": "https://github.com/pdedumast",
       "contributions": [
+        "design",
         "example",
         "test",
         "code",
-        "doc"
+        "doc",
+        "ideas",
+        "review"
       ]
     },
     {
@@ -40,16 +46,23 @@
         "example",
         "test",
         "code",
-        "doc"
+        "doc",
+        "ideas"
       ]
     },
     {
-      "login": "meribach",
-      "name": "Meritxell Bach",
-      "avatar_url": "https://avatars3.githubusercontent.com/u/2786897?v=4",
-      "profile": "https://github.com/meribach",
+      "login": "t-sanchez",
+      "name": "Thomas Sanchez",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14288440?v=4",
+      "profile": "http://t-sanchez.github.io",
       "contributions": [
-        "fundingFinding"
+        "bug",
+        "code",
+        "doc",
+        "example",
+        "ideas",
+        "infra",
+        "review"
       ]
     },
     {
@@ -72,6 +85,15 @@
         "data",
         "fundingFinding"
       ]
+    },
+    {
+      "login": "meribach",
+      "name": "Meritxell Bach",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/2786897?v=4",
+      "profile": "https://github.com/meribach",
+      "contributions": [
+        "fundingFinding"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -79,5 +101,6 @@
   "projectOwner": "Medical-Image-Analysis-Laboratory",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "angular"
 }

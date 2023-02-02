@@ -1,9 +1,8 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 # This software is distributed under the open-source license Modified BSD.
 
-"""Module for the reconstruction stage of the super-resolution
-reconstruction pipeline."""
+"""Module for the reconstruction stage of the super-resolution reconstruction pipeline."""
 
 from traits.api import *
 
@@ -29,61 +28,74 @@ def create_recon_stage(
     p_verbose=False,
     name="recon_stage",
 ):
-    """Create a super-resolution reconstruction workflow
+    """Create a super-resolution reconstruction workflow.
+
     Parameters
     ----------
-        p_paramTV : `obj`:dict:
-            Dictionary of TV parameters
-        p_use_manual_masks :
-            Whether masks were done manually.
-        p_do_nlm_denoising :
-            Whether to proceed to non-local mean denoising.
-            (default False)
-        p_do_multi_parameters :
-        p_do_reconstruct_labels :
-            Whether we are also reconstruction label maps.
-            (default False)
-        p_do_refine_hr_mask :
-            Whether to do high-resolution mask refinement.
-            (default False)
-        p_skip_svr :
-            Whether slice-to-volume registration (SVR) should
-            be skipped. (default False)
-        p_sub_ses :
-            String describing subject-session information
-            (default '')
-        p_verbose :
-            Whether verbosity should be enabled (default False)
-        name : name of workflow (default: recon_stage)
+    p_paramTV : dictionary
+        Dictionary of TV parameters
+    p_use_manual_masks : boolean
+        Whether masks were done manually.
+    p_do_nlm_denoising : boolean
+        Whether to proceed to non-local mean denoising.
+        (default: `False`)
+    p_do_multi_parameters : boolean
+        Perform super-resolution reconstruction with
+        a set of multiple parameters.
+        (default: `False`)
+    p_do_reconstruct_labels : boolean
+        Whether we are also reconstruction label maps.
+        (default: `False`)
+    p_do_refine_hr_mask : boolean
+        Whether to do high-resolution mask refinement.
+        (default: `False`)
+    p_skip_svr : boolean
+        Whether slice-to-volume registration (SVR) should
+        be skipped.
+        (default: `False`)
+    p_sub_ses : string
+        String describing subject-session information
+        (default: '')
+    p_verbose : boolean
+        Whether verbosity should be enabled
+        (default: `False`)
+    name : string
+        Name of workflow
+        (default: "recon_stage")
+
     Inputs
     ----------
-        input_images :
-            Input T2w images (list of filenames)
-        input_images_nlm :
-            Input T2w images (list of filenames),
-            if p_do_nlm_denoising was set (list of filenames)
-        input_masks :
-            Input mask images (list of filenames)
-        stacks_order :
-            Order of stacks in the reconstruction
-            (list of integer)
+    input_images : list of items which are a pathlike object or string representing a file
+        Input T2w images
+    input_images_nlm : list of items which are a pathlike object or string representing a file
+        Input T2w images,
+        required if `p_do_nlm_denoising=True`
+    input_masks : list of items which are a pathlike object or string representing a file
+        Input mask images
+    stacks_order : list of integer
+        Order of stacks in the reconstruction
+
     Outputs
     ----------
-        output_sr :
-            SR reconstructed image (filename)
-        output_sdi :
-            SDI image (filename)
-        output_hr_mask :
-            SRR mask (filename)
-        output_tranforms :
-            Transfmation estimated parameters
-            (list of filenames)
-        outputnode.output_json_path
-        outputnode.output_sr_png
-        outputnode.output_TV_parameters
+    output_sr : pathlike object or string representing a file
+        SR reconstructed image
+    output_sdi : pathlike object or string representing a file
+        SDI image
+    output_hr_mask : pathlike object or string representing a file
+        SRR mask
+    output_tranforms : list of items which are a pathlike object or string representing a file
+        Estimated transformation parameters
+    outputnode.output_json_path : pathlike object or string representing a file
+        Path to the json sidecar of the SR reconstruction
+    outputnode.output_sr_png : pathlike object or string representing a file
+        Path to the PNG of the SR reconstruction
+    outputnode.output_TV_parameters : dictionary
+        Parameters used for TV reconstruction
+
     Example
     -------
-    >>> recon_stage = create_preproc_stage(
+    >>> from pymialsrtk.pipelines.workflows import recon_stage as rec
+    >>> recon_stage = rec.create_preproc_stage(
             p_paramTV,
             p_use_manual_masks,
             p_do_nlm_denoising=False)
@@ -91,8 +103,8 @@ def create_recon_stage(
             ['sub-01_run-1_T2w.nii.gz', 'sub-01_run-2_T2w.nii.gz']
     >>> recon_stage.inputs.inputnode.input_masks =
             ['sub-01_run-1_T2w_mask.nii.gz', 'sub-01_run-2_T2w_mask.nii.gz']
-    >>> recon_stage.inputs.inputnode.p_do_nlm_denoising = 'mask.nii'
-    >>> recon_stage.run() # doctest: +SKIP
+    >>> recon_stage.inputs.stacks_order = [2,1]
+    >>> recon_stage.run()  # doctest: +SKIP
     """
 
     recon_stage = pe.Workflow(name=name)

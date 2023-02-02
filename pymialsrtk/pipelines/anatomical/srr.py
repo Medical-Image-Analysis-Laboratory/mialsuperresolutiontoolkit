@@ -1,18 +1,15 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
 """Module for the super-resolution reconstruction pipeline."""
 
 import os
-import pymialsrtk.interfaces.utils as utils
-from nipype.info import __version__ as __nipype_version__
 from nipype import config
 from nipype import logging as nipype_logging
 from nipype.pipeline import engine as pe
 
 # Import the implemented interface from pymialsrtk
-import pymialsrtk.interfaces.reconstruction as reconstruction
 import pymialsrtk.workflows.preproc_stage as preproc_stage
 import pymialsrtk.workflows.postproc_stage as postproc_stage
 import pymialsrtk.workflows.srr_assessment_stage as srr_assment_stage
@@ -24,8 +21,7 @@ from .abstract import AbstractAnatomicalPipeline
 
 
 class SRReconPipeline(AbstractAnatomicalPipeline):
-    """Class used to represent the workflow of the Super-Resolution
-    reconstruction pipeline.
+    """Class used to represent the workflow of the Super-Resolution reconstruction pipeline.
 
     Attributes
     -----------
@@ -677,12 +673,14 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
                 "inputnode.motion_tsv",
             )
 
-    def run(self, memory=None):
-        iflogger = nipype_logging.getLogger("nipype.interface")
-        res = super().run(memory, iflogger)
+    def run(self, memory=None, logger=None):
+        # Use nipype.interface logger to print some information messages
+        if logger:
+            iflogger = logger
+        else:
+            iflogger = nipype_logging.getLogger("nipype.interface")
 
-        # if not self.m_do_multi_parameters:
-        #    iflogger.info("**** Super-resolution HTML report creation ****")
-        #    self.create_subject_report()
+        # Run the pipeline
+        res = super().run(memory, iflogger)
 
         return res

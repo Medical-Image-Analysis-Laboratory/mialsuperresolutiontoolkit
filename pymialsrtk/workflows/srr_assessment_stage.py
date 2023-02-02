@@ -1,9 +1,8 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 # This software is distributed under the open-source license Modified BSD.
 
-"""Module for the reconstruction stage of the super-resolution
-reconstruction pipeline."""
+"""Module for the assessment of the super-resolution reconstruction quality with a reference."""
 
 from traits.api import *
 
@@ -27,34 +26,66 @@ def create_srr_assessment_stage(
     p_openmp_number_of_cores=1,
     name="srr_assessment_stage",
 ):
-    """Create an assessment workflow to compare
-    a SR-reconstructed image and a reference target.
+    """Create an assessment workflow to compare a SR-reconstructed image and a reference target.
 
     Parameters
     ----------
-    ::
-        name : name of workflow (default: sr_assessment_stage)
-        p_do_multi_parameters : boolean
-            whether multiple SR are to be assessed
-            with different TV parameters(default: False)
-        p_input_srtv_node : string
-            when p_do_multi_parameters is set, name of the sourcenode
-            from which metrics must be merged
-        p_openmp_number_of_cores : integer
-            number of threads possible
-            for ants registration (default : 1)
+    name : string
+        Name of workflow
+        (default: "sr_assessment_stage")
+    p_do_multi_parameters : boolean
+        whether multiple SR are to be assessed with different TV parameters
+        (default: `False`)
+    p_input_srtv_node : string
+        when p_do_multi_parameters is set, name of the sourcenode
+        from which metrics must be merged
+    p_openmp_number_of_cores : integer
+        number of threads possible for ants registration
+        (default : 1)
 
-    Inputs::
-        input_reference_image
-        input_reference_mask
-        input_reference_labelmap
-        input_sr_image
-        input_sdi_image
-        input_TV_parameters
-    Outputs::
-        outputnode.output_metrics
+    Inputs
+    --------
+    input_reference_image : pathlike object or string representing a file
+        Path to the ground truth image against which the SR will be evaluated.
+    input_reference_mask : pathlike object or string representing a file
+        Path to the mask of the ground truth image.
+    input_reference_labelmap : pathlike object or string representing a file
+        Path to the labelmap (tissue segmentation) of the ground truth image.
+    input_sr_image : pathlike object or string representing a file
+        Path to the SR reconstructed image.
+    input_sdi_image : pathlike object or string representing a file
+        Path to the SDI (interpolated image) used as input to the SR.
+    input_TV_parameters : dictionary
+        Dictionary of parameters that were used for the TV reconstruction.
+
+    Outputs
+    --------
+    outputnode.output_metrics : list of float
+        List of output metrics
+
     Example
     -------
+    >>> from pymialsrtk.pipelines.workflows import srr_assessment_stage as srr_assessment
+    >>> srr_eval = srr_assessment.create_srr_assessment_stage()
+    >>> srr_eval.inputs.input_reference_image = 'sub-01_desc-GT_T2w.nii.gz'
+    >>> srr_eval.inputs.input_reference_mask = 'sub-01_desc-GT_mask.nii.gz'
+    >>> srr_eval.inputs.input_reference_mask = 'sub-01_desc-GT_labels.nii.gz'
+    >>> srr_eval.inputs.input_sr_image = 'sub-01_id-1_rec-SR_T2w.nii.gz'
+    >>> srr_eval.inputs.input_sdi_image = 'sub-01_id-1_desc-SDI_T2w.nii.gz'
+    >>> srr_eval.inputs.input_TV_parameters = {
+            'in_loop': '10',
+            'in_deltat': '0.01',
+            'in_lambda': '0.75',
+            'in_bregman_loop': '3',
+            'in_iter': '50',
+            'in_step_scale': '1',
+            'in_gamma': '1',
+            'in_inner_thresh':
+            '1e-05',
+            'in_outer_thresh': '1e-06'
+        }
+    >>> srr_eval.run()  # doctest: +SKIP
+
     """
 
     srr_assessment_stage = pe.Workflow(name=name)

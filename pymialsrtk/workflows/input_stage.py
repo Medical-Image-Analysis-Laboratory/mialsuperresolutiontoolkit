@@ -1,11 +1,9 @@
-# Copyright © 2016-2021 Medical Image Analysis Laboratory, University Hospital
+# Copyright © 2016-2023 Medical Image Analysis Laboratory, University Hospital
 # Center and University of Lausanne (UNIL-CHUV), Switzerland
 #
 #  This software is distributed under the open-source license Modified BSD.
 
-"""Workflow for the management of the input of super-resolution
-reconstruction pipeline.
-"""
+"""Workflow for the management of super-resolution reconstruction pipeline inputs."""
 
 import os
 import pkg_resources
@@ -34,33 +32,61 @@ def create_input_stage(
     p_verbose,
     name="input_stage",
 ):
-    """Create a input management workflow
-    for srr pipeline
+    """Create a input management workflow for srr pipeline.
+
     Parameters
     ----------
-    ::
-        name : name of workflow (default: input_stage)
-        p_bids_dir
-        p_sub_ses
-        p_use_manual_masks
-        p_masks_desc
-        p_masks_derivatives_dir
-        p_skip_stacks_ordering
-        p_stacks
-        p_do_srr_assessment
+    name : string
+        name of workflow (default: input_stage)
+    p_bids_dir : string
+            Path to the bids directory
+    p_sub_ses : string
+            String containing subject-session information.
+    p_use_manual_masks : boolean
+        Whether manual masks are used
+    p_masks_desc : string
+        BIDS description tag of masks to use (optional)
+    p_masks_derivatives_dir : string
+        Path to the directory of the manual masks.
+    p_skip_stacks_ordering : boolean
+        Whether stacks ordering should be skipped. If true, uses the order
+        provided in `p_stacks`.
+    p_stacks : list of integer
+        List of stack to be used in the reconstruction. The specified order is
+        kept if `skip_stacks_ordering` is True.
+    p_do_srr_assessment : :obj:`bool`
+        If super-resolution assessment should be done.
 
-    Inputs::
+    Outputs
+    -------
+    outputnode.t2ws_filtered : list of filenames
+        Low-resolution T2w images
+    outputnode.masks_filtered : list of filenames
+        Low-resolution T2w masks
+    outputnode.stacks_order : list of ids
+        Order in which the stacks should be processed
+    outputnode.report_image : filename
+        Output PNG image for report
+    outputnode.motion_tsv : filename
+        Output TSV file with results used to create `report_image`
+    outputnode.ground_truth : filename
+        Ground truth image used for `srr_assessment`
+        (optional, if `p_do_srr_assessment=True)
 
-    Outputs::
-        outputnode.t2ws_filtered
-        outputnode.masks_filtered
-        outputnode.stacks_order
-        outputnode.report_image
-        outputnode.motion_tsv
-        outputnode.ground_truth (optional, if p_do_srr_assessment=True)
     Example
     -------
-    >>>
+    >>> from pymialsrtk.pipelines.workflows import input_stage
+    >>> input_mgmt_stage = input_stage.create_input_stage(
+            p_bids_dir="bids_data",
+            p_sub_ses="sub-01_ses-1",
+            p_sub_path="sub-01/ses-1/anat",
+            p_use_manual_masks=False,
+            p_skip_stacks_ordering=False,
+            p_do_srr_assessment=False,
+            name="input_mgmt_stage",
+        )
+    >>> input_mgmt_stage.run()  # doctest: +SKIP
+
     """
 
     input_stage = pe.Workflow(name=name)

@@ -807,14 +807,14 @@ workflows:
             tags:
               only: /^v.*/
 
-#      - deploy-singularity-latest:
-#          requires:
-#            - build-singularity
-#            # - build_docs
-#            - test-singularity
-#            - codacy-coverage-report
-#          filters:
-#            # ignore any commit on any branch by default
-#            branches:
-#              only: master
+      - deploy-singularity-latest:
+          requires:
+            - build-singularity
+            # - build_docs
+            - test-singularity
+            - codacy-coverage-report
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              only: master
 
