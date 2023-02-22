@@ -83,6 +83,9 @@ def create_postproc_stage(
     input_fields += ["input_sdi"]
     output_fields += ["output_sdi"]
 
+    input_fields += ["input_sr_heatmap"]
+    output_fields += ["output_sr_heatmap"]
+
     if p_do_reconstruct_labels:
         input_fields += ["input_labelmap"]
         output_fields += ["output_labelmap"]
@@ -140,6 +143,10 @@ def create_postproc_stage(
 
         align_sdi = pe.Node(
             interface=preprocess.ApplyAlignmentTransform(), name="align_sdi"
+        )
+
+        align_sr_heatmap = pe.Node(
+            interface=preprocess.ApplyAlignmentTransform(), name="align_sr_heatmap"
         )
 
         if p_do_reconstruct_labels:
@@ -263,6 +270,29 @@ def create_postproc_stage(
         postproc_stage.connect(
             align_sdi, "output_image", outputnode, "output_sdi"
         )
+
+
+
+        postproc_stage.connect(
+            inputnode, "input_sr_heatmap", align_sr_heatmap, "input_image"
+        )
+        postproc_stage.connect(
+            resample_t2w_template, "output_image", align_sr_heatmap, "input_template"
+        )
+
+        postproc_stage.connect(
+            inputnode, "input_mask", align_sr_heatmap, "input_mask"
+        )
+
+        postproc_stage.connect(
+            compute_alignment, "output_transform", align_sr_heatmap, "input_transform"
+        )
+
+        postproc_stage.connect(
+            align_sr_heatmap, "output_image", outputnode, "output_sr_heatmap"
+        )
+
+
 
         if p_do_reconstruct_labels:
             postproc_stage.connect(

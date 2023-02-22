@@ -531,6 +531,12 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             postprocessing_stage,
             "inputnode.input_sdi",
         )
+        self.m_wf.connect(
+            reconstruction_stage,
+            "outputnode.output_sr_heatmap",
+            postprocessing_stage,
+            "inputnode.input_sr_heatmap",
+        )
 
         if self.m_do_srr_assessment:
             self.m_wf.connect(
@@ -622,6 +628,7 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             output_mgmt_stage,
             "inputnode.input_sdi",
         )
+
         self.m_wf.connect(
             reconstruction_stage,
             "outputnode.output_json_path",
@@ -653,6 +660,13 @@ class SRReconPipeline(AbstractAnatomicalPipeline):
             "outputnode.output_mask",
             output_mgmt_stage,
             "inputnode.input_hr_mask",
+        )
+
+        self.m_wf.connect(
+            postprocessing_stage,
+            "outputnode.output_sr_heatmap",
+            output_mgmt_stage,
+            "inputnode.input_sr_heatmap",
         )
 
         if self.m_do_nlm_denoising:

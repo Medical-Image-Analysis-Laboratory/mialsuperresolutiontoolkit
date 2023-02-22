@@ -117,6 +117,8 @@ def create_srr_output_stage(
     input_fields += ["input_sdi", "input_sr", "input_hr_mask"]
     input_fields += ["input_json_path", "input_sr_png"]
 
+    input_fields += ["input_sr_heatmap"]
+
     if not p_skip_stacks_ordering:
         input_fields += ["report_image", "motion_tsv"]
 
@@ -219,6 +221,10 @@ def create_srr_output_stage(
     )
     srr_output_stage.connect(
         inputnode, "input_hr_mask", datasink, "anat.@SRmask"
+    )
+
+    srr_output_stage.connect(
+        inputnode, "input_sr_heatmap", datasink, "anat.@SRheatmap"
     )
 
     if p_do_srr_assessment:

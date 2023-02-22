@@ -81,6 +81,7 @@ def create_recon_stage(
         outputnode.output_json_path
         outputnode.output_sr_png
         outputnode.output_TV_parameters
+        outputnode.output_sr_heatmap
     Example
     -------
     >>> recon_stage = create_preproc_stage(
@@ -119,6 +120,7 @@ def create_recon_stage(
         "output_json_path",
         "output_sr_png",
         "output_TV_parameters",
+        "output_sr_heatmap",
     ]
 
     if p_do_reconstruct_labels:
@@ -164,6 +166,13 @@ def create_recon_stage(
             sub_ses=p_sub_ses, skip_svr=p_skip_svr, verbose=p_verbose
         ),
         name="srtkImageReconstruction",
+    )
+
+    srHeatmap = pe.Node(
+        interface=reconstruction.MialsrtkSDIComputation(
+            sub_ses=p_sub_ses, verbose=p_verbose
+        ),
+        name="srHeatmap",
     )
 
     if p_do_nlm_denoising:
@@ -253,6 +262,42 @@ def create_recon_stage(
     recon_stage.connect(
         inputnode, "stacks_order", srtkImageReconstruction, "stacks_order"
     )
+
+    ##
+    recon_stage.connect(
+        inputnode, "stacks_order", srHeatmap, "stacks_order"
+    )
+    recon_stage.connect(
+        inputnode,
+        ("input_masks", utils.sort_ascending),
+        srHeatmap,
+        "input_images",
+    )
+    recon_stage.connect(
+        inputnode,
+        ("input_masks", utils.sort_ascending),
+        srHeatmap,
+        "input_masks",
+    )
+    recon_stage.connect(
+        srtkImageReconstruction,
+        ("output_transforms", utils.sort_ascending),
+        srHeatmap,
+        "input_transforms",
+    )
+    recon_stage.connect(
+        srtkImageReconstruction,
+        "output_sdi",
+        srHeatmap,
+        "input_reference",
+    )
+
+    recon_stage.connect(
+        srHeatmap, "output_sdi", outputnode, "output_sr_heatmap"
+    )
+    ##
+
+
 
     if p_do_nlm_denoising:
         recon_stage.connect(
