@@ -2365,7 +2365,8 @@ class ResampleImage(BaseInterface):
         return runtime
 
     def _get_target_resolution(self, reference_image):
-        import sitk
+        import SimpleITK as sitk
+
         reader = sitk.ImageFileReader()
         reader.SetFileName(reference_image)
         sub_image = reader.Execute()
@@ -2471,6 +2472,8 @@ class ComputeAlignmentToReference(BaseInterface):
         return outputs
 
     def _compute_pca(self, mask):
+        import SimpleITK as sitk
+
         def get_largest_connected_region_mask(mask_nda):
             """This function get the largest connected region mask.
 
@@ -2517,6 +2520,8 @@ class ComputeAlignmentToReference(BaseInterface):
         return pca_fixed
 
     def _reorient_image(self):
+        import SimpleITK as sitk
+
         reader = sitk.ImageFileReader()
         writer = sitk.ImageFileWriter()
 
