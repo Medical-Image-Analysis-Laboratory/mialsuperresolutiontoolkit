@@ -428,7 +428,6 @@ class MialsrtkIntensityStandardization(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-
         cmd = f"{EXEC_PATH}mialsrtkIntensityStandardization"
         for input_image in self.inputs.input_images:
             out_file = self._gen_filename(input_image, "output_images")
@@ -512,7 +511,6 @@ class MialsrtkHistogramNormalization(BaseInterface):
         return None
 
     def _run_interface(self, runtime, verbose=False):
-
         cmd = "python /usr/local/bin/mialsrtkHistogramNormalization.py "
 
         if len(self.inputs.input_masks) > 0:
@@ -676,7 +674,6 @@ class CheckAndFilterInputStacks(BaseInterface):
     def _filter_by_runid(
         self, input_images, input_masks, input_labels, p_stacks_id
     ):
-
         input_checks = [input_images]
         if input_masks:
             input_checks.append(input_masks)
@@ -814,10 +811,11 @@ class StacksOrdering(BaseInterface):
 
         img = nib.load(in_file)
         data = img.get_fdata()
-
+        # Handle the variety of data shapes.
+        data = data if len(data.shape) < 4 else data.squeeze(-1)
         # To compute centroid displacement as a distance
         # instead of a number of voxel
-        sx, sy, sz = img.header.get_zooms()
+        sx, sy, sz = img.header.get_zooms()[:3]
 
         z = np.where(data)[2]
         data = data[..., int(min(z)) : int(max(z) + 1)]
@@ -1211,7 +1209,6 @@ class BrainExtraction(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-
         self._extractBrain(
             self.inputs.in_file,
             self.inputs.in_ckpt_loc,
@@ -1321,7 +1318,6 @@ class BrainExtraction(BaseInterface):
 
         g = tf.Graph()
         with g.as_default():
-
             with tf.name_scope("inputs"):
                 x = tf.placeholder(
                     tf.float32, [None, width, height, n_channels], name="image"
@@ -1497,7 +1493,6 @@ class BrainExtraction(BaseInterface):
             tf_saver.restore(sess_test_loc, modelCkptLoc)
 
             for idx in range(images.shape[0]):
-
                 im = np.reshape(
                     images[idx, :, :, :], [1, width, height, n_channels]
                 )
@@ -1589,7 +1584,6 @@ class BrainExtraction(BaseInterface):
 
         g = tf.Graph()
         with g.as_default():
-
             with tf.name_scope("inputs"):
                 x = tf.placeholder(
                     tf.float32, [None, width, height, n_channels]
@@ -1873,7 +1867,6 @@ class BrainExtraction(BaseInterface):
                 distrib_cc.append(np.sum(crt_stack_pp[iSlc]))
 
         if post_proc_closing_minima or post_proc_opening_maxima:
-
             if post_proc_closing_minima:
                 crt_stack_closed_minima = crt_stack_pp.copy()
 
@@ -1948,7 +1941,6 @@ class BrainExtraction(BaseInterface):
                             - distrib[local_maxima_n[iMax] + 1]
                             > 50
                         ):
-
                             if verbose:
                                 print(
                                     "Ceci est un pic de au moins 50.",
@@ -2175,7 +2167,6 @@ class ReduceFieldOfView(BaseInterface):
             writer.Execute(label_cropped)
 
     def _run_interface(self, runtime):
-
         self._crop_image_and_mask(
             self.inputs.input_image,
             self.inputs.input_mask,
@@ -2258,7 +2249,6 @@ class SplitLabelMaps(BaseInterface):
             writer.Execute(label)
 
     def _run_interface(self, runtime):
-
         self._extractlabelimage(self.inputs.in_labelmap)
         return runtime
 
@@ -2364,7 +2354,6 @@ class ResampleImage(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-
         target_resolution = self._get_target_resolution(
             reference_image=self.inputs.input_reference
         )
@@ -2376,6 +2365,7 @@ class ResampleImage(BaseInterface):
         return runtime
 
     def _get_target_resolution(self, reference_image):
+        import sitk
         reader = sitk.ImageFileReader()
         reader.SetFileName(reference_image)
         sub_image = reader.Execute()
@@ -2387,7 +2377,6 @@ class ResampleImage(BaseInterface):
         return spacings[0]
 
     def _resample_image(self, p_image_path, p_resolution):
-
         ants_path = "/opt/conda/bin"
 
         image_resampled_path = self._gen_filename("output_image")
@@ -2472,7 +2461,6 @@ class ComputeAlignmentToReference(BaseInterface):
         return None
 
     def _run_interface(self, runtime):
-
         self.m_best_transform = self._reorient_image()
 
         return runtime
